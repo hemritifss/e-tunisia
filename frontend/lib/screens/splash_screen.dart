@@ -74,25 +74,28 @@ class _SplashScreenState extends State<SplashScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Logo / Icon
+                  // Logo / Branding
                   Container(
-                    width: 130,
-                    height: 130,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: AppColors.primaryGradient,
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.primary.withOpacity(0.5),
-                          blurRadius: 40,
-                          spreadRadius: 8,
-                        ),
-                      ],
-                    ),
-                    child: const Icon(
-                      Icons.explore_rounded,
-                      size: 70,
-                      color: Colors.white,
+                    width: 250,
+                    height: 150,
+                    child: Image.network(
+                      'https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Flag_of_Tunisia.svg/800px-Flag_of_Tunisia.svg.png',
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) => Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.explore_rounded, size: 70, color: Colors.white),
+                          const SizedBox(height: 12),
+                          Text(
+                            'E-TUNISIA PLATFORM',
+                            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 2,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   )
                       .animate()
@@ -103,44 +106,7 @@ class _SplashScreenState extends State<SplashScreen> {
                         curve: Curves.elasticOut,
                       )
                       .fadeIn(duration: 600.ms)
-                      .shimmer(delay: 1.seconds, duration: 1500.ms, color: Colors.white54)
-                      .then()
-                      .scale(
-                        begin: const Offset(1, 1),
-                        end: const Offset(1.05, 1.05),
-                        duration: 1.5.seconds,
-                        curve: Curves.easeInOutSine,
-                      ).animate(onPlay: (c) => c.repeat(reverse: true)),
-
-                  const SizedBox(height: 40),
-
-                  // App Name
-                  Text(
-                    'e-Tunisia',
-                    style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 3,
-                        ),
-                  )
-                      .animate()
-                      .fadeIn(delay: 400.ms, duration: 600.ms)
-                      .slideY(begin: 0.3, end: 0)
-                      .shimmer(delay: 1200.ms, duration: 2.seconds, color: AppColors.accent),
-
-                  const SizedBox(height: 12),
-
-                  Text(
-                    'Discover the beauty of Tunisia',
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: Colors.white.withOpacity(0.85),
-                          letterSpacing: 1.2,
-                          fontWeight: FontWeight.w500,
-                        ),
-                  )
-                      .animate()
-                      .fadeIn(delay: 700.ms, duration: 600.ms)
-                      .slideY(begin: 0.3, end: 0),
+                      .shimmer(delay: 1.seconds, duration: 1500.ms, color: Colors.white54),
 
                   const SizedBox(height: 70),
 

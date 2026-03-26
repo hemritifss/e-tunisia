@@ -9,9 +9,15 @@ import '../../providers/auth_provider.dart';
 import '../../providers/community_provider.dart';
 import '../../providers/notifications_provider.dart';
 import '../../providers/gamification_provider.dart';
+import '../../providers/sponsors_provider.dart';
+import '../../providers/ads_provider.dart';
 import '../../models/place.dart';
 import '../../models/category.dart';
 import '../../widgets/place_card.dart';
+import '../../widgets/category_chip.dart';
+import '../../widgets/shimmer_loading.dart';
+import '../../widgets/ad_banner_widget.dart';
+import '../../widgets/sponsor_card.dart';
 import '../../widgets/category_chip.dart';
 import '../../widgets/shimmer_loading.dart';
 import '../detail/place_detail_screen.dart';
@@ -39,6 +45,8 @@ class _HomeScreenState extends State<HomeScreen> {
       context.read<CommunityProvider>().loadCommunityData();
       context.read<NotificationsProvider>().loadUnreadCount();
       context.read<GamificationProvider>().loadAll();
+      context.read<SponsorsProvider>().loadSponsors();
+      context.read<AdsProvider>().loadAds();
     });
   }
 
@@ -48,6 +56,8 @@ class _HomeScreenState extends State<HomeScreen> {
     final community = context.watch<CommunityProvider>();
     final auth = context.watch<AuthProvider>();
     final notifProv = context.watch<NotificationsProvider>();
+    final sponsorsProv = context.watch<SponsorsProvider>();
+    final adsProv = context.watch<AdsProvider>();
     final userName = auth.user?.fullName.split(' ').first ?? 'Explorer';
 
     return Scaffold(
@@ -58,6 +68,8 @@ class _HomeScreenState extends State<HomeScreen> {
               onRefresh: () async {
                 await places.loadHomeData();
                 await community.loadCommunityData();
+                await context.read<SponsorsProvider>().loadSponsors();
+                await context.read<AdsProvider>().loadAds();
               },
               child: CustomScrollView(
                 physics: const BouncingScrollPhysics(),
@@ -74,20 +86,33 @@ class _HomeScreenState extends State<HomeScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
+                                  Row(
+                                    children: [
+                                      Image.network(
+                                        'https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Flag_of_Tunisia.svg/800px-Flag_of_Tunisia.svg.png',
+                                        height: 28,
+                                        fit: BoxFit.contain,
+                                        errorBuilder: (context, error, stackTrace) => const Icon(Icons.explore_rounded, color: AppColors.primary),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        'E-TUNISIA',
+                                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                          fontWeight: FontWeight.w900,
+                                          color: AppColors.primary,
+                                          letterSpacing: 1.2,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 6),
                                   Text(
                                     'Hello, $userName! 👋',
                                     style: Theme.of(context)
                                         .textTheme
-                                        .bodyLarge
+                                        .bodyMedium
                                         ?.copyWith(
                                             color: AppColors.textSecondary),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    'Discover Tunisia',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .headlineLarge,
                                   ),
                                 ],
                               ),
@@ -296,8 +321,17 @@ class _HomeScreenState extends State<HomeScreen> {
 
                   // ─── 📢 SPONSOR ZONE ──────────────────
                   SliverToBoxAdapter(
-                    child: _SponsorZone(),
+                    child: _SponsorZone(sponsors: sponsorsProv.sponsors),
                   ),
+
+                  // ─── ADS ZONE ──────────────────
+                  if (adsProv.homeAds.isNotEmpty)
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: AdBannerWidget(ad: adsProv.homeAds.first),
+                      ),
+                    ),
 
                   // ─── 🗞️ ACTUALITIES ──────────────────
                   if (community.events.isNotEmpty)
@@ -526,107 +560,91 @@ class _HomeScreenState extends State<HomeScreen> {
 
 // ─── Sponsor Zone ────────────────────────────────────────
 class _SponsorZone extends StatelessWidget {
+  final List<Sponsor> sponsors;
+
+  const _SponsorZone({super.key, required this.sponsors});
+
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.fromLTRB(24, 24, 24, 0),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF2D3436), Color(0xFF636E72)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+    if (sponsors.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(24, 24, 24, 12),
+          child: Row(
+            children: [
+              const Text('🤝', style: TextStyle(fontSize: 18)),
+              const SizedBox(width: 8),
+              Text('Official Partners', style: Theme.of(context).textTheme.headlineMedium),
+            ],
+          ),
         ),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF2D3436).withOpacity(0.3),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
+        SizedBox(
+          height: 175,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            itemCount: sponsors.length + 1,
+            itemBuilder: (context, i) {
+              if (i == sponsors.length) {
+                return _buildBecomePartnerCard(context);
+              }
+              return Padding(
+                padding: const EdgeInsets.only(right: 16),
+                child: SponsorCard(sponsor: sponsors[i]),
+              );
+            },
           ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: AppColors.accent,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Text(
-                        'SPONSORED',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 9,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 1.2,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                const Text(
-                  'Promote your business\nto thousands of travelers',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 17,
-                    height: 1.3,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Reach tourists visiting Tunisia. Boost your restaurant, hotel, or experience.',
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.7),
-                    fontSize: 12,
-                    height: 1.5,
-                  ),
-                ),
-                const SizedBox(height: 14),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: AppColors.accent,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Text(
-                    'Become a Partner →',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 13,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 16),
-          Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: const Icon(
-              Icons.campaign_rounded,
-              color: AppColors.accent,
-              size: 40,
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.1);
+  }
+
+  Widget _buildBecomePartnerCard(BuildContext context) {
+    return GestureDetector(
+      onTap: () => Navigator.pushNamed(context, '/partners'),
+      child: Container(
+        width: 160,
+        margin: const EdgeInsets.only(right: 16),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFF2D3436), Color(0xFF636E72)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.add_business_rounded, color: AppColors.accent, size: 32),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Become a\nPartner',
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 13, height: 1.3),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 

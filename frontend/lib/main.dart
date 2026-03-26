@@ -9,6 +9,8 @@ import 'providers/app_provider.dart';
 import 'providers/community_provider.dart';
 import 'providers/notifications_provider.dart';
 import 'providers/gamification_provider.dart';
+import 'providers/sponsors_provider.dart';
+import 'providers/ads_provider.dart';
 import 'screens/splash_screen.dart';
 
 void main() {
@@ -35,6 +37,8 @@ class ETunisiaApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => CommunityProvider()),
         ChangeNotifierProvider(create: (_) => NotificationsProvider()),
         ChangeNotifierProvider(create: (_) => GamificationProvider()),
+        ChangeNotifierProvider(create: (_) => SponsorsProvider()),
+        ChangeNotifierProvider(create: (_) => AdsProvider()),
       ],
       child: MaterialApp(
         title: 'e-Tunisia',

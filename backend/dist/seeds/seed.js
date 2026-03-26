@@ -473,6 +473,80 @@ async function seed() {
             categoryId: natureCat?.id,
         },
         {
+            name: 'Ribat of Sousse',
+            nameFr: 'Ribat de Sousse',
+            nameAr: 'رباط سوسة',
+            slug: 'ribat-sousse',
+            description: 'An 8th-century Islamic fortress with a towering minaret offering panoramic views of Sousse Medina. A classic example of coastal military architecture.',
+            address: 'Medina, Sousse',
+            city: 'Sousse',
+            governorate: 'Sousse',
+            latitude: 35.8275,
+            longitude: 10.6385,
+            coverImage: 'https://images.unsplash.com/photo-1594818379496-da1e345b0ded?w=800',
+            tags: ['Fortress', 'Islamic', 'History', 'Medina'],
+            rating: 4.5,
+            reviewCount: 312,
+            viewCount: 4120,
+            categoryId: historicalCat?.id,
+            priceRange: '8 TND',
+        },
+        {
+            name: 'Mausoleum of Habib Bourguiba',
+            nameFr: 'Mausolée de Habib Bourguiba',
+            nameAr: 'روضة آل بورقيبة',
+            slug: 'bourguiba-mausoleum',
+            description: 'The monumental tomb of Tunisia\'s first president. Features stunning modern Islamic architecture with gold domes and marble courtyards.',
+            address: 'Cimetière du Sidi el-Mézeri',
+            city: 'Monastir',
+            governorate: 'Monastir',
+            latitude: 35.7766,
+            longitude: 10.8344,
+            coverImage: 'https://images.unsplash.com/photo-1572204292164-b35ba943fca7?w=800',
+            tags: ['Monument', 'Modern History', 'Architecture'],
+            rating: 4.8,
+            reviewCount: 456,
+            viewCount: 5230,
+            categoryId: historicalCat?.id,
+            priceRange: 'Free',
+        },
+        {
+            name: 'Ksar Ghilane Oasis',
+            nameFr: 'Oasis de Ksar Ghilane',
+            nameAr: 'قصر غيلان',
+            slug: 'ksar-ghilane',
+            description: 'A spectacular desert oasis fed by a thermal spring (32°C). Surrounded by the towering red dunes of the Grand Erg Oriental.',
+            address: 'Sahara Desert',
+            city: 'Kébili',
+            governorate: 'Kébili',
+            latitude: 32.9833,
+            longitude: 9.6333,
+            coverImage: 'https://images.unsplash.com/photo-1547234935-80c7145ec969?w=800',
+            tags: ['Oasis', 'Desert', 'Hot Spring', 'Sahara'],
+            rating: 4.9,
+            reviewCount: 289,
+            viewCount: 3450,
+            categoryId: natureCat?.id,
+        },
+        {
+            name: 'Chebika Mountain Oasis',
+            nameFr: 'Oasis de Chebika',
+            nameAr: 'الشبيكة',
+            slug: 'chebika-oasis',
+            description: 'A stunning mountain oasis known as the "Castle of the Sun". Palmgroves, waterfalls, and steep canyons famously featured in The English Patient.',
+            address: 'Djebel el Negueb',
+            city: 'Tozeur',
+            governorate: 'Tozeur',
+            latitude: 34.3200,
+            longitude: 7.9380,
+            coverImage: 'https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=800',
+            tags: ['Mountains', 'Oasis', 'Waterfall', 'Hiking'],
+            rating: 4.7,
+            reviewCount: 334,
+            viewCount: 4560,
+            categoryId: natureCat?.id,
+        },
+        {
             name: 'Nabeul Pottery Market',
             nameFr: 'Marché de la Poterie de Nabeul',
             nameAr: 'سوق الفخار بنابل',
@@ -645,7 +719,14 @@ async function seed() {
             website: 'https://www.anantara.com/en/tozeur',
         },
     ];
-    for (const p of places) {
+    const { morePlacesData } = await Promise.resolve().then(() => require('./more_places'));
+    const processedMorePlaces = morePlacesData.map(p => {
+        const cat = categories.find((c) => c.slug === p.categorySlug);
+        const { categorySlug, ...rest } = p;
+        return { ...rest, categoryId: cat?.id };
+    });
+    const allPlaces = [...places, ...processedMorePlaces];
+    for (const p of allPlaces) {
         try {
             await placesService.create(p);
         }
@@ -653,7 +734,7 @@ async function seed() {
             console.log(`Skipping ${p.name}: ${e.message}`);
         }
     }
-    console.log(`✅ ${places.length} places seeded`);
+    console.log(`✅ ${allPlaces.length} places seeded`);
     const adminUser = await usersRepo.findOne({ where: { email: 'admin@etunisia.tn' } });
     const adminId = adminUser?.id;
     if (adminId) {

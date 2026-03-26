@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Badge;
 import '../models/badge.dart';
 import '../services/api_service.dart';
 
