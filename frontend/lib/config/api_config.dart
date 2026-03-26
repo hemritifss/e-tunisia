@@ -21,13 +21,20 @@ class ApiConfig {
   static const String reviews = '/reviews';
   static const String media = '/media';
 
-  // New endpoints
+  // Core endpoints
   static const String admin = '/admin';
   static const String subscriptions = '/subscriptions';
   static const String tips = '/tips';
   static const String events = '/events';
   static const String itineraries = '/itineraries';
   static const String collections = '/collections';
+
+  // New MVP endpoints
+  static const String sponsors = '/sponsors';
+  static const String ads = '/ads';
+  static const String gamification = '/gamification';
+  static const String notifications = '/notifications';
+  static const String contact = '/contact';
 
   static const Duration timeout = Duration(seconds: 30);
 }

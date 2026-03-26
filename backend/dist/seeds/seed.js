@@ -801,6 +801,21 @@ async function seed() {
         }
         console.log(`✅ ${collections.length} collections seeded`);
     }
+    const sponsorsService = app.get((await Promise.resolve().then(() => require('../sponsors/sponsors.service'))).SponsorsService);
+    await sponsorsService.seed();
+    console.log('✅ Sponsors seeded');
+    const adsService = app.get((await Promise.resolve().then(() => require('../ads/ads.service'))).AdsService);
+    await adsService.seed();
+    console.log('✅ Ads seeded');
+    const gamificationService = app.get((await Promise.resolve().then(() => require('../gamification/gamification.service'))).GamificationService);
+    await gamificationService.seed();
+    console.log('✅ Gamification badges seeded');
+    const adminUser2 = await usersRepo.findOne({ where: { email: 'admin@etunisia.tn' } });
+    if (adminUser2) {
+        const notificationsService = app.get((await Promise.resolve().then(() => require('../notifications/notifications.service'))).NotificationsService);
+        await notificationsService.seedForUser(adminUser2.id);
+        console.log('✅ Notifications seeded for admin');
+    }
     await app.close();
 }
 seed();

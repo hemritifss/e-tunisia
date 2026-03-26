@@ -4,6 +4,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 import '../../config/theme.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/gamification_provider.dart';
 import '../../widgets/glass_container.dart';
 import '../admin/admin_dashboard_screen.dart';
 import '../premium/premium_screen.dart';
@@ -11,6 +12,11 @@ import '../events/events_screen.dart';
 import '../tips/tips_screen.dart';
 import '../itineraries/itineraries_screen.dart';
 import '../collections/collections_screen.dart';
+import '../gamification/leaderboard_screen.dart';
+import '../gamification/badges_screen.dart';
+import '../partners/become_partner_screen.dart';
+import '../about/about_screen.dart';
+import '../notifications/notifications_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -19,6 +25,7 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
     final user = auth.user;
+    final gamif = context.watch<GamificationProvider>();
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -193,32 +200,35 @@ class ProfileScreen extends StatelessWidget {
                   const SizedBox(height: 24),
 
                   // ─── GAMIFICATION BANNER ──────────────────────────
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [AppColors.accent.withOpacity(0.8), AppColors.accent],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(24),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.accent.withOpacity(0.3),
-                          blurRadius: 15,
-                          offset: const Offset(0, 5),
+                  GestureDetector(
+                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LeaderboardScreen())),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [AppColors.accent.withOpacity(0.8), AppColors.accent],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
                         ),
-                      ],
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        _StatColumn(icon: Icons.explore_rounded, value: 'Lv. ${user?.role == 'admin' ? 99 : 5}', label: 'Rank'),
-                        Container(width: 1, height: 40, color: Colors.white.withOpacity(0.3)),
-                        _StatColumn(icon: Icons.stars_rounded, value: '${user?.role == 'admin' ? 9999 : 1250}', label: 'Points'),
-                        Container(width: 1, height: 40, color: Colors.white.withOpacity(0.3)),
-                        _StatColumn(icon: Icons.emoji_events_rounded, value: '12', label: 'Badges'),
-                      ],
+                        borderRadius: BorderRadius.circular(24),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.accent.withOpacity(0.3),
+                            blurRadius: 15,
+                            offset: const Offset(0, 5),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          _StatColumn(icon: Icons.explore_rounded, value: 'Lv. ${gamif.level}', label: 'Rank'),
+                          Container(width: 1, height: 40, color: Colors.white.withOpacity(0.3)),
+                          _StatColumn(icon: Icons.stars_rounded, value: '${gamif.points}', label: 'Points'),
+                          Container(width: 1, height: 40, color: Colors.white.withOpacity(0.3)),
+                          _StatColumn(icon: Icons.emoji_events_rounded, value: '${gamif.earnedCount}', label: 'Badges'),
+                        ],
+                      ),
                     ),
                   ).animate().fadeIn(delay: 250.ms).slideY(begin: 0.1),
 
@@ -253,14 +263,30 @@ class ProfileScreen extends StatelessWidget {
 
                   const SizedBox(height: 24),
 
-                  // ─── PREMIUM BENEFITS ─────────────────────────
-                  _buildSectionLabel('Premium Benefits')
+                  // ─── PREMIUM & GAMIFICATION ─────────────────────────
+                  _buildSectionLabel('Premium & Gamification')
                       .animate().fadeIn(delay: 420.ms).slideX(begin: -0.1),
                   _buildMenuGroup([
                     _MenuItem(
                       icon: Icons.workspace_premium_rounded,
                       title: 'Go Premium',
                       onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PremiumScreen())),
+                    ),
+                    _MenuItem(
+                      icon: Icons.leaderboard_rounded,
+                      title: 'Leaderboard',
+                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LeaderboardScreen())),
+                    ),
+                    _MenuItem(
+                      icon: Icons.emoji_events_rounded,
+                      title: 'My Badges',
+                      trailing: '${gamif.earnedCount}/${gamif.totalBadges}',
+                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const BadgesScreen())),
+                    ),
+                    _MenuItem(
+                      icon: Icons.handshake_rounded,
+                      title: 'Become a Partner',
+                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const BecomePartnerScreen())),
                       isLast: true,
                     ),
                   ]).animate().fadeIn(delay: 430.ms).slideY(begin: 0.1),
@@ -296,9 +322,17 @@ class ProfileScreen extends StatelessWidget {
                   _buildSectionLabel('General')
                       .animate().fadeIn(delay: 700.ms).slideX(begin: -0.1),
                   _buildMenuGroup([
-                    _MenuItem(icon: Icons.notifications_none_rounded, title: 'Notifications'),
+                    _MenuItem(
+                      icon: Icons.notifications_none_rounded,
+                      title: 'Notifications',
+                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationsScreen())),
+                    ),
                     _MenuItem(icon: Icons.help_outline_rounded, title: 'Help & Support'),
-                    _MenuItem(icon: Icons.info_outline_rounded, title: 'About e-Tunisia'),
+                    _MenuItem(
+                      icon: Icons.info_outline_rounded,
+                      title: 'About e-Tunisia',
+                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AboutScreen())),
+                    ),
                     _MenuItem(icon: Icons.star_border_rounded, title: 'Rate the App', isLast: true),
                   ]).animate().fadeIn(delay: 800.ms).slideY(begin: 0.1),
 

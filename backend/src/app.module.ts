@@ -13,6 +13,11 @@ import { EventsModule } from './events/events.module';
 import { ItinerariesModule } from './itineraries/itineraries.module';
 import { CollectionsModule } from './collections/collections.module';
 import { AdminModule } from './admin/admin.module';
+import { SponsorsModule } from './sponsors/sponsors.module';
+import { AdsModule } from './ads/ads.module';
+import { GamificationModule } from './gamification/gamification.module';
+import { NotificationsModule } from './notifications/notifications.module';
+import { ContactModule } from './contact/contact.module';
 
 @Module({
     imports: [
@@ -36,6 +41,11 @@ import { AdminModule } from './admin/admin.module';
         ItinerariesModule,
         CollectionsModule,
         AdminModule,
+        SponsorsModule,
+        AdsModule,
+        GamificationModule,
+        NotificationsModule,
+        ContactModule,
     ],
 })
 export class AppModule { }

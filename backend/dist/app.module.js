@@ -22,6 +22,11 @@ const events_module_1 = require("./events/events.module");
 const itineraries_module_1 = require("./itineraries/itineraries.module");
 const collections_module_1 = require("./collections/collections.module");
 const admin_module_1 = require("./admin/admin.module");
+const sponsors_module_1 = require("./sponsors/sponsors.module");
+const ads_module_1 = require("./ads/ads.module");
+const gamification_module_1 = require("./gamification/gamification.module");
+const notifications_module_1 = require("./notifications/notifications.module");
+const contact_module_1 = require("./contact/contact.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -48,6 +53,11 @@ exports.AppModule = AppModule = __decorate([
             itineraries_module_1.ItinerariesModule,
             collections_module_1.CollectionsModule,
             admin_module_1.AdminModule,
+            sponsors_module_1.SponsorsModule,
+            ads_module_1.AdsModule,
+            gamification_module_1.GamificationModule,
+            notifications_module_1.NotificationsModule,
+            contact_module_1.ContactModule,
         ],
     })
 ], AppModule);

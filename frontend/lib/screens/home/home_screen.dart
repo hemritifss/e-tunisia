@@ -7,6 +7,8 @@ import '../../config/theme.dart';
 import '../../providers/places_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/community_provider.dart';
+import '../../providers/notifications_provider.dart';
+import '../../providers/gamification_provider.dart';
 import '../../models/place.dart';
 import '../../models/category.dart';
 import '../../widgets/place_card.dart';
@@ -19,6 +21,7 @@ import '../tips/tips_screen.dart';
 import '../itineraries/itineraries_screen.dart';
 import '../nearby/nearby_screen.dart';
 import '../collections/collections_screen.dart';
+import '../notifications/notifications_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -34,6 +37,8 @@ class _HomeScreenState extends State<HomeScreen> {
     Future.microtask(() {
       context.read<PlacesProvider>().loadHomeData();
       context.read<CommunityProvider>().loadCommunityData();
+      context.read<NotificationsProvider>().loadUnreadCount();
+      context.read<GamificationProvider>().loadAll();
     });
   }
 
@@ -42,6 +47,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final places = context.watch<PlacesProvider>();
     final community = context.watch<CommunityProvider>();
     final auth = context.watch<AuthProvider>();
+    final notifProv = context.watch<NotificationsProvider>();
     final userName = auth.user?.fullName.split(' ').first ?? 'Explorer';
 
     return Scaffold(
@@ -87,19 +93,43 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                             ),
                             GestureDetector(
-                              onTap: () {},
-                              child: Container(
-                                width: 48,
-                                height: 48,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(16),
-                                  border:
-                                      Border.all(color: AppColors.divider),
-                                ),
-                                child: const Icon(
-                                  Icons.notifications_none_rounded,
-                                  color: AppColors.textPrimary,
-                                ),
+                              onTap: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+                              ),
+                              child: Stack(
+                                children: [
+                                  Container(
+                                    width: 48,
+                                    height: 48,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(16),
+                                      border: Border.all(color: AppColors.divider),
+                                    ),
+                                    child: const Icon(
+                                      Icons.notifications_none_rounded,
+                                      color: AppColors.textPrimary,
+                                    ),
+                                  ),
+                                  if (notifProv.unreadCount > 0)
+                                    Positioned(
+                                      right: 2,
+                                      top: 2,
+                                      child: Container(
+                                        padding: const EdgeInsets.all(4),
+                                        decoration: const BoxDecoration(
+                                          color: AppColors.error,
+                                          shape: BoxShape.circle,
+                                        ),
+                                        constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
+                                        child: Text(
+                                          '${notifProv.unreadCount}',
+                                          style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w700),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ),
+                                    ),
+                                ],
                               ),
                             ),
                           ],

@@ -74,19 +74,36 @@ class PremiumScreen extends StatelessWidget {
                 // ─── Premium Plan ─────────────────
                 _PlanCard(
                   title: 'Premium',
-                  price: '29',
+                  price: '10',
                   period: '/month',
                   color: const Color(0xFFF59E0B),
                   features: const [
                     'Everything in Free',
-                    'Premium itineraries',
+                    'Premium itineraries & guides',
                     'Offline map access',
-                    'No ads',
+                    'Ad-free experience',
                     'Priority support',
-                    'Exclusive tips & guides',
+                    'Exclusive tips & insider content',
+                    'Early event access',
                   ],
                   isCurrentPlan: false,
                   isBestValue: true,
+                  onUpgrade: () => _upgrade(context, 'premium'),
+                ),
+                const SizedBox(height: 12),
+
+                // ─── Annual Plan ─────────────────
+                _PlanCard(
+                  title: 'Premium Annual',
+                  price: '100',
+                  period: '/year (save 17%)',
+                  color: const Color(0xFF2AC19D),
+                  features: const [
+                    'All Premium features',
+                    '2 months free!',
+                    'Founding member badge',
+                  ],
+                  isCurrentPlan: false,
                   onUpgrade: () => _upgrade(context, 'premium'),
                 ),
                 const SizedBox(height: 16),
@@ -94,16 +111,17 @@ class PremiumScreen extends StatelessWidget {
                 // ─── Business Plan ─────────────────
                 _PlanCard(
                   title: 'Business',
-                  price: '99',
+                  price: '49',
                   period: '/month',
                   color: const Color(0xFF8B5CF6),
                   features: const [
                     'Everything in Premium',
                     'Boosted place listing',
-                    'Business analytics',
+                    'Business analytics dashboard',
                     'Verified badge ✓',
-                    'Featured placement',
-                    'API access',
+                    'Featured homepage placement',
+                    'API access & integrations',
+                    'Dedicated account manager',
                   ],
                   isCurrentPlan: false,
                   onUpgrade: () => _upgrade(context, 'business'),

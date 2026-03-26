@@ -50,6 +50,11 @@ async function bootstrap() {
         .addTag('itineraries')
         .addTag('collections')
         .addTag('admin')
+        .addTag('sponsors')
+        .addTag('ads')
+        .addTag('gamification')
+        .addTag('notifications')
+        .addTag('contact')
         .build();
 
     const document = SwaggerModule.createDocument(app, config);

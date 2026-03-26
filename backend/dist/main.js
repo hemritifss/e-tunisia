@@ -37,6 +37,11 @@ async function bootstrap() {
         .addTag('itineraries')
         .addTag('collections')
         .addTag('admin')
+        .addTag('sponsors')
+        .addTag('ads')
+        .addTag('gamification')
+        .addTag('notifications')
+        .addTag('contact')
         .build();
     const document = swagger_1.SwaggerModule.createDocument(app, config);
     swagger_1.SwaggerModule.setup('api/docs', app, document);

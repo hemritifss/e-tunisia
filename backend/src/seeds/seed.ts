@@ -819,6 +819,37 @@ async function seed() {
         console.log(`✅ ${collections.length} collections seeded`);
     }
 
+    // ─── Seed Sponsors ────────────────────────────────
+    const sponsorsService = app.get(
+        (await import('../sponsors/sponsors.service')).SponsorsService,
+    );
+    await sponsorsService.seed();
+    console.log('✅ Sponsors seeded');
+
+    // ─── Seed Ads ────────────────────────────────
+    const adsService = app.get(
+        (await import('../ads/ads.service')).AdsService,
+    );
+    await adsService.seed();
+    console.log('✅ Ads seeded');
+
+    // ─── Seed Gamification Badges ────────────────────────────────
+    const gamificationService = app.get(
+        (await import('../gamification/gamification.service')).GamificationService,
+    );
+    await gamificationService.seed();
+    console.log('✅ Gamification badges seeded');
+
+    // ─── Seed Notifications for Admin ────────────────────────────────
+    const adminUser2 = await usersRepo.findOne({ where: { email: 'admin@etunisia.tn' } });
+    if (adminUser2) {
+        const notificationsService = app.get(
+            (await import('../notifications/notifications.service')).NotificationsService,
+        );
+        await notificationsService.seedForUser(adminUser2.id);
+        console.log('✅ Notifications seeded for admin');
+    }
+
     await app.close();
 }
 

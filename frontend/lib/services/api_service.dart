@@ -355,4 +355,124 @@ class ApiService {
     );
     return jsonDecode(res.body) as List;
   }
+
+  // ─── SPONSORS ──────────────────────────────────────────
+  Future<List<dynamic>> getSponsors() async {
+    final res = await http.get(
+      Uri.parse('${ApiConfig.baseUrl}${ApiConfig.sponsors}'),
+      headers: await _headers,
+    );
+    return jsonDecode(res.body) as List;
+  }
+
+  Future<void> trackSponsorClick(String sponsorId) async {
+    await http.post(
+      Uri.parse('${ApiConfig.baseUrl}${ApiConfig.sponsors}/$sponsorId/click'),
+      headers: await _headers,
+    );
+  }
+
+  // ─── ADS ──────────────────────────────────────────────
+  Future<List<dynamic>> getAds({String? placement}) async {
+    final url = placement != null
+        ? '${ApiConfig.baseUrl}${ApiConfig.ads}?placement=$placement'
+        : '${ApiConfig.baseUrl}${ApiConfig.ads}';
+    final res = await http.get(Uri.parse(url), headers: await _headers);
+    return jsonDecode(res.body) as List;
+  }
+
+  Future<void> trackAdImpression(String adId) async {
+    await http.post(
+      Uri.parse('${ApiConfig.baseUrl}${ApiConfig.ads}/$adId/impression'),
+      headers: await _headers,
+    );
+  }
+
+  Future<void> trackAdClick(String adId) async {
+    await http.post(
+      Uri.parse('${ApiConfig.baseUrl}${ApiConfig.ads}/$adId/click'),
+      headers: await _headers,
+    );
+  }
+
+  // ─── GAMIFICATION ──────────────────────────────────────
+  Future<List<dynamic>> getAllBadges() async {
+    final res = await http.get(
+      Uri.parse('${ApiConfig.baseUrl}${ApiConfig.gamification}/badges'),
+      headers: await _headers,
+    );
+    return jsonDecode(res.body) as List;
+  }
+
+  Future<List<dynamic>> getMyBadges() async {
+    final res = await http.get(
+      Uri.parse('${ApiConfig.baseUrl}${ApiConfig.gamification}/my-badges'),
+      headers: await _headers,
+    );
+    return jsonDecode(res.body) as List;
+  }
+
+  Future<Map<String, dynamic>> getMyPoints() async {
+    final res = await http.get(
+      Uri.parse('${ApiConfig.baseUrl}${ApiConfig.gamification}/my-points'),
+      headers: await _headers,
+    );
+    return jsonDecode(res.body);
+  }
+
+  Future<Map<String, dynamic>> getMyRank() async {
+    final res = await http.get(
+      Uri.parse('${ApiConfig.baseUrl}${ApiConfig.gamification}/my-rank'),
+      headers: await _headers,
+    );
+    return jsonDecode(res.body);
+  }
+
+  Future<List<dynamic>> getLeaderboard({int limit = 20}) async {
+    final res = await http.get(
+      Uri.parse('${ApiConfig.baseUrl}${ApiConfig.gamification}/leaderboard?limit=$limit'),
+      headers: await _headers,
+    );
+    return jsonDecode(res.body) as List;
+  }
+
+  // ─── NOTIFICATIONS ──────────────────────────────────────
+  Future<List<dynamic>> getNotifications() async {
+    final res = await http.get(
+      Uri.parse('${ApiConfig.baseUrl}${ApiConfig.notifications}'),
+      headers: await _headers,
+    );
+    return jsonDecode(res.body) as List;
+  }
+
+  Future<Map<String, dynamic>> getUnreadCount() async {
+    final res = await http.get(
+      Uri.parse('${ApiConfig.baseUrl}${ApiConfig.notifications}/unread-count'),
+      headers: await _headers,
+    );
+    return jsonDecode(res.body);
+  }
+
+  Future<void> markNotificationRead(String id) async {
+    await http.patch(
+      Uri.parse('${ApiConfig.baseUrl}${ApiConfig.notifications}/$id/read'),
+      headers: await _headers,
+    );
+  }
+
+  Future<void> markAllNotificationsRead() async {
+    await http.patch(
+      Uri.parse('${ApiConfig.baseUrl}${ApiConfig.notifications}/read-all'),
+      headers: await _headers,
+    );
+  }
+
+  // ─── CONTACT ──────────────────────────────────────────
+  Future<void> submitContactForm(Map<String, dynamic> data) async {
+    await http.post(
+      Uri.parse('${ApiConfig.baseUrl}${ApiConfig.contact}'),
+      headers: await _headers,
+      body: jsonEncode(data),
+    );
+  }
 }
