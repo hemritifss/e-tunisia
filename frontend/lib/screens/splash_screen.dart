@@ -79,7 +79,7 @@ class _SplashScreenState extends State<SplashScreen> {
                     width: 250,
                     height: 150,
                     child: Image.network(
-                      'https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Flag_of_Tunisia.svg/800px-Flag_of_Tunisia.svg.png',
+                      'https://placehold.co/400x200/png?text=LOGO',
                       fit: BoxFit.contain,
                       errorBuilder: (context, error, stackTrace) => Column(
                         mainAxisAlignment: MainAxisAlignment.center,

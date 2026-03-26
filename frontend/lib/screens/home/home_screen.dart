@@ -13,13 +13,12 @@ import '../../providers/sponsors_provider.dart';
 import '../../providers/ads_provider.dart';
 import '../../models/place.dart';
 import '../../models/category.dart';
+import '../../models/sponsor.dart';
 import '../../widgets/place_card.dart';
 import '../../widgets/category_chip.dart';
 import '../../widgets/shimmer_loading.dart';
 import '../../widgets/ad_banner_widget.dart';
 import '../../widgets/sponsor_card.dart';
-import '../../widgets/category_chip.dart';
-import '../../widgets/shimmer_loading.dart';
 import '../detail/place_detail_screen.dart';
 import '../search/search_screen.dart';
 import '../events/events_screen.dart';
@@ -89,7 +88,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   Row(
                                     children: [
                                       Image.network(
-                                        'https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Flag_of_Tunisia.svg/800px-Flag_of_Tunisia.svg.png',
+                                        'https://png.pngtree.com/png-vector/20221201/ourmid/pngtree-tunisia-flag-png-image_6489913.png',
                                         height: 28,
                                         fit: BoxFit.contain,
                                         errorBuilder: (context, error, stackTrace) => const Icon(Icons.explore_rounded, color: AppColors.primary),
