@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>e-Tunisia - Discover Tunisia Together</title>
+  <link rel="icon" type="image/png" href="/icon.png" />
+  <meta name="description" content="A community-driven platform to discover, share, and explore the beauty of Tunisia" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Kufi+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <!-- Icons rendered as inline SVGs via src/icons.ts -->
+  <link rel="stylesheet" href="/src/styles/tokens.css" />
+  <link rel="stylesheet" href="/src/styles/base.css" />
+  <link rel="stylesheet" href="/src/styles/components.css" />
+  <link rel="stylesheet" href="/src/styles/pages.css" />
+  <link rel="stylesheet" href="/src/styles/animations.css" />
+</head>
+<body>
+  <div id="app">
+    <nav id="main-nav" class="nav">
+      <div class="nav-inner">
+        <a href="#/" class="nav-logo">
+          <img src="/icon.png" alt="e-Tunisia" class="logo-mark-img" />
+          <span class="logo-text">e-Tunisia</span>
+        </a>
+        <div class="nav-links" id="nav-links">
+          <a href="#/" class="nav-link active" data-page="feed">Feed</a>
+          <a href="#/explore" class="nav-link" data-page="explore">Explore</a>
+          <a href="#/events" class="nav-link" data-page="events">Events</a>
+          <a href="#/tips" class="nav-link" data-page="tips">Tips</a>
+          <a href="#/map" class="nav-link" data-page="map">Map</a>
+        </div>
+        <div class="nav-actions">
+          <button class="btn-icon" id="search-toggle" aria-label="Search">
+            <i class="lucide-search"></i>
+          </button>
+          <button class="btn-icon" id="notif-toggle" aria-label="Notifications">
+            <i class="lucide-bell"></i>
+            <span class="notif-badge" id="notif-badge">3</span>
+          </button>
+          <button class="btn-icon" id="theme-toggle" aria-label="Toggle theme">
+            <i class="lucide-moon" id="theme-icon"></i>
+          </button>
+          <div class="avatar-menu" id="avatar-menu">
+            <button class="avatar-btn" id="avatar-btn">
+              <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=Tunisia" alt="User" class="avatar-img" />
+            </button>
+            <div class="dropdown" id="user-dropdown">
+              <div class="dropdown-header">
+                <strong>Ahmed Ben Ali</strong>
+                <span class="text-muted">Level 5 Explorer</span>
+              </div>
+              <div class="dropdown-divider"></div>
+              <a href="#/profile" class="dropdown-item"><i class="lucide-user"></i> Profile</a>
+              <a href="#/favorites" class="dropdown-item"><i class="lucide-heart"></i> Saved Places</a>
+              <a href="#/badges" class="dropdown-item"><i class="lucide-award"></i> Badges</a>
+              <a href="#/leaderboard" class="dropdown-item"><i class="lucide-trophy"></i> Leaderboard</a>
+              <div class="dropdown-divider"></div>
+              <a href="#/settings" class="dropdown-item"><i class="lucide-settings"></i> Settings</a>
+              <button class="dropdown-item text-danger" id="logout-btn"><i class="lucide-log-out"></i> Log out</button>
+            </div>
+          </div>
+        </div>
+        <button class="nav-hamburger" id="hamburger" aria-label="Menu">
+          <i class="lucide-menu"></i>
+        </button>
+      </div>
+    </nav>
+
+    <!-- Mobile menu panel (side drawer) -->
+    <div class="mobile-menu-overlay" id="mobile-menu-overlay"></div>
+    <div class="mobile-menu-panel" id="mobile-menu-panel">
+      <div class="mobile-menu-header">
+        <div class="mobile-menu-user">
+          <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=Tunisia" alt="User" />
+          <div class="mobile-menu-user-info">
+            <strong>Ahmed Ben Ali</strong>
+            <span>Level 5 Explorer</span>
+          </div>
+        </div>
+        <button class="btn-icon mobile-menu-close" id="mobile-menu-close" aria-label="Close menu">
+          <i class="lucide-x"></i>
+        </button>
+      </div>
+      <div class="mobile-menu-section">
+        <div class="mobile-menu-section-label">Navigation</div>
+        <a href="#/" class="mobile-menu-item" data-page="feed"><i class="lucide-home"></i> Feed</a>
+        <a href="#/explore" class="mobile-menu-item" data-page="explore"><i class="lucide-compass"></i> Explore</a>
+        <a href="#/events" class="mobile-menu-item" data-page="events"><i class="lucide-calendar"></i> Events</a>
+        <a href="#/tips" class="mobile-menu-item" data-page="tips"><i class="lucide-lightbulb"></i> Tips</a>
+        <a href="#/map" class="mobile-menu-item" data-page="map"><i class="lucide-map"></i> Map</a>
+      </div>
+      <div class="mobile-menu-section">
+        <button class="mobile-menu-item" id="mobile-search-trigger">
+          <i class="lucide-search"></i> Search
+        </button>
+        <button class="mobile-menu-item" id="mobile-notif-trigger">
+          <i class="lucide-bell"></i> Notifications
+          <span class="notif-badge" style="position:static;margin-left:auto;">3</span>
+        </button>
+        <button class="mobile-menu-item" id="mobile-theme-trigger">
+          <i class="lucide-moon" id="mobile-theme-icon"></i> Toggle Theme
+        </button>
+      </div>
+      <div class="mobile-menu-section">
+        <div class="mobile-menu-section-label">Account</div>
+        <a href="#/profile" class="mobile-menu-item"><i class="lucide-user"></i> Profile</a>
+        <a href="#/favorites" class="mobile-menu-item"><i class="lucide-heart"></i> Saved Places</a>
+        <a href="#/badges" class="mobile-menu-item"><i class="lucide-award"></i> Badges</a>
+        <a href="#/leaderboard" class="mobile-menu-item"><i class="lucide-trophy"></i> Leaderboard</a>
+      </div>
+      <div class="mobile-menu-section mobile-drawer-sidebar">
+        <div class="mobile-menu-section-label">Community</div>
+        <div class="mobile-drawer-about">
+          <p class="text-sm text-secondary">A community-driven platform for discovering, sharing, and celebrating the beauty of Tunisia.</p>
+          <div class="mobile-drawer-stats">
+            <span><i class="lucide-users"></i> 12.4k members</span>
+            <span><span class="online-dot"></span>342 online</span>
+          </div>
+        </div>
+        <div class="mobile-drawer-subsection">
+          <h4 class="mobile-drawer-subtitle">Popular Tags</h4>
+          <div class="tag-list">
+            <span class="tag">Beaches</span>
+            <span class="tag">Historical</span>
+            <span class="tag">Street Food</span>
+            <span class="tag">Desert</span>
+            <span class="tag">Photography</span>
+          </div>
+        </div>
+        <div class="mobile-drawer-subsection">
+          <h4 class="mobile-drawer-subtitle">Guidelines</h4>
+          <ol class="mobile-drawer-guidelines">
+            <li>Be respectful and welcoming</li>
+            <li>Share authentic experiences</li>
+            <li>Credit original photographers</li>
+            <li>No spam or self-promotion</li>
+          </ol>
+        </div>
+      </div>
+      <div class="mobile-menu-section">
+        <a href="#/settings" class="mobile-menu-item"><i class="lucide-settings"></i> Settings</a>
+      </div>
+    </div>
+
+    <!-- Notifications panel -->
+    <div class="notif-panel-overlay" id="notif-panel-overlay"></div>
+    <div class="notif-panel" id="notif-panel">
+      <div class="notif-panel-header">
+        <h3>Notifications</h3>
+        <button class="btn btn-ghost btn-sm" id="notif-mark-read">Mark all read</button>
+      </div>
+      <div class="notif-panel-list">
+        <div class="notif-item unread">
+          <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=yasmine" alt="Yasmine" class="notif-avatar" />
+          <div class="notif-body">
+            <p><strong>Yasmine Khelil</strong> upvoted your post "Best sunset spots in Sidi Bou Said"</p>
+            <span class="notif-time">15 min ago</span>
+          </div>
+        </div>
+        <div class="notif-item unread">
+          <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=marco" alt="Marco" class="notif-avatar" />
+          <div class="notif-body">
+            <p><strong>Marco Rossi</strong> commented on your post: "Thanks for the tips! We're heading there next week."</p>
+            <span class="notif-time">1h ago</span>
+          </div>
+        </div>
+        <div class="notif-item unread">
+          <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=sarah" alt="Sarah" class="notif-avatar" />
+          <div class="notif-body">
+            <p><strong>Sarah Chen</strong> started following you</p>
+            <span class="notif-time">3h ago</span>
+          </div>
+        </div>
+        <div class="notif-item">
+          <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=david" alt="David" class="notif-avatar" />
+          <div class="notif-body">
+            <p><strong>David Park</strong> replied to your comment in "Carthage ruins at sunrise"</p>
+            <span class="notif-time">5h ago</span>
+          </div>
+        </div>
+        <div class="notif-item">
+          <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=amina" alt="Amina" class="notif-avatar" />
+          <div class="notif-body">
+            <p>You earned the <strong>Explorer</strong> badge! Visit 5 different governorates.</p>
+            <span class="notif-time">1d ago</span>
+          </div>
+        </div>
+        <div class="notif-item">
+          <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=emma" alt="Emma" class="notif-avatar" />
+          <div class="notif-body">
+            <p><strong>Emma Laurent</strong> saved your post "Hidden beaches of Tabarka"</p>
+            <span class="notif-time">2d ago</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Post composer modal (Facebook-style) -->
+    <div class="post-modal-overlay" id="post-modal-overlay"></div>
+    <div class="post-modal" id="post-modal">
+      <div class="post-modal-header">
+        <h3>Create Post</h3>
+        <button class="post-modal-close-btn" id="post-modal-cancel" aria-label="Close">
+          <i class="lucide-x"></i>
+        </button>
+      </div>
+      <div class="post-modal-body">
+        <div class="post-modal-user">
+          <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=Tunisia" alt="You" />
+          <div>
+            <div class="post-modal-user-name">Ahmed Ben Ali</div>
+            <div class="text-xs text-muted">Level 5 Explorer</div>
+          </div>
+        </div>
+
+        <input type="text" class="post-modal-input" id="post-modal-title" placeholder="Give your post a title..." maxlength="200" />
+        <textarea class="post-modal-textarea" id="post-modal-body-input" placeholder="What's on your mind about Tunisia? Share an experience, tip, or question..."></textarea>
+
+        <!-- Tag / Category selector -->
+        <div class="post-modal-section">
+          <label class="post-modal-section-label">Category</label>
+          <div class="post-modal-tags" id="post-modal-categories">
+            <button class="post-modal-tag" data-cat-id="culture" data-cat-name="Culture" data-cat-class="cat-culture"><i class="lucide-palette"></i> Culture</button>
+            <button class="post-modal-tag" data-cat-id="adventure" data-cat-name="Adventure" data-cat-class="cat-adventure"><i class="lucide-mountain"></i> Adventure</button>
+            <button class="post-modal-tag" data-cat-id="food" data-cat-name="Food & Drink" data-cat-class="cat-food"><i class="lucide-utensils"></i> Food & Drink</button>
+            <button class="post-modal-tag" data-cat-id="historical" data-cat-name="Historical" data-cat-class="cat-historical"><i class="lucide-landmark"></i> Historical</button>
+            <button class="post-modal-tag" data-cat-id="beaches" data-cat-name="Beaches" data-cat-class="cat-beaches"><i class="lucide-waves"></i> Beaches</button>
+            <button class="post-modal-tag" data-cat-id="nature" data-cat-name="Nature" data-cat-class="cat-nature"><i class="lucide-leaf"></i> Nature</button>
+          </div>
+        </div>
+
+        <!-- Location picker with autocomplete -->
+        <div class="post-modal-section">
+          <label class="post-modal-section-label">Location</label>
+          <div class="post-modal-location-wrapper">
+            <div class="post-modal-location-input-wrap">
+              <i class="lucide-map-pin"></i>
+              <input type="text" class="post-modal-location-input" id="post-modal-location-input" placeholder="Search Tunisian locations..." autocomplete="off" />
+              <button class="post-modal-location-clear" id="post-modal-location-clear" style="display:none" aria-label="Clear location">
+                <i class="lucide-x"></i>
+              </button>
+            </div>
+            <div class="post-modal-location-dropdown" id="post-modal-location-dropdown"></div>
+          </div>
+        </div>
+
+        <!-- Photo upload area -->
+        <div class="post-modal-section">
+          <div class="post-modal-photo-area" id="post-modal-photo-area">
+            <input type="file" id="post-modal-file-input" accept="image/*" multiple style="display:none" />
+            <button class="post-modal-photo-btn" id="post-modal-photo-btn">
+              <i class="lucide-camera"></i>
+              <span>Add Photos</span>
+            </button>
+            <div class="post-modal-photo-preview" id="post-modal-photo-preview"></div>
+          </div>
+        </div>
+
+        <!-- Tag members -->
+        <div class="post-modal-section">
+          <div class="post-modal-mention-wrapper">
+            <button class="post-modal-mention-btn" id="post-modal-mention-btn">
+              <i class="lucide-at-sign"></i>
+              <span>Tag Members</span>
+            </button>
+            <div class="post-modal-mention-dropdown" id="post-modal-mention-dropdown">
+              <div class="post-modal-mention-item" data-user="Sarah Chen">
+                <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=sarah" alt="Sarah Chen" />
+                <span>Sarah Chen</span>
+              </div>
+              <div class="post-modal-mention-item" data-user="Marco Rossi">
+                <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=marco" alt="Marco Rossi" />
+                <span>Marco Rossi</span>
+              </div>
+              <div class="post-modal-mention-item" data-user="Yasmine Khelil">
+                <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=yasmine" alt="Yasmine Khelil" />
+                <span>Yasmine Khelil</span>
+              </div>
+              <div class="post-modal-mention-item" data-user="David Park">
+                <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=david" alt="David Park" />
+                <span>David Park</span>
+              </div>
+              <div class="post-modal-mention-item" data-user="Emma Laurent">
+                <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=emma" alt="Emma Laurent" />
+                <span>Emma Laurent</span>
+              </div>
+              <div class="post-modal-mention-item" data-user="Amina Trabelsi">
+                <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=amina" alt="Amina Trabelsi" />
+                <span>Amina Trabelsi</span>
+              </div>
+            </div>
+            <div class="post-modal-tagged-users" id="post-modal-tagged-users"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Submit button full-width at bottom -->
+      <div class="post-modal-footer">
+        <button class="post-modal-submit-btn" id="post-modal-submit" disabled>
+          <i class="lucide-send"></i>
+          Post
+        </button>
+      </div>
+    </div>
+
+    <!-- Success toast -->
+    <div class="post-success-toast" id="post-success-toast">
+      <i class="lucide-check-circle"></i>
+      <span>Your post has been published!</span>
+    </div>
+
+    <div class="search-overlay" id="search-overlay">
+      <div class="search-bar-wrapper">
+        <i class="lucide-search search-bar-icon"></i>
+        <input type="text" class="search-input" id="search-input" placeholder="Search places, events, tips..." autocomplete="off" />
+        <button class="btn-icon" id="search-close"><i class="lucide-x"></i></button>
+      </div>
+      <div class="search-results" id="search-results">
+        <div class="search-trending">
+          <h4>Trending</h4>
+          <div class="tag-list">
+            <span class="tag">Sidi Bou Said</span>
+            <span class="tag">Carthage</span>
+            <span class="tag">Djerba</span>
+            <span class="tag">Sahara</span>
+            <span class="tag">Sousse</span>
+            <span class="tag">Medina Tunis</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <main id="page-content" class="main-content"></main>
+
+    <nav class="mobile-nav" id="mobile-nav">
+      <a href="#/" class="mobile-nav-item active" data-page="feed">
+        <i class="lucide-home"></i>
+        <span>Feed</span>
+      </a>
+      <a href="#/explore" class="mobile-nav-item" data-page="explore">
+        <i class="lucide-compass"></i>
+        <span>Explore</span>
+      </a>
+      <a href="#/events" class="mobile-nav-item" data-page="events">
+        <i class="lucide-calendar"></i>
+        <span>Events</span>
+      </a>
+      <a href="#/favorites" class="mobile-nav-item" data-page="favorites">
+        <i class="lucide-heart"></i>
+        <span>Saved</span>
+      </a>
+      <a href="#/profile" class="mobile-nav-item" data-page="profile">
+        <i class="lucide-user"></i>
+        <span>Profile</span>
+      </a>
+    </nav>
+  </div>
+
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>
