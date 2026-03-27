@@ -1,0 +1,19 @@
+{
+  "name": "e-tunisia-web",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "leaflet": "^1.9.4",
+    "typescript": "^6.0.2",
+    "vite": "^8.0.3"
+  },
+  "devDependencies": {
+    "@types/leaflet": "^1.9.21"
+  }
+}

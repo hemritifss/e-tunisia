@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <!-- Chechia (Tunisian fez) -->
+  <defs>
+    <linearGradient id="fezGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#D4342A"/>
+      <stop offset="100%" stop-color="#B22318"/>
+    </linearGradient>
+  </defs>
+  <!-- Fez body -->
+  <path d="M20 75 Q20 40 30 30 Q40 20 50 18 Q60 20 70 30 Q80 40 80 75 Z" fill="url(#fezGrad)" stroke="#8B1A12" stroke-width="1"/>
+  <!-- Fez top flat -->
+  <ellipse cx="50" cy="22" rx="18" ry="6" fill="#D4342A" stroke="#8B1A12" stroke-width="0.5"/>
+  <!-- Fez brim -->
+  <path d="M18 75 Q18 70 20 68 L80 68 Q82 70 82 75 Q82 80 50 82 Q18 80 18 75 Z" fill="#D4342A" stroke="#8B1A12" stroke-width="1"/>
+  <!-- Gold band at brim -->
+  <path d="M20 72 Q50 76 80 72" fill="none" stroke="#C4943D" stroke-width="2" opacity="0.6"/>
+  <!-- Tunisian star and crescent -->
+  <g transform="translate(50, 52)">
+    <!-- Crescent -->
+    <circle cx="-2" cy="0" r="12" fill="white"/>
+    <circle cx="2" cy="-1" r="10" fill="url(#fezGrad)"/>
+    <!-- Star -->
+    <polygon points="10,0 11.8,5.5 17.6,5.5 12.9,9 14.7,14.5 10,11 5.3,14.5 7.1,9 2.4,5.5 8.2,5.5" fill="white" transform="translate(-10,-7) scale(0.7)"/>
+  </g>
+  <!-- Tassel -->
+  <circle cx="50" cy="16" r="2.5" fill="#1a1a1a"/>
+  <path d="M50 16 Q65 20 68 55 Q69 65 67 75" fill="none" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round"/>
+  <circle cx="67" cy="76" r="3" fill="#1a1a1a"/>
+  <path d="M64 76 Q67 82 70 76" fill="none" stroke="#1a1a1a" stroke-width="1.5"/>
+</svg>
