@@ -34,6 +34,23 @@ function renderEventCard(ev: any): string {
   `;
 }
 
+export function renderEventSkeleton(): string {
+  return `
+    <div class="event-card skeleton-card" style="display: flex; gap: var(--space-4); align-items: center; padding: var(--space-4);">
+      <div class="skeleton" style="width: 60px; height: 60px; border-radius: var(--radius-md); flex-shrink: 0;"></div>
+      <div class="event-info" style="flex: 1;">
+        <div class="skeleton skeleton-text" style="width: 60%; height: 20px; margin-bottom: var(--space-2);"></div>
+        <div class="skeleton skeleton-text" style="width: 40%; margin-bottom: var(--space-2);"></div>
+        <div style="display: flex; gap: var(--space-3);">
+          <div class="skeleton" style="width: 80px; height: 16px; border-radius: var(--radius-full);"></div>
+          <div class="skeleton" style="width: 100px; height: 16px; border-radius: var(--radius-full);"></div>
+        </div>
+      </div>
+      <div class="skeleton" style="width: 80px; height: 32px; border-radius: var(--radius-full); flex-shrink: 0;"></div>
+    </div>
+  `;
+}
+
 export function renderEventsPage(): string {
   return `
     <div class="events-page page-enter">
@@ -42,10 +59,7 @@ export function renderEventsPage(): string {
         <p>Festivals, cultural tours, food tastings, and more across Tunisia.</p>
       </div>
       <div class="events-list" id="events-list">
-        <div class="events-loading">
-          <div class="spinner"></div>
-          <p>Loading events...</p>
-        </div>
+        ${[1, 2, 3, 4].map(() => renderEventSkeleton()).join('')}
       </div>
     </div>
   `;

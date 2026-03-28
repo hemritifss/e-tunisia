@@ -31,6 +31,28 @@ function renderTipCard(tip: any): string {
   `;
 }
 
+export function renderTipSkeleton(): string {
+  return `
+    <div class="tip-card skeleton-card">
+      <div class="tip-header" style="display: flex; gap: var(--space-2); margin-bottom: var(--space-3);">
+        <div class="skeleton" style="width: 40px; height: 40px; border-radius: var(--radius-full);"></div>
+        <div>
+          <div class="skeleton skeleton-text" style="width: 100px; height: 16px; margin-bottom: 4px;"></div>
+          <div class="skeleton skeleton-text" style="width: 60px;"></div>
+        </div>
+      </div>
+      <div class="skeleton skeleton-text" style="width: 70%; height: 20px; margin-bottom: var(--space-3);"></div>
+      <div class="skeleton skeleton-text w-100"></div>
+      <div class="skeleton skeleton-text w-100"></div>
+      <div class="skeleton skeleton-text w-75" style="margin-bottom: var(--space-4);"></div>
+      <div class="tip-footer" style="padding-top: var(--space-3); border-top: 1px solid var(--border-light); display: flex; justify-content: space-between;">
+        <div class="skeleton" style="width: 50px; height: 24px; border-radius: var(--radius-full);"></div>
+        <div class="skeleton" style="width: 80px; height: 24px; border-radius: var(--radius-full);"></div>
+      </div>
+    </div>
+  `;
+}
+
 export function renderTipsPage(): string {
   return `
     <div class="tips-page page-enter">
@@ -47,10 +69,7 @@ export function renderTipsPage(): string {
         <button class="tag" data-cat="Food">Food</button>
       </div>
       <div class="tips-grid" id="tips-grid">
-        <div class="tips-loading">
-          <div class="spinner"></div>
-          <p>Loading tips...</p>
-        </div>
+        ${[1, 2, 3, 4, 5, 6].map(() => renderTipSkeleton()).join('')}
       </div>
     </div>
   `;

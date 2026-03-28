@@ -11,11 +11,17 @@ async function bootstrap() {
     // Global prefix
     app.setGlobalPrefix('api/v1');
 
-    // CORS
+    // Robust CORS
     app.enableCors({
-        origin: '*',
-        methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+        origin: (origin, callback) => {
+            console.log('🏁 Incoming CORS request from:', origin); 
+            callback(null, true);
+        },
+        methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
         credentials: true,
+        allowedHeaders: 'Content-Type,Accept,Authorization,X-Requested-With,X-Pinggy-No-Landing-Page',
+        preflightContinue: false,
+        optionsSuccessStatus: 204,
     });
 
     // Validation

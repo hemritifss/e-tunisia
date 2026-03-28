@@ -39,6 +39,25 @@ function renderPlaceCard(p: any): string {
   `;
 }
 
+export function renderPlaceSkeleton(): string {
+  return `
+    <div class="place-card skeleton-card">
+      <div class="skeleton skeleton-image" style="height: 200px; width: 100%; border-radius: 0;"></div>
+      <div class="place-card-body" style="padding: var(--space-4);">
+        <div class="skeleton skeleton-text" style="width: 60px; height: 16px; margin-bottom: var(--space-2);"></div>
+        <div class="skeleton skeleton-text" style="width: 80%; height: 20px; margin-bottom: var(--space-2);"></div>
+        <div class="skeleton skeleton-text" style="width: 50%; margin-bottom: var(--space-3);"></div>
+        <div class="skeleton skeleton-text" style="width: 100%;"></div>
+        <div class="skeleton skeleton-text w-75" style="margin-bottom: var(--space-4);"></div>
+        <div class="place-card-footer" style="display: flex; justify-content: space-between; align-items: center;">
+          <div class="skeleton" style="width: 60px; height: 20px; border-radius: var(--radius-full);"></div>
+          <div class="skeleton" style="width: 32px; height: 32px; border-radius: var(--radius-full);"></div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
 export function renderExplorePage(): string {
   return `
     <div class="explore-page page-enter">
@@ -55,10 +74,7 @@ export function renderExplorePage(): string {
       </div>
 
       <div class="explore-grid stagger-children" id="explore-grid">
-        <div class="explore-loading">
-          <div class="spinner"></div>
-          <p>Loading places...</p>
-        </div>
+        ${[1, 2, 3, 4, 5, 6].map(() => renderPlaceSkeleton()).join('')}
       </div>
     </div>
   `;

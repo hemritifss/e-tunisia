@@ -66,6 +66,36 @@ function renderPostCard(post: Post): string {
   `;
 }
 
+export function renderPostSkeleton(): string {
+  return `
+    <article class="post-card skeleton-card">
+      <div class="post-card-inner">
+        <div class="post-votes">
+          <div class="skeleton" style="width: 24px; height: 24px; border-radius: 4px; margin-bottom: var(--space-2);"></div>
+          <div class="skeleton" style="width: 16px; height: 16px; border-radius: 4px; margin-bottom: var(--space-2);"></div>
+          <div class="skeleton" style="width: 24px; height: 24px; border-radius: 4px;"></div>
+        </div>
+        <div class="post-content">
+          <div class="post-meta" style="display: flex; gap: var(--space-2); align-items: center;">
+            <div class="skeleton" style="width: 60px; height: 20px; border-radius: var(--radius-full); margin: 0;"></div>
+            <div class="skeleton skeleton-text" style="width: 80px; margin: 0; height: 12px;"></div>
+            <div class="skeleton skeleton-text" style="width: 40px; margin: 0; height: 12px;"></div>
+          </div>
+          <div class="skeleton skeleton-text" style="width: 70%; height: 24px; margin-bottom: var(--space-3);"></div>
+          <div class="skeleton skeleton-image" style="height: 250px; border-radius: var(--radius-md); margin-bottom: var(--space-3);"></div>
+          <div class="skeleton skeleton-text w-75"></div>
+          <div class="skeleton skeleton-text w-50" style="margin-bottom: var(--space-3);"></div>
+          <div class="post-actions" style="gap: var(--space-3);">
+            <div class="skeleton" style="width: 90px; height: 28px; border-radius: var(--radius-full);"></div>
+            <div class="skeleton" style="width: 70px; height: 28px; border-radius: var(--radius-full);"></div>
+            <div class="skeleton" style="width: 70px; height: 28px; border-radius: var(--radius-full);"></div>
+          </div>
+        </div>
+      </div>
+    </article>
+  `;
+}
+
 function renderMobileCommunityBar(): string {
   return `
     <div class="mobile-community-bar" id="mobile-community-bar">
@@ -252,8 +282,8 @@ export function renderFeedPage(): string {
 
         ${renderMobileCommunityBar()}
 
-        <div class="feed-posts stagger-children">
-          ${posts.map(p => renderPostCard(p)).join('')}
+        <div class="feed-posts stagger-children" id="feed-posts-container">
+          ${[1, 2, 3].map(() => renderPostSkeleton()).join('')}
         </div>
       </div>
       ${renderSidebar()}
@@ -295,7 +325,16 @@ function bindVoteButtons() {
 }
 
 export function initFeedPage() {
-  bindVoteButtons();
+  // Simulate backend loading for posts
+  setTimeout(() => {
+    const postsContainer = document.getElementById('feed-posts-container');
+    if (postsContainer) {
+      postsContainer.innerHTML = posts.map(p => renderPostCard(p)).join('');
+      // Re-bind icons and events after dynamic content is added
+      import('../icons').then(m => m.replaceIcons());
+      bindVoteButtons();
+    }
+  }, 1500);
 
   // Sort buttons - functional sorting
   document.querySelectorAll('.sort-btn').forEach(btn => {
@@ -304,30 +343,35 @@ export function initFeedPage() {
       btn.classList.add('active');
 
       const sortType = (btn as HTMLElement).dataset.sort;
-      const postsContainer = document.querySelector('.feed-posts');
+      const postsContainer = document.getElementById('feed-posts-container');
       if (!postsContainer) return;
 
-      let sorted: Post[];
-      switch (sortType) {
-        case 'hot':
-          sorted = [...posts].sort((a, b) => (b.votes + b.commentCount) - (a.votes + a.commentCount));
-          break;
-        case 'new':
-          sorted = [...posts].sort((a, b) => parseTimeAgo(a.timeAgo) - parseTimeAgo(b.timeAgo));
-          break;
-        case 'top':
-          sorted = [...posts].sort((a, b) => b.votes - a.votes);
-          break;
-        case 'nearby':
-          sorted = [...posts].filter(p => p.location).sort(() => Math.random() - 0.5);
-          break;
-        default:
-          sorted = posts;
-      }
+      // Show skeleton loader while "sorting/loading"
+      postsContainer.innerHTML = [1, 2, 3].map(() => renderPostSkeleton()).join('');
 
-      postsContainer.innerHTML = sorted.map(p => renderPostCard(p)).join('');
-      replaceIcons();
-      bindVoteButtons();
+      setTimeout(() => {
+        let sorted: Post[];
+        switch (sortType) {
+          case 'hot':
+            sorted = [...posts].sort((a, b) => (b.votes + b.commentCount) - (a.votes + a.commentCount));
+            break;
+          case 'new':
+            sorted = [...posts].sort((a, b) => parseTimeAgo(a.timeAgo) - parseTimeAgo(b.timeAgo));
+            break;
+          case 'top':
+            sorted = [...posts].sort((a, b) => b.votes - a.votes);
+            break;
+          case 'nearby':
+            sorted = [...posts].filter(p => p.location).sort(() => Math.random() - 0.5);
+            break;
+          default:
+            sorted = posts;
+        }
+
+        postsContainer.innerHTML = sorted.map(p => renderPostCard(p)).join('');
+        import('../icons').then(m => m.replaceIcons());
+        bindVoteButtons();
+      }, 800);
     });
   });
 

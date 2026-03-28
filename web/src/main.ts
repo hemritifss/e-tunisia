@@ -648,6 +648,7 @@ function init() {
   initScrollNav();
   initHamburger();
   initPostModal();
+  initImageHandling();
 
   // Theme toggle
   document.getElementById('theme-toggle')?.addEventListener('click', toggleTheme);
@@ -664,6 +665,23 @@ function init() {
   // Router
   window.addEventListener('hashchange', navigate);
   navigate();
+}
+
+// ---- Global Image Fallback & Load Handler ----
+function initImageHandling() {
+  // Catch 404 images and replace them with a nice SVG gradient
+  window.addEventListener('error', (e) => {
+    const target = e.target as HTMLElement;
+    if (target && target.tagName === 'IMG') {
+      const img = target as HTMLImageElement;
+      if (!img.dataset.fallbackApplied) {
+        img.dataset.fallbackApplied = 'true';
+        // Base64 encoded SVG placeholder with a soft gradient
+        img.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="%23e5e0d8"/><stop offset="100%" stop-color="%23d8d3cb"/></linearGradient></defs><rect width="100%" height="100%" fill="url(%23g)"/><text x="50%" y="50%" font-family="system-ui, sans-serif" font-size="24" fill="%23a09b8c" text-anchor="middle" dominant-baseline="middle">Image unavailable</text></svg>';
+        img.style.objectFit = 'cover';
+      }
+    }
+  }, true); // Use capture phase to catch resource loading errors
 }
 
 // Boot
