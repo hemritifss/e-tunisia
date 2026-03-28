@@ -90,10 +90,10 @@ export function renderHeroPage(): string {
             </div>
           </div>
           <div class="hero-image-track hero-track-up">
-            <div class="hero-img-card" style="background-image: url('https://images.unsplash.com/photo-1629807409243-984bb64d8518?auto=format&fit=crop&q=80&w=600')">
+            <div class="hero-img-card" style="background-image: url('https://scontent.fnbe1-2.fna.fbcdn.net/v/t39.30808-6/485770048_1057981936376173_1396796673173936303_n.jpg?stp=dst-jpg_s720x720_tt6&_nc_cat=103&ccb=1-7&_nc_sid=7b2446&_nc_ohc=U-gLIvnbnBgQ7kNvwEKm8eM&_nc_oc=Adqmstw90SDolWy_qY3V_5HmEd5cA33ttHvo2tHq3MdIlawoTBoxRSzuqzwoj_sAXVuouOD7T38Q_vJ0J4cBz7fb&_nc_zt=23&_nc_ht=scontent.fnbe1-2.fna&_nc_gid=K75BksE1NrgnQsIYrJWQBA&_nc_ss=7a32e&oh=00_AfzCKuJ-jgT_7sFLSyJYltLVKRdLotWdyPk6BLsqpHRZhw&oe=69CDE48A')">
               <div class="hero-img-caption"><i class="lucide-map-pin"></i> El Jem Amphitheatre</div>
             </div>
-            <div class="hero-img-card" style="background-image: url('https://images.unsplash.com/photo-1616086776162-811c7fae98b7?auto=format&fit=crop&q=80&w=600')">
+            <div class="hero-img-card" style="background-image: url('https://www.themediterraneantraveller.com/wp-content/uploads/2017/07/IMG_1435-800x600.jpg')">
               <div class="hero-img-caption"><i class="lucide-map-pin"></i> Carthage Ruins</div>
             </div>
           </div>
@@ -190,7 +190,7 @@ export function renderHeroPage(): string {
             </div>
 
             <div class="bento-card has-bg-image group">
-               <img class="bento-bg" src="https://images.unsplash.com/photo-1555353540-64fd1b620924?auto=format&fit=crop&w=600&q=80" alt="Gamification" />
+               <img class="bento-bg" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT1gv2DnWXhhQPF-70vlSNBHA_2G8zbNVm0VA&s" alt="Gamification" />
                <div class="bento-gradient"></div>
                <div class="bento-content">
                  <div class="icon-blob blob-primary"><i class="lucide-award" style="color: var(--primary);"></i></div>
@@ -225,7 +225,7 @@ export function renderHeroPage(): string {
           <div class="rules-grid stagger-children">
             <div class="rule-card">
               <div class="rule-img-banner">
-                <img src="https://images.unsplash.com/photo-1473634047649-6f5dfa7fc8ed?auto=format&fit=crop&w=600&q=80" alt="Respect" />
+                <img src="https://legacycultures.com/wp-content/uploads/2020/09/Examples-of-Showing-Respect-to-Others.jpg" alt="Respect" />
               </div>
               <div class="rule-body">
                 <div class="rule-icon float-animation" style="animation-delay: 0s"><i class="lucide-heart"></i></div>
@@ -247,7 +247,7 @@ export function renderHeroPage(): string {
 
             <div class="rule-card">
               <div class="rule-img-banner">
-                <img src="https://images.unsplash.com/photo-1556761175-5973e21e6ce4?auto=format&fit=crop&w=600&q=80" alt="No Spam" />
+                <img src="https://static.vecteezy.com/system/resources/previews/027/197/758/non_2x/illustration-of-don-t-spam-messages-icon-in-dark-color-and-white-background-vector.jpg" alt="No Spam" />
               </div>
               <div class="rule-body">
                 <div class="rule-icon float-animation" style="animation-delay: 2s"><i class="lucide-shield-check"></i></div>
