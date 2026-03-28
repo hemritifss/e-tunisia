@@ -42,6 +42,10 @@ export function renderHeroPage(): string {
           <p class="hero-subtitle">
             Experience breathtaking landscapes from the golden Sahara to the Mediterranean breeze of Sidi Bou Said. Curate itineraries, earn badges, and share your journey with passionate explorers.
           </p>
+          <div class="hero-rules-inline">
+             <span class="rule-badge"><i class="lucide-shield-check"></i> No Spam</span>
+             <span class="rule-badge"><i class="lucide-heart"></i> Be Respectful</span>
+          </div>
           
           <div class="hero-actions">
             <a href="#/register" class="btn btn-primary btn-lg glow-btn">
@@ -125,7 +129,7 @@ export function renderHeroPage(): string {
         <div class="hero-container">
           <div class="hero-about-grid">
             <div class="hero-about-visuals float-animation">
-              <div class="hero-about-img glow-effect" style="background-image: url('https://images.unsplash.com/photo-1588147775924-42f0b9f5e977?auto=format&fit=crop&q=80&w=800')"></div>
+              <div class="hero-about-img glow-effect" style="background-image: url('/img/historical_sites.png')"></div>
               
               <!-- Floating Badge over image -->
               <div class="floating-badge badge-top-right">
