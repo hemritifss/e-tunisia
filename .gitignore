@@ -31,3 +31,5 @@ build/
 # Claude
 .claude/
 web/.claude/
+.vercel
+.env*.local
