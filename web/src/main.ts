@@ -7,7 +7,7 @@ import { renderFeedPage, initFeedPage } from './pages/feed';
 import { renderExplorePage, initExplorePage } from './pages/explore';
 import { renderEventsPage, initEventsPage } from './pages/events';
 import { renderTipsPage, initTipsPage } from './pages/tips';
-import { renderPostDetailPage, initPostDetailPage } from './pages/post-detail';
+import { renderPlaceDetailPage, initPlaceDetailPage } from './pages/place-detail';
 import { renderProfilePage, initProfilePage } from './pages/profile';
 import { renderLeaderboardPage, initLeaderboardPage } from './pages/leaderboard';
 import { renderBadgesPage, initBadgesPage } from './pages/badges';
@@ -15,8 +15,14 @@ import { renderLoginPage, renderRegisterPage, initAuthPage } from './pages/auth'
 import { renderMapPage, initMapPage } from './pages/map';
 import { renderFavoritesPage, initFavoritesPage } from './pages/favorites';
 import { renderSettingsPage, initSettingsPage } from './pages/settings';
+import { renderPremiumPage, initPremiumPage } from './pages/premium';
+import { renderPartnerPage, initPartnerPage } from './pages/partner';
+import { renderItinerariesPage, initItinerariesPage } from './pages/itineraries';
+import { renderCollectionsPage, initCollectionsPage } from './pages/collections';
+import { renderHeroPage, initHeroPage } from './pages/hero';
 import { replaceIcons } from './icons';
 import { posts, addUserPost, generateId, type Post } from './data';
+import * as apiService from './api';
 
 // ---- Router ----
 type Route = {
@@ -28,29 +34,60 @@ type Route = {
 function getRoute(hash: string): Route {
   const path = hash.replace('#', '') || '/';
 
+  // --- Auth Guard ---
+  const guestRoutes = ['/hero', '/login', '/register'];
+  const isGuestRoute = guestRoutes.includes(path);
+  const isLoggedIn = apiService.isLoggedIn();
+
+  if (!isLoggedIn && !isGuestRoute) {
+    history.replaceState(null, '', '#/hero');
+    return { render: renderHeroPage, init: () => initHeroPage(), page: 'hero' };
+  }
+
+  if (isLoggedIn && isGuestRoute) {
+    history.replaceState(null, '', '#/');
+    return { render: renderFeedPage, init: initFeedPage, page: 'feed' };
+  }
+  // ------------------
+
   // Post detail
   const postMatch = path.match(/^\/post\/(\w+)/);
   if (postMatch) {
     return {
-      render: () => renderPostDetailPage(postMatch[1]),
-      init: initPostDetailPage,
+      render: () => renderPlaceDetailPage(postMatch[1]),
+      init: () => initPlaceDetailPage(),
       page: 'feed',
+    };
+  }
+
+  // Place detail
+  const placeMatch = path.match(/^\/place\/(\w+)/);
+  if (placeMatch) {
+    return {
+      render: () => renderPlaceDetailPage(placeMatch[1]),
+      init: () => initPlaceDetailPage(),
+      page: 'explore',
     };
   }
 
   const routes: Record<string, Route> = {
     '/': { render: renderFeedPage, init: initFeedPage, page: 'feed' },
-    '/explore': { render: renderExplorePage, init: initExplorePage, page: 'explore' },
-    '/events': { render: renderEventsPage, init: initEventsPage, page: 'events' },
-    '/tips': { render: renderTipsPage, init: initTipsPage, page: 'tips' },
+    '/explore': { render: renderExplorePage, init: () => initExplorePage(), page: 'explore' },
+    '/events': { render: renderEventsPage, init: () => initEventsPage(), page: 'events' },
+    '/tips': { render: renderTipsPage, init: () => initTipsPage(), page: 'tips' },
     '/map': { render: renderMapPage, init: initMapPage, page: 'map' },
-    '/profile': { render: renderProfilePage, init: initProfilePage, page: 'profile' },
-    '/leaderboard': { render: renderLeaderboardPage, init: initLeaderboardPage, page: 'profile' },
-    '/badges': { render: renderBadgesPage, init: initBadgesPage, page: 'profile' },
-    '/favorites': { render: renderFavoritesPage, init: initFavoritesPage, page: 'favorites' },
+    '/profile': { render: renderProfilePage, init: () => initProfilePage(), page: 'profile' },
+    '/leaderboard': { render: renderLeaderboardPage, init: () => initLeaderboardPage(), page: 'profile' },
+    '/badges': { render: renderBadgesPage, init: () => initBadgesPage(), page: 'profile' },
+    '/favorites': { render: renderFavoritesPage, init: () => initFavoritesPage(), page: 'favorites' },
     '/settings': { render: renderSettingsPage, init: initSettingsPage, page: 'profile' },
     '/login': { render: renderLoginPage, init: initAuthPage, page: '' },
     '/register': { render: renderRegisterPage, init: initAuthPage, page: '' },
+    '/premium': { render: renderPremiumPage, init: initPremiumPage, page: 'premium' },
+    '/partner': { render: renderPartnerPage, init: initPartnerPage, page: 'partner' },
+    '/itineraries': { render: renderItinerariesPage, init: () => initItinerariesPage(), page: 'explore' },
+    '/collections': { render: renderCollectionsPage, init: () => initCollectionsPage(), page: 'explore' },
+    '/hero': { render: renderHeroPage, init: () => initHeroPage(), page: 'hero' },
   };
 
   return routes[path] || routes['/'];
@@ -59,6 +96,13 @@ function getRoute(hash: string): Route {
 function navigate() {
   const content = document.getElementById('page-content');
   if (!content) return;
+
+  // Toggle global body class for layout adjustments
+  if (apiService.isLoggedIn()) {
+    document.body.classList.remove('guest-mode');
+  } else {
+    document.body.classList.add('guest-mode');
+  }
 
   const route = getRoute(location.hash);
 
@@ -610,6 +654,12 @@ function init() {
 
   // Replace icons in static nav
   replaceIcons();
+
+  // Global logout handler
+  document.getElementById('logout-btn')?.addEventListener('click', () => {
+    apiService.logout();
+    location.hash = '#/hero';
+  });
 
   // Router
   window.addEventListener('hashchange', navigate);

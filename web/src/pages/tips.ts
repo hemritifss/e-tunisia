@@ -1,70 +1,105 @@
-import { tips } from '../data';
+// ============================================
+// TIPS PAGE — Connected to backend
+// ============================================
 
-export function renderTipsPage(): string {
+import { tips as mockTips, type Tip } from '../data';
+import * as api from '../api';
+import { replaceIcons } from '../icons';
+
+function renderTipCard(tip: any): string {
   return `
-    <div class="tips-page page-enter">
-      <h2>Travel Tips</h2>
-      <p class="text-secondary" style="margin-bottom: var(--space-6);">Practical advice from locals and experienced travelers</p>
-
-      <div class="tabs">
-        <button class="tab active" data-tab="all">All</button>
-        <button class="tab" data-tab="cultural">Cultural</button>
-        <button class="tab" data-tab="food">Food</button>
-        <button class="tab" data-tab="transport">Transport</button>
-        <button class="tab" data-tab="safety">Safety</button>
-        <button class="tab" data-tab="money">Money</button>
+    <div class="tip-card reveal-on-scroll">
+      <div class="tip-header">
+        <img src="${tip.author?.avatar || 'https://api.dicebear.com/9.x/thumbs/svg?seed=user'}" alt="" class="tip-avatar" />
+        <div>
+          <strong class="tip-author">${tip.author?.name || tip.userName || 'Anonymous'}</strong>
+          <span class="tip-category ${tip.categoryClass || ''}">${tip.category || ''}</span>
+        </div>
       </div>
-
-      <div class="tips-grid stagger-children">
-        ${tips.map(tip => `
-          <div class="tip-card reveal-on-scroll" data-tip-cat="${tip.categoryClass}">
-            <span class="tip-category ${tip.categoryClass}">${tip.category}</span>
-            <h4 class="tip-title">${tip.title}</h4>
-            <p class="tip-content">${tip.content}</p>
-            <div class="tip-footer">
-              <div class="tip-author">
-                <img src="${tip.author.avatar}" alt="${tip.author.name}" />
-                <span>${tip.author.name}</span>
-              </div>
-              <button class="tip-likes ${tip.liked ? 'liked' : ''}" data-tip="${tip.id}">
-                <i class="lucide-heart" style="font-size: 0.875rem;"></i>
-                <span class="tip-like-count">${tip.likes}</span>
-              </button>
-            </div>
-          </div>
-        `).join('')}
+      <h4 class="tip-title">${tip.title}</h4>
+      <p class="tip-content">${tip.content}</p>
+      <div class="tip-footer">
+        <button class="tip-like-btn ${tip.liked ? 'liked' : ''}" data-tip="${tip.id}">
+          <i class="lucide-heart"></i>
+          <span>${tip.likes || 0}</span>
+        </button>
+        <button class="post-action-btn">
+          <i class="lucide-share-2"></i> Share
+        </button>
       </div>
     </div>
   `;
 }
 
-export function initTipsPage() {
-  // Tab filter
-  document.querySelectorAll('.tips-page .tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-      document.querySelectorAll('.tips-page .tab').forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-      const cat = (tab as HTMLElement).dataset.tab;
-      const cards = document.querySelectorAll('.tip-card') as NodeListOf<HTMLElement>;
-      cards.forEach(card => {
-        if (cat === 'all' || card.dataset.tipCat === cat) {
-          card.style.display = '';
-        } else {
-          card.style.display = 'none';
-        }
-      });
+export function renderTipsPage(): string {
+  return `
+    <div class="tips-page page-enter">
+      <div class="tips-header">
+        <h1><i class="lucide-lightbulb"></i> Travel Tips</h1>
+        <p>Insider knowledge from experienced travelers and locals to help you make the most of your Tunisia trip.</p>
+      </div>
+      <div class="tips-categories" id="tips-categories">
+        <button class="tag active" data-cat="all">All</button>
+        <button class="tag" data-cat="Cultural">Cultural</button>
+        <button class="tag" data-cat="Transport">Transport</button>
+        <button class="tag" data-cat="Money">Money</button>
+        <button class="tag" data-cat="Safety">Safety</button>
+        <button class="tag" data-cat="Food">Food</button>
+      </div>
+      <div class="tips-grid" id="tips-grid">
+        <div class="tips-loading">
+          <div class="spinner"></div>
+          <p>Loading tips...</p>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+let allTips: any[] = [];
+
+export async function initTipsPage() {
+  const grid = document.getElementById('tips-grid');
+  if (!grid) return;
+
+  try {
+    allTips = await api.getTips();
+    if (!allTips?.length) allTips = mockTips;
+  } catch {
+    allTips = mockTips;
+  }
+
+  grid.innerHTML = allTips.map(t => renderTipCard(t)).join('');
+  replaceIcons(grid);
+
+  // Category filter
+  document.querySelectorAll('.tips-categories .tag').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tips-categories .tag').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const cat = (btn as HTMLElement).dataset.cat;
+      const filtered = cat === 'all' ? allTips : allTips.filter(t => t.category === cat);
+      grid.innerHTML = filtered.map(t => renderTipCard(t)).join('');
+      replaceIcons(grid);
+      bindTipLikes();
     });
   });
 
-  // Like buttons
-  document.querySelectorAll('.tip-likes').forEach(btn => {
+  bindTipLikes();
+}
+
+function bindTipLikes() {
+  document.querySelectorAll('.tip-like-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      btn.classList.toggle('liked');
-      const countEl = btn.querySelector('.tip-like-count');
+      const el = btn as HTMLElement;
+      el.classList.toggle('liked');
+      const countEl = el.querySelector('span');
       if (countEl) {
         const current = parseInt(countEl.textContent || '0');
-        countEl.textContent = String(btn.classList.contains('liked') ? current + 1 : current - 1);
+        countEl.textContent = String(el.classList.contains('liked') ? current + 1 : current - 1);
       }
+      const tipId = el.dataset.tip;
+      if (tipId) try { api.likeTip(tipId); } catch {}
     });
   });
 }

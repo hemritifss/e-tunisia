@@ -1,61 +1,72 @@
-import { badges } from '../data';
+// ============================================
+// BADGES PAGE — Connected to backend
+// ============================================
+
+import { badges as mockBadges, type Badge } from '../data';
+import * as api from '../api';
+import { replaceIcons } from '../icons';
 
 export function renderBadgesPage(): string {
-  const earned = badges.filter(b => b.earned);
-  const locked = badges.filter(b => !b.earned);
-
   return `
     <div class="badges-page page-enter">
-      <a href="#/profile" class="btn btn-ghost" style="margin-bottom: var(--space-4);">
-        <i class="lucide-arrow-left"></i> Back
-      </a>
-
-      <h2>Badges</h2>
-      <p class="text-secondary text-sm" style="margin-bottom: var(--space-6);">
-        ${earned.length} of ${badges.length} earned
-      </p>
-
-      <div class="tabs">
-        <button class="tab active" data-tab="all">All (${badges.length})</button>
-        <button class="tab" data-tab="earned">Earned (${earned.length})</button>
-        <button class="tab" data-tab="locked">Locked (${locked.length})</button>
+      <div class="badges-header">
+        <h1><i class="lucide-award"></i> Badges & Achievements</h1>
+        <p>Explore Tunisia and earn badges for your adventures. Complete challenges to unlock new achievements.</p>
       </div>
-
-      <div class="badges-grid stagger-children" id="badges-list">
-        ${badges.map(b => `
-          <div class="badge-item ${b.earned ? '' : 'locked-badge'}" data-earned="${b.earned}">
-            <div class="badge-icon ${b.earned ? 'earned' : 'locked'}">
-              <i class="${b.icon}"></i>
-            </div>
-            <div class="badge-info">
-              <div class="badge-name">${b.name}</div>
-              <div class="badge-desc">${b.description}</div>
-              <div class="text-xs" style="margin-top: 2px; color: ${b.earned ? 'var(--success)' : 'var(--text-muted)'}; font-weight: 600;">
-                ${b.earned ? 'Earned' : b.category}
-              </div>
-            </div>
-          </div>
-        `).join('')}
+      <div class="badges-stats" id="badges-stats"></div>
+      <div class="badges-grid" id="badges-grid">
+        <div class="badges-loading">
+          <div class="spinner"></div>
+          <p>Loading badges...</p>
+        </div>
       </div>
     </div>
   `;
 }
 
-export function initBadgesPage() {
-  document.querySelectorAll('.badges-page .tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-      document.querySelectorAll('.badges-page .tab').forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-      const filter = (tab as HTMLElement).dataset.tab;
-      const items = document.querySelectorAll('.badge-item') as NodeListOf<HTMLElement>;
-      items.forEach(item => {
-        const isEarned = item.dataset.earned === 'true';
-        if (filter === 'all' || (filter === 'earned' && isEarned) || (filter === 'locked' && !isEarned)) {
-          item.style.display = '';
-        } else {
-          item.style.display = 'none';
-        }
-      });
-    });
-  });
+export async function initBadgesPage() {
+  const grid = document.getElementById('badges-grid');
+  const statsEl = document.getElementById('badges-stats');
+  if (!grid) return;
+
+  let badges: any[];
+  try {
+    badges = await api.getAllBadges();
+    if (!badges?.length) badges = mockBadges;
+  } catch {
+    badges = mockBadges;
+  }
+
+  const earned = badges.filter(b => b.earned).length;
+  if (statsEl) {
+    statsEl.innerHTML = `
+      <div class="badges-stat-card">
+        <strong>${earned}</strong>
+        <span>Earned</span>
+      </div>
+      <div class="badges-stat-card">
+        <strong>${badges.length - earned}</strong>
+        <span>Locked</span>
+      </div>
+      <div class="badges-stat-card">
+        <strong>${Math.round((earned / badges.length) * 100)}%</strong>
+        <span>Complete</span>
+      </div>
+    `;
+  }
+
+  grid.innerHTML = badges.map(b => `
+    <div class="badge-card ${b.earned ? 'earned' : 'locked'}">
+      <div class="badge-icon">
+        <i class="${b.icon || 'lucide-award'}"></i>
+      </div>
+      <h4 class="badge-name">${b.name}</h4>
+      <p class="badge-desc">${b.description}</p>
+      ${b.earned
+        ? '<span class="badge-status earned"><i class="lucide-check-circle"></i> Earned</span>'
+        : '<span class="badge-status locked"><i class="lucide-lock"></i> Locked</span>'}
+    </div>
+  `).join('');
+  replaceIcons(grid);
+  if (statsEl) replaceIcons(statsEl);
 }

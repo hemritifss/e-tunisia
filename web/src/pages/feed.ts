@@ -1,5 +1,6 @@
 import { posts, places, type Post } from '../data';
 import { replaceIcons } from '../icons';
+import * as api from '../api';
 
 function parseTimeAgo(timeStr: string): number {
   const match = timeStr.match(/(\d+)(m|h|d|w)/);
@@ -204,6 +205,29 @@ function renderSidebar(): string {
           </ol>
         </div>
       </div>
+
+      <!-- Sponsors -->
+      <div class="sidebar-card" id="sidebar-sponsors">
+        <div class="sidebar-card-header">
+          <i class="lucide-sparkles"></i>
+          Sponsors
+        </div>
+        <div class="sidebar-card-body" id="sidebar-sponsors-list"></div>
+      </div>
+
+      <!-- Quick Links -->
+      <div class="sidebar-card">
+        <div class="sidebar-card-header">
+          <i class="lucide-link"></i>
+          Discover More
+        </div>
+        <div class="sidebar-card-body" style="display:flex;flex-direction:column;gap:var(--space-2);">
+          <a href="#/premium" class="sidebar-quick-link"><i class="lucide-crown"></i> Go Premium</a>
+          <a href="#/itineraries" class="sidebar-quick-link"><i class="lucide-map"></i> Trip Itineraries</a>
+          <a href="#/collections" class="sidebar-quick-link"><i class="lucide-layers"></i> Collections</a>
+          <a href="#/partner" class="sidebar-quick-link"><i class="lucide-handshake"></i> Become a Partner</a>
+        </div>
+      </div>
     </aside>
   `;
 }
@@ -313,4 +337,40 @@ export function initFeedPage() {
   communityToggle?.addEventListener('click', () => {
     communityBar?.classList.toggle('expanded');
   });
+
+  // Load sponsors into sidebar
+  loadSponsors();
+}
+
+async function loadSponsors() {
+  const container = document.getElementById('sidebar-sponsors-list');
+  if (!container) return;
+
+  try {
+    const sponsors = await api.getSponsors();
+    if (sponsors?.length) {
+      container.innerHTML = sponsors.slice(0, 3).map((s: any) => `
+        <a href="${s.website || '#'}" target="_blank" rel="noopener" class="sponsor-card" data-sponsor="${s.id}"
+           onclick="event.stopPropagation();">
+          ${s.logoUrl ? `<img src="${s.logoUrl}" alt="${s.name}" class="sponsor-logo" />` : ''}
+          <div class="sponsor-info">
+            <strong>${s.name}</strong>
+            <span class="text-xs text-muted">${s.tagline || 'Official Partner'}</span>
+          </div>
+        </a>
+      `).join('');
+
+      // Track clicks
+      container.querySelectorAll('.sponsor-card').forEach(card => {
+        card.addEventListener('click', () => {
+          const id = (card as HTMLElement).dataset.sponsor;
+          if (id) api.trackSponsorClick(id).catch(() => {});
+        });
+      });
+    } else {
+      container.innerHTML = '<p class="text-xs text-muted">No sponsors yet. <a href="#/partner">Become one!</a></p>';
+    }
+  } catch {
+    container.innerHTML = '<p class="text-xs text-muted"><a href="#/partner">Become a sponsor →</a></p>';
+  }
 }
