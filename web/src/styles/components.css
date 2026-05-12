@@ -3,19 +3,6 @@
    Navigation, cards, buttons, forms, etc.
    ============================================ */
 
-/* ---- GLOBAL IMAGES ---- */
-img {
-  background: linear-gradient(
-    110deg,
-    var(--bg-secondary) 8%,
-    var(--bg-tertiary) 38%,
-    var(--bg-secondary) 54%
-  );
-  background-size: 200% 100%;
-  animation: skeleton-shimmer 2s linear infinite;
-  color: transparent; /* visually hide alt text before image loads */
-}
-
 /* ---- NAVIGATION ---- */
 .nav {
   position: fixed;

@@ -1,3 +1,4 @@
+import * as api from '../api';
 import { posts, comments } from '../data';
 
 export function renderPostDetailPage(postId: string): string {
@@ -32,7 +33,7 @@ export function renderPostDetailPage(postId: string): string {
 
         <h1 class="post-detail-title">${post.title}</h1>
 
-        ${post.image ? `<img src="${post.image}" alt="${post.title}" class="post-detail-image" />` : ''}
+        ${(post.image || post.coverImage || (post.images && post.images[0])) ? `<img src="${api.getImageUrl(post.coverImage || post.image || (post.images && post.images[0]) || '')}" alt="${post.title}" class="post-detail-image" />` : ''}
 
         <div class="post-detail-body">${post.body}</div>
 

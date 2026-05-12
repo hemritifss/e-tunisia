@@ -41,7 +41,7 @@ function renderPlaceContent(place: any, reviews: any[]): string {
   return `
     <!-- Hero Image -->
     <div class="place-detail-hero">
-      <img src="${place.image || place.imageUrl || ''}" alt="${place.name}" class="place-detail-hero-img"
+      <img src="${apiService.getImageUrl(place.coverImage || place.image || place.imageUrl || (place.images && place.images[0]) || '')}" alt="${place.name}" class="place-detail-hero-img"
            onerror="this.style.background='linear-gradient(135deg, var(--terracotta-pale), var(--mediterranean-pale))';" />
       <div class="place-detail-hero-overlay"></div>
       <div class="place-detail-hero-actions">

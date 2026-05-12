@@ -59,6 +59,26 @@ export async function login(email: string, password: string) {
   return data;
 }
 
+export function getImageUrl(path: string | null | undefined, context?: 'place' | 'post' | 'event' | 'itinerary' | 'avatar'): string {
+  if (!path) {
+    switch (context) {
+      case 'place': return 'https://images.unsplash.com/photo-1689742855019-a09e208930e8?w=600&q=80';
+      case 'post': return 'https://images.unsplash.com/photo-1522881451255-f59ad836fdfb?auto=format&fit=crop&w=600&q=80';
+      case 'event': return 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=600&q=80';
+      case 'itinerary': return 'https://images.unsplash.com/photo-1611094184403-df84cdcc7523?w=600&q=80';
+      case 'avatar': return 'https://api.dicebear.com/9.x/thumbs/svg?seed=user';
+      default: return 'https://images.unsplash.com/photo-1680600855512-441b69ef3d18?w=600&q=80';
+    }
+  }
+  if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('data:')) {
+    return path;
+  }
+  // Get host from base URL by stripping /api/v1
+  const hostUrl = BASE_URL.replace(/\/api\/v1\/?$/, '');
+  const cleanPath = path.startsWith('/') ? path.substring(1) : path;
+  return `${hostUrl}/${cleanPath}`;
+}
+
 export async function register(body: { name: string; email: string; password: string; country?: string }) {
   const data = await api<{ accessToken: string; user: any }>('/auth/register', {
     method: 'POST',

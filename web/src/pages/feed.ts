@@ -35,7 +35,7 @@ function renderPostCard(post: Post): string {
           <h3 class="post-title">
             <a href="#/post/${post.id}">${post.title}</a>
           </h3>
-          ${post.image ? `<img src="${post.image}" alt="${post.title}" class="post-image" loading="lazy" onerror="this.style.display='none'" />` : ''}
+          ${(post.image || post.coverImage || (post.images && post.images[0])) ? `<img src="${api.getImageUrl(post.coverImage || post.image || (post.images && post.images[0]) || '')}" alt="${post.title}" class="post-image" loading="lazy" onerror="this.style.display='none'" />` : ''}
           <p class="post-excerpt">${post.excerpt}</p>
           <div class="post-actions">
             <div class="post-mobile-votes">
@@ -117,7 +117,7 @@ function renderMobileCommunityBar(): string {
           <div style="display:flex;gap:var(--space-2);overflow-x:auto;padding-bottom:var(--space-1);-webkit-overflow-scrolling:touch;">
             ${places.slice(0, 4).map(p => `
               <div style="flex-shrink:0;display:flex;align-items:center;gap:var(--space-2);padding:var(--space-2);background:var(--bg-secondary);border-radius:var(--radius-md);min-width:160px;">
-                <img src="${p.image}" alt="${p.name}" style="width:36px;height:36px;border-radius:var(--radius-sm);object-fit:cover;" loading="lazy" />
+                <img src="${api.getImageUrl(p.coverImage || p.image || p.imageUrl || (p.images && p.images[0]) || '')}" alt="${p.name}" style="width:36px;height:36px;border-radius:var(--radius-sm);object-fit:cover;" loading="lazy" />
                 <div>
                   <div class="text-sm fw-600" style="white-space:nowrap;">${p.name}</div>
                   <div class="text-xs text-muted">${p.location}</div>
@@ -190,7 +190,7 @@ function renderSidebar(): string {
         <div class="sidebar-card-body sidebar-trending-scroll">
           ${places.slice(0, 6).map(p => `
             <div class="sidebar-place-item">
-              <img src="${p.image}" alt="${p.name}" class="sidebar-place-img" loading="lazy" onerror="this.style.background='linear-gradient(135deg, var(--terracotta-pale), var(--mediterranean-pale))'" />
+              <img src="${api.getImageUrl(p.coverImage || p.image || p.imageUrl || (p.images && p.images[0]) || '')}" alt="${p.name}" class="sidebar-place-img" loading="lazy" onerror="this.style.background='linear-gradient(135deg, var(--terracotta-pale), var(--mediterranean-pale))'" />
               <div class="sidebar-place-info">
                 <div class="sidebar-place-name">${p.name}</div>
                 <div class="sidebar-place-loc"><i class="lucide-map-pin" style="font-size:0.65rem"></i> ${p.location}</div>

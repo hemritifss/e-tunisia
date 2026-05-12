@@ -11,7 +11,7 @@ function renderPlaceCard(p: any): string {
   return `
     <div class="place-card reveal-on-scroll" data-category="${p.categoryClass || 'cat-' + (catName).toLowerCase().replace(/\s+/g, '-')}">
       <a href="#/place/${p.id}" class="place-card-link">
-        <img src="${p.image || p.imageUrl || ''}" alt="${p.name}" class="place-card-img" loading="lazy"
+        <img src="${api.getImageUrl(p.coverImage || p.image || p.imageUrl || (p.images && p.images[0]) || '')}" alt="${p.name}" class="place-card-img" loading="lazy"
              onerror="this.style.background='linear-gradient(135deg, var(--terracotta-pale), var(--mediterranean-pale))'; this.style.objectFit='contain'; this.alt=''" />
         <div class="place-card-body">
           <div class="place-card-category">${catName}</div>

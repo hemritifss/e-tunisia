@@ -10,7 +10,7 @@ function renderTipCard(tip: any): string {
   return `
     <div class="tip-card reveal-on-scroll">
       <div class="tip-header">
-        <img src="${tip.author?.avatar || 'https://api.dicebear.com/9.x/thumbs/svg?seed=user'}" alt="" class="tip-avatar" />
+        <img src="${api.getImageUrl(tip.author?.avatar) || 'https://api.dicebear.com/9.x/thumbs/svg?seed=user'}" alt="" class="tip-avatar" />
         <div>
           <strong class="tip-author">${tip.author?.name || tip.userName || 'Anonymous'}</strong>
           <span class="tip-category ${tip.categoryClass || ''}">${tip.category || ''}</span>

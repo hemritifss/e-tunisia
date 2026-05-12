@@ -45,7 +45,7 @@ export async function initLeaderboardPage() {
         <div class="leaderboard-rank">
           ${isTop3 ? `<span class="leaderboard-medal">${medals[rank - 1]}</span>` : `<span class="leaderboard-rank-num">#${rank}</span>`}
         </div>
-        <img src="${u.avatar || 'https://api.dicebear.com/9.x/thumbs/svg?seed=' + u.name}" alt="${u.name}" class="leaderboard-avatar" />
+        <img src="${api.getImageUrl(u.avatar) || 'https://api.dicebear.com/9.x/thumbs/svg?seed=' + u.name}" alt="${u.name}" class="leaderboard-avatar" />
         <div class="leaderboard-info">
           <strong>${u.name}</strong>
           <span class="text-muted text-xs">Level ${u.level || 1}</span>

@@ -44,15 +44,17 @@ function renderCollectionCard(col: any): string {
   const count = col.placeIds?.length || 0;
   return `
     <div class="collection-card reveal-on-scroll">
-      <div class="collection-card-image">
-        <img src="${col.coverImage || ''}" alt="${col.title}" loading="lazy"
-             onerror="this.style.background='linear-gradient(135deg, var(--terracotta-pale), var(--mediterranean-pale))'; this.style.objectFit='contain'; this.alt=''" />
-        <div class="collection-card-overlay"></div>
-        <div class="collection-card-info">
-          <h3>${col.title}</h3>
-          <span>${count} places</span>
+      <a href="#/collection/${col.id}">
+        <div class="collection-card-image">
+          <img src="${api.getImageUrl(col.coverImage || col.image || (col.images && col.images[0]) || '')}" alt="${col.title}" loading="lazy"
+               onerror="this.style.background='linear-gradient(135deg, var(--terracotta-pale), var(--mediterranean-pale))';" />
+          <div class="collection-card-overlay"></div>
+          <div class="collection-card-info">
+            <h3>${col.title}</h3>
+            <span>${count} places</span>
+          </div>
         </div>
-      </div>
+      </a>
       ${col.description ? `<p class="collection-card-desc">${col.description}</p>` : ''}
     </div>
   `;

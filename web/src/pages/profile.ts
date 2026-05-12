@@ -47,7 +47,7 @@ export async function initProfilePage() {
 
   card.innerHTML = `
     <div class="profile-header">
-      <img src="${user.avatar || 'https://api.dicebear.com/9.x/thumbs/svg?seed=' + user.name}" alt="${user.name}" class="profile-avatar" />
+      <img src="${api.getImageUrl(user.avatar) || 'https://api.dicebear.com/9.x/thumbs/svg?seed=' + user.name}" alt="${user.name}" class="profile-avatar" />
       <h2 class="profile-name">${user.name}</h2>
       <span class="profile-level">Level ${points.level || user.level || 1} Explorer</span>
       ${user.country ? `<span class="profile-country"><i class="lucide-map-pin"></i> ${user.country}</span>` : ''}

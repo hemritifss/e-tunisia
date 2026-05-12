@@ -9,6 +9,8 @@ export interface Post {
   excerpt: string;
   body: string;
   image?: string;
+  coverImage?: string;
+  images?: string[];
   category: string;
   categoryClass: string;
   author: { name: string; avatar: string; level: number };
@@ -25,11 +27,14 @@ export interface Place {
   category: string;
   categoryClass: string;
   image: string;
+  coverImage?: string;
+  imageUrl?: string;
+  images?: string[];
   location: string;
   rating: number;
   reviewCount: number;
-  saved: boolean;
   description: string;
+  saved?: boolean;
 }
 
 export interface Event {

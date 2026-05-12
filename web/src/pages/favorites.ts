@@ -54,7 +54,7 @@ export async function initFavoritesPage() {
   grid.innerHTML = saved.map(p => `
     <div class="place-card reveal-on-scroll">
       <a href="#/place/${p.id}" class="place-card-link">
-        <img src="${(p as any).image || (p as any).imageUrl || ''}" alt="${p.name}" class="place-card-img" loading="lazy" />
+        <img src="${api.getImageUrl((p as any).coverImage || (p as any).image || (p as any).imageUrl || ((p as any).images && (p as any).images[0]) || '')}" alt="${p.name}" class="place-card-img" loading="lazy" />
         <div class="place-card-body">
           <div class="place-card-category">${(p as any).category || ''}</div>
           <h4 class="place-card-title">${p.name}</h4>

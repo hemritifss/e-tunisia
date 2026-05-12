@@ -45,7 +45,7 @@ function renderItineraryCard(it: any): string {
 
   return `
     <div class="itinerary-card reveal-on-scroll">
-      <div class="itinerary-card-cover" style="background-image: url(${it.image || ''});">
+      <div class="itinerary-card-cover" style="background-image: url('${api.getImageUrl(it.coverImage || it.image || (it.images && it.images[0]) || '')}');">
         <div class="itinerary-card-cover-overlay"></div>
         <div class="itinerary-card-cover-tags">
           <span class="itinerary-duration-tag">${it.duration} Days</span>
