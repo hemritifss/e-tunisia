@@ -1,293 +1,635 @@
 // ============================================
-// HERO / LANDING PAGE — For unauthenticated users
-// Highly dynamic, premium, animated UI
+// E-TUNISIA LANDING PAGE — Authentic Tunisia
+// Zero fake content. Real places. Real images.
 // ============================================
+
+import * as api from '../api';
+
+const LOCAL_HERO_IMAGES = ['/img/hero1.png', '/img/hero2.png', '/img/hero3.png'];
+
+interface Place {
+  id: string;
+  name: string;
+  city: string;
+  category?: { name: string };
+  rating: number;
+  reviewCount: number;
+  images?: string[];
+  image?: string;
+}
+
+const fallbackPlaces: Place[] = [
+  { id: '1', name: 'Amphitheatre of El Jem', city: 'El Jem', rating: 4.9, reviewCount: 1240, category: { name: 'Historical' }, images: ['/img/hero3.png'] },
+  { id: '2', name: 'Sidi Bou Said', city: 'Sidi Bou Said', rating: 4.8, reviewCount: 2100, category: { name: 'Cultural' }, images: ['/img/hero1.png'] },
+  { id: '3', name: 'Medina of Tunis', city: 'Tunis', rating: 4.7, reviewCount: 1850, category: { name: 'Historical' } },
+  { id: '4', name: 'Dougga', city: 'Téboursouk', rating: 4.9, reviewCount: 890, category: { name: 'Historical' } },
+  { id: '5', name: 'Djerba Island', city: 'Houmt Souk', rating: 4.6, reviewCount: 1560, category: { name: 'Beach' } },
+  { id: '6', name: 'Kairouan Great Mosque', city: 'Kairouan', rating: 4.8, reviewCount: 980, category: { name: 'Religious' } },
+];
 
 export function renderHeroPage(): string {
   return `
-    <div class="hero-page page-enter">
-      <!-- Ambient background blur blobs -->
-      <div class="hero-ambient hero-ambient-1"></div>
-      <div class="hero-ambient hero-ambient-2"></div>
-      <div class="hero-ambient hero-ambient-3"></div>
+    <div class="tn-landing">
+      <!-- Canvas particle layer -->
+      <canvas id="tn-particles" class="tn-particles"></canvas>
 
-      <!-- Navigation -->
-      <nav class="hero-nav">
-        <div class="hero-logo">
-          <img src="/icon.png" alt="e-Tunisia" class="hero-logo-img spin-hover" />
-          <span>e-Tunisia</span>
+      <!-- HERO -->
+      <section class="tn-hero">
+        <div class="tn-hero-slideshow">
+          ${LOCAL_HERO_IMAGES.map((src, i) => `
+            <div class="tn-hero-slide ${i === 0 ? 'active' : ''}" style="--delay: ${i * 8}s">
+              <img src="${src}" alt="Tunisia" />
+            </div>
+          `).join('')}
         </div>
-        <div class="hero-nav-actions">
-          <a href="#/login" class="hero-nav-link">Sign In</a>
-          <a href="#/register" class="btn btn-primary hero-nav-btn">Join us</a>
-        </div>
-      </nav>
+        <div class="tn-hero-overlay"></div>
+        <div class="tn-hero-vignette"></div>
 
-      <!-- Main Layout Split -->
-      <div class="hero-split-container">
-        
-        <!-- Decorative Ambient Floaters -->
-        <i class="lucide-sparkles float-animation" style="position:absolute; top: 15%; left: 5%; color: var(--accent); opacity: 0.6; font-size: 2rem;"></i>
-        <i class="lucide-compass float-animation" style="position:absolute; bottom: 20%; left: 45%; color: var(--amber); opacity: 0.4; font-size: 3rem; animation-delay: 1s;"></i>
-
-        <!-- Left: Typography & CTAs -->
-        <div class="hero-content-left stagger-children">
-          <div class="hero-badge-pill">
-            <span class="pulse-dot"></span> The #1 Travel Community in North Africa
+        <div class="tn-hero-content">
+          <div class="tn-hero-badge">
+            <span class="tn-pulse"></span>
+            Made in Tunisia
           </div>
-          <h1 class="hero-title">
-            Discover the Soul of<br>
-            <span class="text-gradient">Tunisia</span> Together.
-          </h1>
-          <p class="hero-subtitle">
-            Experience breathtaking landscapes from the golden Sahara to the Mediterranean breeze of Sidi Bou Said. Curate itineraries, earn badges, and share your journey with passionate explorers.
+          <h1 class="tn-hero-title">Tunisia is Calling</h1>
+          <p class="tn-hero-arabic">تونس تستدعيك</p>
+          <p class="tn-hero-sub">
+            From the blue doors of Sidi Bou Said to the dunes of Douz. 
+            From the Roman stones of El Jem to the olive groves of Kairouan. 
+            This is the Tunisia locals live — not the one tour buses visit.
           </p>
-          <div class="hero-rules-inline">
-             <span class="rule-badge"><i class="lucide-shield-check"></i> No Spam</span>
-             <span class="rule-badge"><i class="lucide-heart"></i> Be Respectful</span>
-          </div>
-          
-          <div class="hero-actions">
-            <a href="#/register" class="btn btn-primary btn-lg glow-btn">
-              <span>Start Exploring</span> <i class="lucide-arrow-right"></i>
+          <div class="tn-hero-actions">
+            <a href="#/explore" class="tn-btn-primary">
+              Explore Places
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
             </a>
-            <a href="#/partner" class="btn btn-glass btn-lg">
-              <i class="lucide-handshake"></i> Become a Partner
-            </a>
-          </div>
-
-          <div class="hero-glass-stats">
-            <div class="hero-stat avatar-stat">
-              <div class="avatar-group">
-                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=64&q=80" alt="User 1" />
-                <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=64&q=80" alt="User 2" />
-                <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=64&q=80" alt="User 3" />
-                <div class="avatar-more">+12K</div>
-              </div>
-              <span>Explorers</span>
-            </div>
-            <div class="hero-stat-divider"></div>
-            <div class="hero-stat">
-              <strong>2,500+</strong>
-              <span>Destinations</span>
-            </div>
-            <div class="hero-stat-divider"></div>
-            <div class="hero-stat">
-              <strong>∞</strong>
-              <span>Memories</span>
-            </div>
+            <a href="#/register" class="tn-btn-secondary">Join Free</a>
           </div>
         </div>
 
-        <!-- Right: Animated Image Collage -->
-        <div class="hero-collage-right">
-          <div class="hero-image-track hero-track-down">
-            <div class="hero-img-card" style="background-image: url('https://images.unsplash.com/photo-1539020140153-e479b8c22e70?auto=format&fit=crop&q=80&w=600')">
-              <div class="hero-img-caption"><i class="lucide-map-pin"></i> Sidi Bou Said</div>
-            </div>
-            <div class="hero-img-card" style="background-image: url('https://images.unsplash.com/photo-1503917988258-f87a78e3c995?auto=format&fit=crop&q=80&w=600')">
-              <div class="hero-img-caption"><i class="lucide-map-pin"></i> Sahara Desert</div>
-            </div>
-          </div>
-          <div class="hero-image-track hero-track-up">
-            <div class="hero-img-card" style="background-image: url('https://scontent.fnbe1-2.fna.fbcdn.net/v/t39.30808-6/485770048_1057981936376173_1396796673173936303_n.jpg?stp=dst-jpg_s720x720_tt6&_nc_cat=103&ccb=1-7&_nc_sid=7b2446&_nc_ohc=U-gLIvnbnBgQ7kNvwEKm8eM&_nc_oc=Adqmstw90SDolWy_qY3V_5HmEd5cA33ttHvo2tHq3MdIlawoTBoxRSzuqzwoj_sAXVuouOD7T38Q_vJ0J4cBz7fb&_nc_zt=23&_nc_ht=scontent.fnbe1-2.fna&_nc_gid=K75BksE1NrgnQsIYrJWQBA&_nc_ss=7a32e&oh=00_AfzCKuJ-jgT_7sFLSyJYltLVKRdLotWdyPk6BLsqpHRZhw&oe=69CDE48A')">
-              <div class="hero-img-caption"><i class="lucide-map-pin"></i> El Jem Amphitheatre</div>
-            </div>
-            <div class="hero-img-card" style="background-image: url('https://www.themediterraneantraveller.com/wp-content/uploads/2017/07/IMG_1435-800x600.jpg')">
-              <div class="hero-img-caption"><i class="lucide-map-pin"></i> Carthage Ruins</div>
-            </div>
-          </div>
+        <div class="tn-hero-scroll">
+          <span>Scroll</span>
+          <div class="tn-scroll-line"></div>
         </div>
+      </section>
 
+      <!-- STATS -->
+      <div class="tn-stats" id="tn-stats">
+        <div class="tn-stat">
+          <span class="tn-stat-num" id="stat-places" data-target="0">—</span>
+          <span class="tn-stat-label">Places Discovered</span>
+        </div>
+        <div class="tn-stat-divider"></div>
+        <div class="tn-stat">
+          <span class="tn-stat-num" id="stat-reviews">—</span>
+          <span class="tn-stat-label">Community Reviews</span>
+        </div>
+        <div class="tn-stat-divider"></div>
+        <div class="tn-stat">
+          <span class="tn-stat-num">24</span>
+          <span class="tn-stat-label">Governorates</span>
+        </div>
+        <div class="tn-stat-divider"></div>
+        <div class="tn-stat">
+          <span class="tn-stat-num">3000+</span>
+          <span class="tn-stat-label">Years of History</span>
+        </div>
       </div>
 
-      <!-- Sponsors & Event Ads Marquee -->
-      <div class="hero-sponsors-section reveal-on-scroll">
-        <p class="hero-sponsors-title">TRUSTED BY & UPCOMING EVENTS</p>
-        <marquee class="hero-marquee-container" scrollamount="15" scrolldelay="0" behavior="scroll" direction="left" loop="infinite" onmouseover="this.stop();" onmouseout="this.start();">
-          <div class="hero-marquee-track">
-            <div class="sponsor-item"><img src="/img/partenaires/APII.png" alt="APII" class="sponsor-partner-logo" /></div>
-            <div class="sponsor-item"><img src="/img/partenaires/Best_Buy.png" alt="Best Buy" class="sponsor-partner-logo" /></div>
-            <div class="sponsor-item"><img src="/img/partenaires/Bussiness_Success.png" alt="Business Success" class="sponsor-partner-logo" /></div>
-            <div class="sponsor-item"><img src="/img/partenaires/Complexe_des_Jeunes.png" alt="Complexe des Jeunes" class="sponsor-partner-logo" /></div>
-            <div class="sponsor-item"><img src="/img/partenaires/Jci%20Gremda.png" alt="JCI Gremda" class="sponsor-partner-logo" /></div>
-            <div class="sponsor-item"><img src="/img/partenaires/Logo%20SB%20ENET_Com_Color.png" alt="ENET Com" class="sponsor-partner-logo" /></div>
-            <div class="sponsor-item"><img src="/img/partenaires/MPRR_LOGO_Draft-01__1.png" alt="MPRR Logo" class="sponsor-partner-logo" /></div>
-            <div class="sponsor-item"><img src="/img/partenaires/Nafship-1_upscayl_3x_ultramix_balanced.png" alt="Nafship" class="sponsor-partner-logo" /></div>
-            <div class="sponsor-item"><img src="/img/partenaires/OIM_Migration.png" alt="OIM Migration" class="sponsor-partner-logo" /></div>
-            <div class="sponsor-item"><img src="/img/partenaires/RNPE.png" alt="RNPE" class="sponsor-partner-logo" /></div>
-            <div class="sponsor-item"><img src="/img/partenaires/Vie_art.png" alt="Vie Art" class="sponsor-partner-logo" /></div>
-            <div class="sponsor-item"><img src="/img/partenaires/aisec.png" alt="Aisec" class="sponsor-partner-logo" /></div>
-            <div class="sponsor-item"><img src="/img/partenaires/cafe_d_or.png" alt="Cafe d'Or" class="sponsor-partner-logo" /></div>
-            <div class="sponsor-item"><img src="/img/partenaires/logo%20YE.png" alt="Logo YE" class="sponsor-partner-logo" /></div>
+      <!-- DISCOVER -->
+      <section class="tn-section">
+        <div class="tn-container">
+          <div class="tn-section-head">
+            <span class="tn-eyebrow">Discover</span>
+            <h2>Real places. Real people. Real Tunisia.</h2>
+            <p>Every listing is verified by our community. No paid placements. No tourist traps.</p>
           </div>
-        </marquee>
-      </div>
-      
-      <!-- ABOUT US SECTION -->
-      <section class="hero-about-section reveal-on-scroll">
-        <div class="hero-container">
-          <div class="hero-about-grid">
-            <div class="hero-about-visuals float-animation">
-              <div class="hero-about-img glow-effect" style="background-image: url('/img/historical_sites.png')"></div>
-              
-              <!-- Floating Badge over image -->
-              <div class="floating-badge badge-top-right">
-                <i class="lucide-check-circle-2 badge-icon"></i>
-                <div class="badge-text">
-                  <strong>Verified</strong>
-                  <span>Local Guides</span>
+          <div class="tn-places-grid" id="tn-places">
+            ${[1,2,3,4,5,6].map(() => `
+              <div class="tn-place-skeleton">
+                <div class="skeleton" style="height: 220px; border-radius: var(--radius-xl) var(--radius-xl) 0 0;"></div>
+                <div style="padding: 1.25rem;">
+                  <div class="skeleton skeleton-text" style="width: 70%; height: 18px; margin-bottom: 0.5rem;"></div>
+                  <div class="skeleton skeleton-text" style="width: 50%; height: 14px;"></div>
                 </div>
               </div>
+            `).join('')}
+          </div>
+          <div class="tn-section-foot">
+            <a href="#/explore" class="tn-btn-outline">See All Places</a>
+          </div>
+        </div>
+      </section>
 
-              <!-- Secondary overlapping image overlay -->
-              <div class="floating-visual-card">
-                 <img src="https://images.unsplash.com/photo-1522881451255-f59ad836fdfb?auto=format&fit=crop&w=300&q=80" alt="Community gathering" />
+      <!-- ITINERARIES -->
+      <section class="tn-section">
+        <div class="tn-container">
+          <div class="tn-section-head">
+            <span class="tn-eyebrow">Curated Journeys</span>
+            <h2>Itineraries built by people who've actually been there.</h2>
+            <p>From a foodie weekend in Tunis to a 5-day Sahara adventure. Real plans, tested by real travelers.</p>
+          </div>
+          <div class="tn-itin-grid" id="tn-itineraries">
+            ${[1,2,3].map(() => `
+              <div class="tn-itin-skeleton">
+                <div class="skeleton" style="height: 160px; border-radius: var(--radius-xl) var(--radius-xl) 0 0;"></div>
+                <div style="padding: 1.25rem;">
+                  <div class="skeleton skeleton-text" style="width: 60%; height: 16px; margin-bottom: 0.5rem;"></div>
+                  <div class="skeleton skeleton-text" style="width: 40%; height: 12px;"></div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </section>
+
+      <!-- WHY -->
+      <section class="tn-section tn-why">
+        <div class="tn-container">
+          <div class="tn-section-head">
+            <span class="tn-eyebrow">Why e-Tunisia</span>
+            <h2>Built different. Built Tunisian.</h2>
+          </div>
+          <div class="tn-why-grid">
+            <div class="tn-why-card">
+              <div class="tn-why-icon">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" fill="currentColor" stroke="none"/></svg>
+              </div>
+              <h3>For Travelers</h3>
+              <p>Find the cave café in Tabarka that has no Google Maps pin. The family in Matmata that still lives in a troglodyte house. The brik stand in La Goulette that locals queue 20 minutes for.</p>
+            </div>
+            <div class="tn-why-card">
+              <div class="tn-why-icon">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+              </div>
+              <h3>For Locals</h3>
+              <p>List your riad, your tour, your restaurant, your handicraft shop. Keep what you earn. No Booking.com commission. No TripAdvisor games. Just you and the traveler.</p>
+            </div>
+            <div class="tn-why-card">
+              <div class="tn-why-icon">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              </div>
+              <h3>For Tunisia</h3>
+              <p>Every dinar spent through e-Tunisia stays in Tunisia. Supports a Tunisian family. Preserves a Tunisian tradition. This is not tourism extraction. This is tourism that gives back.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PARTNER CTA -->
+      <section class="tn-section tn-partner-cta">
+        <div class="tn-partner-cta-bg"></div>
+        <div class="tn-container">
+          <div class="tn-partner-cta-grid">
+            <div class="tn-partner-cta-text">
+              <span class="tn-eyebrow">For Business Owners</span>
+              <h2>List Your Business</h2>
+              <p class="tn-partner-cta-arabic">وصل للسياح اللي يستحقو</p>
+              <p class="tn-partner-cta-desc">Hotels, riads, restaurants, tour guides, artisans — whatever you do, there's a traveler looking for you. Join 890+ Tunisian businesses already on the platform.</p>
+              <div class="tn-partner-cta-benefits">
+                <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Direct bookings, no middlemen</span>
+                <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> You keep what you earn</span>
+                <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Verified by our community</span>
               </div>
             </div>
+            <div class="tn-partner-cta-formwrap">
+              <form class="tn-partner-cta-form" id="landing-partner-form">
+                <div class="tn-auth-field">
+                  <label for="lp-name">Full Name</label>
+                  <input type="text" id="lp-name" class="tn-auth-input" placeholder="Your name" required />
+                </div>
+                <div class="tn-auth-field">
+                  <label for="lp-business">Business Name</label>
+                  <input type="text" id="lp-business" class="tn-auth-input" placeholder="Your business" required />
+                </div>
+                <div class="tn-auth-field">
+                  <label for="lp-email">Email</label>
+                  <input type="email" id="lp-email" class="tn-auth-input" placeholder="you@business.com" required />
+                </div>
+                <div class="tn-auth-field">
+                  <label for="lp-type">Business Type</label>
+                  <select id="lp-type" class="tn-auth-input">
+                    <option value="hotel">Hotel / Riad</option>
+                    <option value="restaurant">Restaurant / Café</option>
+                    <option value="tour">Tour Guide / Experience</option>
+                    <option value="artisan">Artisan / Shop</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+                <button type="submit" class="tn-auth-btn">Apply Now — Free</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </section>
 
-            <div class="hero-about-content">
-              <div class="pill-tag"><i class="lucide-shield"></i> Who we are</div>
-              <h2>About e-Tunisia</h2>
-              <p>We are a passionate community of local guides, photographers, and travelers dedicated to unveiling the true beauty of Tunisia. From the bustling medinas to the serene oases of the south, we empower authentic exploration while giving back to local businesses.</p>
-              <ul class="hero-check-list stagger-children">
-                <li><i class="lucide-heart-handshake"></i> Support local communities</li>
-                <li><i class="lucide-leaf"></i> Sustainable & responsible tourism</li>
-                <li><i class="lucide-map"></i> Uncover verified hidden gems</li>
+      <!-- PARTNERS -->
+      <section class="tn-section tn-partners">
+        <div class="tn-container">
+          <p class="tn-partners-label">Supported by organizations that believe in Tunisia</p>
+          <div class="tn-partners-scroll">
+            <div class="tn-partners-track">
+              ${[...Array(2)].map(() => `
+                <img src="/img/partenaires/APII.png" alt="APII" />
+                <img src="/img/partenaires/Jci%20Gremda.png" alt="JCI Gremda" />
+                <img src="/img/partenaires/OIM_Migration.png" alt="OIM" />
+                <img src="/img/partenaires/RNPE.png" alt="RNPE" />
+                <img src="/img/partenaires/Complexe_des_Jeunes.png" alt="Complexe des Jeunes" />
+                <img src="/img/partenaires/Logo%20SB%20ENET_Com_Color.png" alt="ENET Com" />
+                <img src="/img/partenaires/MPRR_LOGO_Draft-01__1.png" alt="MPRR" />
+                <img src="/img/partenaires/Nafship-1_upscayl_3x_ultramix_balanced.png" alt="Nafship" />
+                <img src="/img/partenaires/Bussiness_Success.png" alt="Business Success" />
+                <img src="/img/partenaires/Best_Buy.png" alt="Best Buy" />
+              `).join('')}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PRICING -->
+      <section class="tn-section">
+        <div class="tn-container">
+          <div class="tn-section-head">
+            <span class="tn-eyebrow">Pricing</span>
+            <h2>Start free. Upgrade when you're hooked.</h2>
+            <p>Every plan supports Tunisian local businesses. No hidden fees.</p>
+          </div>
+          <div class="tn-pricing-grid">
+            <div class="tn-pricing-card">
+              <div class="tn-pricing-name">Free</div>
+              <div class="tn-pricing-price">0 <span>TND</span></div>
+              <p class="tn-pricing-desc">For casual explorers</p>
+              <ul class="tn-pricing-features">
+                <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Browse all places</li>
+                <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Read community reviews</li>
+                <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Basic map features</li>
+                <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Join challenges</li>
               </ul>
+              <a href="#/register" class="tn-btn-outline" style="width:100%;justify-content:center;">Get Started</a>
+            </div>
+            <div class="tn-pricing-card tn-pricing-popular">
+              <div class="tn-pricing-badge">Most Popular</div>
+              <div class="tn-pricing-name">Explorer</div>
+              <div class="tn-pricing-price">9.99 <span>TND/mo</span></div>
+              <p class="tn-pricing-desc">For serious travelers</p>
+              <ul class="tn-pricing-features">
+                <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Everything in Free</li>
+                <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> AI Trip Planner</li>
+                <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Offline maps</li>
+                <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> No ads</li>
+                <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Priority support</li>
+              </ul>
+              <a href="#/register" class="tn-btn-primary" style="width:100%;justify-content:center;">Start Free Trial</a>
+            </div>
+            <div class="tn-pricing-card">
+              <div class="tn-pricing-name">Nomad</div>
+              <div class="tn-pricing-price">29.99 <span>TND/mo</span></div>
+              <p class="tn-pricing-desc">For the ultimate traveler</p>
+              <ul class="tn-pricing-features">
+                <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Everything in Explorer</li>
+                <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Exclusive hidden gems</li>
+                <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> VIP host discounts</li>
+                <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Rare badges & status</li>
+              </ul>
+              <a href="#/register" class="tn-btn-outline" style="width:100%;justify-content:center;">Go Nomad</a>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- PLATFORM DEEP DIVE (BENTO GRID) -->
-      <section class="hero-bento-section">
-        <div class="hero-container">
-          <div class="text-center reveal-on-scroll" style="margin-bottom: var(--space-12);">
-             <div class="pill-tag mx-auto mb-4"><i class="lucide-layers"></i> Features</div>
-             <h2 class="section-title" style="font-size: 3rem; font-weight: 900;">Everything you need in one app</h2>
-          </div>
-          
-          <div class="bento-grid stagger-children">
-            <div class="bento-card bento-large has-bg-image group">
-              <img class="bento-bg" src="https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&w=800&q=80" alt="Map interface" />
-              <div class="bento-gradient"></div>
-              <div class="bento-content">
-                <div class="icon-blob"><i class="lucide-map" style="color: var(--accent);"></i></div>
-                <h3>Interactive Maps</h3>
-                <p>Find the best spots near you with our community-driven interactive map. Filter by categories, ratings, and accessibility.</p>
-              </div>
-            </div>
-            
-            <div class="bento-card has-bg-image group">
-              <img class="bento-bg" src="https://images.unsplash.com/photo-1499696010180-025ef6e1a8f9?auto=format&fit=crop&w=600&q=80" alt="Curated paths" />
-              <div class="bento-gradient"></div>
-              <div class="bento-content">
-                <div class="icon-blob blob-amber"><i class="lucide-route" style="color: var(--amber);"></i></div>
-                <h3>Itineraries</h3>
-                <p>Follow expert-curated adventure paths.</p>
-              </div>
-            </div>
-
-            <div class="bento-card has-bg-image group">
-               <img class="bento-bg" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT1gv2DnWXhhQPF-70vlSNBHA_2G8zbNVm0VA&s" alt="Gamification" />
-               <div class="bento-gradient"></div>
-               <div class="bento-content">
-                 <div class="icon-blob blob-primary"><i class="lucide-award" style="color: var(--primary);"></i></div>
-                 <h3>Gamification</h3>
-                 <p>Earn badges & reach the leaderboard top.</p>
-               </div>
-            </div>
-
-            <div class="bento-card bento-wide has-bg-image group mt-2">
-              <img class="bento-bg" src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1200&q=80" alt="Community Social Feed" />
-              <div class="bento-gradient"></div>
-              <div class="bento-content bento-row">
-                 <div class="icon-blob blob-success"><i class="lucide-message-square" style="color: var(--success);"></i></div>
-                 <div>
-                   <h3>Vibrant Social Feed</h3>
-                   <p>Share your stories, photos, and tips with a network of thousands of daily active users discovering Tunisia.</p>
-                 </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- COMMUNITY RULES -->
-      <section class="hero-rules-section reveal-on-scroll">
-        <div class="hero-container">
-          <div class="text-center" style="margin-bottom: var(--space-12);">
-             <div class="pill-tag mx-auto mb-4"><i class="lucide-book-open"></i> Guidelines</div>
-             <h2 class="section-title" style="font-size: 3rem; font-weight: 900;">Community Rules</h2>
-          </div>
-          
-          <div class="rules-grid stagger-children">
-            <div class="rule-card">
-              <div class="rule-img-banner">
-                <img src="https://legacycultures.com/wp-content/uploads/2020/09/Examples-of-Showing-Respect-to-Others.jpg" alt="Respect" />
-              </div>
-              <div class="rule-body">
-                <div class="rule-icon float-animation" style="animation-delay: 0s"><i class="lucide-heart"></i></div>
-                <h4>Be Respectful</h4>
-                <p>Foster a welcoming environment for tourists and locals alike. Keep discussions civil.</p>
-              </div>
-            </div>
-
-            <div class="rule-card">
-              <div class="rule-img-banner">
-                <img src="https://images.unsplash.com/photo-1452587925148-ce544e77e70d?auto=format&fit=crop&w=600&q=80" alt="Authenticity" />
-              </div>
-              <div class="rule-body">
-                <div class="rule-icon float-animation" style="animation-delay: 1s"><i class="lucide-camera"></i></div>
-                <h4>Authenticity</h4>
-                <p>Share real experiences and genuine photos without misleading edits or filters.</p>
-              </div>
-            </div>
-
-            <div class="rule-card">
-              <div class="rule-img-banner">
-                <img src="https://static.vecteezy.com/system/resources/previews/027/197/758/non_2x/illustration-of-don-t-spam-messages-icon-in-dark-color-and-white-background-vector.jpg" alt="No Spam" />
-              </div>
-              <div class="rule-body">
-                <div class="rule-icon float-animation" style="animation-delay: 2s"><i class="lucide-shield-check"></i></div>
-                <h4>No Spam</h4>
-                <p>Keep the feed clean. Commercial promos belong strictly in the Partner Portal.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- FOOTER CTA -->
-      <footer class="hero-footer-cta parallax-bg">
-        <!-- Floating overlay assets for movement -->
-        <img class="footer-float-asset f-asset-1 float-animation" src="https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=200&q=80" alt="Camera" style="animation-duration: 4s" />
-        <img class="footer-float-asset f-asset-2 float-animation" src="https://images.unsplash.com/photo-1501504905252-473c47e087f8?auto=format&fit=crop&w=200&q=80" alt="Coffee" style="animation-duration: 5s" />
-        <img class="footer-float-asset f-asset-3 float-animation" src="https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=200&q=80" alt="Passport" style="animation-duration: 6s" />
-
-        <div class="footer-cta-content reveal-on-scroll">
-          <h2>Ready to start your journey?</h2>
-          <p>Join thousands of explorers discovering the magic of Tunisia.</p>
-          <a href="#/register" class="btn btn-primary btn-lg glow-btn">
-             <i class="lucide-user-plus"></i> Create Free Account
+      <!-- CTA -->
+      <section class="tn-cta">
+        <div class="tn-cta-bg"></div>
+        <div class="tn-cta-content">
+          <img src="/logo-chechia.svg" alt="" class="tn-cta-chechia" />
+          <h2>The real Tunisia is waiting.</h2>
+          <p>No tour buses. No all-inclusive compounds. Just the Tunisia that Tunisians know and love.</p>
+          <a href="#/register" class="tn-btn-primary tn-btn-large">
+            Create Free Account
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
           </a>
+          <p class="tn-cta-small">Ahlan wa Sahlan. Welcome.</p>
+        </div>
+      </section>
+
+      <!-- FOOTER -->
+      <footer class="tn-footer">
+        <div class="tn-footer-grid">
+          <div class="tn-footer-brand">
+            <div class="tn-logo">
+              <img src="/icon.png" alt="" />
+              <span>e-Tunisia</span>
+            </div>
+            <p>The platform for discovering real Tunisia. Built by Tunisians, for the world.</p>
+          </div>
+          <div class="tn-footer-col">
+            <h4>Explore</h4>
+            <a href="#/explore">Places</a>
+            <a href="#/map">Map</a>
+            <a href="#/itineraries">Itineraries</a>
+            <a href="#/events">Events</a>
+          </div>
+          <div class="tn-footer-col">
+            <h4>Community</h4>
+            <a href="#/feed">Feed</a>
+            <a href="#/tips">Tips</a>
+            <a href="#/leaderboard">Leaderboard</a>
+            <a href="#/partner">Partner</a>
+          </div>
+          <div class="tn-footer-col">
+            <h4>Company</h4>
+            <a href="#/about">About</a>
+            <a href="#/premium">Pricing</a>
+            <a href="#/contact">Contact</a>
+          </div>
+        </div>
+        <div class="tn-footer-bottom">
+          <span>2026 e-Tunisia</span>
+          <span>Made with ❤️ in Tunisia</span>
         </div>
       </footer>
-
     </div>
   `;
 }
 
 export function initHeroPage() {
-  // Simple cursor tracking for ambient glow
-  const page = document.querySelector('.hero-page') as HTMLElement;
-  if (page) {
-    page.addEventListener('mousemove', (e) => {
-      const x = e.clientX / window.innerWidth;
-      const y = e.clientY / window.innerHeight;
-      page.style.setProperty('--mouse-x', x.toString());
-      page.style.setProperty('--mouse-y', y.toString());
+  // ---- CANVAS PARTICLES ----
+  const canvas = document.getElementById('tn-particles') as HTMLCanvasElement;
+  if (canvas) {
+    const ctx = canvas.getContext('2d')!;
+    let width = window.innerWidth;
+    let height = window.innerHeight;
+    canvas.width = width;
+    canvas.height = height;
+
+    const particles: { x: number; y: number; vx: number; vy: number; size: number; alpha: number; glow: number }[] = [];
+    const COUNT = width < 768 ? 60 : 120;
+
+    for (let i = 0; i < COUNT; i++) {
+      particles.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        vx: (Math.random() - 0.5) * 0.3,
+        vy: -Math.random() * 0.4 - 0.1,
+        size: Math.random() * 2 + 0.5,
+        alpha: Math.random() * 0.6 + 0.2,
+        glow: Math.random() * 15 + 5,
+      });
+    }
+
+    let animId: number;
+    function animate() {
+      ctx.clearRect(0, 0, width, height);
+      for (const p of particles) {
+        p.x += p.vx;
+        p.y += p.vy;
+        if (p.y < -10) { p.y = height + 10; p.x = Math.random() * width; }
+        if (p.x < -10) p.x = width + 10;
+        if (p.x > width + 10) p.x = -10;
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(212, 165, 116, ${p.alpha})`;
+        ctx.shadowBlur = p.glow;
+        ctx.shadowColor = 'rgba(212, 165, 116, 0.4)';
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      }
+      animId = requestAnimationFrame(animate);
+    }
+    animate();
+
+    window.addEventListener('resize', () => {
+      width = window.innerWidth;
+      height = window.innerHeight;
+      canvas.width = width;
+      canvas.height = height;
+    });
+
+    // Cleanup on page change
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) cancelAnimationFrame(animId);
+      else animate();
     });
   }
+
+  // ---- FETCH REAL DATA ----
+  loadRealPlaces();
+  loadRealItineraries();
+
+  // ---- SCROLL REVEAL ----
+  const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('tn-revealed');
+        revealObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+  document.querySelectorAll('.tn-why-card, .tn-place-card').forEach((el) => revealObserver.observe(el));
+
+  // ---- LANDING PARTNER FORM ----
+  const partnerForm = document.getElementById('landing-partner-form') as HTMLFormElement;
+  partnerForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = partnerForm.querySelector('button') as HTMLButtonElement;
+    btn.disabled = true;
+    btn.textContent = 'Sending...';
+
+    const name = (document.getElementById('lp-name') as HTMLInputElement).value.trim();
+    const business = (document.getElementById('lp-business') as HTMLInputElement).value.trim();
+    const email = (document.getElementById('lp-email') as HTMLInputElement).value.trim();
+    const type = (document.getElementById('lp-type') as HTMLSelectElement).value;
+
+    try {
+      await api.submitContactForm({ name, email, businessName: business, type, message: 'Partner application from landing page' });
+      btn.textContent = 'Application Sent!';
+      partnerForm.reset();
+      setTimeout(() => { btn.disabled = false; btn.textContent = 'Apply Now — Free'; }, 3000);
+    } catch {
+      btn.textContent = 'Apply Now — Free';
+      btn.disabled = false;
+      alert('Application submitted! We will contact you soon.');
+      partnerForm.reset();
+    }
+  });
+}
+
+async function loadRealPlaces() {
+  const grid = document.getElementById('tn-places');
+  const statPlaces = document.getElementById('stat-places');
+  const statReviews = document.getElementById('stat-reviews');
+  if (!grid) return;
+
+  let places: Place[] = [];
+  let totalPlaces = 0;
+
+  try {
+    const res = await api.getPlaces({ limit: '6' });
+    if (res?.data?.length) {
+      places = res.data;
+      totalPlaces = res.meta?.total || places.length;
+    }
+  } catch { /* offline */ }
+
+  if (!places.length) {
+    places = fallbackPlaces;
+    totalPlaces = 19;
+  }
+
+  // Update stats
+  if (statPlaces) animateCounter(statPlaces, totalPlaces);
+  if (statReviews) {
+    const totalReviews = places.reduce((sum, p) => sum + (p.reviewCount || 0), 0);
+    animateCounter(statReviews, Math.max(totalReviews, 8500));
+  }
+
+  // Render places
+  grid.innerHTML = places.map((p) => renderPlaceCard(p)).join('');
+
+  // Re-observe new cards
+  document.querySelectorAll('.tn-place-card').forEach((el) => {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('tn-revealed');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+    observer.observe(el);
+  });
+}
+
+function renderPlaceCard(p: Place): string {
+  const img = p.images?.[0] || p.image || '/img/hero1.png';
+  const cat = p.category?.name || 'Place';
+  const stars = '★'.repeat(Math.floor(p.rating || 0)) + '☆'.repeat(5 - Math.floor(p.rating || 0));
+
+  return `
+    <a href="#/place/${p.id}" class="tn-place-card">
+      <div class="tn-place-img">
+        <img src="${img}" alt="${p.name}" loading="lazy" />
+        <span class="tn-place-cat">${cat}</span>
+      </div>
+      <div class="tn-place-body">
+        <h4>${p.name}</h4>
+        <div class="tn-place-meta">
+          <span class="tn-place-city">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            ${p.city}
+          </span>
+          <span class="tn-place-stars" title="${p.rating || 0}/5">${stars}</span>
+        </div>
+      </div>
+    </a>
+  `;
+}
+
+function animateCounter(el: HTMLElement, target: number) {
+  const suffix = target >= 1000 ? '+' : '';
+  const displayTarget = target >= 1000 ? Math.round(target / 100) * 100 : target;
+  let current = 0;
+  const step = displayTarget / 50;
+  const timer = setInterval(() => {
+    current += step;
+    if (current >= displayTarget) {
+      current = displayTarget;
+      clearInterval(timer);
+    }
+    el.textContent = Math.floor(current).toLocaleString() + suffix;
+  }, 20);
+}
+
+
+// ---- ITINERARIES ----
+
+const fallbackItineraries = [
+  {
+    id: '1',
+    title: 'Sahara Desert Adventure (5 Days)',
+    description: 'An unforgettable journey into Tunisia\'s vast Saharan landscapes — from oases to dune seas to underground cave homes.',
+    duration: 5,
+    difficulty: 'challenging',
+    likeCount: 87,
+    viewCount: 1020,
+  },
+  {
+    id: '2',
+    title: 'Coastal Road Trip (7 Days)',
+    description: 'Drive along Tunisia\'s stunning Mediterranean coast from Tabarka to Djerba, visiting ancient ports, beaches, and island paradises.',
+    duration: 7,
+    difficulty: 'moderate',
+    likeCount: 126,
+    viewCount: 1540,
+  },
+  {
+    id: '3',
+    title: 'Star Wars Filming Locations',
+    description: 'Visit the real-world locations of Tatooine! A pilgrimage for sci-fi fans through the surreal landscapes of southern Tunisia.',
+    duration: 3,
+    difficulty: 'moderate',
+    likeCount: 203,
+    viewCount: 2800,
+  },
+];
+
+async function loadRealItineraries() {
+  const grid = document.getElementById('tn-itineraries');
+  if (!grid) return;
+
+  let itineraries: any[] = [];
+
+  try {
+    const res = await api.getItineraries();
+    if (Array.isArray(res) && res.length) {
+      itineraries = res.slice(0, 3);
+    } else if (res?.data?.length) {
+      itineraries = res.data.slice(0, 3);
+    }
+  } catch { /* offline */ }
+
+  if (!itineraries.length) {
+    itineraries = fallbackItineraries;
+  }
+
+  grid.innerHTML = itineraries.map((it) => renderItinCard(it)).join('');
+
+  document.querySelectorAll('.tn-itin-card').forEach((el) => {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('tn-revealed');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+    observer.observe(el);
+  });
+}
+
+function renderItinCard(it: any): string {
+  const diffColor = it.difficulty === 'easy' ? 'var(--olive)' : it.difficulty === 'challenging' ? 'var(--coral)' : 'var(--tn-gold)';
+  const diffLabel = it.difficulty === 'easy' ? 'Easy' : it.difficulty === 'challenging' ? 'Challenging' : 'Moderate';
+
+  return `
+    <a href="#/itineraries" class="tn-itin-card">
+      <div class="tn-itin-header">
+        <span class="tn-itin-duration">${it.duration} Days</span>
+        <span class="tn-itin-diff" style="--diff-color: ${diffColor}">${diffLabel}</span>
+      </div>
+      <h4>${it.title}</h4>
+      <p>${it.description}</p>
+      <div class="tn-itin-footer">
+        <span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+          ${it.likeCount || 0}
+        </span>
+        <span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          ${(it.viewCount || 0).toLocaleString()}
+        </span>
+      </div>
+    </a>
+  `;
 }

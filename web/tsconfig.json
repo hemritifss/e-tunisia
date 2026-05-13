@@ -10,7 +10,14 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "preserve"
+    "jsx": "react-jsx",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@react/*": ["src/react/*"],
+      "@vanilla/*": ["src/vanilla/*"],
+      "@shared/*": ["src/shared/*"]
+    }
   },
   "include": ["src"]
 }

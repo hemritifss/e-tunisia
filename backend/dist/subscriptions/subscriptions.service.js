@@ -18,67 +18,91 @@ const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const subscription_entity_1 = require("./subscription.entity");
 const user_entity_1 = require("../users/user.entity");
+const PLAN_PRICES = {
+    premium: { monthly: 9.99, annual: 99.99 },
+    business: { monthly: 49.99 },
+    nomad: { monthly: 29.99, annual: 299.99 },
+};
 let SubscriptionsService = class SubscriptionsService {
-    constructor(subsRepo, usersRepo) {
-        this.subsRepo = subsRepo;
-        this.usersRepo = usersRepo;
+    constructor(subscriptionRepo, userRepo) {
+        this.subscriptionRepo = subscriptionRepo;
+        this.userRepo = userRepo;
     }
     async getMySubscription(userId) {
-        return this.subsRepo.findOne({
+        return this.subscriptionRepo.findOne({
             where: { userId, status: subscription_entity_1.SubStatus.ACTIVE },
-            order: { createdAt: 'DESC' },
+            order: { expiresAt: 'DESC' },
         });
     }
-    async upgrade(userId, plan, paymentMethod, reference) {
-        const user = await this.usersRepo.findOne({ where: { id: userId } });
-        if (!user)
-            throw new common_1.NotFoundException('User not found');
-        const prices = { premium: 29, business: 99 };
-        const amount = prices[plan] || 0;
+    async upgrade(userId, plan, paymentMethod, paymentReference, isAnnual = false) {
+        const priceConfig = PLAN_PRICES[plan.toLowerCase()];
+        if (!priceConfig) {
+            throw new Error('Invalid plan');
+        }
+        const amount = isAnnual && priceConfig.annual
+            ? priceConfig.annual
+            : priceConfig.monthly;
         const now = new Date();
-        const expiresAt = new Date(now);
-        expiresAt.setMonth(expiresAt.getMonth() + 1);
-        const sub = this.subsRepo.create({
+        const expiresAt = isAnnual && priceConfig.annual
+            ? new Date(now.getFullYear() + 1, now.getMonth(), now.getDate())
+            : new Date(now.getFullYear(), now.getMonth() + 1, now.getDate());
+        const existing = await this.subscriptionRepo.findOne({
+            where: { userId, status: subscription_entity_1.SubStatus.ACTIVE },
+        });
+        if (existing) {
+            existing.status = subscription_entity_1.SubStatus.CANCELLED;
+            await this.subscriptionRepo.save(existing);
+        }
+        const subscription = this.subscriptionRepo.create({
             userId,
-            plan,
+            plan: plan.toLowerCase(),
             amount,
+            currency: 'TND',
             paymentMethod,
-            paymentReference: reference,
+            paymentReference: paymentReference || `MANUAL_${Date.now()}`,
             status: subscription_entity_1.SubStatus.ACTIVE,
             startsAt: now,
             expiresAt,
         });
-        await this.subsRepo.save(sub);
-        user.plan = plan;
-        user.subscriptionExpiresAt = expiresAt;
-        await this.usersRepo.save(user);
-        return sub;
+        const saved = await this.subscriptionRepo.save(subscription);
+        const userPlan = plan.toLowerCase() === 'premium'
+            ? user_entity_1.UserPlan.PREMIUM
+            : plan.toLowerCase() === 'business'
+                ? user_entity_1.UserPlan.BUSINESS
+                : user_entity_1.UserPlan.FREE;
+        await this.userRepo.update(userId, {
+            plan: userPlan,
+            subscriptionExpiresAt: expiresAt,
+        });
+        return saved;
     }
     async cancel(userId) {
-        const sub = await this.subsRepo.findOne({
+        const subscription = await this.subscriptionRepo.findOne({
             where: { userId, status: subscription_entity_1.SubStatus.ACTIVE },
         });
-        if (!sub)
-            throw new common_1.NotFoundException('No active subscription');
-        sub.status = subscription_entity_1.SubStatus.CANCELLED;
-        await this.subsRepo.save(sub);
-        const user = await this.usersRepo.findOne({ where: { id: userId } });
-        user.plan = user_entity_1.UserPlan.FREE;
-        user.subscriptionExpiresAt = null;
-        await this.usersRepo.save(user);
-        return { message: 'Subscription cancelled' };
-    }
-    async getAll() {
-        return this.subsRepo.find({ order: { createdAt: 'DESC' }, relations: ['user'] });
+        if (subscription) {
+            subscription.status = subscription_entity_1.SubStatus.CANCELLED;
+            await this.subscriptionRepo.save(subscription);
+        }
+        await this.userRepo.update(userId, {
+            plan: user_entity_1.UserPlan.FREE,
+            subscriptionExpiresAt: null,
+        });
     }
     async getRevenueStats() {
-        const result = await this.subsRepo
-            .createQueryBuilder('sub')
-            .select('SUM(sub.amount)', 'totalRevenue')
-            .addSelect('COUNT(sub.id)', 'totalSubscriptions')
-            .where('sub.status = :status', { status: subscription_entity_1.SubStatus.ACTIVE })
-            .getRawOne();
-        return result;
+        const active = await this.subscriptionRepo.find({
+            where: { status: subscription_entity_1.SubStatus.ACTIVE },
+        });
+        const totalRevenue = active.reduce((sum, s) => sum + Number(s.amount), 0);
+        const byPlan = {};
+        for (const sub of active) {
+            byPlan[sub.plan] = (byPlan[sub.plan] || 0) + Number(sub.amount);
+        }
+        return {
+            totalRevenue,
+            activeSubscriptions: active.length,
+            byPlan,
+        };
     }
 };
 exports.SubscriptionsService = SubscriptionsService;

@@ -9,11 +9,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.MediaModule = void 0;
 const common_1 = require("@nestjs/common");
 const media_controller_1 = require("./media.controller");
+const storage_module_1 = require("../storage/storage.module");
 let MediaModule = class MediaModule {
 };
 exports.MediaModule = MediaModule;
 exports.MediaModule = MediaModule = __decorate([
     (0, common_1.Module)({
+        imports: [storage_module_1.StorageModule],
         controllers: [media_controller_1.MediaController],
     })
 ], MediaModule);

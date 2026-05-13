@@ -1,0 +1,85 @@
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Body,
+  Param,
+  UseGuards,
+  Query,
+} from '@nestjs/common';
+import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { BookingsService } from './bookings.service';
+import { CreateBookingDto } from './dto/create-booking.dto';
+
+@ApiTags('bookings')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
+@Controller('bookings')
+export class BookingsController {
+  constructor(private readonly bookingsService: BookingsService) {}
+
+  @Post()
+  @ApiOperation({ summary: 'Create a new booking' })
+  create(@CurrentUser('id') userId: string, @Body() dto: CreateBookingDto) {
+    return this.bookingsService.create(userId, dto);
+  }
+
+  @Get('my')
+  @ApiOperation({ summary: 'Get my bookings' })
+  findMyBookings(@CurrentUser('id') userId: string) {
+    return this.bookingsService.findByUser(userId);
+  }
+
+  @Get('host')
+  @ApiOperation({ summary: 'Get bookings for my places (host view)' })
+  findHostBookings(@CurrentUser('id') userId: string) {
+    return this.bookingsService.findByHost(userId);
+  }
+
+  @Get('place/:placeId')
+  @ApiOperation({ summary: 'Get bookings for a place' })
+  findByPlace(@Param('placeId') placeId: string) {
+    return this.bookingsService.findByPlace(placeId);
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Get booking details' })
+  findOne(@Param('id') id: string) {
+    return this.bookingsService.findOne(id);
+  }
+
+  @Patch(':id/confirm')
+  @ApiOperation({ summary: 'Confirm booking payment (webhook/internal)' })
+  confirmPayment(
+    @Param('id') id: string,
+    @Body('paymentIntentId') paymentIntentId: string,
+  ) {
+    return this.bookingsService.confirmPayment(id, paymentIntentId);
+  }
+
+  @Patch(':id/cancel')
+  @ApiOperation({ summary: 'Cancel a booking' })
+  cancel(
+    @CurrentUser('id') userId: string,
+    @Param('id') id: string,
+    @Body('reason') reason?: string,
+  ) {
+    return this.bookingsService.cancel(id, userId, reason);
+  }
+
+  @Patch(':id/complete')
+  @ApiOperation({ summary: 'Mark booking as completed' })
+  complete(@Param('id') id: string) {
+    return this.bookingsService.complete(id);
+  }
+
+  @Get('stats/revenue')
+  @ApiOperation({ summary: 'Get revenue statistics' })
+  getRevenueStats(@Query('placeId') placeId?: string) {
+    return this.bookingsService.getRevenueStats(placeId);
+  }
+}

@@ -10,6 +10,7 @@ exports.AppModule = void 0;
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const config_1 = require("@nestjs/config");
+const throttler_1 = require("@nestjs/throttler");
 const auth_module_1 = require("./auth/auth.module");
 const users_module_1 = require("./users/users.module");
 const places_module_1 = require("./places/places.module");
@@ -27,20 +28,47 @@ const ads_module_1 = require("./ads/ads.module");
 const gamification_module_1 = require("./gamification/gamification.module");
 const notifications_module_1 = require("./notifications/notifications.module");
 const contact_module_1 = require("./contact/contact.module");
+const redis_module_1 = require("./redis/redis.module");
+const storage_module_1 = require("./storage/storage.module");
+const health_module_1 = require("./health/health.module");
+const bookings_module_1 = require("./bookings/bookings.module");
+const inventory_module_1 = require("./inventory/inventory.module");
+const payments_module_1 = require("./payments/payments.module");
+const ai_module_1 = require("./ai/ai.module");
+const challenges_module_1 = require("./challenges/challenges.module");
+const websocket_module_1 = require("./websocket/websocket.module");
+const social_module_1 = require("./social/social.module");
+const messages_module_1 = require("./messages/messages.module");
+const marketplace_module_1 = require("./marketplace/marketplace.module");
+const queues_module_1 = require("./queues/queues.module");
+const analytics_module_1 = require("./analytics/analytics.module");
+const database_config_1 = require("./database/database.config");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
 exports.AppModule = AppModule = __decorate([
     (0, common_1.Module)({
         imports: [
-            config_1.ConfigModule.forRoot({ isGlobal: true }),
-            typeorm_1.TypeOrmModule.forRoot({
-                type: 'better-sqlite3',
-                database: 'etunisia.db',
-                entities: [__dirname + '/**/*.entity{.ts,.js}'],
-                synchronize: true,
-                logging: false,
+            config_1.ConfigModule.forRoot({
+                isGlobal: true,
+                envFilePath: ['.env', '.env.local'],
             }),
+            throttler_1.ThrottlerModule.forRoot({
+                throttlers: [
+                    {
+                        ttl: 60000,
+                        limit: 100,
+                    },
+                ],
+            }),
+            typeorm_1.TypeOrmModule.forRootAsync({
+                imports: [config_1.ConfigModule],
+                inject: [config_1.ConfigService],
+                useFactory: (configService) => (0, database_config_1.getDatabaseConfig)(configService),
+            }),
+            redis_module_1.RedisModule,
+            storage_module_1.StorageModule,
+            health_module_1.HealthModule,
             auth_module_1.AuthModule,
             users_module_1.UsersModule,
             places_module_1.PlacesModule,
@@ -58,6 +86,17 @@ exports.AppModule = AppModule = __decorate([
             gamification_module_1.GamificationModule,
             notifications_module_1.NotificationsModule,
             contact_module_1.ContactModule,
+            bookings_module_1.BookingsModule,
+            inventory_module_1.InventoryModule,
+            payments_module_1.PaymentsModule,
+            ai_module_1.AIModule,
+            challenges_module_1.ChallengesModule,
+            websocket_module_1.WebSocketModule,
+            social_module_1.SocialModule,
+            messages_module_1.MessagesModule,
+            marketplace_module_1.MarketplaceModule,
+            queues_module_1.QueuesModule,
+            analytics_module_1.AnalyticsModule,
         ],
     })
 ], AppModule);

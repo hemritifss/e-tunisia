@@ -1,74 +1,112 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import * as express from 'express';
 import { join } from 'path';
+import { GlobalExceptionFilter } from './common/filters/http-exception.filter';
+import { TransformInterceptor } from './common/interceptors/transform.interceptor';
+import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 
 async function bootstrap() {
-    const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule);
 
-    // Global prefix
-    app.setGlobalPrefix('api/v1');
+  // API Versioning
+  app.enableVersioning({
+    type: VersioningType.URI,
+    defaultVersion: '1',
+    prefix: 'api/v',
+  });
 
-    // Robust CORS
-    app.enableCors({
-        origin: (origin, callback) => {
-            console.log('🏁 Incoming CORS request from:', origin); 
-            callback(null, true);
-        },
-        methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-        credentials: true,
-        allowedHeaders: 'Content-Type,Accept,Authorization,X-Requested-With,X-Pinggy-No-Landing-Page',
-        preflightContinue: false,
-        optionsSuccessStatus: 204,
-    });
+  // CORS
+  const allowedOrigins =
+    process.env.ALLOWED_ORIGINS?.split(',') || [
+      'http://localhost:5173',
+      'http://localhost:3000',
+    ];
 
-    // Validation
-    app.useGlobalPipes(
-        new ValidationPipe({
-            whitelist: true,
-            forbidNonWhitelisted: true,
-            transform: true,
-            transformOptions: { enableImplicitConversion: true },
-        }),
-    );
+  app.enableCors({
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'), false);
+      }
+    },
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    credentials: true,
+    allowedHeaders:
+      'Content-Type,Accept,Authorization,X-Requested-With,X-Pinggy-No-Landing-Page',
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
+  });
 
-    // Static files
-    app.use('/uploads', express.static(join(__dirname, '..', 'uploads')));
+  // Global pipes
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+      transformOptions: { enableImplicitConversion: true },
+    }),
+  );
 
-    // Swagger
-    const config = new DocumentBuilder()
-        .setTitle('e-Tunisia API')
-        .setDescription(
-            'API for discovering Tunisia — culture, cuisine & nature',
-        )
-        .setVersion('1.0')
-        .addBearerAuth()
-        .addTag('auth')
-        .addTag('users')
-        .addTag('places')
-        .addTag('categories')
-        .addTag('reviews')
-        .addTag('subscriptions')
-        .addTag('tips')
-        .addTag('events')
-        .addTag('itineraries')
-        .addTag('collections')
-        .addTag('admin')
-        .addTag('sponsors')
-        .addTag('ads')
-        .addTag('gamification')
-        .addTag('notifications')
-        .addTag('contact')
-        .build();
+  // Global filters & interceptors
+  app.useGlobalFilters(new GlobalExceptionFilter());
+  app.useGlobalInterceptors(new TransformInterceptor(), new LoggingInterceptor());
 
-    const document = SwaggerModule.createDocument(app, config);
-    SwaggerModule.setup('api/docs', app, document);
+  // Static files (fallback for local uploads during migration)
+  app.use('/uploads', express.static(join(__dirname, '..', 'uploads')));
 
-    const port = process.env.PORT || 3000;
-    await app.listen(port);
-    console.log(`🇹🇳 e-Tunisia API running on http://localhost:${port}`);
-    console.log(`📚 Swagger docs: http://localhost:${port}/api/docs`);
+  // Swagger
+  const config = new DocumentBuilder()
+    .setTitle('e-Tunisia API')
+    .setDescription(
+      'The ultimate platform for discovering Tunisia — culture, cuisine, nature & hidden gems. Expedia + Reddit + TikTok combined.',
+    )
+    .setVersion('1.0.0')
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        description: 'Enter your JWT token',
+      },
+      'JWT',
+    )
+    .addTag('auth', 'Authentication & authorization')
+    .addTag('users', 'User management & profiles')
+    .addTag('places', 'Places, destinations & hidden gems')
+    .addTag('categories', 'Place categories')
+    .addTag('reviews', 'Reviews & ratings')
+    .addTag('media', 'File uploads & storage')
+    .addTag('subscriptions', 'Premium plans & billing')
+    .addTag('tips', 'Travel tips & guides')
+    .addTag('events', 'Events & activities')
+    .addTag('itineraries', 'Curated trip itineraries')
+    .addTag('collections', 'Themed place collections')
+    .addTag('admin', 'Admin dashboard endpoints')
+    .addTag('sponsors', 'Sponsor management')
+    .addTag('ads', 'Advertising platform')
+    .addTag('gamification', 'XP, badges & leaderboards')
+    .addTag('notifications', 'User notifications')
+    .addTag('contact', 'Contact & partnership forms')
+    .addTag('health', 'System health checks')
+    .build();
+
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api/docs', app, document, {
+    swaggerOptions: {
+      persistAuthorization: true,
+      tagsSorter: 'alpha',
+      operationsSorter: 'alpha',
+    },
+  });
+
+  const port = process.env.PORT || 3000;
+  await app.listen(port);
+  console.log(`🇹🇳 e-Tunisia API running on http://localhost:${port}`);
+  console.log(`📚 Swagger docs: http://localhost:${port}/api/docs`);
+  console.log(`❤️ Health check: http://localhost:${port}/health`);
 }
 bootstrap();

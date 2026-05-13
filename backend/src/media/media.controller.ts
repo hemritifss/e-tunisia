@@ -1,43 +1,93 @@
 import {
-    Controller, Post, UseInterceptors,
-    UploadedFile, UploadedFiles,
+  Controller,
+  Post,
+  UseInterceptors,
+  UploadedFile,
+  UploadedFiles,
+  Body,
 } from '@nestjs/common';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
-import { ApiTags, ApiConsumes, ApiBody } from '@nestjs/swagger';
-import { diskStorage } from 'multer';
-import { extname } from 'path';
-import { v4 as uuidv4 } from 'uuid';
-
-const storage = diskStorage({
-    destination: './uploads',
-    filename: (req, file, cb) => {
-        const uniqueName = `${uuidv4()}${extname(file.originalname)}`;
-        cb(null, uniqueName);
-    },
-});
+import { ApiTags, ApiConsumes, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
+import { StorageService } from '../storage/storage.service';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { UseGuards } from '@nestjs/common';
 
 @ApiTags('media')
+@ApiBearerAuth()
 @Controller('media')
 export class MediaController {
-    @Post('upload')
-    @ApiConsumes('multipart/form-data')
-    @UseInterceptors(FileInterceptor('file', { storage }))
-    uploadFile(@UploadedFile() file: Express.Multer.File) {
-        return {
-            url: `/uploads/${file.filename}`,
-            filename: file.filename,
-            size: file.size,
-        };
-    }
+  constructor(private readonly storageService: StorageService) {}
 
-    @Post('upload-multiple')
-    @ApiConsumes('multipart/form-data')
-    @UseInterceptors(FilesInterceptor('files', 10, { storage }))
-    uploadFiles(@UploadedFiles() files: Express.Multer.File[]) {
-        return files.map((file) => ({
-            url: `/uploads/${file.filename}`,
-            filename: file.filename,
-            size: file.size,
-        }));
-    }
+  @Post('upload')
+  @UseGuards(JwtAuthGuard)
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: { type: 'string', format: 'binary' },
+        folder: { type: 'string', default: 'uploads' },
+      },
+    },
+  })
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadFile(
+    @UploadedFile() file: Express.Multer.File,
+    @Body('folder') folder?: string,
+  ) {
+    const result = await this.storageService.uploadFile(
+      file.buffer,
+      file.originalname,
+      folder || 'uploads',
+      file.mimetype,
+    );
+
+    return {
+      success: true,
+      url: result.url,
+      key: result.key,
+      bucket: result.bucket,
+      size: file.size,
+    };
+  }
+
+  @Post('upload-multiple')
+  @UseGuards(JwtAuthGuard)
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        files: {
+          type: 'array',
+          items: { type: 'string', format: 'binary' },
+        },
+        folder: { type: 'string', default: 'uploads' },
+      },
+    },
+  })
+  @UseInterceptors(FilesInterceptor('files', 10))
+  async uploadFiles(
+    @UploadedFiles() files: Express.Multer.File[],
+    @Body('folder') folder?: string,
+  ) {
+    const uploads = await Promise.all(
+      files.map((file) =>
+        this.storageService.uploadFile(
+          file.buffer,
+          file.originalname,
+          folder || 'uploads',
+          file.mimetype,
+        ),
+      ),
+    );
+
+    return uploads.map((result, index) => ({
+      success: true,
+      url: result.url,
+      key: result.key,
+      bucket: result.bucket,
+      size: files[index].size,
+    }));
+  }
 }

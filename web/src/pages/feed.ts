@@ -331,7 +331,7 @@ export function initFeedPage() {
     if (postsContainer) {
       postsContainer.innerHTML = posts.map(p => renderPostCard(p)).join('');
       // Re-bind icons and events after dynamic content is added
-      import('../icons').then(m => m.replaceIcons());
+      replaceIcons();
       bindVoteButtons();
     }
   }, 1500);
@@ -369,7 +369,7 @@ export function initFeedPage() {
         }
 
         postsContainer.innerHTML = sorted.map(p => renderPostCard(p)).join('');
-        import('../icons').then(m => m.replaceIcons());
+        replaceIcons();
         bindVoteButtons();
       }, 800);
     });

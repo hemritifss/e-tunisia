@@ -1,8 +1,15 @@
 // ============================================
 // E-TUNISIA WEB APP
-// Router + global interactions
+// Router + global interactions + React Islands
 // ============================================
 
+import { mountIsland, unmountAllIslands } from './react/lib/islands';
+import FeedPage from './react/pages/FeedPage';
+import ExplorePage from './react/pages/ExplorePage';
+import AITravelPlanner from './react/pages/AITravelPlanner';
+import ChallengesPage from './react/pages/ChallengesPage';
+
+// Vanilla pages
 import { renderFeedPage, initFeedPage } from './pages/feed';
 import { renderExplorePage, initExplorePage } from './pages/explore';
 import { renderEventsPage, initEventsPage } from './pages/events';
@@ -17,6 +24,7 @@ import { renderFavoritesPage, initFavoritesPage } from './pages/favorites';
 import { renderSettingsPage, initSettingsPage } from './pages/settings';
 import { renderPremiumPage, initPremiumPage } from './pages/premium';
 import { renderPartnerPage, initPartnerPage } from './pages/partner';
+import { renderAboutPage, initAboutPage } from './pages/about';
 import { renderItinerariesPage, initItinerariesPage } from './pages/itineraries';
 import { renderCollectionsPage, initCollectionsPage } from './pages/collections';
 import { renderHeroPage, initHeroPage } from './pages/hero';
@@ -24,11 +32,17 @@ import { replaceIcons } from './icons';
 import { posts, addUserPost, generateId, type Post } from './data';
 import * as apiService from './api';
 
+// ---- React Island Routes ----
+const REACT_ROUTES = new Set(['/', '/explore']);
+
+let currentUnmount: (() => void) | null = null;
+
 // ---- Router ----
 type Route = {
   render: () => string;
   init: () => void;
   page: string;
+  isReact?: boolean;
 };
 
 function getRoute(hash: string): Route {
@@ -46,7 +60,7 @@ function getRoute(hash: string): Route {
 
   if (isLoggedIn && isGuestRoute) {
     history.replaceState(null, '', '#/');
-    return { render: renderFeedPage, init: initFeedPage, page: 'feed' };
+    return { render: renderFeedPage, init: initFeedPage, page: 'feed', isReact: true };
   }
   // ------------------
 
@@ -71,8 +85,8 @@ function getRoute(hash: string): Route {
   }
 
   const routes: Record<string, Route> = {
-    '/': { render: renderFeedPage, init: initFeedPage, page: 'feed' },
-    '/explore': { render: renderExplorePage, init: () => initExplorePage(), page: 'explore' },
+    '/': { render: renderFeedPage, init: initFeedPage, page: 'feed', isReact: true },
+    '/explore': { render: renderExplorePage, init: () => initExplorePage(), page: 'explore', isReact: true },
     '/events': { render: renderEventsPage, init: () => initEventsPage(), page: 'events' },
     '/tips': { render: renderTipsPage, init: () => initTipsPage(), page: 'tips' },
     '/map': { render: renderMapPage, init: initMapPage, page: 'map' },
@@ -87,6 +101,7 @@ function getRoute(hash: string): Route {
     '/partner': { render: renderPartnerPage, init: initPartnerPage, page: 'partner' },
     '/itineraries': { render: renderItinerariesPage, init: () => initItinerariesPage(), page: 'explore' },
     '/collections': { render: renderCollectionsPage, init: () => initCollectionsPage(), page: 'explore' },
+    '/about': { render: renderAboutPage, init: () => initAboutPage(), page: 'hero' },
     '/hero': { render: renderHeroPage, init: () => initHeroPage(), page: 'hero' },
   };
 
@@ -97,6 +112,13 @@ function navigate() {
   const content = document.getElementById('page-content');
   if (!content) return;
 
+  // Clean up any existing React islands
+  if (currentUnmount) {
+    currentUnmount();
+    currentUnmount = null;
+  }
+  unmountAllIslands();
+
   // Toggle global body class for layout adjustments
   if (apiService.isLoggedIn()) {
     document.body.classList.remove('guest-mode');
@@ -106,17 +128,35 @@ function navigate() {
 
   const route = getRoute(location.hash);
 
-  // Use View Transitions API if available
-  if ('startViewTransition' in document) {
-    (document as any).startViewTransition(() => {
+  // Handle React island routes
+  if (route.isReact) {
+    content.innerHTML = '<div id="react-island-root" class="w-full"></div>';
+    const islandRoot = document.getElementById('react-island-root');
+    if (islandRoot) {
+      const path = location.hash.replace('#', '') || '/';
+      if (path === '/' || path === '') {
+        currentUnmount = mountIsland(FeedPage, islandRoot);
+      } else if (path === '/explore') {
+        currentUnmount = mountIsland(ExplorePage, islandRoot);
+      } else if (path === '/ai-planner') {
+        currentUnmount = mountIsland(AITravelPlanner, islandRoot);
+      } else if (path === '/challenges') {
+        currentUnmount = mountIsland(ChallengesPage, islandRoot);
+      }
+    }
+  } else {
+    // Vanilla route - use View Transitions API if available
+    if ('startViewTransition' in document) {
+      (document as any).startViewTransition(() => {
+        content.innerHTML = route.render();
+        route.init();
+        replaceIcons();
+      });
+    } else {
       content.innerHTML = route.render();
       route.init();
       replaceIcons();
-    });
-  } else {
-    content.innerHTML = route.render();
-    route.init();
-    replaceIcons();
+    }
   }
 
   // Update active nav links
@@ -172,14 +212,12 @@ function initSearch() {
     overlay?.classList.remove('open');
   });
 
-  // Close on Escape
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && overlay?.classList.contains('open')) {
       overlay.classList.remove('open');
     }
   });
 
-  // Trending tags navigate
   document.querySelectorAll('.search-trending .tag').forEach(tag => {
     tag.addEventListener('click', () => {
       overlay?.classList.remove('open');
@@ -217,17 +255,13 @@ function initNotifications() {
 
   overlay?.addEventListener('click', closeNotifs);
 
-  // Mobile notification trigger in hamburger menu
   document.getElementById('mobile-notif-trigger')?.addEventListener('click', () => {
-    // Close hamburger first
     document.getElementById('mobile-menu-panel')?.classList.remove('open');
     document.getElementById('mobile-menu-overlay')?.classList.remove('open');
     document.body.style.overflow = '';
-    // Then open notifications
     setTimeout(openNotifs, 100);
   });
 
-  // Mark all as read
   markReadBtn?.addEventListener('click', () => {
     panel?.querySelectorAll('.notif-item.unread').forEach(item => {
       item.classList.remove('unread');
@@ -237,7 +271,6 @@ function initNotifications() {
     }
   });
 
-  // Close on hash change
   window.addEventListener('hashchange', closeNotifs);
 }
 
@@ -308,14 +341,12 @@ function initHamburger() {
   closeBtn?.addEventListener('click', closeMobileMenu);
   overlay?.addEventListener('click', closeMobileMenu);
 
-  // Search trigger
   document.getElementById('mobile-search-trigger')?.addEventListener('click', () => {
     closeMobileMenu();
     document.getElementById('search-overlay')?.classList.add('open');
     setTimeout(() => (document.getElementById('search-input') as HTMLInputElement)?.focus(), 100);
   });
 
-  // Theme toggle
   document.getElementById('mobile-theme-trigger')?.addEventListener('click', () => {
     toggleTheme();
     const mobileIcon = document.getElementById('mobile-theme-icon');
@@ -326,14 +357,13 @@ function initHamburger() {
     }
   });
 
-  // Close on link navigation
   panel?.querySelectorAll('a').forEach(link => {
     link.addEventListener('click', closeMobileMenu);
   });
   window.addEventListener('hashchange', closeMobileMenu);
 }
 
-// ---- Post composer modal (Facebook-style) ----
+// ---- Post composer modal ----
 function initPostModal() {
   const overlay = document.getElementById('post-modal-overlay');
   const modal = document.getElementById('post-modal');
@@ -360,13 +390,11 @@ function initPostModal() {
   let taggedUsers: string[] = [];
   let selectedFiles: string[] = [];
 
-  // Tunisian locations for autocomplete
   const tunisianLocations = [
     'Sidi Bou Said', 'Carthage', 'Djerba', 'Douz', 'Tunis Medina',
     'Sousse', 'Bizerte', 'Tozeur', 'Kairouan', 'Tabarka',
   ];
 
-  // ---- Category chip selection ----
   categoriesContainer?.querySelectorAll('.post-modal-tag').forEach(btn => {
     btn.addEventListener('click', () => {
       categoriesContainer.querySelectorAll('.post-modal-tag').forEach(b => b.classList.remove('selected'));
@@ -379,7 +407,6 @@ function initPostModal() {
     });
   });
 
-  // ---- Location autocomplete ----
   function renderLocationSuggestions(filter: string) {
     if (!locationDropdown) return;
     const query = filter.toLowerCase().trim();
@@ -437,7 +464,6 @@ function initPostModal() {
 
   locationClear?.addEventListener('click', clearLocation);
 
-  // Close location dropdown when clicking outside
   document.addEventListener('click', (e) => {
     const target = e.target as HTMLElement;
     if (!target.closest('.post-modal-location-wrapper')) {
@@ -445,7 +471,6 @@ function initPostModal() {
     }
   });
 
-  // ---- Photo upload UI ----
   photoBtn?.addEventListener('click', () => {
     fileInput?.click();
   });
@@ -481,7 +506,6 @@ function initPostModal() {
     photoBtn?.classList.add('has-photos');
   });
 
-  // ---- Tag Members ----
   mentionBtn?.addEventListener('click', (e) => {
     e.stopPropagation();
     mentionDropdown?.classList.toggle('open');
@@ -531,7 +555,6 @@ function initPostModal() {
     });
   }
 
-  // ---- Submit state ----
   function updateSubmitState() {
     const canSubmit = (titleInput?.value.trim().length > 0) && !!selectedCategory;
     if (submitBtn) submitBtn.disabled = !canSubmit;
@@ -540,7 +563,6 @@ function initPostModal() {
   titleInput?.addEventListener('input', updateSubmitState);
   bodyInput?.addEventListener('input', updateSubmitState);
 
-  // ---- Open / Close ----
   function openModal() {
     modal?.classList.add('open');
     overlay?.classList.add('open');
@@ -553,7 +575,6 @@ function initPostModal() {
     modal?.classList.remove('open');
     overlay?.classList.remove('open');
     document.body.style.overflow = '';
-    // Reset all fields
     if (titleInput) titleInput.value = '';
     if (bodyInput) bodyInput.value = '';
     selectedCategory = '';
@@ -571,7 +592,6 @@ function initPostModal() {
     updateSubmitState();
   }
 
-  // ---- Submit post ----
   function submitPost() {
     if (!titleInput?.value.trim() || !selectedCategory) return;
 
@@ -599,7 +619,6 @@ function initPostModal() {
     addUserPost(newPost);
     closeModal();
 
-    // Show success toast
     if (successToast) {
       successToast.classList.add('show');
       replaceIcons(successToast);
@@ -614,14 +633,12 @@ function initPostModal() {
   cancelBtn?.addEventListener('click', closeModal);
   submitBtn?.addEventListener('click', submitPost);
 
-  // Close on Escape
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && modal?.classList.contains('open')) {
       closeModal();
     }
   });
 
-  // Open on create-post-bar click (delegated)
   document.addEventListener('click', (e) => {
     const target = e.target as HTMLElement;
     if (target.closest('.create-post-bar')) {
@@ -629,7 +646,6 @@ function initPostModal() {
     }
   });
 
-  // Sidebar "Create Post" button
   document.addEventListener('click', (e) => {
     const target = e.target as HTMLElement;
     if (target.closest('.sidebar-about .btn-primary')) {
@@ -649,24 +665,19 @@ function init() {
   initHamburger();
   initPostModal();
 
-  // Theme toggle
   document.getElementById('theme-toggle')?.addEventListener('click', toggleTheme);
 
-  // Replace icons in static nav
   replaceIcons();
 
-  // Global logout handler
   document.getElementById('logout-btn')?.addEventListener('click', () => {
     apiService.logout();
     location.hash = '#/hero';
   });
 
-  // Router
   window.addEventListener('hashchange', navigate);
   navigate();
 }
 
-// Boot
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', init);
 } else {

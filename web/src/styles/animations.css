@@ -1,189 +1,365 @@
 /* ============================================
-   ANIMATIONS
-   Scroll-driven animations + view transitions
+   ANIMATIONS v2.0
+   Cinematic • Fluid • Premium
    ============================================ */
 
-/* -- Scroll-driven card reveal -- */
+/* ── Scroll-driven reveals ── */
 .reveal-on-scroll {
   animation: revealUp linear both;
+  animation-timeline: view();
+  animation-range: entry 0% entry 45%;
+}
+
+.reveal-fade {
+  animation: revealFade linear both;
   animation-timeline: view();
   animation-range: entry 0% entry 40%;
 }
 
-@keyframes revealUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.reveal-left {
+  animation: revealLeft linear both;
+  animation-timeline: view();
+  animation-range: entry 0% entry 45%;
 }
 
-/* -- Staggered children reveal -- */
+.reveal-right {
+  animation: revealRight linear both;
+  animation-timeline: view();
+  animation-range: entry 0% entry 45%;
+}
+
+@keyframes revealUp {
+  from { opacity: 0; transform: translateY(40px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes revealFade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes revealLeft {
+  from { opacity: 0; transform: translateX(-40px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes revealRight {
+  from { opacity: 0; transform: translateX(40px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* ── Stagger children ── */
 .stagger-children > * {
   animation: fadeInUp var(--duration-slow) var(--ease-out) both;
 }
 
-.stagger-children > *:nth-child(1) { animation-delay: 0ms; }
-.stagger-children > *:nth-child(2) { animation-delay: 60ms; }
-.stagger-children > *:nth-child(3) { animation-delay: 120ms; }
-.stagger-children > *:nth-child(4) { animation-delay: 180ms; }
-.stagger-children > *:nth-child(5) { animation-delay: 240ms; }
-.stagger-children > *:nth-child(6) { animation-delay: 300ms; }
-.stagger-children > *:nth-child(7) { animation-delay: 360ms; }
-.stagger-children > *:nth-child(8) { animation-delay: 420ms; }
+.stagger-children > *:nth-child(1)  { animation-delay: 0ms; }
+.stagger-children > *:nth-child(2)  { animation-delay: 70ms; }
+.stagger-children > *:nth-child(3)  { animation-delay: 140ms; }
+.stagger-children > *:nth-child(4)  { animation-delay: 210ms; }
+.stagger-children > *:nth-child(5)  { animation-delay: 280ms; }
+.stagger-children > *:nth-child(6)  { animation-delay: 350ms; }
+.stagger-children > *:nth-child(7)  { animation-delay: 420ms; }
+.stagger-children > *:nth-child(8)  { animation-delay: 490ms; }
+.stagger-children > *:nth-child(9)  { animation-delay: 560ms; }
+.stagger-children > *:nth-child(10) { animation-delay: 630ms; }
 
 @keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-/* -- Page transitions -- */
-@keyframes pageSlideIn {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
+/* ── Page transitions ── */
 .page-enter {
-  animation: pageSlideIn var(--duration-normal) var(--ease-out) both;
+  animation: pageEnter var(--duration-normal) var(--ease-out) both;
 }
 
-/* -- Vote animation -- */
+@keyframes pageEnter {
+  from { opacity: 0; transform: translateY(14px) scale(0.99); filter: blur(2px); }
+  to   { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+
+/* ── View Transitions API ── */
+::view-transition-old(root) {
+  animation: vtOld 200ms var(--ease-in-out) both;
+}
+
+::view-transition-new(root) {
+  animation: vtNew 280ms var(--ease-out) both;
+}
+
+@keyframes vtOld {
+  from { opacity: 1; transform: scale(1); filter: blur(0); }
+  to   { opacity: 0; transform: scale(0.98); filter: blur(4px); }
+}
+
+@keyframes vtNew {
+  from { opacity: 0; transform: scale(1.02); filter: blur(4px); }
+  to   { opacity: 1; transform: scale(1); filter: blur(0); }
+}
+
+/* ── Vote animation ── */
 @keyframes voteScale {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.3); }
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.4) rotate(-5deg); }
+  70%  { transform: scale(0.9); }
   100% { transform: scale(1); }
 }
 
 .vote-animate {
-  animation: voteScale 300ms var(--ease-spring);
+  animation: voteScale 350ms var(--ease-spring);
 }
 
-/* -- Hero parallax (scroll-driven) -- */
-.hero-parallax {
-  animation: parallaxShift linear;
-  animation-timeline: scroll();
-  animation-range: 0% 50%;
-}
-
-@keyframes parallaxShift {
-  from { transform: translateY(0); }
-  to { transform: translateY(60px); }
-}
-
-/* -- Floating badge animation -- */
+/* ── Float (ambient blobs, badges) ── */
 @keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  33%       { transform: translateY(-8px) rotate(1deg); }
+  66%       { transform: translateY(-4px) rotate(-1deg); }
 }
 
 .float-animation {
-  animation: float 3s ease-in-out infinite;
+  animation: float 4s ease-in-out infinite;
 }
 
-/* -- Pulse dot -- */
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+/* ── Pulse dot ── */
+@keyframes pulseDot {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50%       { transform: scale(1.3); opacity: 0.7; }
 }
 
-.pulse {
-  animation: pulse 2s ease-in-out infinite;
+.pulse-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--success);
+  animation: pulseDot 2s ease-in-out infinite;
+  box-shadow: 0 0 8px var(--success);
 }
 
-/* -- Spin -- */
+/* ── Shimmer (skeleton loading) ── */
+@keyframes shimmer {
+  0%   { background-position: -600px 0; }
+  100% { background-position: 600px 0; }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--bg-tertiary) 25%,
+    var(--bg-secondary) 50%,
+    var(--bg-tertiary) 75%
+  );
+  background-size: 1200px 100%;
+  animation: shimmer 1.8s ease-in-out infinite;
+  border-radius: var(--radius-md);
+}
+
+[data-theme="dark"] .skeleton {
+  background: linear-gradient(
+    90deg,
+    oklch(20% 0.01 260) 25%,
+    oklch(25% 0.012 260) 50%,
+    oklch(20% 0.01 260) 75%
+  );
+  background-size: 1200px 100%;
+}
+
+/* ── Gradient shift (animated backgrounds) ── */
+@keyframes gradientShift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animate-gradient {
+  background-size: 300% 300%;
+  animation: gradientShift 8s ease infinite;
+}
+
+/* ── Glow pulse ── */
+@keyframes glowPulse {
+  0%, 100% { box-shadow: var(--shadow-glow); }
+  50%       { box-shadow: var(--neon-terracotta); }
+}
+
+.glow-pulse {
+  animation: glowPulse 3s ease-in-out infinite;
+}
+
+/* ── Spinning logo ── */
 @keyframes spin {
   from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  to   { transform: rotate(360deg); }
 }
 
-.spin {
-  animation: spin 1s linear infinite;
+.spin { animation: spin 1s linear infinite; }
+
+.spin-hover:hover {
+  animation: spin 0.6s var(--ease-spring);
 }
 
-/* -- Shimmer overlay -- */
-@keyframes shimmer {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
+/* ── Magnetic button (JS needed for full effect) ── */
+.btn-magnetic {
+  transition: transform var(--duration-fast) var(--ease-spring);
 }
 
-.shimmer-overlay {
+/* ── Card 3D tilt ── */
+.card-3d {
+  transform-style: preserve-3d;
+  transition: transform var(--duration-normal) var(--ease-out);
+  will-change: transform;
+}
+
+/* ── Shine sweep on hover ── */
+.shine-hover {
   position: relative;
   overflow: hidden;
 }
 
-.shimmer-overlay::after {
+.shine-hover::after {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    oklch(100% 0 0 / 0.15) 50%,
-    transparent 100%
-  );
-  animation: shimmer 2s infinite;
+  inset: 0;
+  background: var(--gradient-shine);
+  transform: translateX(-100%);
+  transition: transform 0.6s var(--ease-out);
+  pointer-events: none;
 }
 
-/* -- View Transitions (native) -- */
-::view-transition-old(page) {
-  animation: fadeOut 150ms ease-out both;
+.shine-hover:hover::after {
+  transform: translateX(100%);
 }
 
-::view-transition-new(page) {
-  animation: fadeIn 200ms ease-out both;
+/* ── Typewriter ── */
+@keyframes typewriter {
+  from { width: 0; }
+  to   { width: 100%; }
 }
 
-@keyframes fadeOut {
-  from { opacity: 1; }
-  to { opacity: 0; }
+@keyframes cursor-blink {
+  0%, 100% { border-color: var(--accent); }
+  50%       { border-color: transparent; }
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+.typewriter {
+  overflow: hidden;
+  white-space: nowrap;
+  border-right: 3px solid var(--accent);
+  animation: typewriter 2s steps(40) both, cursor-blink 0.8s step-end infinite;
 }
 
-/* -- Reduced motion -- */
+/* ── Blob morphing ── */
+@keyframes blobMorph {
+  0%   { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
+  33%  { border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%; }
+  66%  { border-radius: 70% 30% 40% 60% / 30% 70% 50% 40%; }
+  100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
+}
+
+.blob {
+  animation: blobMorph 10s ease-in-out infinite;
+}
+
+/* ── Counter number up ── */
+@keyframes countUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.count-animate {
+  animation: countUp 0.6s var(--ease-out) both;
+}
+
+/* ── Notification badge bounce ── */
+@keyframes badgeBounce {
+  0%, 100% { transform: scale(1); }
+  40%       { transform: scale(1.2); }
+  60%       { transform: scale(0.95); }
+}
+
+.badge-animate {
+  animation: badgeBounce 0.5s var(--ease-spring);
+}
+
+/* ── Slide in from bottom (modals, sheets) ── */
+@keyframes slideInBottom {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+
+/* ── Parallax (scroll-driven) ── */
+.parallax-bg {
+  animation: parallaxShift linear;
+  animation-timeline: scroll();
+  animation-range: 0% 100%;
+}
+
+@keyframes parallaxShift {
+  from { transform: translateY(0); }
+  to   { transform: translateY(60px); }
+}
+
+/* ── Hero image track scroll ── */
+@keyframes trackDown {
+  from { transform: translateY(0); }
+  to   { transform: translateY(-50%); }
+}
+
+@keyframes trackUp {
+  from { transform: translateY(-50%); }
+  to   { transform: translateY(0); }
+}
+
+.hero-track-down { animation: trackDown 30s linear infinite; }
+.hero-track-up   { animation: trackUp  30s linear infinite; }
+
+/* ── Reels progress bar ── */
+@keyframes reelProgress {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+/* ── Confetti particle ── */
+@keyframes confettiFall {
+  0%   { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(120vh) rotate(720deg); opacity: 0; }
+}
+
+/* ── Heart pop ── */
+@keyframes heartPop {
+  0%   { transform: scale(1); }
+  25%  { transform: scale(1.45) rotate(-10deg); }
+  50%  { transform: scale(0.9) rotate(5deg); }
+  75%  { transform: scale(1.15); }
+  100% { transform: scale(1.1); }
+}
+
+.liked-animate {
+  animation: heartPop 0.4s var(--ease-spring) both;
+}
+
+/* ── Tooltip pop ── */
+@keyframes tooltipPop {
+  from { opacity: 0; transform: translateY(4px) scale(0.95); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ── Reduced motion override ── */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
-  .reveal-on-scroll {
+
+  .reveal-on-scroll,
+  .reveal-fade,
+  .reveal-left,
+  .reveal-right {
     animation: none;
     opacity: 1;
     transform: none;
   }
-}
-
-/* Heart pop animation */
-@keyframes heartPop {
-  0% { transform: scale(1); }
-  30% { transform: scale(1.35); }
-  60% { transform: scale(0.9); }
-  100% { transform: scale(1.15); }
-}
-
-.tip-likes.liked svg,
-.place-card-save.saved svg {
-  animation: heartPop 0.35s var(--ease-out);
 }

@@ -8,7 +8,5 @@ export declare class SubscriptionsController {
         paymentMethod: string;
         reference?: string;
     }): Promise<import("./subscription.entity").Subscription>;
-    cancel(req: any): Promise<{
-        message: string;
-    }>;
+    cancel(req: any): Promise<void>;
 }

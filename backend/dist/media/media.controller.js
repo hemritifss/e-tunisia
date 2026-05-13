@@ -16,53 +16,82 @@ exports.MediaController = void 0;
 const common_1 = require("@nestjs/common");
 const platform_express_1 = require("@nestjs/platform-express");
 const swagger_1 = require("@nestjs/swagger");
-const multer_1 = require("multer");
-const path_1 = require("path");
-const uuid_1 = require("uuid");
-const storage = (0, multer_1.diskStorage)({
-    destination: './uploads',
-    filename: (req, file, cb) => {
-        const uniqueName = `${(0, uuid_1.v4)()}${(0, path_1.extname)(file.originalname)}`;
-        cb(null, uniqueName);
-    },
-});
+const storage_service_1 = require("../storage/storage.service");
+const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
+const common_2 = require("@nestjs/common");
 let MediaController = class MediaController {
-    uploadFile(file) {
+    constructor(storageService) {
+        this.storageService = storageService;
+    }
+    async uploadFile(file, folder) {
+        const result = await this.storageService.uploadFile(file.buffer, file.originalname, folder || 'uploads', file.mimetype);
         return {
-            url: `/uploads/${file.filename}`,
-            filename: file.filename,
+            success: true,
+            url: result.url,
+            key: result.key,
+            bucket: result.bucket,
             size: file.size,
         };
     }
-    uploadFiles(files) {
-        return files.map((file) => ({
-            url: `/uploads/${file.filename}`,
-            filename: file.filename,
-            size: file.size,
+    async uploadFiles(files, folder) {
+        const uploads = await Promise.all(files.map((file) => this.storageService.uploadFile(file.buffer, file.originalname, folder || 'uploads', file.mimetype)));
+        return uploads.map((result, index) => ({
+            success: true,
+            url: result.url,
+            key: result.key,
+            bucket: result.bucket,
+            size: files[index].size,
         }));
     }
 };
 exports.MediaController = MediaController;
 __decorate([
     (0, common_1.Post)('upload'),
+    (0, common_2.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, swagger_1.ApiConsumes)('multipart/form-data'),
-    (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('file', { storage })),
+    (0, swagger_1.ApiBody)({
+        schema: {
+            type: 'object',
+            properties: {
+                file: { type: 'string', format: 'binary' },
+                folder: { type: 'string', default: 'uploads' },
+            },
+        },
+    }),
+    (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('file')),
     __param(0, (0, common_1.UploadedFile)()),
+    __param(1, (0, common_1.Body)('folder')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", Promise)
 ], MediaController.prototype, "uploadFile", null);
 __decorate([
     (0, common_1.Post)('upload-multiple'),
+    (0, common_2.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, swagger_1.ApiConsumes)('multipart/form-data'),
-    (0, common_1.UseInterceptors)((0, platform_express_1.FilesInterceptor)('files', 10, { storage })),
+    (0, swagger_1.ApiBody)({
+        schema: {
+            type: 'object',
+            properties: {
+                files: {
+                    type: 'array',
+                    items: { type: 'string', format: 'binary' },
+                },
+                folder: { type: 'string', default: 'uploads' },
+            },
+        },
+    }),
+    (0, common_1.UseInterceptors)((0, platform_express_1.FilesInterceptor)('files', 10)),
     __param(0, (0, common_1.UploadedFiles)()),
+    __param(1, (0, common_1.Body)('folder')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Array]),
-    __metadata("design:returntype", void 0)
+    __metadata("design:paramtypes", [Array, String]),
+    __metadata("design:returntype", Promise)
 ], MediaController.prototype, "uploadFiles", null);
 exports.MediaController = MediaController = __decorate([
     (0, swagger_1.ApiTags)('media'),
-    (0, common_1.Controller)('media')
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.Controller)('media'),
+    __metadata("design:paramtypes", [storage_service_1.StorageService])
 ], MediaController);
 //# sourceMappingURL=media.controller.js.map
