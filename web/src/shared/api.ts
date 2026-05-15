@@ -1,4 +1,7 @@
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+// VITE_API_URL is treated as host-only here (endpoints below already include /api/v1).
+// If user set it WITH /api/v1, strip it so we don't double up.
+const RAW = (import.meta.env.VITE_API_URL || 'http://localhost:3000').replace(/\/+$/, '');
+const API_BASE = RAW.replace(/\/api\/v\d+$/, '');
 
 class ApiError extends Error {
   constructor(

@@ -3,7 +3,11 @@
 // Mirrors Flutter ApiService, talks to NestJS backend
 // ============================================
 
-const BASE_URL = import.meta.env?.VITE_API_URL || 'http://localhost:3000/api/v1';
+// VITE_API_URL accepts either form:
+//   "https://abc.ngrok-free.app"          → /api/v1 is appended
+//   "https://abc.ngrok-free.app/api/v1"   → used as-is
+const RAW_BASE = (import.meta.env?.VITE_API_URL || 'http://localhost:3000').replace(/\/+$/, '');
+const BASE_URL = /\/api\/v\d+$/.test(RAW_BASE) ? RAW_BASE : `${RAW_BASE}/api/v1`;
 
 // ── Token management ─────────────────────────
 function getToken(): string | null {

@@ -16,17 +16,26 @@ async function bootstrap() {
         defaultVersion: '1',
         prefix: 'api/v',
     });
-    const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
+    const allowedPatterns = (process.env.ALLOWED_ORIGINS?.split(',').map(s => s.trim()) || [
         'http://localhost:5173',
         'http://localhost:3000',
-    ];
+        'http://localhost:4173',
+        'https://*.vercel.app',
+        'https://*.ngrok-free.app',
+        'https://*.ngrok.app',
+        'https://*.ngrok.io',
+    ]).filter(Boolean);
+    const originRegexes = allowedPatterns.map(pattern => {
+        const escaped = pattern.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*');
+        return new RegExp(`^${escaped}$`);
+    });
     app.enableCors({
         origin: (origin, callback) => {
-            if (!origin || allowedOrigins.includes(origin)) {
+            if (!origin || originRegexes.some(r => r.test(origin))) {
                 callback(null, true);
             }
             else {
-                callback(new Error('Not allowed by CORS'), false);
+                callback(new Error(`Not allowed by CORS: ${origin}`), false);
             }
         },
         methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
