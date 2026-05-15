@@ -244,3 +244,75 @@
   --leading-normal: 1.7;
   --leading-relaxed: 1.85;
 }
+
+/* ============================================
+   SLEEK LAYER — minimalist semantic tokens
+   Applied via [data-design="sleek"] on a page root.
+   Surfaces are quiet/neutral; brand reserved for ~10%
+   (CTAs, votes, focus). Existing tokens kept intact.
+   ============================================ */
+[data-design="sleek"] {
+  /* Surfaces (neutral, 60% of the visual budget) */
+  --sleek-surface:          oklch(100% 0 0);
+  --sleek-surface-muted:    oklch(98% 0.002 80);
+  --sleek-surface-sunken:   oklch(96.5% 0.003 80);
+  --sleek-surface-hover:    oklch(97% 0.003 80);
+
+  /* Borders (hairline, the silhouette of the design) */
+  --sleek-border:           oklch(91% 0.005 80);
+  --sleek-border-strong:    oklch(84% 0.006 80);
+
+  /* Text (30% — neutral hierarchy) */
+  --sleek-text:             oklch(18% 0.008 60);
+  --sleek-text-secondary:   oklch(42% 0.006 60);
+  --sleek-text-muted:       oklch(58% 0.005 60);
+
+  /* Accent (10% — brand) — uses existing brand var so palette stays Tunisian */
+  --sleek-accent:           var(--accent);
+  --sleek-accent-hover:     var(--accent-hover);
+  --sleek-accent-text:      var(--accent-text);
+  --sleek-accent-soft:      var(--accent-light);
+
+  /* Focus ring — WCAG 2.2 AA visible */
+  --sleek-focus-ring:       0 0 0 2px var(--sleek-surface), 0 0 0 4px var(--sleek-accent);
+
+  /* Quiet elevation — Sleek prefers borders over shadow */
+  --sleek-elev-0:           none;
+  --sleek-elev-1:           0 1px 2px oklch(0% 0 0 / 0.04);
+  --sleek-elev-2:           0 4px 12px -4px oklch(0% 0 0 / 0.06);
+
+  /* Radii — restrained */
+  --sleek-radius-sm:        6px;
+  --sleek-radius-md:        10px;
+  --sleek-radius-lg:        14px;
+
+  /* Motion — fast, subtle */
+  --sleek-motion-fast:      120ms var(--ease-out);
+  --sleek-motion-base:      200ms var(--ease-out);
+}
+
+[data-theme="dark"] [data-design="sleek"] {
+  --sleek-surface:          oklch(16% 0.013 260);
+  --sleek-surface-muted:    oklch(14% 0.013 260);
+  --sleek-surface-sunken:   oklch(12% 0.013 260);
+  --sleek-surface-hover:    oklch(20% 0.014 260);
+
+  --sleek-border:           oklch(26% 0.012 260);
+  --sleek-border-strong:    oklch(34% 0.014 260);
+
+  --sleek-text:             oklch(94% 0.006 80);
+  --sleek-text-secondary:   oklch(72% 0.006 80);
+  --sleek-text-muted:       oklch(54% 0.005 80);
+
+  --sleek-focus-ring:       0 0 0 2px var(--sleek-surface), 0 0 0 4px var(--sleek-accent);
+
+  --sleek-elev-1:           0 1px 2px oklch(0% 0 0 / 0.4);
+  --sleek-elev-2:           0 4px 12px -4px oklch(0% 0 0 / 0.5);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-design="sleek"] {
+    --sleek-motion-fast: 0ms linear;
+    --sleek-motion-base: 0ms linear;
+  }
+}

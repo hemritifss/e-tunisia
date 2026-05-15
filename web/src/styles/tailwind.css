@@ -2,30 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  :root {
-    --surface: #ffffff;
-    --surface-elevated: #fafafa;
-    --foreground: #111827;
-    --muted: #6b7280;
-    --border: #e5e7eb;
-  }
-
-  [data-theme='dark'] {
-    --surface: #0f172a;
-    --surface-elevated: #1e293b;
-    --foreground: #f8fafc;
-    --muted: #94a3b8;
-    --border: #334155;
-  }
-
-  body {
-    background-color: var(--surface);
-    color: var(--foreground);
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
-}
+/* Note: --surface, --surface-elevated, --border, --text-primary, --text-secondary, --text-muted
+   are owned by tokens.css and apply to both vanilla pages and React islands.
+   Tailwind colors (foreground, muted-foreground, border, etc.) read those vars via tailwind.config.js. */
 
 @layer utilities {
   .text-balance {

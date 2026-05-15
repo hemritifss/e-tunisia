@@ -33,7 +33,19 @@ export default {
         surface: {
           DEFAULT: 'var(--surface)',
           elevated: 'var(--surface-elevated)',
+          hover: 'var(--surface-hover)',
         },
+        foreground: 'var(--text-primary)',
+        'muted-foreground': 'var(--text-secondary)',
+        muted: 'var(--text-muted)',
+        border: 'var(--border)',
+        'bg-primary': 'var(--bg-primary)',
+      },
+      backgroundColor: {
+        page: 'var(--bg-primary)',
+      },
+      borderColor: {
+        DEFAULT: 'var(--border)',
       },
       fontFamily: {
         sans: ['Inter', 'Noto Kufi Arabic', 'system-ui', 'sans-serif'],

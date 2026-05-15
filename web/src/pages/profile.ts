@@ -7,7 +7,7 @@ import { replaceIcons } from '../icons';
 
 export function renderProfilePage(): string {
   return `
-    <div class="profile-page page-enter">
+    <div class="profile-page page-enter" data-design="sleek">
       <div class="profile-card" id="profile-card">
         <div class="profile-loading">
           <div class="spinner"></div>

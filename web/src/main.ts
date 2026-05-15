@@ -49,16 +49,20 @@ function getRoute(hash: string): Route {
   const path = hash.replace('#', '') || '/';
 
   // --- Auth Guard ---
-  const guestRoutes = ['/hero', '/login', '/register'];
-  const isGuestRoute = guestRoutes.includes(path);
+  // Routes that REQUIRE login (personal data). Everything else is browsable as guest.
+  const authRequiredPrefixes = ['/profile', '/favorites', '/settings', '/badges', '/leaderboard'];
+  const authOnlyHome = path === '/';
+  const requiresAuth = authOnlyHome || authRequiredPrefixes.some(p => path === p || path.startsWith(p + '/'));
+  const heroOnlyRoutes = ['/login', '/register'];
+  const isHeroOnly = heroOnlyRoutes.includes(path) || path === '/hero';
   const isLoggedIn = apiService.isLoggedIn();
 
-  if (!isLoggedIn && !isGuestRoute) {
+  if (!isLoggedIn && requiresAuth) {
     history.replaceState(null, '', '#/hero');
     return { render: renderHeroPage, init: () => initHeroPage(), page: 'hero' };
   }
 
-  if (isLoggedIn && isGuestRoute) {
+  if (isLoggedIn && isHeroOnly) {
     history.replaceState(null, '', '#/');
     return { render: renderFeedPage, init: initFeedPage, page: 'feed', isReact: true };
   }
@@ -99,8 +103,8 @@ function getRoute(hash: string): Route {
     '/register': { render: renderRegisterPage, init: initAuthPage, page: '' },
     '/premium': { render: renderPremiumPage, init: initPremiumPage, page: 'premium' },
     '/partner': { render: renderPartnerPage, init: initPartnerPage, page: 'partner' },
-    '/itineraries': { render: renderItinerariesPage, init: () => initItinerariesPage(), page: 'explore' },
-    '/collections': { render: renderCollectionsPage, init: () => initCollectionsPage(), page: 'explore' },
+    '/itineraries': { render: renderItinerariesPage, init: () => initItinerariesPage(), page: 'itineraries' },
+    '/collections': { render: renderCollectionsPage, init: () => initCollectionsPage(), page: 'collections' },
     '/about': { render: renderAboutPage, init: () => initAboutPage(), page: 'hero' },
     '/hero': { render: renderHeroPage, init: () => initHeroPage(), page: 'hero' },
   };
@@ -130,7 +134,7 @@ function navigate() {
 
   // Handle React island routes
   if (route.isReact) {
-    content.innerHTML = '<div id="react-island-root" class="w-full"></div>';
+    content.innerHTML = '<div id="react-island-root" class="react-island-shell"></div>';
     const islandRoot = document.getElementById('react-island-root');
     if (islandRoot) {
       const path = location.hash.replace('#', '') || '/';

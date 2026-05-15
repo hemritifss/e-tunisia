@@ -1,6 +1,6 @@
 export function renderSettingsPage(): string {
   return `
-    <div class="settings-page page-enter">
+    <div class="settings-page page-enter" data-design="sleek">
       <a href="#/profile" class="btn btn-ghost" style="margin-bottom: var(--space-4);">
         <i class="lucide-arrow-left"></i> Back
       </a>
@@ -69,14 +69,14 @@ export function renderSettingsPage(): string {
             <div class="settings-item-label">Edit Profile</div>
             <div class="settings-item-desc">Update your name, photo, and bio</div>
           </div>
-          <button class="btn btn-sm btn-secondary">Edit</button>
+          <button class="btn btn-sm btn-secondary" id="settings-edit-profile">Edit</button>
         </div>
         <div class="settings-item">
           <div>
             <div class="settings-item-label text-danger">Delete Account</div>
             <div class="settings-item-desc">Permanently delete your account and data</div>
           </div>
-          <button class="btn btn-sm btn-secondary text-danger">Delete</button>
+          <button class="btn btn-sm btn-secondary text-danger" id="settings-delete-account">Delete</button>
         </div>
       </div>
     </div>
@@ -97,4 +97,16 @@ export function initSettingsPage() {
       }
     });
   }
+
+  document.getElementById('settings-edit-profile')?.addEventListener('click', () => {
+    location.hash = '#/profile';
+  });
+
+  document.getElementById('settings-delete-account')?.addEventListener('click', () => {
+    const ok = window.confirm('Delete your account permanently? This action cannot be undone.');
+    if (!ok) return;
+    try { localStorage.clear(); } catch {}
+    location.hash = '#/hero';
+    location.reload();
+  });
 }

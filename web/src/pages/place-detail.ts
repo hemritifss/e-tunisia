@@ -6,6 +6,7 @@
 import * as apiService from '../api';
 import { places as mockPlaces } from '../data';
 import { replaceIcons } from '../icons';
+import { shareUrl, toggleSaved, isSaved, showToast } from '../ui-utils';
 
 const mockComments = [
   { author: 'Sarah M.', avatar: 'https://api.dicebear.com/9.x/thumbs/svg?seed=Sarah', text: 'Absolutely stunning place! The views are breathtaking.', rating: 5, timeAgo: '2d ago', votes: 12 },
@@ -48,7 +49,7 @@ function renderPlaceContent(place: any, reviews: any[]): string {
         <a href="#/" class="btn-icon place-detail-back"><i class="lucide-arrow-left"></i></a>
         <div class="place-detail-hero-right">
           <button class="btn-icon place-detail-save" id="place-save-btn" aria-label="Save"><i class="lucide-heart"></i></button>
-          <button class="btn-icon" aria-label="Share"><i class="lucide-share-2"></i></button>
+          <button class="btn-icon" id="place-share-btn" aria-label="Share"><i class="lucide-share-2"></i></button>
         </div>
       </div>
     </div>
@@ -159,9 +160,21 @@ export async function initPlaceDetailPage() {
   // --- Initialize interactions ---
   // Save button
   const saveBtn = document.getElementById('place-save-btn');
+  if (saveBtn && isSaved('place:' + placeId)) saveBtn.classList.add('saved');
   saveBtn?.addEventListener('click', () => {
-    saveBtn.classList.toggle('saved');
+    const nowSaved = toggleSaved('place:' + placeId);
+    saveBtn.classList.toggle('saved', nowSaved);
+    showToast(nowSaved ? 'Saved to favorites' : 'Removed from favorites');
     try { apiService.toggleFavorite(placeId); } catch {}
+  });
+
+  // Share button
+  document.getElementById('place-share-btn')?.addEventListener('click', () => {
+    shareUrl({
+      title: place.name || 'e-Tunisia',
+      text: place.description || '',
+      url: `${location.origin}${location.pathname}#/place/${placeId}`,
+    });
   });
 
   // Write review toggle

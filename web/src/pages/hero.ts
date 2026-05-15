@@ -222,24 +222,40 @@ export function renderHeroPage(): string {
         </div>
       </section>
 
-      <!-- PARTNERS -->
-      <section class="tn-section tn-partners">
+      <!-- PARTNERS / CUSTOMER LOGOS -->
+      <section class="tn-section tn-logos-section">
         <div class="tn-container">
-          <p class="tn-partners-label">Supported by organizations that believe in Tunisia</p>
-          <div class="tn-partners-scroll">
-            <div class="tn-partners-track">
-              ${[...Array(2)].map(() => `
-                <img src="/img/partenaires/APII.png" alt="APII" />
-                <img src="/img/partenaires/Jci%20Gremda.png" alt="JCI Gremda" />
-                <img src="/img/partenaires/OIM_Migration.png" alt="OIM" />
-                <img src="/img/partenaires/RNPE.png" alt="RNPE" />
-                <img src="/img/partenaires/Complexe_des_Jeunes.png" alt="Complexe des Jeunes" />
-                <img src="/img/partenaires/Logo%20SB%20ENET_Com_Color.png" alt="ENET Com" />
-                <img src="/img/partenaires/MPRR_LOGO_Draft-01__1.png" alt="MPRR" />
+          <div class="tn-logos-stack">
+            <!-- Header Block -->
+            <div class="tn-logos-header">
+              <h2 class="tn-logos-heading">Trusted by organizations shaping Tunisia's future</h2>
+              <p class="tn-logos-description">We collaborate with forward-thinking institutions, NGOs, and businesses committed to elevating Tunisian tourism and empowering local communities.</p>
+              <div class="tn-logos-links">
+                <a href="#/partner" class="tn-logos-link">Become a partner →</a>
+                <a href="#/about" class="tn-logos-link">Learn more about us →</a>
+              </div>
+            </div>
+
+            <!-- Logo Cards Grid: 2 rows × 3 cards -->
+            <div class="tn-logos-grid">
+              <div class="tn-logo-card">
+                <img src="/img/partenaires/OIM_Migration.png" alt="OIM — International Organization for Migration" />
+              </div>
+              <div class="tn-logo-card">
+                <img src="/img/partenaires/Logo%20SB%20ENET_Com_Color.png" alt="ENET'Com" />
+              </div>
+              <div class="tn-logo-card">
+                <img src="/img/partenaires/APII.png" alt="APII — Agence de Promotion de l'Industrie et de l'Innovation" />
+              </div>
+              <div class="tn-logo-card">
                 <img src="/img/partenaires/Nafship-1_upscayl_3x_ultramix_balanced.png" alt="Nafship" />
+              </div>
+              <div class="tn-logo-card">
+                <img src="/img/partenaires/MPRR_LOGO_Draft-01__1.png" alt="MPRR" />
+              </div>
+              <div class="tn-logo-card">
                 <img src="/img/partenaires/Bussiness_Success.png" alt="Business Success" />
-                <img src="/img/partenaires/Best_Buy.png" alt="Best Buy" />
-              `).join('')}
+              </div>
             </div>
           </div>
         </div>
@@ -330,7 +346,7 @@ export function renderHeroPage(): string {
           </div>
           <div class="tn-footer-col">
             <h4>Community</h4>
-            <a href="#/feed">Feed</a>
+            <a href="#/">Feed</a>
             <a href="#/tips">Tips</a>
             <a href="#/leaderboard">Leaderboard</a>
             <a href="#/partner">Partner</a>
@@ -339,7 +355,7 @@ export function renderHeroPage(): string {
             <h4>Company</h4>
             <a href="#/about">About</a>
             <a href="#/premium">Pricing</a>
-            <a href="#/contact">Contact</a>
+            <a href="#/partner">Contact</a>
           </div>
         </div>
         <div class="tn-footer-bottom">
@@ -427,6 +443,12 @@ export function initHeroPage() {
   }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
 
   document.querySelectorAll('.tn-why-card, .tn-place-card').forEach((el) => revealObserver.observe(el));
+
+  // Staggered reveal for logo cards
+  document.querySelectorAll('.tn-logo-card').forEach((el, i) => {
+    (el as HTMLElement).style.transitionDelay = `${i * 0.08}s`;
+    revealObserver.observe(el);
+  });
 
   // ---- LANDING PARTNER FORM ----
   const partnerForm = document.getElementById('landing-partner-form') as HTMLFormElement;

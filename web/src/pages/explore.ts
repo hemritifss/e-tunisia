@@ -60,7 +60,7 @@ export function renderPlaceSkeleton(): string {
 
 export function renderExplorePage(): string {
   return `
-    <div class="explore-page page-enter">
+    <div class="explore-page page-enter" data-design="sleek">
       <div class="explore-hero">
         <div class="explore-hero-bg"></div>
         <div class="explore-hero-content">

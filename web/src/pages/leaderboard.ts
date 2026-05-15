@@ -8,7 +8,7 @@ import { replaceIcons } from '../icons';
 
 export function renderLeaderboardPage(): string {
   return `
-    <div class="leaderboard-page page-enter">
+    <div class="leaderboard-page page-enter" data-design="sleek">
       <div class="leaderboard-header">
         <h1><i class="lucide-trophy"></i> Leaderboard</h1>
         <p>Top explorers ranked by XP points. Explore, review, and share to climb the ranks!</p>

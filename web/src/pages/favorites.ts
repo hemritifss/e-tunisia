@@ -8,7 +8,7 @@ import { replaceIcons } from '../icons';
 
 export function renderFavoritesPage(): string {
   return `
-    <div class="favorites-page page-enter">
+    <div class="favorites-page page-enter" data-design="sleek">
       <div class="favorites-header">
         <h1><i class="lucide-heart"></i> Saved Places</h1>
         <p>Your personally curated collection of must-visit places in Tunisia.</p>

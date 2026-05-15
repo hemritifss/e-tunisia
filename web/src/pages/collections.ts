@@ -43,8 +43,8 @@ const mockCollections = [
 function renderCollectionCard(col: any): string {
   const count = col.placeIds?.length || 0;
   return `
-    <div class="collection-card reveal-on-scroll">
-      <a href="#/collection/${col.id}">
+    <div class="collection-card reveal-on-scroll" data-col-id="${col.id}">
+      <button class="collection-card-link" type="button" aria-label="Open ${col.title}">
         <div class="collection-card-image">
           <img src="${api.getImageUrl(col.coverImage || col.image || (col.images && col.images[0]) || '')}" alt="${col.title}" loading="lazy"
                onerror="this.style.background='linear-gradient(135deg, var(--terracotta-pale), var(--mediterranean-pale))';" />
@@ -54,7 +54,7 @@ function renderCollectionCard(col: any): string {
             <span>${count} places</span>
           </div>
         </div>
-      </a>
+      </button>
       ${col.description ? `<p class="collection-card-desc">${col.description}</p>` : ''}
     </div>
   `;
@@ -62,11 +62,15 @@ function renderCollectionCard(col: any): string {
 
 export function renderCollectionsPage(): string {
   return `
-    <div class="collections-page page-enter">
-      <div class="collections-header">
-        <h1><i class="lucide-layers"></i> Curated Collections</h1>
-        <p>Hand-picked sets of places grouped by theme, curated by our editorial team.</p>
-      </div>
+    <div class="collections-page page-enter" data-design="sleek">
+      <section class="tips2-hero">
+        <div class="tips2-hero-bg"></div>
+        <div class="tips2-hero-content">
+          <span class="tips2-eyebrow">Editor's Picks</span>
+          <h1>Curated <span class="tips2-accent">Collections</span></h1>
+          <p>Hand-picked sets of places grouped by theme — UNESCO sites, hidden beaches, food trails, and more.</p>
+        </div>
+      </section>
       <div class="collections-grid" id="collections-grid">
         <div class="collections-loading">
           <div class="spinner"></div>
@@ -91,4 +95,66 @@ export async function initCollectionsPage() {
 
   grid.innerHTML = collections.map(col => renderCollectionCard(col)).join('');
   replaceIcons(grid);
+
+  // Open collection modal on card click
+  grid.querySelectorAll('.collection-card').forEach(card => {
+    const btn = card.querySelector('.collection-card-link');
+    btn?.addEventListener('click', () => {
+      const id = (card as HTMLElement).dataset.colId;
+      const col = collections.find(c => String(c.id) === String(id));
+      if (col) openCollectionModal(col);
+    });
+  });
+}
+
+function openCollectionModal(col: any) {
+  const existing = document.getElementById('collection-modal');
+  if (existing) existing.remove();
+
+  const count = col.placeIds?.length || 0;
+  const modal = document.createElement('div');
+  modal.id = 'collection-modal';
+  modal.className = 'itinerary-modal';
+  modal.innerHTML = `
+    <div class="itinerary-modal-overlay"></div>
+    <div class="itinerary-modal-card">
+      <button class="itinerary-modal-close" aria-label="Close">
+        <i class="lucide-x"></i>
+      </button>
+      <div class="itinerary-modal-cover" style="background-image: url('${api.getImageUrl(col.coverImage || col.image || '')}');">
+        <div class="itinerary-modal-cover-overlay"></div>
+        <div class="itinerary-modal-cover-tags">
+          <span class="itinerary-duration-tag">${count} places</span>
+        </div>
+        <h2>${col.title}</h2>
+      </div>
+      <div class="itinerary-modal-body">
+        <p>${col.description || ''}</p>
+        <div class="itinerary-modal-actions">
+          <a href="#/explore" class="btn btn-primary">
+            <i class="lucide-compass"></i> Explore places
+          </a>
+          <a href="#/map" class="btn btn-outline">
+            <i class="lucide-map"></i> View on map
+          </a>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  replaceIcons(modal);
+  requestAnimationFrame(() => modal.classList.add('open'));
+  document.body.style.overflow = 'hidden';
+
+  const close = () => {
+    modal.classList.remove('open');
+    document.body.style.overflow = '';
+    setTimeout(() => modal.remove(), 200);
+  };
+  modal.querySelector('.itinerary-modal-overlay')?.addEventListener('click', close);
+  modal.querySelector('.itinerary-modal-close')?.addEventListener('click', close);
+  const onKey = (e: KeyboardEvent) => {
+    if (e.key === 'Escape') { close(); document.removeEventListener('keydown', onKey); }
+  };
+  document.addEventListener('keydown', onKey);
 }

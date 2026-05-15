@@ -1,6 +1,7 @@
 import { posts, places, type Post } from '../data';
 import { replaceIcons } from '../icons';
 import * as api from '../api';
+import { shareUrl, toggleSaved, isSaved, showToast } from '../ui-utils';
 
 function parseTimeAgo(timeStr: string): number {
   const match = timeStr.match(/(\d+)(m|h|d|w)/);
@@ -51,13 +52,13 @@ function renderPostCard(post: Post): string {
               <i class="lucide-message-square"></i>
               <span>${post.commentCount} comments</span>
             </button>
-            <button class="post-action-btn">
+            <button class="post-action-btn post-share-btn" data-post="${post.id}" data-title="${post.title.replace(/"/g, '&quot;')}">
               <i class="lucide-share-2"></i>
               <span>Share</span>
             </button>
-            <button class="post-action-btn">
+            <button class="post-action-btn post-save-btn ${isSaved('post:' + post.id) ? 'saved' : ''}" data-post="${post.id}">
               <i class="lucide-bookmark"></i>
-              <span>Save</span>
+              <span>${isSaved('post:' + post.id) ? 'Saved' : 'Save'}</span>
             </button>
           </div>
         </div>
@@ -264,20 +265,20 @@ function renderSidebar(): string {
 
 export function renderFeedPage(): string {
   return `
-    <div class="feed-layout">
+    <div class="feed-layout" data-design="sleek">
       <div class="feed-main">
-        <div class="create-post-bar">
-          <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=Tunisia" alt="You" class="create-post-avatar" />
-          <div class="create-post-input">Share your Tunisia experience...</div>
-          <button class="btn btn-sm btn-secondary"><i class="lucide-image"></i></button>
-          <button class="btn btn-sm btn-secondary"><i class="lucide-link"></i></button>
+        <div class="create-post-bar" role="button" tabindex="0" aria-label="Create a new post">
+          <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=Tunisia" alt="" class="create-post-avatar" />
+          <div class="create-post-input">Share your Tunisia experience…</div>
+          <button class="btn btn-sm btn-secondary" aria-label="Add image"><i class="lucide-image"></i></button>
+          <button class="btn btn-sm btn-secondary" aria-label="Add link"><i class="lucide-link"></i></button>
         </div>
 
-        <div class="feed-sort-bar">
-          <button class="sort-btn active" data-sort="hot"><i class="lucide-flame"></i> Hot</button>
-          <button class="sort-btn" data-sort="new"><i class="lucide-clock"></i> New</button>
-          <button class="sort-btn" data-sort="top"><i class="lucide-bar-chart-3"></i> Top</button>
-          <button class="sort-btn" data-sort="nearby"><i class="lucide-map-pin"></i> Nearby</button>
+        <div class="feed-sort-bar" role="tablist" aria-label="Feed sort">
+          <button class="sort-btn active" data-sort="hot" role="tab" aria-selected="true"><i class="lucide-flame"></i> Hot</button>
+          <button class="sort-btn" data-sort="new" role="tab" aria-selected="false"><i class="lucide-clock"></i> New</button>
+          <button class="sort-btn" data-sort="top" role="tab" aria-selected="false"><i class="lucide-bar-chart-3"></i> Top</button>
+          <button class="sort-btn" data-sort="nearby" role="tab" aria-selected="false"><i class="lucide-map-pin"></i> Nearby</button>
         </div>
 
         ${renderMobileCommunityBar()}
@@ -304,7 +305,9 @@ function bindVoteButtons() {
       if (!post) return;
 
       const wasActive = el.classList.contains('active');
-      document.querySelectorAll(`[data-post="${postId}"]`).forEach(b => b.classList.remove('active'));
+      document.querySelectorAll(`[data-post="${postId}"]`).forEach(b => {
+        if ((b as HTMLElement).classList.contains('vote-btn')) b.classList.remove('active');
+      });
 
       if (!wasActive) {
         document.querySelectorAll(`[data-post="${postId}"][data-vote="${direction}"]`).forEach(b => b.classList.add('active'));
@@ -317,9 +320,32 @@ function bindVoteButtons() {
       setTimeout(() => el.classList.remove('vote-animate'), 300);
 
       const newCount = post.votes + post.userVote;
-      // Update all vote count displays for this post
       const article = document.querySelector(`[data-post-id="${postId}"]`);
       article?.querySelectorAll('.vote-count').forEach(c => c.textContent = String(newCount));
+    });
+  });
+
+  document.querySelectorAll('.post-share-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const el = btn as HTMLElement;
+      const id = el.dataset.post;
+      const title = el.dataset.title || 'e-Tunisia post';
+      shareUrl({ title, url: `${location.origin}${location.pathname}#/post/${id}` });
+    });
+  });
+
+  document.querySelectorAll('.post-save-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const el = btn as HTMLElement;
+      const id = el.dataset.post;
+      if (!id) return;
+      const nowSaved = toggleSaved('post:' + id);
+      el.classList.toggle('saved', nowSaved);
+      const label = el.querySelector('span');
+      if (label) label.textContent = nowSaved ? 'Saved' : 'Save';
+      showToast(nowSaved ? 'Saved to your bookmarks' : 'Removed from bookmarks');
     });
   });
 }
@@ -339,8 +365,12 @@ export function initFeedPage() {
   // Sort buttons - functional sorting
   document.querySelectorAll('.sort-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.sort-btn').forEach(b => {
+        b.classList.remove('active');
+        b.setAttribute('aria-selected', 'false');
+      });
       btn.classList.add('active');
+      btn.setAttribute('aria-selected', 'true');
 
       const sortType = (btn as HTMLElement).dataset.sort;
       const postsContainer = document.getElementById('feed-posts-container');

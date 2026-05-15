@@ -87,7 +87,7 @@ export function renderEventSkeleton(): string {
 
 export function renderEventsPage(): string {
   return `
-    <div class="events-page page-enter">
+    <div class="events-page page-enter" data-design="sleek">
       <!-- Hero -->
       <section class="event2-hero">
         <div class="event2-hero-bg"></div>

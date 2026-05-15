@@ -5,7 +5,7 @@ export function renderPostDetailPage(postId: string): string {
   const post = posts.find(p => p.id === postId);
   if (!post) {
     return `
-      <div class="post-detail-page page-enter">
+      <div class="post-detail-page page-enter" data-design="sleek">
         <div class="empty-state">
           <i class="lucide-file-question"></i>
           <h3>Post not found</h3>
@@ -17,7 +17,7 @@ export function renderPostDetailPage(postId: string): string {
   }
 
   return `
-    <div class="post-detail-page page-enter">
+    <div class="post-detail-page page-enter" data-design="sleek">
       <a href="#/" class="btn btn-ghost" style="margin-bottom: var(--space-4);">
         <i class="lucide-arrow-left"></i> Back to Feed
       </a>

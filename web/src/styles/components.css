@@ -986,6 +986,50 @@
   }
 }
 
+/* Shared UI toast (share/save/etc.) */
+.ui-toast {
+  position: fixed;
+  bottom: calc(var(--mobile-nav-height) + var(--space-6));
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  background: var(--surface-elevated);
+  color: var(--text-primary);
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  box-shadow: var(--shadow-lg);
+  z-index: 400;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--duration-normal) var(--ease-out),
+              transform var(--duration-slow) var(--ease-spring),
+              visibility 0s linear var(--duration-normal);
+  white-space: nowrap;
+  pointer-events: none;
+  max-width: calc(100vw - var(--space-8));
+}
+.ui-toast.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+  transition-delay: 0s;
+}
+.ui-toast[data-type="error"] {
+  background: var(--error);
+  color: white;
+  border-color: transparent;
+}
+.ui-toast[data-type="success"] {
+  border-color: var(--success);
+}
+@media (min-width: 769px) {
+  .ui-toast {
+    bottom: var(--space-8);
+  }
+}
+
 .mobile-nav-item {
   display: flex;
   flex-direction: column;

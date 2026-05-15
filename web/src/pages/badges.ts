@@ -8,7 +8,7 @@ import { replaceIcons } from '../icons';
 
 export function renderBadgesPage(): string {
   return `
-    <div class="badges-page page-enter">
+    <div class="badges-page page-enter" data-design="sleek">
       <div class="badges-header">
         <h1><i class="lucide-award"></i> Badges & Achievements</h1>
         <p>Explore Tunisia and earn badges for your adventures. Complete challenges to unlock new achievements.</p>

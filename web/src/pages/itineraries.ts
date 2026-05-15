@@ -5,6 +5,7 @@
 
 import * as api from '../api';
 import { replaceIcons } from '../icons';
+import { showToast } from '../ui-utils';
 
 // Mock fallback
 const mockItineraries = [
@@ -59,7 +60,7 @@ function renderItineraryCard(it: any): string {
           ${(it.difficulty || 'easy').toUpperCase()}
         </div>
         <p class="itinerary-desc">${it.description}</p>
-        <button class="btn btn-outline btn-sm" style="width: 100%;">
+        <button class="btn btn-outline btn-sm itinerary-view-btn" data-itin="${it.id}" style="width: 100%;">
           <i class="lucide-eye"></i> View Full Itinerary
         </button>
       </div>
@@ -69,11 +70,15 @@ function renderItineraryCard(it: any): string {
 
 export function renderItinerariesPage(): string {
   return `
-    <div class="itineraries-page page-enter">
-      <div class="itineraries-header">
-        <h1><i class="lucide-map"></i> Trip Itineraries</h1>
-        <p>Curated multi-day trips designed by local experts and experienced travelers.</p>
-      </div>
+    <div class="itineraries-page page-enter" data-design="sleek">
+      <section class="tips2-hero">
+        <div class="tips2-hero-bg"></div>
+        <div class="tips2-hero-content">
+          <span class="tips2-eyebrow">Curated Journeys</span>
+          <h1>Trip <span class="tips2-accent">Itineraries</span></h1>
+          <p>Multi-day plans designed by local experts and seasoned travelers — from Sahara nights to coastal road trips.</p>
+        </div>
+      </section>
       <div class="itineraries-grid" id="itineraries-grid">
         <div class="itineraries-loading">
           <div class="spinner"></div>
@@ -98,4 +103,73 @@ export async function initItinerariesPage() {
 
   grid.innerHTML = itineraries.map(it => renderItineraryCard(it)).join('');
   replaceIcons(grid);
+
+  // "View Full Itinerary" — open detail modal
+  document.querySelectorAll('.itinerary-view-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = (btn as HTMLElement).dataset.itin;
+      const it = itineraries.find(x => String(x.id) === String(id));
+      if (!it) return;
+      openItineraryModal(it);
+    });
+  });
+}
+
+function openItineraryModal(it: any) {
+  const existing = document.getElementById('itinerary-modal');
+  if (existing) existing.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'itinerary-modal';
+  modal.className = 'itinerary-modal';
+  modal.innerHTML = `
+    <div class="itinerary-modal-overlay"></div>
+    <div class="itinerary-modal-card">
+      <button class="itinerary-modal-close" aria-label="Close">
+        <i class="lucide-x"></i>
+      </button>
+      <div class="itinerary-modal-cover" style="background-image: url('${api.getImageUrl(it.coverImage || it.image || (it.images && it.images[0]) || '')}');">
+        <div class="itinerary-modal-cover-overlay"></div>
+        <div class="itinerary-modal-cover-tags">
+          <span class="itinerary-duration-tag">${it.duration} Days</span>
+          ${it.isPremium ? '<span class="itinerary-pro-tag">👑 PRO</span>' : ''}
+        </div>
+        <h2>${it.title}</h2>
+      </div>
+      <div class="itinerary-modal-body">
+        <div class="itinerary-modal-meta">
+          <span><i class="lucide-mountain"></i> ${(it.difficulty || 'easy').toUpperCase()}</span>
+          <span><i class="lucide-calendar"></i> ${it.duration} day${it.duration === 1 ? '' : 's'}</span>
+        </div>
+        <p>${it.description}</p>
+        <div class="itinerary-modal-actions">
+          ${it.isPremium
+            ? '<a href="#/premium" class="btn btn-primary"><i class="lucide-crown"></i> Unlock with Premium</a>'
+            : '<a href="#/explore" class="btn btn-primary"><i class="lucide-compass"></i> Start Exploring</a>'}
+          <button class="btn btn-outline itinerary-modal-save" data-itin="${it.id}">
+            <i class="lucide-bookmark"></i> Save
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  replaceIcons(modal);
+  requestAnimationFrame(() => modal.classList.add('open'));
+  document.body.style.overflow = 'hidden';
+
+  const close = () => {
+    modal.classList.remove('open');
+    document.body.style.overflow = '';
+    setTimeout(() => modal.remove(), 200);
+  };
+  modal.querySelector('.itinerary-modal-overlay')?.addEventListener('click', close);
+  modal.querySelector('.itinerary-modal-close')?.addEventListener('click', close);
+  modal.querySelector('.itinerary-modal-save')?.addEventListener('click', () => {
+    showToast('Itinerary saved');
+  });
+  const onKey = (e: KeyboardEvent) => {
+    if (e.key === 'Escape') { close(); document.removeEventListener('keydown', onKey); }
+  };
+  document.addEventListener('keydown', onKey);
 }

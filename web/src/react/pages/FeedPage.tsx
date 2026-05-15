@@ -41,6 +41,14 @@ function PostCard({
 }) {
   const [voteState, setVoteState] = useState<'up' | 'down' | null>(null);
   const [localScore, setLocalScore] = useState(post.upvotes - post.downvotes);
+  const [isSavedLocal, setIsSavedLocal] = useState(() => {
+    try {
+      const map = JSON.parse(localStorage.getItem('etunisia_saved_items') || '{}');
+      return !!map['post:' + post.id];
+    } catch {
+      return false;
+    }
+  });
   const showToast = useUIStore((s) => s.showToast);
 
   const handleVote = (direction: 'up' | 'down') => {
@@ -57,6 +65,44 @@ function PostCard({
       }
     }
     onVote(post.id, direction);
+  };
+
+  const handleComment = () => {
+    location.hash = `#/post/${post.id}`;
+  };
+
+  const handleShare = async () => {
+    const url = `${location.origin}${location.pathname}#/post/${post.id}`;
+    if ((navigator as any).share) {
+      try {
+        await (navigator as any).share({ title: post.title, text: post.body?.slice(0, 100), url });
+        return;
+      } catch {}
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      showToast('Link copied to clipboard', 'success');
+    } catch {
+      showToast('Could not share link', 'error');
+    }
+  };
+
+  const handleSave = () => {
+    try {
+      const map = JSON.parse(localStorage.getItem('etunisia_saved_items') || '{}');
+      const key = 'post:' + post.id;
+      if (map[key]) {
+        delete map[key];
+        localStorage.setItem('etunisia_saved_items', JSON.stringify(map));
+        setIsSavedLocal(false);
+        showToast('Removed from bookmarks', 'info');
+      } else {
+        map[key] = true;
+        localStorage.setItem('etunisia_saved_items', JSON.stringify(map));
+        setIsSavedLocal(true);
+        showToast('Saved to bookmarks', 'success');
+      }
+    } catch {}
   };
 
   return (
@@ -156,15 +202,31 @@ function PostCard({
               )}
 
               {/* Actions */}
-              <div className="flex items-center gap-2">
-                <Button variant="ghost" size="sm" leftIcon={<MessageCircle size={14} />}>
+              <div className="flex items-center gap-2 flex-wrap">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  leftIcon={<MessageCircle size={14} />}
+                  onClick={handleComment}
+                >
                   {formatNumber(post.commentCount)}
                 </Button>
-                <Button variant="ghost" size="sm" leftIcon={<Share2 size={14} />}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  leftIcon={<Share2 size={14} />}
+                  onClick={handleShare}
+                >
                   Share
                 </Button>
-                <Button variant="ghost" size="sm" leftIcon={<Bookmark size={14} />}>
-                  Save
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  leftIcon={<Bookmark size={14} className={isSavedLocal ? 'fill-current' : ''} />}
+                  onClick={handleSave}
+                  className={isSavedLocal ? 'text-brand' : ''}
+                >
+                  {isSavedLocal ? 'Saved' : 'Save'}
                 </Button>
               </div>
             </div>
