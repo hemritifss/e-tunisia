@@ -27,7 +27,10 @@ export function isLoggedIn(): boolean {
 }
 
 function headers(json = true): Record<string, string> {
-  const h: Record<string, string> = {};
+  const h: Record<string, string> = {
+    // Skip ngrok free-tier browser interstitial on GET requests
+    'ngrok-skip-browser-warning': '1',
+  };
   if (json) h['Content-Type'] = 'application/json';
   const token = getToken();
   if (token) h['Authorization'] = `Bearer ${token}`;

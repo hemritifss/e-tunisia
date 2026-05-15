@@ -23,6 +23,8 @@ async function fetchWithAuth(
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
+    // Skip ngrok free-tier browser interstitial on GET requests
+    'ngrok-skip-browser-warning': '1',
     ...((options.headers as Record<string, string>) || {}),
   };
 

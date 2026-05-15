@@ -48,7 +48,7 @@ async function bootstrap() {
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
     allowedHeaders:
-      'Content-Type,Accept,Authorization,X-Requested-With,X-Pinggy-No-Landing-Page',
+      'Content-Type,Accept,Authorization,X-Requested-With,X-Pinggy-No-Landing-Page,ngrok-skip-browser-warning',
     preflightContinue: false,
     optionsSuccessStatus: 204,
   });
