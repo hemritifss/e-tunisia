@@ -14,6 +14,21 @@ html {
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
+  /* Default — overridden below per theme. Tells browsers to render native form
+     controls (<select> options, scrollbars, date pickers) using the right palette. */
+  color-scheme: light;
+}
+
+html[data-theme="dark"] { color-scheme: dark; }
+html[data-theme="light"] { color-scheme: light; }
+
+/* Native form controls: keep them aligned with our theme tokens. */
+select, option, input, textarea {
+  background-color: var(--surface);
+  color: var(--text-primary);
+}
+select:not([disabled]) {
+  border-color: var(--border);
 }
 
 body {

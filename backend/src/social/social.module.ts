@@ -5,9 +5,13 @@ import { SocialService } from './social.service';
 import { Follow } from './follow.entity';
 import { Activity } from './activity.entity';
 import { User } from '../users/user.entity';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Follow, Activity, User])],
+  imports: [
+    TypeOrmModule.forFeature([Follow, Activity, User]),
+    NotificationsModule,
+  ],
   controllers: [SocialController],
   providers: [SocialService],
   exports: [SocialService],

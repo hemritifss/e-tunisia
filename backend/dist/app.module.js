@@ -19,6 +19,11 @@ const reviews_module_1 = require("./reviews/reviews.module");
 const media_module_1 = require("./media/media.module");
 const subscriptions_module_1 = require("./subscriptions/subscriptions.module");
 const tips_module_1 = require("./tips/tips.module");
+const posts_module_1 = require("./posts/posts.module");
+const feed_module_1 = require("./feed/feed.module");
+const stories_module_1 = require("./stories/stories.module");
+const credits_module_1 = require("./credits/credits.module");
+const safety_module_1 = require("./safety/safety.module");
 const events_module_1 = require("./events/events.module");
 const itineraries_module_1 = require("./itineraries/itineraries.module");
 const collections_module_1 = require("./collections/collections.module");
@@ -77,6 +82,11 @@ exports.AppModule = AppModule = __decorate([
             media_module_1.MediaModule,
             subscriptions_module_1.SubscriptionsModule,
             tips_module_1.TipsModule,
+            posts_module_1.PostsModule,
+            feed_module_1.FeedModule,
+            stories_module_1.StoriesModule,
+            credits_module_1.CreditsModule,
+            safety_module_1.SafetyModule,
             events_module_1.EventsModule,
             itineraries_module_1.ItinerariesModule,
             collections_module_1.CollectionsModule,

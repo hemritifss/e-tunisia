@@ -172,7 +172,8 @@ export function initAuthPage() {
       const res = await api.register({ name, email, password, country });
       if (res.accessToken) {
         localStorage.setItem('token', res.accessToken);
-        location.hash = '#/';
+        // Fresh signups always start in the onboarding wizard.
+        location.hash = '#/onboarding';
       }
     } catch (err: any) {
       showError(err.message || 'Registration failed. Please try again.');

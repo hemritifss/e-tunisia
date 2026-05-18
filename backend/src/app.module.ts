@@ -10,6 +10,11 @@ import { ReviewsModule } from './reviews/reviews.module';
 import { MediaModule } from './media/media.module';
 import { SubscriptionsModule } from './subscriptions/subscriptions.module';
 import { TipsModule } from './tips/tips.module';
+import { PostsModule } from './posts/posts.module';
+import { FeedModule } from './feed/feed.module';
+import { StoriesModule } from './stories/stories.module';
+import { CreditsModule } from './credits/credits.module';
+import { SafetyModule } from './safety/safety.module';
 import { EventsModule } from './events/events.module';
 import { ItinerariesModule } from './itineraries/itineraries.module';
 import { CollectionsModule } from './collections/collections.module';
@@ -65,6 +70,11 @@ import { getDatabaseConfig } from './database/database.config';
     MediaModule,
     SubscriptionsModule,
     TipsModule,
+    PostsModule,
+    FeedModule,
+    StoriesModule,
+    CreditsModule,
+    SafetyModule,
     EventsModule,
     ItinerariesModule,
     CollectionsModule,

@@ -14,12 +14,16 @@ const social_service_1 = require("./social.service");
 const follow_entity_1 = require("./follow.entity");
 const activity_entity_1 = require("./activity.entity");
 const user_entity_1 = require("../users/user.entity");
+const notifications_module_1 = require("../notifications/notifications.module");
 let SocialModule = class SocialModule {
 };
 exports.SocialModule = SocialModule;
 exports.SocialModule = SocialModule = __decorate([
     (0, common_1.Module)({
-        imports: [typeorm_1.TypeOrmModule.forFeature([follow_entity_1.Follow, activity_entity_1.Activity, user_entity_1.User])],
+        imports: [
+            typeorm_1.TypeOrmModule.forFeature([follow_entity_1.Follow, activity_entity_1.Activity, user_entity_1.User]),
+            notifications_module_1.NotificationsModule,
+        ],
         controllers: [social_controller_1.SocialController],
         providers: [social_service_1.SocialService],
         exports: [social_service_1.SocialService],

@@ -42,6 +42,9 @@ let EventsService = class EventsService {
         });
     }
     async findById(id) {
+        if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
+            throw new common_1.NotFoundException('Event not found');
+        }
         const event = await this.eventsRepo.findOne({
             where: { id },
             relations: ['place', 'organizer'],

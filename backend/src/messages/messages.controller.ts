@@ -65,4 +65,36 @@ export class MessagesController {
   getUnreadCount(@CurrentUser('id') userId: string) {
     return this.messagesService.getUnreadCount(userId);
   }
+
+  @Post('rooms/:roomId/messages')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Send a message in a room' })
+  sendMessage(
+    @CurrentUser('id') userId: string,
+    @Param('roomId') roomId: string,
+    @Body() body: { content: string; type?: string; metadata?: Record<string, unknown> },
+  ) {
+    return this.messagesService.saveMessage(
+      roomId,
+      userId,
+      body.content,
+      body.type || 'text',
+      body.metadata,
+    );
+  }
+
+  @Post('rooms/:roomId/read')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Mark a room as read' })
+  async markRead(@CurrentUser('id') userId: string, @Param('roomId') roomId: string) {
+    await this.messagesService.markAsRead(roomId, userId);
+    return { ok: true };
+  }
+
+  @Post('direct/:userId')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Open or create a direct chat room with a user' })
+  openDirect(@CurrentUser('id') me: string, @Param('userId') other: string) {
+    return this.messagesService.createRoom(me, [other], undefined, 'direct');
+  }
 }

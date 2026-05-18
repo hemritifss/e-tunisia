@@ -17,9 +17,11 @@ const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const notification_entity_1 = require("./notification.entity");
+const websocket_gateway_1 = require("../websocket/websocket.gateway");
 let NotificationsService = class NotificationsService {
-    constructor(notifRepo) {
+    constructor(notifRepo, gateway) {
         this.notifRepo = notifRepo;
+        this.gateway = gateway;
     }
     async findByUser(userId) {
         return this.notifRepo.find({
@@ -46,9 +48,14 @@ let NotificationsService = class NotificationsService {
         return { message: 'All notifications marked as read' };
     }
     async create(userId, title, body, type, data) {
-        return this.notifRepo.save(this.notifRepo.create({
+        const saved = await this.notifRepo.save(this.notifRepo.create({
             userId, title, body, type, data,
         }));
+        try {
+            this.gateway?.broadcastNotification(userId, saved);
+        }
+        catch { }
+        return saved;
     }
     async createBulk(userIds, title, body, type, data) {
         const notifications = userIds.map(userId => this.notifRepo.create({
@@ -81,6 +88,9 @@ exports.NotificationsService = NotificationsService;
 exports.NotificationsService = NotificationsService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(notification_entity_1.Notification)),
-    __metadata("design:paramtypes", [typeorm_2.Repository])
+    __param(1, (0, common_1.Optional)()),
+    __param(1, (0, common_1.Inject)((0, common_1.forwardRef)(() => websocket_gateway_1.EventsGateway))),
+    __metadata("design:paramtypes", [typeorm_2.Repository,
+        websocket_gateway_1.EventsGateway])
 ], NotificationsService);
 //# sourceMappingURL=notifications.service.js.map

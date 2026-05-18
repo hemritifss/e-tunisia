@@ -37,6 +37,16 @@ let MessagesController = class MessagesController {
     getUnreadCount(userId) {
         return this.messagesService.getUnreadCount(userId);
     }
+    sendMessage(userId, roomId, body) {
+        return this.messagesService.saveMessage(roomId, userId, body.content, body.type || 'text', body.metadata);
+    }
+    async markRead(userId, roomId) {
+        await this.messagesService.markAsRead(roomId, userId);
+        return { ok: true };
+    }
+    openDirect(me, other) {
+        return this.messagesService.createRoom(me, [other], undefined, 'direct');
+    }
 };
 exports.MessagesController = MessagesController;
 __decorate([
@@ -89,6 +99,37 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], MessagesController.prototype, "getUnreadCount", null);
+__decorate([
+    (0, common_1.Post)('rooms/:roomId/messages'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiOperation)({ summary: 'Send a message in a room' }),
+    __param(0, (0, current_user_decorator_1.CurrentUser)('id')),
+    __param(1, (0, common_1.Param)('roomId')),
+    __param(2, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, Object]),
+    __metadata("design:returntype", void 0)
+], MessagesController.prototype, "sendMessage", null);
+__decorate([
+    (0, common_1.Post)('rooms/:roomId/read'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiOperation)({ summary: 'Mark a room as read' }),
+    __param(0, (0, current_user_decorator_1.CurrentUser)('id')),
+    __param(1, (0, common_1.Param)('roomId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:returntype", Promise)
+], MessagesController.prototype, "markRead", null);
+__decorate([
+    (0, common_1.Post)('direct/:userId'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiOperation)({ summary: 'Open or create a direct chat room with a user' }),
+    __param(0, (0, current_user_decorator_1.CurrentUser)('id')),
+    __param(1, (0, common_1.Param)('userId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:returntype", void 0)
+], MessagesController.prototype, "openDirect", null);
 exports.MessagesController = MessagesController = __decorate([
     (0, swagger_1.ApiTags)('messages'),
     (0, swagger_1.ApiBearerAuth)(),

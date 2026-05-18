@@ -9,5 +9,6 @@ import { PlacesModule } from '../places/places.module';
     imports: [TypeOrmModule.forFeature([Review]), PlacesModule],
     providers: [ReviewsService],
     controllers: [ReviewsController],
+    exports: [ReviewsService],
 })
 export class ReviewsModule { }

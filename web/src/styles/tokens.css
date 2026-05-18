@@ -83,6 +83,18 @@
   --accent-hover:       oklch(50% 0.18 30);
   --accent-light:       var(--terracotta-pale);
   --accent-text:        oklch(98% 0 0);
+  /* Legacy alias — some older CSS still references --primary. */
+  --primary:            var(--accent);
+
+  /* Landing-page (cinematic) palette tokens used by `.tn-*` classes.
+     Originally referenced but never declared — without these the landing
+     footer + hero CTAs collapse to dark-on-dark / transparent. */
+  --tn-dark:            oklch(12% 0.014 260);
+  --tn-surface:         oklch(18% 0.014 260);
+  --tn-border:          oklch(100% 0 0 / 0.08);
+  --tn-terracotta:      var(--terracotta);
+  --tn-ochre:           var(--gold);
+  --tn-gold:            var(--gold);
 
   /* ── Semantic ── */
   --success:            oklch(57% 0.15 155);

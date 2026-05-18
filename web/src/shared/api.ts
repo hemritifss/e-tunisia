@@ -1,7 +1,7 @@
-// VITE_API_URL is treated as host-only here (endpoints below already include /api/v1).
-// If user set it WITH /api/v1, strip it so we don't double up.
-const RAW = (import.meta.env.VITE_API_URL || 'http://localhost:3000').replace(/\/+$/, '');
-const API_BASE = RAW.replace(/\/api\/v\d+$/, '');
+// VITE_API_URL accepts either a full URL or empty (= same-origin, recommended).
+// Endpoints below include /api/v1, so we strip it from the env if user added one.
+const RAW = (import.meta.env.VITE_API_URL ?? '').replace(/\/+$/, '');
+const API_BASE = RAW.replace(/\/api\/v\d+$/, ''); // '' when same-origin
 
 class ApiError extends Error {
   constructor(
@@ -23,10 +23,13 @@ async function fetchWithAuth(
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    // Skip ngrok free-tier browser interstitial on GET requests
-    'ngrok-skip-browser-warning': '1',
     ...((options.headers as Record<string, string>) || {}),
   };
+  // Only send the ngrok-skip header when the API itself is on ngrok — avoids an
+  // unnecessary custom-header CORS preflight when the backend is on localhost.
+  if (/\.ngrok(-free)?\.(app|dev|io)/.test(API_BASE)) {
+    headers['ngrok-skip-browser-warning'] = '1';
+  }
 
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
@@ -44,10 +47,12 @@ async function fetchWithAuth(
     } catch {
       // Ignore parse errors
     }
+    // Backend wraps errors as { success: false, error: { message, details }, ... }.
+    const err = errorData?.error ?? errorData;
     throw new ApiError(
       response.status,
-      errorData.message || `HTTP ${response.status}`,
-      errorData.details,
+      err?.message || `HTTP ${response.status}`,
+      err?.details,
     );
   }
 
@@ -56,7 +61,17 @@ async function fetchWithAuth(
     return null;
   }
 
-  return response.json();
+  const parsed = await response.json();
+  // Backend wraps successes in { success: true, data: <payload>, [meta], timestamp }. Unwrap.
+  if (parsed && typeof parsed === 'object' && parsed.success === true && 'data' in parsed) {
+    // For paginated endpoints the interceptor lifts `meta` to the top level — re-attach it
+    // alongside the data array so callers get the { data, meta } shape they expect.
+    if ('meta' in parsed && parsed.meta && typeof parsed.meta === 'object') {
+      return { data: parsed.data, meta: parsed.meta };
+    }
+    return parsed.data;
+  }
+  return parsed;
 }
 
 export const api = {
@@ -97,6 +112,47 @@ export const api = {
       method: 'POST',
       body: JSON.stringify(data),
     }),
+
+  // Feed (unified: posts + reviews + ads)
+  getFeed: (params?: Record<string, string>) => {
+    const query = params ? '?' + new URLSearchParams(params).toString() : '';
+    return fetchWithAuth(`/api/v1/feed${query}`);
+  },
+  getMyFeed: (params?: Record<string, string>) => {
+    const query = params ? '?' + new URLSearchParams(params).toString() : '';
+    return fetchWithAuth(`/api/v1/feed/mine${query}`);
+  },
+  getFollowingFeed: (params?: Record<string, string>) => {
+    const query = params ? '?' + new URLSearchParams(params).toString() : '';
+    return fetchWithAuth(`/api/v1/feed/following${query}`);
+  },
+  // Live 24h stories grouped by author
+  getStories: () => fetchWithAuth(`/api/v1/stories`),
+  createStory: (data: { imageUrl: string; caption?: string }) =>
+    fetchWithAuth(`/api/v1/stories`, { method: 'POST', body: JSON.stringify(data) }),
+  viewStory: (id: string) =>
+    fetchWithAuth(`/api/v1/stories/${id}/view`, { method: 'POST' }),
+
+  // Credits & donations
+  getMyCredits: () => fetchWithAuth('/api/v1/credits/me'),
+  depositCredits: (amount: number, note?: string) =>
+    fetchWithAuth('/api/v1/credits/deposit', { method: 'POST', body: JSON.stringify({ amount, note }) }),
+  donate: (data: { target: 'user' | 'platform'; toUserId?: string; amount: number; message?: string; isAnonymous?: boolean }) =>
+    fetchWithAuth('/api/v1/credits/donate', { method: 'POST', body: JSON.stringify(data) }),
+  getMyDonationsSent: () => fetchWithAuth('/api/v1/credits/donations/sent'),
+  getMyDonationsReceived: () => fetchWithAuth('/api/v1/credits/donations/received'),
+  getDonationLeaderboard: () => fetchWithAuth('/api/v1/credits/leaderboard'),
+
+  // Posts (user-authored)
+  createPost: (data: {
+    title: string; body: string; category?: string;
+    location?: string; placeId?: string; images?: string[]; tags?: string[];
+  }) =>
+    fetchWithAuth('/api/v1/posts', { method: 'POST', body: JSON.stringify(data) }),
+  votePost: (postId: string, direction: 'up' | 'down' | 'clear') =>
+    fetchWithAuth(`/api/v1/posts/${postId}/vote`, { method: 'POST', body: JSON.stringify({ direction }) }),
+  deletePost: (postId: string) =>
+    fetchWithAuth(`/api/v1/posts/${postId}`, { method: 'DELETE' }),
 
   // Favorites
   toggleFavorite: (placeId: string) =>

@@ -120,10 +120,14 @@ let PlacesService = class PlacesService {
     async getByIds(ids) {
         if (!ids || ids.length === 0)
             return [];
+        const uuidRe = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        const valid = ids.filter((id) => typeof id === 'string' && uuidRe.test(id));
+        if (valid.length === 0)
+            return [];
         return this.placesRepo
             .createQueryBuilder('place')
             .leftJoinAndSelect('place.category', 'category')
-            .whereInIds(ids)
+            .whereInIds(valid)
             .getMany();
     }
     async updateRating(placeId) {

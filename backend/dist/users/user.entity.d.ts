@@ -17,6 +17,10 @@ export declare class User {
     avatar: string;
     phone: string;
     country: string;
+    bio: string;
+    website: string;
+    interests: string[];
+    onboardingComplete: boolean;
     role: UserRole;
     favoriteIds: string[];
     visitedPlaceIds: string[];

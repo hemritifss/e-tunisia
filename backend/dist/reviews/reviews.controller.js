@@ -21,6 +21,13 @@ let ReviewsController = class ReviewsController {
     constructor(reviewsService) {
         this.reviewsService = reviewsService;
     }
+    findFeed(page, limit, sort) {
+        return this.reviewsService.findFeed({
+            page: page ? Number(page) : undefined,
+            limit: limit ? Number(limit) : undefined,
+            sort,
+        });
+    }
     findByPlace(placeId) {
         return this.reviewsService.findByPlace(placeId);
     }
@@ -32,6 +39,19 @@ let ReviewsController = class ReviewsController {
     }
 };
 exports.ReviewsController = ReviewsController;
+__decorate([
+    (0, common_1.Get)('feed'),
+    (0, swagger_1.ApiOperation)({ summary: 'Get reviews shaped as posts for the social feed' }),
+    (0, swagger_1.ApiQuery)({ name: 'page', required: false }),
+    (0, swagger_1.ApiQuery)({ name: 'limit', required: false }),
+    (0, swagger_1.ApiQuery)({ name: 'sort', required: false, enum: ['new', 'top', 'hot'] }),
+    __param(0, (0, common_1.Query)('page')),
+    __param(1, (0, common_1.Query)('limit')),
+    __param(2, (0, common_1.Query)('sort')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, String]),
+    __metadata("design:returntype", void 0)
+], ReviewsController.prototype, "findFeed", null);
 __decorate([
     (0, common_1.Get)('place/:placeId'),
     (0, swagger_1.ApiOperation)({ summary: 'Get reviews for a place' }),

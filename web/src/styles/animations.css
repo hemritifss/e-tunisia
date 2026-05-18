@@ -3,6 +3,12 @@
    Cinematic • Fluid • Premium
    ============================================ */
 
+/* Story viewer progress bar */
+@keyframes storyProgress {
+  from { width: 0%; }
+  to   { width: 100%; }
+}
+
 /* ── Scroll-driven reveals ── */
 .reveal-on-scroll {
   animation: revealUp linear both;

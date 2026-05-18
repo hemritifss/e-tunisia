@@ -1,10 +1,12 @@
 import { Repository } from 'typeorm';
 import { Message } from './message.entity';
 import { ChatRoom } from './chat-room.entity';
+import { EventsGateway } from '../websocket/websocket.gateway';
 export declare class MessagesService {
     private messageRepo;
     private roomRepo;
-    constructor(messageRepo: Repository<Message>, roomRepo: Repository<ChatRoom>);
+    private gateway?;
+    constructor(messageRepo: Repository<Message>, roomRepo: Repository<ChatRoom>, gateway?: EventsGateway);
     createRoom(creatorId: string, participantIds: string[], name?: string, type?: 'direct' | 'group'): Promise<ChatRoom>;
     getRooms(userId: string): Promise<ChatRoom[]>;
     getRoom(roomId: string, userId: string): Promise<ChatRoom>;

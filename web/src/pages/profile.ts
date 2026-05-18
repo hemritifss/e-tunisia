@@ -69,14 +69,17 @@ export async function initProfilePage() {
     </div>
 
     <div class="profile-actions">
-      <a href="#/badges" class="btn btn-outline">
-        <i class="lucide-award"></i> My Badges
+      <a href="#/profile/edit" class="btn btn-primary">
+        <i class="lucide-edit-3"></i> Edit profile
       </a>
-      <a href="#/leaderboard" class="btn btn-outline">
-        <i class="lucide-trophy"></i> Leaderboard
+      <a href="#/credits" class="btn btn-outline">
+        <i class="lucide-coins"></i> Credits
+      </a>
+      <a href="#/badges" class="btn btn-outline">
+        <i class="lucide-award"></i> Badges
       </a>
       <a href="#/favorites" class="btn btn-outline">
-        <i class="lucide-heart"></i> Saved Places
+        <i class="lucide-heart"></i> Saved
       </a>
     </div>
 

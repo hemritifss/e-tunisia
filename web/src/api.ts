@@ -3,18 +3,28 @@
 // Mirrors Flutter ApiService, talks to NestJS backend
 // ============================================
 
-// VITE_API_URL accepts either form:
-//   "https://abc.ngrok-free.app"          → /api/v1 is appended
-//   "https://abc.ngrok-free.app/api/v1"   → used as-is
-const RAW_BASE = (import.meta.env?.VITE_API_URL || 'http://localhost:3000').replace(/\/+$/, '');
-const BASE_URL = /\/api\/v\d+$/.test(RAW_BASE) ? RAW_BASE : `${RAW_BASE}/api/v1`;
+// VITE_API_URL accepts:
+//   ""                                     → same-origin (recommended; works behind a proxy / ngrok)
+//   "https://abc.ngrok-free.app"           → /api/v1 is appended
+//   "https://abc.ngrok-free.app/api/v1"    → used as-is
+const RAW_BASE = (import.meta.env?.VITE_API_URL ?? '').replace(/\/+$/, '');
+const BASE_URL = !RAW_BASE
+    ? '/api/v1'
+    : (/\/api\/v\d+$/.test(RAW_BASE) ? RAW_BASE : `${RAW_BASE}/api/v1`);
 
 // ── Token management ─────────────────────────
 function getToken(): string | null {
-  return localStorage.getItem('etunisia_token');
+  const t = localStorage.getItem('etunisia_token');
+  // Reject literal "undefined"/"null" strings written by older buggy code paths.
+  if (!t || t === 'undefined' || t === 'null') return null;
+  return t;
 }
 
-export function setToken(token: string) {
+export function setToken(token: string | undefined | null) {
+  if (!token) {
+    localStorage.removeItem('etunisia_token');
+    return;
+  }
   localStorage.setItem('etunisia_token', token);
 }
 
@@ -26,11 +36,21 @@ export function isLoggedIn(): boolean {
   return !!getToken();
 }
 
+// Clean up any "undefined" string left in localStorage by older builds.
+if (typeof localStorage !== 'undefined') {
+  const stale = localStorage.getItem('etunisia_token');
+  if (stale === 'undefined' || stale === 'null') {
+    localStorage.removeItem('etunisia_token');
+  }
+}
+
 function headers(json = true): Record<string, string> {
-  const h: Record<string, string> = {
-    // Skip ngrok free-tier browser interstitial on GET requests
-    'ngrok-skip-browser-warning': '1',
-  };
+  const h: Record<string, string> = {};
+  // Only send the ngrok-skip header when the API itself is on ngrok — avoids an
+  // unnecessary custom-header CORS preflight when the backend is on localhost.
+  if (/\.ngrok(-free)?\.(app|dev|io)/.test(BASE_URL)) {
+    h['ngrok-skip-browser-warning'] = '1';
+  }
   if (json) h['Content-Type'] = 'application/json';
   const token = getToken();
   if (token) h['Authorization'] = `Bearer ${token}`;
@@ -50,10 +70,22 @@ async function api<T>(path: string, opts: RequestInit = {}): Promise<T> {
       window.location.reload();
     }
     const body = await res.json().catch(() => ({}));
-    throw { status: res.status, ...body };
+    // Backend wraps errors as { success: false, error: {...}, ... } — unwrap.
+    const err = body && typeof body === 'object' && 'error' in body ? body.error : body;
+    throw { status: res.status, ...(err as object) };
   }
   const text = await res.text();
-  return text ? JSON.parse(text) : ({} as T);
+  if (!text) return {} as T;
+  const parsed = JSON.parse(text);
+  // Backend wraps successes in { success: true, data: <payload>, [meta], timestamp }.
+  if (parsed && typeof parsed === 'object' && parsed.success === true && 'data' in parsed) {
+    // Paginated endpoints carry meta at the top — re-attach so callers see { data, meta }.
+    if ('meta' in parsed && parsed.meta && typeof parsed.meta === 'object') {
+      return { data: parsed.data, meta: parsed.meta } as T;
+    }
+    return parsed.data as T;
+  }
+  return parsed as T;
 }
 
 // ── AUTH ──────────────────────────────────────
@@ -279,4 +311,207 @@ export async function submitContactForm(data: Record<string, any>) {
 // ── USER PROFILE ─────────────────────────────
 export async function getMyProfile() {
   return api<any>('/users/me');
+}
+
+// ── POSTS ────────────────────────────────────
+export async function createPost(data: {
+  title: string; body: string; category?: string;
+  location?: string; placeId?: string; images?: string[]; tags?: string[];
+}) {
+  return api<any>('/posts', { method: 'POST', body: JSON.stringify(data) });
+}
+
+// ── FEED ─────────────────────────────────────
+export async function getFeed(params: Record<string, string | number> = {}) {
+  const qs = new URLSearchParams(
+    Object.entries(params).map(([k, v]) => [k, String(v)]),
+  ).toString();
+  return api<{ data: any[]; meta: { page: number; limit: number; total: number; totalPages: number } }>(
+    `/feed${qs ? `?${qs}` : ''}`,
+  );
+}
+
+export async function getStories(limit = 12) {
+  return api<{ stories: any[] }>(`/feed/stories?limit=${limit}`);
+}
+
+// ── CREDITS & DONATIONS ──────────────────────
+export async function getMyCredits() {
+  return api<{
+    balance: number;
+    lifetimeIn: number;
+    lifetimeOut: number;
+    recent: any[];
+  }>('/credits/me');
+}
+
+export async function depositCredits(amount: number, note?: string) {
+  return api<any>('/credits/deposit', {
+    method: 'POST',
+    body: JSON.stringify({ amount, note }),
+  });
+}
+
+export async function donate(data: {
+  target: 'user' | 'platform';
+  toUserId?: string;
+  amount: number;
+  message?: string;
+  isAnonymous?: boolean;
+}) {
+  return api<any>('/credits/donate', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function getMyDonationsSent(limit = 25) {
+  return api<any[]>(`/credits/donations/sent?limit=${limit}`);
+}
+
+export async function getMyDonationsReceived(limit = 25) {
+  return api<any[]>(`/credits/donations/received?limit=${limit}`);
+}
+
+export async function getDonationLeaderboard(limit = 10) {
+  return api<{ topPlatformSupporters: any[]; topReceivers: any[] }>(
+    `/credits/leaderboard?limit=${limit}`,
+  );
+}
+
+// ── PUBLIC USERS ─────────────────────────────
+export async function getPublicUser(id: string) {
+  return api<any>(`/users/${id}`);
+}
+
+// ── PROFILE EDIT ─────────────────────────────
+export async function updateMyProfile(data: Partial<{
+  fullName: string; country: string; avatar: string; phone: string;
+  bio: string; website: string;
+}>) {
+  return api<any>('/users/me', { method: 'PUT', body: JSON.stringify(data) });
+}
+
+export async function getSuggestedUsers(limit = 6) {
+  return api<any[]>(`/users/suggest/list?limit=${limit}`);
+}
+
+export async function getFollowingFeed(params: Record<string, string | number> = {}) {
+  const qs = new URLSearchParams(
+    Object.entries(params).map(([k, v]) => [k, String(v)]),
+  ).toString();
+  return api<{ data: any[]; meta: any }>(
+    `/feed/following${qs ? `?${qs}` : ''}`,
+  );
+}
+
+// ── DIRECT MESSAGES ──────────────────────────
+export async function getMyRooms() {
+  return api<any[]>('/messages/rooms');
+}
+
+export async function openDirectRoom(userId: string) {
+  return api<any>(`/messages/direct/${userId}`, { method: 'POST' });
+}
+
+export async function getRoomMessages(roomId: string, page = 1, limit = 50) {
+  return api<any[]>(`/messages/rooms/${roomId}/messages?page=${page}&limit=${limit}`);
+}
+
+export async function sendMessage(roomId: string, content: string) {
+  return api<any>(`/messages/rooms/${roomId}/messages`, {
+    method: 'POST',
+    body: JSON.stringify({ content }),
+  });
+}
+
+export async function markRoomRead(roomId: string) {
+  return api<{ ok: boolean }>(`/messages/rooms/${roomId}/read`, { method: 'POST' });
+}
+
+export async function getUnreadMessagesCount() {
+  return api<number | { count: number }>('/messages/unread-count');
+}
+
+// ── SAFETY (Block + Report) ──────────────────
+export async function blockUser(userId: string) {
+  return api<any>(`/safety/block/${userId}`, { method: 'POST' });
+}
+
+export async function unblockUser(userId: string) {
+  return api<{ ok: boolean }>(`/safety/block/${userId}`, { method: 'DELETE' });
+}
+
+export async function isUserBlocked(userId: string) {
+  return api<{ isBlocked: boolean }>(`/safety/is-blocked/${userId}`);
+}
+
+export async function listBlockedUsers() {
+  return api<Array<{ id: string; blockedAt: string; user: { id: string; fullName: string; avatar: string | null; country: string | null } }>>(
+    '/safety/blocks',
+  );
+}
+
+export async function reportContent(body: {
+  targetType: 'post' | 'comment' | 'user' | 'message' | 'review' | 'place';
+  targetId: string;
+  reason: 'spam' | 'harassment' | 'hate_speech' | 'nudity' | 'violence' | 'misinformation' | 'scam' | 'other';
+  details?: string;
+  targetOwnerId?: string;
+}) {
+  return api<any>('/safety/report', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+}
+
+// ── FOLLOW SYSTEM ────────────────────────────
+export async function followUser(userId: string) {
+  return api<any>(`/social/follow/${userId}`, { method: 'POST' });
+}
+
+export async function unfollowUser(userId: string) {
+  return api<any>(`/social/follow/${userId}`, { method: 'DELETE' });
+}
+
+export async function getFollowCounts(userId: string) {
+  return api<{ followers: number; following: number }>(
+    `/social/follow-counts/${userId}`,
+  );
+}
+
+export async function isFollowing(userId: string) {
+  return api<{ isFollowing: boolean } | boolean>(`/social/is-following/${userId}`);
+}
+
+export async function getUserPosts(userId: string, limit = 12) {
+  return api<{ data: any[]; meta: any }>(
+    `/posts/by-user/${userId}?limit=${limit}`,
+  );
+}
+
+// ── POST DETAIL + COMMENTS ───────────────────
+export async function getPostById(id: string) {
+  return api<any>(`/posts/${id}`);
+}
+
+export async function getPostComments(postId: string) {
+  return api<any[]>(`/posts/${postId}/comments`);
+}
+
+export async function addPostComment(postId: string, body: string) {
+  return api<any>(`/posts/${postId}/comments`, {
+    method: 'POST',
+    body: JSON.stringify({ body }),
+  });
+}
+
+// ── SEARCH (aggregated across places, posts, users) ──────
+export async function search(q: string) {
+  const places = await api<{ data: any[] }>(`/places?search=${encodeURIComponent(q)}&limit=10`)
+    .catch(() => ({ data: [] }));
+  return {
+    query: q,
+    places: places?.data || [],
+  };
 }

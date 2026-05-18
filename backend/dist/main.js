@@ -11,6 +11,8 @@ const transform_interceptor_1 = require("./common/interceptors/transform.interce
 const logging_interceptor_1 = require("./common/interceptors/logging.interceptor");
 async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule);
+    app.use(express.json({ limit: '12mb' }));
+    app.use(express.urlencoded({ limit: '12mb', extended: true }));
     app.enableVersioning({
         type: common_1.VersioningType.URI,
         defaultVersion: '1',
@@ -40,7 +42,7 @@ async function bootstrap() {
         },
         methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
         credentials: true,
-        allowedHeaders: 'Content-Type,Accept,Authorization,X-Requested-With,X-Pinggy-No-Landing-Page',
+        allowedHeaders: 'Content-Type,Accept,Authorization,X-Requested-With,X-Pinggy-No-Landing-Page,ngrok-skip-browser-warning',
         preflightContinue: false,
         optionsSuccessStatus: 204,
     });

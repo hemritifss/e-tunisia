@@ -13,12 +13,16 @@ const messages_controller_1 = require("./messages.controller");
 const messages_service_1 = require("./messages.service");
 const message_entity_1 = require("./message.entity");
 const chat_room_entity_1 = require("./chat-room.entity");
+const websocket_module_1 = require("../websocket/websocket.module");
 let MessagesModule = class MessagesModule {
 };
 exports.MessagesModule = MessagesModule;
 exports.MessagesModule = MessagesModule = __decorate([
     (0, common_1.Module)({
-        imports: [typeorm_1.TypeOrmModule.forFeature([message_entity_1.Message, chat_room_entity_1.ChatRoom])],
+        imports: [
+            typeorm_1.TypeOrmModule.forFeature([message_entity_1.Message, chat_room_entity_1.ChatRoom]),
+            (0, common_1.forwardRef)(() => websocket_module_1.WebSocketModule),
+        ],
         controllers: [messages_controller_1.MessagesController],
         providers: [messages_service_1.MessagesService],
         exports: [messages_service_1.MessagesService],

@@ -8,4 +8,18 @@ export declare class UsersController {
     getFavorites(req: any): Promise<string[]>;
     toggleVisited(req: any, placeId: string): Promise<string[]>;
     getVisited(req: any): Promise<string[]>;
+    findPublicById(id: string): Promise<{
+        id: any;
+        fullName: any;
+        avatar: any;
+        country: any;
+        bio: any;
+        website: any;
+        role: any;
+        points: any;
+        level: any;
+        badges: any;
+        createdAt: any;
+    }>;
+    suggest(limit?: string): Promise<any[]>;
 }

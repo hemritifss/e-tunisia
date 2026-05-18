@@ -11,4 +11,13 @@ export declare class UsersService {
     getFavoriteIds(userId: string): Promise<string[]>;
     toggleVisited(userId: string, placeId: string): Promise<string[]>;
     getVisitedIds(userId: string): Promise<string[]>;
+    suggestedUsers(limit?: number): Promise<{
+        id: any;
+        fullName: any;
+        avatar: any;
+        country: any;
+        bio: any;
+        level: any;
+        points: any;
+    }[]>;
 }

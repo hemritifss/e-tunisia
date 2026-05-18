@@ -35,6 +35,10 @@ export class EventsService {
     }
 
     async findById(id: string) {
+        // Reject non-UUIDs early so a mock id ('2', 'demo') doesn't crash Postgres.
+        if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
+            throw new NotFoundException('Event not found');
+        }
         const event = await this.eventsRepo.findOne({
             where: { id },
             relations: ['place', 'organizer'],

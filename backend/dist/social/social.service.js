@@ -20,12 +20,15 @@ const follow_entity_1 = require("./follow.entity");
 const activity_entity_1 = require("./activity.entity");
 const user_entity_1 = require("../users/user.entity");
 const redis_service_1 = require("../redis/redis.service");
+const notifications_service_1 = require("../notifications/notifications.service");
+const notification_entity_1 = require("../notifications/notification.entity");
 let SocialService = class SocialService {
-    constructor(followRepo, activityRepo, userRepo, redisService) {
+    constructor(followRepo, activityRepo, userRepo, redisService, notifications) {
         this.followRepo = followRepo;
         this.activityRepo = activityRepo;
         this.userRepo = userRepo;
         this.redisService = redisService;
+        this.notifications = notifications;
     }
     async follow(followerId, followingId) {
         if (followerId === followingId) {
@@ -42,6 +45,12 @@ let SocialService = class SocialService {
         await this.createActivity(followerId, activity_entity_1.ActivityType.FOLLOWED_USER, {
             targetUserId: followingId,
         });
+        try {
+            const follower = await this.userRepo.findOne({ where: { id: followerId } });
+            const name = follower?.fullName || 'Someone';
+            await this.notifications.create(followingId, 'New follower', `${name} started following you`, notification_entity_1.NotificationType.FOLLOW, { fromUserId: followerId, fromUserName: name, fromAvatar: follower?.avatar || null });
+        }
+        catch { }
         await this.redisService.increment(`user:${followingId}:followers`);
         await this.redisService.increment(`user:${followerId}:following`);
         return saved;
@@ -161,6 +170,7 @@ exports.SocialService = SocialService = __decorate([
     __metadata("design:paramtypes", [typeorm_2.Repository,
         typeorm_2.Repository,
         typeorm_2.Repository,
-        redis_service_1.RedisService])
+        redis_service_1.RedisService,
+        notifications_service_1.NotificationsService])
 ], SocialService);
 //# sourceMappingURL=social.service.js.map

@@ -10,6 +10,10 @@ export declare class SocialController {
         followers: number;
         following: number;
     }>;
+    publicFollowCounts(userId: string): Promise<{
+        followers: number;
+        following: number;
+    }>;
     isFollowing(followerId: string, followingId: string): Promise<boolean>;
     getFeed(userId: string, page?: number, limit?: number): Promise<{
         data: import("./activity.entity").Activity[];

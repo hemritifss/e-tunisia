@@ -5,10 +5,12 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function formatNumber(num: number): string {
-  if (num >= 1_000_000) return `${(num / 1_000_000).toFixed(1)}M`;
-  if (num >= 1_000) return `${(num / 1_000).toFixed(1)}k`;
-  return num.toString();
+export function formatNumber(num: number | string | null | undefined): string {
+  // Coerce — postgres decimals come back as strings, and some fields may be null.
+  const n = typeof num === 'number' ? num : Number(num) || 0;
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}k`;
+  return n.toString();
 }
 
 export function formatDate(date: string | Date): string {

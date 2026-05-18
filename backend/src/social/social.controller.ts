@@ -49,8 +49,14 @@ export class SocialController {
 
   @Get('follow-counts')
   @UseGuards(JwtAuthGuard)
-  @ApiOperation({ summary: 'Get follow counts' })
+  @ApiOperation({ summary: 'Get my follow counts' })
   getFollowCounts(@CurrentUser('id') userId: string) {
+    return this.socialService.getFollowCounts(userId);
+  }
+
+  @Get('follow-counts/:userId')
+  @ApiOperation({ summary: 'Public follow counts for a user' })
+  publicFollowCounts(@Param('userId') userId: string) {
     return this.socialService.getFollowCounts(userId);
   }
 

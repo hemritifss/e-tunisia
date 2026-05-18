@@ -12,7 +12,9 @@ import {
   TrendingUp,
   Flame,
   Navigation,
+  Coins,
 } from 'lucide-react';
+import { openDonateModal } from '../../donate-modal';
 import { api } from '../../shared/api';
 import type { Post } from '../../shared/types/api';
 import { Card, CardContent } from '../components/Card';
@@ -23,13 +25,22 @@ import { formatNumber, formatDate } from '../lib/utils';
 import { useAuthStore } from '../stores/auth-store';
 import { useUIStore } from '../stores/ui-store';
 
-type SortType = 'hot' | 'new' | 'top' | 'nearby';
+import { StoriesStrip } from '../components/StoriesStrip';
+import { AdCard } from '../components/AdCard';
+import { ComposeBox } from '../components/ComposeBox';
+import { SuggestedUsers } from '../components/SuggestedUsers';
+import { Plus, User as UserIcon, RefreshCcw, Users as UsersIcon } from 'lucide-react';
+import { useAuthStore as _useAuthStoreFeed } from '../stores/auth-store';
+import { requireAuth } from '../../ui-utils';
+
+type SortType = 'hot' | 'new' | 'top' | 'following' | 'mine';
 
 const sortLabels: Record<SortType, { label: string; icon: React.ReactNode }> = {
-  hot: { label: 'Hot', icon: <Flame size={14} /> },
-  new: { label: 'New', icon: <Clock size={14} /> },
-  top: { label: 'Top', icon: <TrendingUp size={14} /> },
-  nearby: { label: 'Nearby', icon: <Navigation size={14} /> },
+  hot:       { label: 'Hot',       icon: <Flame size={14} /> },
+  new:       { label: 'New',       icon: <Clock size={14} /> },
+  top:       { label: 'Top',       icon: <TrendingUp size={14} /> },
+  following: { label: 'Following', icon: <UsersIcon size={14} /> },
+  mine:      { label: 'Mine',      icon: <UserIcon size={14} /> },
 };
 
 function PostCard({
@@ -39,8 +50,19 @@ function PostCard({
   post: Post;
   onVote: (id: string, direction: 'up' | 'down') => void;
 }) {
-  const [voteState, setVoteState] = useState<'up' | 'down' | null>(null);
-  const [localScore, setLocalScore] = useState(post.upvotes - post.downvotes);
+  // Restore prior vote from localStorage so the UI survives a refresh.
+  const initialVote: 'up' | 'down' | null = (() => {
+    try {
+      const map = JSON.parse(localStorage.getItem('etunisia_votes') || '{}');
+      const v = map[post.id];
+      return v === 'up' || v === 'down' ? v : null;
+    } catch { return null; }
+  })();
+  const [voteState, setVoteState] = useState<'up' | 'down' | null>(initialVote);
+  const baseScore = (Number(post.upvotes) || 0) - (Number(post.downvotes) || 0);
+  const [localScore, setLocalScore] = useState(
+    baseScore + (initialVote === 'up' ? 1 : initialVote === 'down' ? -1 : 0),
+  );
   const [isSavedLocal, setIsSavedLocal] = useState(() => {
     try {
       const map = JSON.parse(localStorage.getItem('etunisia_saved_items') || '{}');
@@ -51,10 +73,20 @@ function PostCard({
   });
   const showToast = useUIStore((s) => s.showToast);
 
+  const persistVote = (v: 'up' | 'down' | null) => {
+    try {
+      const map = JSON.parse(localStorage.getItem('etunisia_votes') || '{}');
+      if (!v) delete map[post.id]; else map[post.id] = v;
+      localStorage.setItem('etunisia_votes', JSON.stringify(map));
+    } catch {}
+  };
+
   const handleVote = (direction: 'up' | 'down') => {
+    if (!requireAuth('vote on posts')) return;
     if (voteState === direction) {
       setVoteState(null);
       setLocalScore((prev) => (direction === 'up' ? prev - 1 : prev + 1));
+      persistVote(null);
     } else {
       const oldVote = voteState;
       setVoteState(direction);
@@ -63,16 +95,23 @@ function PostCard({
       } else {
         setLocalScore((prev) => (direction === 'up' ? prev + 1 : prev - 1));
       }
+      persistVote(direction);
     }
     onVote(post.id, direction);
   };
 
+  // For review items, navigate to the underlying place; for real posts, the post itself.
+  const detailHash =
+    (post as any).type === 'review' && (post as any).place?.id
+      ? `#/place/${(post as any).place.id}`
+      : `#/post/${post.id}`;
+
   const handleComment = () => {
-    location.hash = `#/post/${post.id}`;
+    location.hash = detailHash;
   };
 
   const handleShare = async () => {
-    const url = `${location.origin}${location.pathname}#/post/${post.id}`;
+    const url = `${location.origin}${location.pathname}${detailHash}`;
     if ((navigator as any).share) {
       try {
         await (navigator as any).share({ title: post.title, text: post.body?.slice(0, 100), url });
@@ -88,6 +127,7 @@ function PostCard({
   };
 
   const handleSave = () => {
+    if (!requireAuth('save posts')) return;
     try {
       const map = JSON.parse(localStorage.getItem('etunisia_saved_items') || '{}');
       const key = 'post:' + post.id;
@@ -153,15 +193,25 @@ function PostCard({
             <div className="flex-1 p-4 min-w-0">
               {/* Header */}
               <div className="flex items-center gap-2 mb-2">
-                <Avatar
-                  src={post.author?.avatar}
-                  fallback={post.author?.fullName}
-                  size="sm"
-                />
+                <a
+                  href={post.author?.id ? `#/user/${post.author.id}` : '#'}
+                  className="contents"
+                  onClick={(e) => { if (!post.author?.id) e.preventDefault(); }}
+                >
+                  <Avatar
+                    src={post.author?.avatar}
+                    fallback={post.author?.fullName}
+                    size="sm"
+                  />
+                </a>
                 <div className="flex-1 min-w-0">
-                  <span className="text-sm font-medium truncate">
+                  <a
+                    href={post.author?.id ? `#/user/${post.author.id}` : '#'}
+                    className="text-sm font-medium truncate hover:text-brand"
+                    onClick={(e) => { if (!post.author?.id) e.preventDefault(); }}
+                  >
                     {post.author?.fullName || 'Anonymous'}
-                  </span>
+                  </a>
                   <span className="text-xs text-muted-foreground ml-2">
                     {formatDate(post.createdAt)}
                   </span>
@@ -228,6 +278,21 @@ function PostCard({
                 >
                   {isSavedLocal ? 'Saved' : 'Save'}
                 </Button>
+                {post.author && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    leftIcon={<Coins size={14} className="text-amber-500" />}
+                    onClick={() => openDonateModal({
+                      target: 'user',
+                      toUserId: post.author!.id,
+                      toUserName: post.author!.fullName,
+                      toUserAvatar: post.author!.avatar || undefined,
+                    })}
+                  >
+                    Tip
+                  </Button>
+                )}
               </div>
             </div>
           </div>
@@ -252,40 +317,39 @@ export default function FeedPage() {
     isLoading,
     isError,
   } = useInfiniteQuery({
-    queryKey: ['posts', sort],
+    queryKey: ['feed', sort],
     queryFn: async ({ pageParam = 1 }) => {
-      // For now, return mock data since backend doesn't have posts endpoint yet
-      // This will be replaced with actual API call when backend adds social feed
-      const mockPosts: Post[] = Array.from({ length: 10 }).map((_, i) => ({
-        id: `post-${pageParam}-${i}`,
-        title: `Amazing discovery in ${['Sidi Bou Said', 'Carthage', 'Djerba', 'Douz', 'Tabarka'][i % 5]}!`,
-        body: 'Just visited this incredible hidden gem. The views are absolutely breathtaking and the locals are so welcoming. Highly recommend adding this to your itinerary!',
-        category: ['Culture', 'Adventure', 'Food & Drink', 'Historical', 'Beaches'][i % 5],
-        location: ['Sidi Bou Said', 'Carthage', 'Djerba', 'Douz', 'Tabarka'][i % 5],
-        images: i % 3 === 0 ? ['https://images.unsplash.com/photo-1539020140153-e479b8c22e70?w=800'] : [],
-        authorId: `user-${i}`,
-        author: {
-          id: `user-${i}`,
-          fullName: ['Yasmine K.', 'Marco R.', 'Sarah C.', 'David P.', 'Amina T.', 'Emma L.'][i % 6],
-          avatar: `https://api.dicebear.com/9.x/thumbs/svg?seed=${i}`,
-        },
-        upvotes: Math.floor(Math.random() * 500) + 50,
-        downvotes: Math.floor(Math.random() * 20),
-        commentCount: Math.floor(Math.random() * 100) + 5,
-        createdAt: new Date(Date.now() - Math.random() * 86400000 * 7).toISOString(),
-      }));
-
-      return {
-        data: mockPosts,
-        meta: { page: pageParam, limit: 10, total: 100, totalPages: 10 },
+      const params: Record<string, string> = {
+        page: String(pageParam),
+        limit: '10',
+        sort: sort === 'mine' || sort === 'following' ? 'new' : sort,
       };
+      let fetcher;
+      if (sort === 'mine')           fetcher = api.getMyFeed;
+      else if (sort === 'following') fetcher = (api as any).getFollowingFeed;
+      else                           fetcher = api.getFeed;
+      const res = await fetcher(params);
+      return res as { data: any[]; meta: { page: number; limit: number; total: number; totalPages: number } };
     },
     getNextPageParam: (lastPage) => {
-      if (lastPage.meta.page >= lastPage.meta.totalPages) return undefined;
-      return lastPage.meta.page + 1;
+      // Defensive: if the page payload didn't include meta (error / unexpected shape), stop paging.
+      const meta = (lastPage as any)?.meta;
+      if (!meta || typeof meta.page !== 'number' || typeof meta.totalPages !== 'number') return undefined;
+      if (meta.page >= meta.totalPages) return undefined;
+      return meta.page + 1;
     },
     initialPageParam: 1,
+    // Background refresh — every 60s the feed checks for new content.
+    refetchInterval: 60_000,
+    refetchOnWindowFocus: true,
   });
+
+  // Refresh immediately when a new post is created (modal dispatches this event).
+  useEffect(() => {
+    const onCreated = () => queryClient.invalidateQueries({ queryKey: ['feed'] });
+    window.addEventListener('etunisia:post-created', onCreated);
+    return () => window.removeEventListener('etunisia:post-created', onCreated);
+  }, [queryClient]);
 
   // Intersection observer for infinite scroll
   useEffect(() => {
@@ -320,48 +384,102 @@ export default function FeedPage() {
     [voteMutation],
   );
 
-  const allPosts = data?.pages.flatMap((page) => page.data) || [];
+  const allItems = (() => {
+    const pages = data?.pages || [];
+    const out: any[] = [];
+    const seen = new Set<string>();
+    for (const page of pages) {
+      const arr = Array.isArray(page?.data) ? page.data : Array.isArray(page) ? page : [];
+      for (const it of arr) {
+        if (!it) continue;
+        const id = String((it as any).id || '');
+        if (!id || seen.has(id)) continue;
+        seen.add(id);
+        out.push(it);
+      }
+    }
+    return out;
+  })();
+  const isAuth = _useAuthStoreFeed((s) => !!s.token) || !!localStorage.getItem('etunisia_token');
+  const user = _useAuthStoreFeed((s) => s.user);
+
+  const openComposer = () => {
+    document.dispatchEvent(new CustomEvent('etunisia:open-post-modal'));
+  };
 
   return (
     <div className="max-w-2xl mx-auto space-y-4 animate-fade-in">
+      {/* Stories — 24h ephemeral images uploaded by users (Facebook-style) */}
+      <StoriesStrip />
+
+      {/* Facebook-style "What's on your mind?" composer box */}
+      {isAuth && <ComposeBox user={user} />}
+
+      {/* Who-to-follow widget — cold-start nudge */}
+      <SuggestedUsers />
+
       {/* Sort bar */}
-      <div className="flex items-center gap-2 p-1 bg-surface rounded-xl shadow-sm sticky top-20 z-10">
-        {(Object.keys(sortLabels) as SortType[]).map((key) => (
-          <button
-            key={key}
-            onClick={() => setSort(key)}
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-              sort === key
-                ? 'bg-brand text-white shadow-sm'
-                : 'text-muted-foreground hover:bg-black/5 dark:hover:bg-white/5'
-            }`}
-          >
-            {sortLabels[key].icon}
-            {sortLabels[key].label}
-          </button>
-        ))}
+      <div className="flex items-center gap-2 p-1 bg-surface rounded-xl shadow-sm sticky top-20 z-10 overflow-x-auto scrollbar-hide">
+        {(Object.keys(sortLabels) as SortType[]).map((key) => {
+          if ((key === 'mine' || key === 'following') && !isAuth) return null;
+          return (
+            <button
+              key={key}
+              onClick={() => setSort(key)}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
+                sort === key
+                  ? 'bg-brand text-white shadow-sm'
+                  : 'text-muted-foreground hover:bg-black/5 dark:hover:bg-white/5'
+              }`}
+            >
+              {sortLabels[key].icon}
+              {sortLabels[key].label}
+            </button>
+          );
+        })}
+        <button
+          onClick={() => queryClient.invalidateQueries({ queryKey: ['feed'] })}
+          className="ml-auto p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5"
+          title="Refresh feed"
+          aria-label="Refresh feed"
+        >
+          <RefreshCcw size={14} />
+        </button>
       </div>
 
-      {/* Posts */}
+      {/* Posts + ads */}
       <div className="space-y-4">
         <AnimatePresence mode="popLayout">
           {isLoading ? (
             Array.from({ length: 3 }).map((_, i) => <PostCardSkeleton key={i} />)
           ) : isError ? (
             <div className="text-center py-12">
-              <p className="text-muted-foreground">Failed to load posts</p>
+              <p className="text-muted-foreground">Failed to load feed</p>
               <Button
                 variant="primary"
                 className="mt-4"
-                onClick={() => queryClient.invalidateQueries({ queryKey: ['posts'] })}
+                onClick={() => queryClient.invalidateQueries({ queryKey: ['feed'] })}
               >
                 Retry
               </Button>
             </div>
+          ) : allItems.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground mb-3">
+                {sort === 'mine' ? "You haven't posted anything yet." : 'No posts yet.'}
+              </p>
+              {isAuth && (
+                <Button variant="primary" onClick={openComposer} leftIcon={<Plus size={16} />}>
+                  Create your first post
+                </Button>
+              )}
+            </div>
           ) : (
-            allPosts.map((post) => (
-              <PostCard key={post.id} post={post} onVote={handleVote} />
-            ))
+            allItems.map((item: any) =>
+              item.type === 'ad'
+                ? <AdCard key={item.id} ad={item} />
+                : <PostCard key={item.id} post={item} onVote={handleVote} />
+            )
           )}
         </AnimatePresence>
       </div>
@@ -374,7 +492,7 @@ export default function FeedPage() {
             <PostCardSkeleton />
           </div>
         )}
-        {!hasNextPage && allPosts.length > 0 && (
+        {!hasNextPage && allItems.length > 0 && (
           <p className="text-sm text-muted-foreground">You've reached the end!</p>
         )}
       </div>

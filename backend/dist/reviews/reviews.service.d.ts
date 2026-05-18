@@ -11,5 +11,18 @@ export declare class ReviewsService {
         images?: string[];
     }): Promise<Review>;
     findByPlace(placeId: string): Promise<Review[]>;
+    findFeed(opts?: {
+        page?: number;
+        limit?: number;
+        sort?: 'new' | 'top' | 'hot';
+    }): Promise<{
+        data: any[];
+        meta: {
+            page: number;
+            limit: number;
+            total: number;
+            totalPages: number;
+        };
+    }>;
     findByUser(userId: string): Promise<Review[]>;
 }

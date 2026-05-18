@@ -21,6 +21,7 @@ exports.ReviewsModule = ReviewsModule = __decorate([
         imports: [typeorm_1.TypeOrmModule.forFeature([review_entity_1.Review]), places_module_1.PlacesModule],
         providers: [reviews_service_1.ReviewsService],
         controllers: [reviews_controller_1.ReviewsController],
+        exports: [reviews_service_1.ReviewsService],
     })
 ], ReviewsModule);
 //# sourceMappingURL=reviews.module.js.map

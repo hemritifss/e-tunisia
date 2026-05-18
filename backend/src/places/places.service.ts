@@ -141,10 +141,15 @@ export class PlacesService {
 
     async getByIds(ids: string[]): Promise<Place[]> {
         if (!ids || ids.length === 0) return [];
+        // Filter out anything that's not a valid UUID so a stale '1'/'2' from older
+        // mock favorites doesn't crash the query.
+        const uuidRe = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        const valid = ids.filter((id) => typeof id === 'string' && uuidRe.test(id));
+        if (valid.length === 0) return [];
         return this.placesRepo
             .createQueryBuilder('place')
             .leftJoinAndSelect('place.category', 'category')
-            .whereInIds(ids)
+            .whereInIds(valid)
             .getMany();
     }
 

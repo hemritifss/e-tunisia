@@ -20,13 +20,15 @@ export const StarRating = ({
   className,
 }: StarRatingProps) => {
   const [hoverRating, setHoverRating] = React.useState(0);
+  // Postgres `decimal` columns deserialize as strings — coerce defensively.
+  const numericRating = typeof rating === 'number' ? rating : Number(rating) || 0;
 
   return (
     <div className={cn('flex items-center gap-0.5', className)}>
       {Array.from({ length: maxRating }).map((_, i) => {
         const starValue = i + 1;
-        const isFilled = (hoverRating || rating) >= starValue;
-        const isHalf = !isFilled && (hoverRating || rating) >= starValue - 0.5;
+        const isFilled = (hoverRating || numericRating) >= starValue;
+        const isHalf = !isFilled && (hoverRating || numericRating) >= starValue - 0.5;
 
         return (
           <button
@@ -55,9 +57,9 @@ export const StarRating = ({
           </button>
         );
       })}
-      {rating > 0 && (
+      {numericRating > 0 && (
         <span className="ml-1 text-sm font-medium text-foreground/70">
-          {rating.toFixed(1)}
+          {numericRating.toFixed(1)}
         </span>
       )}
     </div>

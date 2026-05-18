@@ -11,6 +11,10 @@ import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // Story images are data URLs (base64). Bump body parser to 12MB so we don't 413.
+  app.use(express.json({ limit: '12mb' }));
+  app.use(express.urlencoded({ limit: '12mb', extended: true }));
+
   // API Versioning
   app.enableVersioning({
     type: VersioningType.URI,

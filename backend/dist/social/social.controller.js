@@ -37,6 +37,9 @@ let SocialController = class SocialController {
     getFollowCounts(userId) {
         return this.socialService.getFollowCounts(userId);
     }
+    publicFollowCounts(userId) {
+        return this.socialService.getFollowCounts(userId);
+    }
     isFollowing(followerId, followingId) {
         return this.socialService.isFollowing(followerId, followingId);
     }
@@ -92,12 +95,20 @@ __decorate([
 __decorate([
     (0, common_1.Get)('follow-counts'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
-    (0, swagger_1.ApiOperation)({ summary: 'Get follow counts' }),
+    (0, swagger_1.ApiOperation)({ summary: 'Get my follow counts' }),
     __param(0, (0, current_user_decorator_1.CurrentUser)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], SocialController.prototype, "getFollowCounts", null);
+__decorate([
+    (0, common_1.Get)('follow-counts/:userId'),
+    (0, swagger_1.ApiOperation)({ summary: 'Public follow counts for a user' }),
+    __param(0, (0, common_1.Param)('userId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], SocialController.prototype, "publicFollowCounts", null);
 __decorate([
     (0, common_1.Get)('is-following/:userId'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),

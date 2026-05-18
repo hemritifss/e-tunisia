@@ -3,12 +3,14 @@ import { Follow } from './follow.entity';
 import { Activity, ActivityType } from './activity.entity';
 import { User } from '../users/user.entity';
 import { RedisService } from '../redis/redis.service';
+import { NotificationsService } from '../notifications/notifications.service';
 export declare class SocialService {
     private followRepo;
     private activityRepo;
     private userRepo;
     private redisService;
-    constructor(followRepo: Repository<Follow>, activityRepo: Repository<Activity>, userRepo: Repository<User>, redisService: RedisService);
+    private notifications;
+    constructor(followRepo: Repository<Follow>, activityRepo: Repository<Activity>, userRepo: Repository<User>, redisService: RedisService, notifications: NotificationsService);
     follow(followerId: string, followingId: string): Promise<Follow>;
     unfollow(followerId: string, followingId: string): Promise<void>;
     getFollowers(userId: string): Promise<User[]>;

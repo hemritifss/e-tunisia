@@ -58,6 +58,22 @@ __decorate([
     __metadata("design:type", String)
 ], User.prototype, "country", void 0);
 __decorate([
+    (0, typeorm_1.Column)({ nullable: true, length: 320 }),
+    __metadata("design:type", String)
+], User.prototype, "bio", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true, length: 200 }),
+    __metadata("design:type", String)
+], User.prototype, "website", void 0);
+__decorate([
+    (0, typeorm_1.Column)('simple-array', { nullable: true }),
+    __metadata("design:type", Array)
+], User.prototype, "interests", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ default: false }),
+    __metadata("design:type", Boolean)
+], User.prototype, "onboardingComplete", void 0);
+__decorate([
     (0, typeorm_1.Column)({ default: UserRole.USER }),
     __metadata("design:type", String)
 ], User.prototype, "role", void 0);

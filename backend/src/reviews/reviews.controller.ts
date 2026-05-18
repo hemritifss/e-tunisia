@@ -1,7 +1,7 @@
 import {
-    Controller, Get, Post, Body, Param, UseGuards, Request,
+    Controller, Get, Post, Body, Param, Query, UseGuards, Request,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags, ApiOperation } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { ReviewsService } from './reviews.service';
 
@@ -9,6 +9,23 @@ import { ReviewsService } from './reviews.service';
 @Controller('reviews')
 export class ReviewsController {
     constructor(private reviewsService: ReviewsService) { }
+
+    @Get('feed')
+    @ApiOperation({ summary: 'Get reviews shaped as posts for the social feed' })
+    @ApiQuery({ name: 'page', required: false })
+    @ApiQuery({ name: 'limit', required: false })
+    @ApiQuery({ name: 'sort', required: false, enum: ['new', 'top', 'hot'] })
+    findFeed(
+        @Query('page') page?: string,
+        @Query('limit') limit?: string,
+        @Query('sort') sort?: 'new' | 'top' | 'hot',
+    ) {
+        return this.reviewsService.findFeed({
+            page: page ? Number(page) : undefined,
+            limit: limit ? Number(limit) : undefined,
+            sort,
+        });
+    }
 
     @Get('place/:placeId')
     @ApiOperation({ summary: 'Get reviews for a place' })

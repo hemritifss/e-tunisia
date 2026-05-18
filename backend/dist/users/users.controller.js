@@ -39,6 +39,34 @@ let UsersController = class UsersController {
     getVisited(req) {
         return this.usersService.getVisitedIds(req.user.id);
     }
+    async findPublicById(id) {
+        if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
+            return null;
+        }
+        const u = await this.usersService.findById(id).catch(() => null);
+        if (!u)
+            return null;
+        return {
+            id: u.id,
+            fullName: u.fullName,
+            avatar: u.avatar || null,
+            country: u.country || null,
+            bio: u.bio || null,
+            website: u.website || null,
+            role: u.role,
+            points: u.points || 0,
+            level: u.level || 1,
+            badges: Array.isArray(u.badges) ? u.badges : [],
+            createdAt: u.createdAt,
+        };
+    }
+    async suggest(limit) {
+        const lim = Math.max(1, Math.min(20, Number(limit) || 6));
+        const list = await this.usersService.suggestedUsers?.(lim).catch(() => null);
+        if (Array.isArray(list))
+            return list;
+        return [];
+    }
 };
 exports.UsersController = UsersController;
 __decorate([
@@ -98,6 +126,20 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "getVisited", null);
+__decorate([
+    (0, common_1.Get)(':id'),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], UsersController.prototype, "findPublicById", null);
+__decorate([
+    (0, common_1.Get)('suggest/list'),
+    __param(0, (0, common_1.Query)('limit')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], UsersController.prototype, "suggest", null);
 exports.UsersController = UsersController = __decorate([
     (0, swagger_1.ApiTags)('users'),
     (0, common_1.Controller)('users'),

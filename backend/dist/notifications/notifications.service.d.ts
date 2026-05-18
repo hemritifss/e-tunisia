@@ -1,8 +1,10 @@
 import { Repository } from 'typeorm';
 import { Notification, NotificationType } from './notification.entity';
+import { EventsGateway } from '../websocket/websocket.gateway';
 export declare class NotificationsService {
     private notifRepo;
-    constructor(notifRepo: Repository<Notification>);
+    private gateway?;
+    constructor(notifRepo: Repository<Notification>, gateway?: EventsGateway);
     findByUser(userId: string): Promise<Notification[]>;
     getUnreadCount(userId: string): Promise<{
         unreadCount: number;

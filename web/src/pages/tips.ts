@@ -5,7 +5,7 @@
 import { tips as mockTips, type Tip } from '../data';
 import * as api from '../api';
 import { replaceIcons } from '../icons';
-import { shareUrl } from '../ui-utils';
+import { shareUrl, isFlagged, toggleFlag, requireAuth } from '../ui-utils';
 
 const categoryMeta: Record<string, { label: string; icon: string; color: string }> = {
   cultural: { label: 'Cultural', icon: 'landmark', color: 'var(--coral)' },
@@ -40,9 +40,9 @@ function renderTipCard(tip: any): string {
       <h4 class="tip2-title">${tip.title}</h4>
       <p class="tip2-content">${tip.content}</p>
       <div class="tip2-footer">
-        <button class="tip2-like-btn ${tip.liked ? 'liked' : ''}" data-tip="${tip.id}">
+        <button class="tip2-like-btn ${(tip.liked || isFlagged('tip:' + tip.id + ':like')) ? 'liked' : ''}" data-tip="${tip.id}">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
-          <span>${tip.likes || 0}</span>
+          <span>${(tip.likes || 0) + (isFlagged('tip:' + tip.id + ':like') && !tip.liked ? 1 : 0)}</span>
         </button>
         <button class="tip2-share-btn" data-tip="${tip.id}" data-title="${(tip.title || '').replace(/"/g, '&quot;')}">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
@@ -225,14 +225,17 @@ function bindTipLikes() {
   document.querySelectorAll('.tip2-like-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const el = btn as HTMLElement;
-      el.classList.toggle('liked');
+      const tipId = el.dataset.tip;
+      if (!tipId) return;
+      if (!requireAuth('like tips')) return;
+      const nowLiked = toggleFlag('tip:' + tipId + ':like');
+      el.classList.toggle('liked', nowLiked);
       const countEl = el.querySelector('span');
       if (countEl) {
         const current = parseInt(countEl.textContent || '0');
-        countEl.textContent = String(el.classList.contains('liked') ? current + 1 : current - 1);
+        countEl.textContent = String(nowLiked ? current + 1 : Math.max(0, current - 1));
       }
-      const tipId = el.dataset.tip;
-      if (tipId) try { api.likeTip(tipId); } catch {}
+      try { api.likeTip(tipId); } catch {}
     });
   });
 

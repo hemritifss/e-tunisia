@@ -5,6 +5,19 @@
 import { places as mockPlaces } from '../data';
 import * as api from '../api';
 import { replaceIcons } from '../icons';
+import { toggleFlag, isFlagged } from '../ui-utils';
+
+// Read every place id the user has hearted in this browser
+// (key shape used by Explore + place-detail: 'place:<id>:fav').
+function getLocallySavedPlaceIds(): string[] {
+  try {
+    const raw = localStorage.getItem('etunisia_flags') || '{}';
+    const map = JSON.parse(raw) as Record<string, true>;
+    return Object.keys(map)
+      .filter(k => k.startsWith('place:') && k.endsWith(':fav'))
+      .map(k => k.slice('place:'.length, -':fav'.length));
+  } catch { return []; }
+}
 
 export function renderFavoritesPage(): string {
   return `
@@ -27,16 +40,27 @@ export async function initFavoritesPage() {
   const grid = document.getElementById('favorites-grid');
   if (!grid) return;
 
-  // Get saved places — try backend first, fallback to mock
-  let saved = mockPlaces.filter(p => p.saved);
-
+  // Pull from both: server-side user.favoriteIds AND any local-only saves.
+  const serverIds: string[] = [];
   try {
     const profile = await api.getMyProfile();
-    if (profile?.favoriteIds?.length) {
-      const fetched = await api.getFavoritePlaces(profile.favoriteIds);
-      if (fetched?.length) saved = fetched;
-    }
+    if (Array.isArray(profile?.favoriteIds)) serverIds.push(...profile.favoriteIds);
   } catch {}
+
+  const localIds = getLocallySavedPlaceIds();
+  const allIds = Array.from(new Set([...serverIds, ...localIds]));
+
+  let saved: any[] = [];
+  if (allIds.length > 0) {
+    try {
+      const fetched = await api.getFavoritePlaces(allIds);
+      if (Array.isArray(fetched) && fetched.length) saved = fetched;
+    } catch {}
+  }
+  // Final fallback — anything tagged saved in mock data, only if nothing else.
+  if (saved.length === 0 && serverIds.length === 0 && localIds.length === 0) {
+    saved = mockPlaces.filter(p => p.saved);
+  }
 
   if (saved.length === 0) {
     grid.innerHTML = `
@@ -78,14 +102,17 @@ export async function initFavoritesPage() {
 
   replaceIcons(grid);
 
-  // Unsave buttons
+  // Unsave buttons — also clear the local flag so it doesn't reappear after refresh.
   document.querySelectorAll('.place-card-save').forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
       const card = btn.closest('.place-card');
       const placeId = (btn as HTMLElement).dataset.place;
-      if (placeId) try { api.toggleFavorite(placeId); } catch {}
+      if (placeId) {
+        if (isFlagged('place:' + placeId + ':fav')) toggleFlag('place:' + placeId + ':fav');
+        try { api.toggleFavorite(placeId); } catch {}
+      }
       card?.remove();
       // Check if empty
       if (grid.children.length === 0) {

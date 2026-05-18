@@ -13,6 +13,7 @@ import {
   X,
 } from 'lucide-react';
 import { api, getImageUrl } from '../../shared/api';
+import { requireAuth } from '../../ui-utils';
 import type { Place, Category } from '../../shared/types/api';
 import { Card, CardImage, CardContent, CardFooter } from '../components/Card';
 import { StarRating } from '../components/StarRating';
@@ -41,19 +42,42 @@ function PlaceCard({
   place: Place;
   viewMode: ViewMode;
 }) {
-  const [isLiked, setIsLiked] = useState(false);
+  const flagKey = 'place:' + place.id + ':fav';
+  // Initial like state from auth-store favorites OR persisted flags. The selector returns
+  // a stable reference (no `|| []` literal) so Zustand doesn't trigger an infinite render loop.
+  const [isLiked, setIsLiked] = useState(() => {
+    try {
+      const auth = useAuthStore.getState();
+      if (Array.isArray(auth.user?.favoriteIds) && auth.user!.favoriteIds!.includes(place.id)) return true;
+      const map = JSON.parse(localStorage.getItem('etunisia_flags') || '{}');
+      return !!map[flagKey];
+    } catch { return false; }
+  });
   const addFavorite = useAuthStore((s) => s.addFavorite);
   const removeFavorite = useAuthStore((s) => s.removeFavorite);
   const showToast = useUIStore((s) => s.showToast);
 
+  const persistFav = (liked: boolean) => {
+    try {
+      const map = JSON.parse(localStorage.getItem('etunisia_flags') || '{}');
+      if (liked) map[flagKey] = true; else delete map[flagKey];
+      localStorage.setItem('etunisia_flags', JSON.stringify(map));
+    } catch {}
+  };
+
   const handleLike = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setIsLiked(!isLiked);
-    if (!isLiked) {
+    if (!requireAuth('save places')) return;
+    const next = !isLiked;
+    setIsLiked(next);
+    persistFav(next);
+    if (next) {
       addFavorite(place.id);
       showToast('Added to favorites!', 'success');
+      try { api.toggleFavorite(place.id); } catch {}
     } else {
       removeFavorite(place.id);
+      try { api.toggleFavorite(place.id); } catch {}
     }
   };
 

@@ -1,8 +1,9 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, Inject, forwardRef, Optional } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Message } from './message.entity';
 import { ChatRoom } from './chat-room.entity';
+import { EventsGateway } from '../websocket/websocket.gateway';
 
 @Injectable()
 export class MessagesService {
@@ -11,6 +12,9 @@ export class MessagesService {
     private messageRepo: Repository<Message>,
     @InjectRepository(ChatRoom)
     private roomRepo: Repository<ChatRoom>,
+    @Optional()
+    @Inject(forwardRef(() => EventsGateway))
+    private gateway?: EventsGateway,
   ) {}
 
   async createRoom(
@@ -21,16 +25,28 @@ export class MessagesService {
   ): Promise<ChatRoom> {
     const allParticipants = [...new Set([creatorId, ...participantIds])];
 
-    // For direct messages, check if room already exists
+    // For DM, dedupe: find an existing direct room with exactly the same 2 participants.
+    // participantIds is stored as comma-separated text — match via LIKE on both ids.
     if (type === 'direct' && allParticipants.length === 2) {
-      const existing = await this.roomRepo
+      const candidates = await this.roomRepo
         .createQueryBuilder('room')
         .where('room.type = :type', { type: 'direct' })
-        .andWhere('room.participantIds @> :ids', { ids: JSON.stringify(allParticipants) })
-        .andWhere('room.participantIds <@ :ids', { ids: JSON.stringify(allParticipants) })
-        .getOne();
+        .andWhere('room.participantIds LIKE :a', { a: `%${allParticipants[0]}%` })
+        .andWhere('room.participantIds LIKE :b', { b: `%${allParticipants[1]}%` })
+        .getMany();
 
-      if (existing) return existing;
+      const existing = candidates.find(r =>
+        Array.isArray(r.participantIds) &&
+        r.participantIds.length === 2 &&
+        allParticipants.every(id => r.participantIds.includes(id)),
+      );
+      if (existing) {
+        if (!existing.isActive) {
+          existing.isActive = true;
+          await this.roomRepo.save(existing);
+        }
+        return existing;
+      }
     }
 
     const room = this.roomRepo.create({
@@ -45,12 +61,14 @@ export class MessagesService {
   }
 
   async getRooms(userId: string): Promise<ChatRoom[]> {
-    return this.roomRepo
+    const rooms = await this.roomRepo
       .createQueryBuilder('room')
-      .where(':userId = ANY(room.participantIds)', { userId })
+      .where('room.participantIds LIKE :u', { u: `%${userId}%` })
       .andWhere('room.isActive = true')
       .orderBy('room.updatedAt', 'DESC')
       .getMany();
+    // Post-filter (participant id substrings could collide — verify exact membership)
+    return rooms.filter(r => Array.isArray(r.participantIds) && r.participantIds.includes(userId));
   }
 
   async getRoom(roomId: string, userId: string): Promise<ChatRoom> {
@@ -105,6 +123,16 @@ export class MessagesService {
       timestamp: new Date(),
     };
     await this.roomRepo.save(room);
+
+    // Live broadcast to every participant's personal channel — both inbox + open thread tabs hear it.
+    try {
+      for (const uid of room.participantIds || []) {
+        this.gateway?.broadcastToUser(uid, 'dm:new-message', {
+          roomId,
+          message: saved,
+        });
+      }
+    } catch {}
 
     return saved;
   }

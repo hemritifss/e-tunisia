@@ -28,6 +28,14 @@ import { renderAboutPage, initAboutPage } from './pages/about';
 import { renderItinerariesPage, initItinerariesPage } from './pages/itineraries';
 import { renderCollectionsPage, initCollectionsPage } from './pages/collections';
 import { renderHeroPage, initHeroPage } from './pages/hero';
+import { renderCreditsPage, initCreditsPage } from './pages/credits';
+import { renderUserProfilePage, initUserProfilePage } from './pages/user-profile';
+import { renderPostDetailPage, initPostDetailPage } from './pages/post-detail';
+import { renderSearchPage, initSearchPage } from './pages/search';
+import { renderProfileEditPage, initProfileEditPage } from './pages/profile-edit';
+import { renderMessagesPage, initMessagesPage } from './pages/messages';
+import { renderOnboardingPage, initOnboardingPage } from './pages/onboarding';
+import { connectRealtime, disconnectRealtime } from './realtime';
 import { replaceIcons } from './icons';
 import { posts, addUserPost, generateId, type Post } from './data';
 import * as apiService from './api';
@@ -50,7 +58,7 @@ function getRoute(hash: string): Route {
 
   // --- Auth Guard ---
   // Routes that REQUIRE login (personal data). Everything else is browsable as guest.
-  const authRequiredPrefixes = ['/profile', '/favorites', '/settings', '/badges', '/leaderboard'];
+  const authRequiredPrefixes = ['/profile', '/favorites', '/settings', '/badges', '/leaderboard', '/credits', '/messages'];
   const authOnlyHome = path === '/';
   const requiresAuth = authOnlyHome || authRequiredPrefixes.some(p => path === p || path.startsWith(p + '/'));
   const heroOnlyRoutes = ['/login', '/register'];
@@ -68,13 +76,43 @@ function getRoute(hash: string): Route {
   }
   // ------------------
 
-  // Post detail
-  const postMatch = path.match(/^\/post\/(\w+)/);
+  // Post detail (uuid)
+  const postMatch = path.match(/^\/post\/([0-9a-fA-F-]+)/);
   if (postMatch) {
+    const pid = postMatch[1];
     return {
-      render: () => renderPlaceDetailPage(postMatch[1]),
-      init: () => initPlaceDetailPage(),
+      render: () => renderPostDetailPage(pid),
+      init: () => initPostDetailPage(pid),
       page: 'feed',
+    };
+  }
+
+  // Public user profile (uuid)
+  const userMatch = path.match(/^\/user\/([0-9a-fA-F-]+)/);
+  if (userMatch) {
+    const uid = userMatch[1];
+    return {
+      render: () => renderUserProfilePage(uid),
+      init: () => initUserProfilePage(uid),
+      page: 'profile',
+    };
+  }
+
+  // Search results — supports /search?q=…
+  if (path === '/search' || path.startsWith('/search?')) {
+    return {
+      render: renderSearchPage,
+      init: initSearchPage,
+      page: 'explore',
+    };
+  }
+
+  // Messages — /messages, /messages/<roomId>, /messages/user/<userId>
+  if (path === '/messages' || path.startsWith('/messages/')) {
+    return {
+      render: renderMessagesPage,
+      init: initMessagesPage,
+      page: 'messages',
     };
   }
 
@@ -107,6 +145,9 @@ function getRoute(hash: string): Route {
     '/collections': { render: renderCollectionsPage, init: () => initCollectionsPage(), page: 'collections' },
     '/about': { render: renderAboutPage, init: () => initAboutPage(), page: 'hero' },
     '/hero': { render: renderHeroPage, init: () => initHeroPage(), page: 'hero' },
+    '/credits': { render: renderCreditsPage, init: () => initCreditsPage(), page: 'profile' },
+    '/profile/edit': { render: renderProfileEditPage, init: () => initProfileEditPage(), page: 'profile' },
+    '/onboarding':   { render: renderOnboardingPage,  init: () => initOnboardingPage(),  page: '' },
   };
 
   return routes[path] || routes['/'];
@@ -126,8 +167,15 @@ function navigate() {
   // Toggle global body class for layout adjustments
   if (apiService.isLoggedIn()) {
     document.body.classList.remove('guest-mode');
+    // Hydrate placeholder user info on first navigation post-login + check onboarding.
+    if (!(window as any).__userHydrated) {
+      (window as any).__userHydrated = true;
+      hydrateCurrentUser();
+      maybeRedirectToOnboarding();
+    }
   } else {
     document.body.classList.add('guest-mode');
+    (window as any).__userHydrated = false;
   }
 
   const route = getRoute(location.hash);
@@ -174,6 +222,62 @@ function navigate() {
   // Scroll to top on navigation
   window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
 }
+
+// ---- User hydration ----
+// Replaces every [data-user-name], [data-user-level], [data-user-avatar]
+// element in the static shell with the real logged-in user's info.
+async function hydrateCurrentUser() {
+  if (!apiService.isLoggedIn()) return;
+  try {
+    const me: any = await apiService.getMyProfile();
+    if (!me) return;
+    const name = me.fullName || me.name || me.email || 'Member';
+    const avatarPath = me.avatar || me.avatarUrl;
+    const seed = name || me.email || me.id || 'user';
+    const avatar = avatarPath
+      ? apiService.getImageUrl(avatarPath, 'avatar')
+      : `https://api.dicebear.com/9.x/thumbs/svg?seed=${encodeURIComponent(seed)}`;
+    const level = me.level != null ? `Level ${me.level} Explorer` : (me.role === 'admin' ? 'Admin' : 'Explorer');
+
+    document.querySelectorAll<HTMLElement>('[data-user-name]').forEach(el => { el.textContent = name; });
+    document.querySelectorAll<HTMLElement>('[data-user-level]').forEach(el => { el.textContent = level; });
+    document.querySelectorAll<HTMLImageElement>('img[data-user-avatar]').forEach(el => { el.src = avatar; });
+  } catch {
+    // 401 already redirects to /hero inside the api wrapper.
+  }
+}
+
+// Force a freshly-signed-in user (with onboardingComplete=false) into the wizard.
+// Runs once per session, won't fight back if the user is already on onboarding/login/hero.
+async function maybeRedirectToOnboarding() {
+  const path = (location.hash || '#/').replace('#', '') || '/';
+  // Don't bounce away from auth/landing routes or from the wizard itself.
+  if (
+    path === '/onboarding' ||
+    path === '/login' ||
+    path === '/register' ||
+    path === '/hero'
+  ) return;
+  try {
+    const me: any = await apiService.getMyProfile();
+    if (me && me.onboardingComplete === false) {
+      location.hash = '#/onboarding';
+    }
+  } catch {
+    // Silent — auth wrapper handles 401 elsewhere.
+  }
+}
+
+// Listen for token changes (from other tabs) and re-hydrate.
+window.addEventListener('storage', (e) => {
+  if (e.key === 'etunisia_token') hydrateCurrentUser();
+});
+
+// Re-hydrate after a profile edit so the navbar reflects the new name/avatar.
+window.addEventListener('etunisia:profile-updated', () => {
+  (window as any).__userHydrated = false;
+  hydrateCurrentUser();
+});
 
 // ---- Theme ----
 function initTheme() {
@@ -224,9 +328,19 @@ function initSearch() {
 
   document.querySelectorAll('.search-trending .tag').forEach(tag => {
     tag.addEventListener('click', () => {
+      const q = (tag.textContent || '').trim();
       overlay?.classList.remove('open');
-      location.hash = '#/explore';
+      location.hash = q ? `#/search?q=${encodeURIComponent(q)}` : '#/search';
     });
+  });
+
+  // Submit on Enter: go to the search results page with the query.
+  input?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      const q = input.value.trim();
+      overlay?.classList.remove('open');
+      location.hash = q ? `#/search?q=${encodeURIComponent(q)}` : '#/search';
+    }
   });
 }
 
@@ -237,10 +351,159 @@ function initNotifications() {
   const overlay = document.getElementById('notif-panel-overlay');
   const badge = document.getElementById('notif-badge');
   const markReadBtn = document.getElementById('notif-mark-read');
+  const list = panel?.querySelector('.notif-panel-list') as HTMLElement | null;
+
+  function timeAgo(d: string | Date): string {
+    const ms = Date.now() - new Date(d).getTime();
+    const m = Math.floor(ms / 60_000);
+    if (m < 1) return 'just now';
+    if (m < 60) return `${m}m`;
+    const h = Math.floor(m / 60);
+    if (h < 24) return `${h}h`;
+    return `${Math.floor(h / 24)}d`;
+  }
+
+  function notifBucket(d: string | Date): 'today' | 'week' | 'earlier' {
+    const ms = Date.now() - new Date(d).getTime();
+    if (ms < 24 * 60 * 60 * 1000) return 'today';
+    if (ms < 7 * 24 * 60 * 60 * 1000) return 'week';
+    return 'earlier';
+  }
+
+  function notifTypeMeta(n: any): { icon: string; color: string; href: string | null } {
+    const t = (n.type || '').toLowerCase();
+    const data = n.data || {};
+    if (t === 'follow') {
+      return {
+        icon: 'lucide-user-plus',
+        color: 'oklch(60% 0.16 240)', // blue
+        href: data.fromUserId ? `#/user/${data.fromUserId}` : null,
+      };
+    }
+    if (t === 'comment') {
+      return {
+        icon: 'lucide-message-circle',
+        color: 'oklch(58% 0.16 145)', // green
+        href: data.postId ? `#/post/${data.postId}` : null,
+      };
+    }
+    if (t === 'donation') {
+      return {
+        icon: 'lucide-coins',
+        color: 'oklch(70% 0.17 80)', // gold
+        href: '#/credits',
+      };
+    }
+    if (t === 'mention') {
+      return { icon: 'lucide-at-sign', color: 'oklch(60% 0.18 290)', href: data.postId ? `#/post/${data.postId}` : null };
+    }
+    if (t === 'badge') {
+      return { icon: 'lucide-award', color: 'oklch(70% 0.17 80)', href: '#/badges' };
+    }
+    if (t === 'event') {
+      return { icon: 'lucide-calendar', color: 'oklch(60% 0.18 25)', href: '#/events' };
+    }
+    if (t === 'tip') {
+      return { icon: 'lucide-lightbulb', color: 'oklch(72% 0.15 75)', href: '#/tips' };
+    }
+    return { icon: 'lucide-bell', color: 'var(--text-muted)', href: null };
+  }
+
+  function renderNotif(n: any): string {
+    const seed = encodeURIComponent(n.fromUser?.fullName || n.data?.fromUserName || n.id || 'user');
+    const fromAvatar = n.fromUser?.avatar || n.data?.fromAvatar;
+    const avatar = fromAvatar
+      ? (fromAvatar.startsWith('http') || fromAvatar.startsWith('data:')
+          ? fromAvatar
+          : `https://api.dicebear.com/9.x/thumbs/svg?seed=${seed}`)
+      : `https://api.dicebear.com/9.x/thumbs/svg?seed=${seed}`;
+    const title = n.title || 'New activity';
+    const body = n.body || '';
+    const meta = notifTypeMeta(n);
+    const inner = `
+      <div class="notif-item-icon-wrap">
+        <img src="${avatar}" alt="" class="notif-avatar" />
+        <span class="notif-type-bubble" style="--type-color: ${meta.color}">
+          <i class="${meta.icon}"></i>
+        </span>
+      </div>
+      <div class="notif-body">
+        <p class="notif-title">${title}</p>
+        ${body ? `<p class="notif-sub">${body}</p>` : ''}
+        <span class="notif-time">${timeAgo(n.createdAt)} ago</span>
+      </div>
+      ${!(n.isRead || n.read) ? '<span class="notif-unread-dot" aria-label="unread"></span>' : ''}
+    `;
+    if (meta.href) {
+      return `<a class="notif-item ${n.isRead || n.read ? '' : 'unread'}" data-id="${n.id}" href="${meta.href}">${inner}</a>`;
+    }
+    return `<div class="notif-item ${n.isRead || n.read ? '' : 'unread'}" data-id="${n.id}">${inner}</div>`;
+  }
+
+  function renderSection(label: string, items: any[]): string {
+    if (items.length === 0) return '';
+    return `
+      <div class="notif-section">
+        <div class="notif-section-label">${label}</div>
+        ${items.map(renderNotif).join('')}
+      </div>
+    `;
+  }
+
+  async function loadNotifs() {
+    if (!list) return;
+    if (!apiService.isLoggedIn()) {
+      list.innerHTML = `
+        <div class="notif-empty">
+          <i class="lucide-bell-off"></i>
+          <p>Sign in to see your notifications.</p>
+          <a class="btn btn-primary btn-sm" href="#/login">Sign in</a>
+        </div>`;
+      if (badge) badge.style.display = 'none';
+      replaceIcons(list);
+      return;
+    }
+    try {
+      const items = await apiService.getNotifications();
+      if (!Array.isArray(items) || items.length === 0) {
+        list.innerHTML = `
+          <div class="notif-empty">
+            <i class="lucide-bell"></i>
+            <p>No notifications yet. We'll ping you when something happens.</p>
+          </div>`;
+        if (badge) badge.style.display = 'none';
+        replaceIcons(list);
+        return;
+      }
+      const today: any[] = [];
+      const week: any[] = [];
+      const earlier: any[] = [];
+      for (const n of items) {
+        const b = notifBucket(n.createdAt);
+        if (b === 'today') today.push(n);
+        else if (b === 'week') week.push(n);
+        else earlier.push(n);
+      }
+      list.innerHTML = `
+        ${renderSection('Today', today)}
+        ${renderSection('This week', week)}
+        ${renderSection('Earlier', earlier)}
+      `;
+      const unread = items.filter((n: any) => !(n.isRead || n.read)).length;
+      if (badge) {
+        if (unread > 0) { badge.textContent = String(unread); badge.style.display = ''; }
+        else badge.style.display = 'none';
+      }
+      replaceIcons(list);
+    } catch {
+      // leave the hardcoded fallback intact
+    }
+  }
 
   function openNotifs() {
     panel?.classList.add('open');
     overlay?.classList.add('open');
+    loadNotifs();
   }
 
   function closeNotifs() {
@@ -250,11 +513,8 @@ function initNotifications() {
 
   toggle?.addEventListener('click', (e) => {
     e.stopPropagation();
-    if (panel?.classList.contains('open')) {
-      closeNotifs();
-    } else {
-      openNotifs();
-    }
+    if (panel?.classList.contains('open')) closeNotifs();
+    else openNotifs();
   });
 
   overlay?.addEventListener('click', closeNotifs);
@@ -266,16 +526,26 @@ function initNotifications() {
     setTimeout(openNotifs, 100);
   });
 
-  markReadBtn?.addEventListener('click', () => {
-    panel?.querySelectorAll('.notif-item.unread').forEach(item => {
-      item.classList.remove('unread');
-    });
-    if (badge) {
-      badge.style.display = 'none';
-    }
+  markReadBtn?.addEventListener('click', async () => {
+    panel?.querySelectorAll('.notif-item.unread').forEach(item => item.classList.remove('unread'));
+    if (badge) badge.style.display = 'none';
+    try { await apiService.markAllNotificationsRead(); } catch {}
   });
 
   window.addEventListener('hashchange', closeNotifs);
+
+  // Pre-load badge count on app start (logged-in users only).
+  if (apiService.isLoggedIn()) {
+    apiService.getUnreadCount().then((c: any) => {
+      const n = Number(c?.count ?? c) || 0;
+      if (badge) {
+        if (n > 0) { badge.textContent = String(n); badge.style.display = ''; }
+        else badge.style.display = 'none';
+      }
+    }).catch(() => {});
+  } else if (badge) {
+    badge.style.display = 'none';
+  }
 }
 
 // ---- User dropdown ----
@@ -596,31 +866,49 @@ function initPostModal() {
     updateSubmitState();
   }
 
-  function submitPost() {
+  async function submitPost() {
     if (!titleInput?.value.trim() || !selectedCategory) return;
 
-    const tagSuffix = taggedUsers.length > 0
-      ? ` -- with ${taggedUsers.join(', ')}`
-      : '';
-
+    const tagSuffix = taggedUsers.length > 0 ? ` -- with ${taggedUsers.join(', ')}` : '';
     const bodyText = (bodyInput?.value.trim() || titleInput.value.trim()) + tagSuffix;
 
-    const newPost: Post = {
-      id: generateId(),
-      title: titleInput.value.trim(),
-      excerpt: bodyText,
-      body: bodyText,
-      category: selectedCatName,
-      categoryClass: selectedCatClass,
-      author: { name: 'Ahmed Ben Ali', avatar: 'https://api.dicebear.com/9.x/thumbs/svg?seed=Tunisia', level: 5 },
-      votes: 1,
-      userVote: 1,
-      commentCount: 0,
-      timeAgo: 'just now',
-      location: selectedLocation || undefined,
-    };
+    // Try backend first (real persistence). Fall back to in-memory if offline / not logged in.
+    let savedToBackend = false;
+    if (apiService.isLoggedIn()) {
+      try {
+        if (submitBtn) submitBtn.disabled = true;
+        await apiService.createPost({
+          title: titleInput.value.trim(),
+          body: bodyText,
+          category: selectedCatName,
+          location: selectedLocation || undefined,
+        });
+        savedToBackend = true;
+      } catch (err) {
+        console.warn('Backend post failed, falling back to local:', err);
+      } finally {
+        if (submitBtn) submitBtn.disabled = false;
+      }
+    }
 
-    addUserPost(newPost);
+    if (!savedToBackend) {
+      const newPost: Post = {
+        id: generateId(),
+        title: titleInput.value.trim(),
+        excerpt: bodyText,
+        body: bodyText,
+        category: selectedCatName,
+        categoryClass: selectedCatClass,
+        author: { name: 'You', avatar: 'https://api.dicebear.com/9.x/thumbs/svg?seed=Tunisia', level: 5 },
+        votes: 1,
+        userVote: 1,
+        commentCount: 0,
+        timeAgo: 'just now',
+        location: selectedLocation || undefined,
+      };
+      addUserPost(newPost);
+    }
+
     closeModal();
 
     if (successToast) {
@@ -628,6 +916,9 @@ function initPostModal() {
       replaceIcons(successToast);
       setTimeout(() => successToast.classList.remove('show'), 3000);
     }
+
+    // Tell the React feed to refresh.
+    window.dispatchEvent(new CustomEvent('etunisia:post-created'));
 
     location.hash = '#/';
     navigate();
@@ -657,6 +948,15 @@ function initPostModal() {
       openModal();
     }
   });
+
+  // React feed dispatches this when the user clicks "Share your moment" / "Your story" tile.
+  document.addEventListener('etunisia:open-post-modal', () => {
+    if (!apiService.isLoggedIn()) {
+      location.hash = '#/login';
+      return;
+    }
+    openModal();
+  });
 }
 
 // ---- Init ----
@@ -673,10 +973,17 @@ function init() {
 
   replaceIcons();
 
-  document.getElementById('logout-btn')?.addEventListener('click', () => {
+  const handleLogout = () => {
     apiService.logout();
+    document.querySelectorAll<HTMLElement>('[data-user-name]').forEach(el => { el.textContent = 'Guest'; });
+    document.querySelectorAll<HTMLElement>('[data-user-level]').forEach(el => { el.textContent = 'Welcome'; });
+    document.querySelectorAll<HTMLImageElement>('img[data-user-avatar]').forEach(el => {
+      el.src = 'https://api.dicebear.com/9.x/thumbs/svg?seed=Tunisia';
+    });
     location.hash = '#/hero';
-  });
+  };
+  document.getElementById('logout-btn')?.addEventListener('click', handleLogout);
+  document.getElementById('mobile-logout-btn')?.addEventListener('click', handleLogout);
 
   window.addEventListener('hashchange', navigate);
   navigate();

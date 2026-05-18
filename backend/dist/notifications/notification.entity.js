@@ -20,6 +20,10 @@ var NotificationType;
     NotificationType["SPONSOR"] = "sponsor";
     NotificationType["SYSTEM"] = "system";
     NotificationType["PROMO"] = "promo";
+    NotificationType["FOLLOW"] = "follow";
+    NotificationType["COMMENT"] = "comment";
+    NotificationType["DONATION"] = "donation";
+    NotificationType["MENTION"] = "mention";
 })(NotificationType || (exports.NotificationType = NotificationType = {}));
 let Notification = class Notification {
 };

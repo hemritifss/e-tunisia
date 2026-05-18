@@ -1,13 +1,17 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Inject, forwardRef, Optional } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Notification, NotificationType } from './notification.entity';
+import { EventsGateway } from '../websocket/websocket.gateway';
 
 @Injectable()
 export class NotificationsService {
     constructor(
         @InjectRepository(Notification)
         private notifRepo: Repository<Notification>,
+        @Optional()
+        @Inject(forwardRef(() => EventsGateway))
+        private gateway?: EventsGateway,
     ) {}
 
     async findByUser(userId: string) {
@@ -38,9 +42,12 @@ export class NotificationsService {
     }
 
     async create(userId: string, title: string, body: string, type: NotificationType, data?: any) {
-        return this.notifRepo.save(this.notifRepo.create({
+        const saved = await this.notifRepo.save(this.notifRepo.create({
             userId, title, body, type, data,
         }));
+        // Push live via WebSocket (best-effort)
+        try { this.gateway?.broadcastNotification(userId, saved); } catch {}
+        return saved;
     }
 
     async createBulk(userIds: string[], title: string, body: string, type: NotificationType, data?: any) {

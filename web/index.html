@@ -47,15 +47,17 @@
           </button>
           <div class="avatar-menu" id="avatar-menu">
             <button class="avatar-btn" id="avatar-btn">
-              <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=Tunisia" alt="User" class="avatar-img" />
+              <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=Tunisia" alt="User" class="avatar-img" data-user-avatar />
             </button>
             <div class="dropdown" id="user-dropdown">
               <div class="dropdown-header">
-                <strong>Ahmed Ben Ali</strong>
-                <span class="text-muted">Level 5 Explorer</span>
+                <strong data-user-name>Guest</strong>
+                <span class="text-muted" data-user-level>Welcome</span>
               </div>
               <div class="dropdown-divider"></div>
               <a href="#/profile" class="dropdown-item"><i class="lucide-user"></i> Profile</a>
+              <a href="#/messages" class="dropdown-item"><i class="lucide-message-circle"></i> Messages</a>
+              <a href="#/credits" class="dropdown-item"><i class="lucide-coins"></i> Credits &amp; Donations</a>
               <a href="#/favorites" class="dropdown-item"><i class="lucide-heart"></i> Saved Places</a>
               <a href="#/badges" class="dropdown-item"><i class="lucide-award"></i> Badges</a>
               <a href="#/leaderboard" class="dropdown-item"><i class="lucide-trophy"></i> Leaderboard</a>
@@ -76,10 +78,10 @@
     <div class="mobile-menu-panel" id="mobile-menu-panel">
       <div class="mobile-menu-header">
         <div class="mobile-menu-user">
-          <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=Tunisia" alt="User" />
+          <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=Tunisia" alt="User" data-user-avatar />
           <div class="mobile-menu-user-info">
-            <strong>Ahmed Ben Ali</strong>
-            <span>Level 5 Explorer</span>
+            <strong data-user-name>Guest</strong>
+            <span data-user-level>Welcome</span>
           </div>
         </div>
         <button class="btn-icon mobile-menu-close" id="mobile-menu-close" aria-label="Close menu">
@@ -111,6 +113,7 @@
       <div class="mobile-menu-section">
         <div class="mobile-menu-section-label">Account</div>
         <a href="#/profile" class="mobile-menu-item"><i class="lucide-user"></i> Profile</a>
+        <a href="#/credits" class="mobile-menu-item"><i class="lucide-coins"></i> Credits &amp; Donations</a>
         <a href="#/favorites" class="mobile-menu-item"><i class="lucide-heart"></i> Saved Places</a>
         <a href="#/badges" class="mobile-menu-item"><i class="lucide-award"></i> Badges</a>
         <a href="#/leaderboard" class="mobile-menu-item"><i class="lucide-trophy"></i> Leaderboard</a>
@@ -148,6 +151,7 @@
       </div>
       <div class="mobile-menu-section">
         <a href="#/settings" class="mobile-menu-item"><i class="lucide-settings"></i> Settings</a>
+        <button class="mobile-menu-item text-danger" id="mobile-logout-btn"><i class="lucide-log-out"></i> Log out</button>
       </div>
     </div>
 
@@ -215,10 +219,10 @@
       </div>
       <div class="post-modal-body">
         <div class="post-modal-user">
-          <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=Tunisia" alt="You" />
+          <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=Tunisia" alt="You" data-user-avatar />
           <div>
-            <div class="post-modal-user-name">Ahmed Ben Ali</div>
-            <div class="text-xs text-muted">Level 5 Explorer</div>
+            <div class="post-modal-user-name" data-user-name>Guest</div>
+            <div class="text-xs text-muted" data-user-level>Welcome</div>
           </div>
         </div>
 
@@ -365,6 +369,20 @@
     </nav>
   </div>
 
+  <script>
+    // Rescue users stuck on old service-worker registrations + caches during dev.
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations()
+        .then((regs) => Promise.all(regs.map((r) => r.unregister())))
+        .catch(() => {});
+    }
+    // Also blow away the workbox precaches so manifest/index/JS aren't served stale.
+    if ('caches' in window) {
+      caches.keys()
+        .then((keys) => Promise.all(keys.map((k) => caches.delete(k))))
+        .catch(() => {});
+    }
+  </script>
   <script type="module" src="/src/main.ts"></script>
 </body>
 </html>

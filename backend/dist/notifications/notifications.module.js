@@ -12,12 +12,16 @@ const typeorm_1 = require("@nestjs/typeorm");
 const notification_entity_1 = require("./notification.entity");
 const notifications_service_1 = require("./notifications.service");
 const notifications_controller_1 = require("./notifications.controller");
+const websocket_module_1 = require("../websocket/websocket.module");
 let NotificationsModule = class NotificationsModule {
 };
 exports.NotificationsModule = NotificationsModule;
 exports.NotificationsModule = NotificationsModule = __decorate([
     (0, common_1.Module)({
-        imports: [typeorm_1.TypeOrmModule.forFeature([notification_entity_1.Notification])],
+        imports: [
+            typeorm_1.TypeOrmModule.forFeature([notification_entity_1.Notification]),
+            (0, common_1.forwardRef)(() => websocket_module_1.WebSocketModule),
+        ],
         controllers: [notifications_controller_1.NotificationsController],
         providers: [notifications_service_1.NotificationsService],
         exports: [notifications_service_1.NotificationsService],

@@ -5,6 +5,7 @@
 import { events as mockEvents, type Event } from '../data';
 import * as api from '../api';
 import { replaceIcons } from '../icons';
+import { isFlagged, toggleFlag, requireAuth } from '../ui-utils';
 
 const eventImages: Record<string, string> = {
   'carthage-festival': 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=600&h=400&fit=crop',
@@ -28,6 +29,8 @@ function renderEventCard(ev: any): string {
   const day = ev.day || (ev.date ? new Date(ev.date).getDate().toString().padStart(2, '0') : '');
   const image = ev.image || eventImages[ev.id] || 'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=600&h=400&fit=crop';
   const catColor = categoryColors[ev.category] || 'var(--primary)';
+  // Restore the user's persisted "attending" state on every render.
+  const attending = !!ev.attending || isFlagged('event:' + ev.id + ':attend');
 
   return `
     <div class="event2-card reveal-on-scroll" data-event-id="${ev.id}">
@@ -55,8 +58,8 @@ function renderEventCard(ev: any): string {
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
               ${ev.attendees || 0} attending
             </span>
-            <button class="event2-attend-btn ${ev.attending ? 'attended' : ''}" data-event="${ev.id}">
-              ${ev.attending
+            <button class="event2-attend-btn ${attending ? 'attended' : ''}" data-event="${ev.id}">
+              ${attending
                 ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Attending'
                 : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Attend'
               }
@@ -154,11 +157,14 @@ function bindAttendButtons() {
   document.querySelectorAll('.event2-attend-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const el = btn as HTMLElement;
+      const eventId = el.dataset.event;
+      if (!eventId) return;
+      if (!requireAuth('attend events')) return;
       if (el.classList.contains('attended')) return;
       el.classList.add('attended');
       el.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Attending';
-      const eventId = el.dataset.event;
-      if (eventId) try { api.attendEvent(eventId); } catch {}
+      toggleFlag('event:' + eventId + ':attend'); // persist so refresh keeps it
+      try { api.attendEvent(eventId); } catch {}
     });
   });
 }

@@ -5,6 +5,8 @@ import { Follow } from './follow.entity';
 import { Activity, ActivityType } from './activity.entity';
 import { User } from '../users/user.entity';
 import { RedisService } from '../redis/redis.service';
+import { NotificationsService } from '../notifications/notifications.service';
+import { NotificationType } from '../notifications/notification.entity';
 
 @Injectable()
 export class SocialService {
@@ -16,6 +18,7 @@ export class SocialService {
     @InjectRepository(User)
     private userRepo: Repository<User>,
     private redisService: RedisService,
+    private notifications: NotificationsService,
   ) {}
 
   // ---- Follow System ----
@@ -39,6 +42,19 @@ export class SocialService {
     await this.createActivity(followerId, ActivityType.FOLLOWED_USER, {
       targetUserId: followingId,
     });
+
+    // Notify the followed user (best-effort; ignore failure)
+    try {
+      const follower = await this.userRepo.findOne({ where: { id: followerId } });
+      const name = follower?.fullName || 'Someone';
+      await this.notifications.create(
+        followingId,
+        'New follower',
+        `${name} started following you`,
+        NotificationType.FOLLOW,
+        { fromUserId: followerId, fromUserName: name, fromAvatar: follower?.avatar || null },
+      );
+    } catch {}
 
     // Update follower/following counts in Redis
     await this.redisService.increment(`user:${followingId}:followers`);

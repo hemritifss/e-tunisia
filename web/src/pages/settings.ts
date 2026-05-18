@@ -1,3 +1,7 @@
+import * as api from '../api';
+import { replaceIcons } from '../icons';
+import { showToast, isLoggedIn } from '../ui-utils';
+
 export function renderSettingsPage(): string {
   return `
     <div class="settings-page page-enter" data-design="sleek">
@@ -63,13 +67,26 @@ export function renderSettingsPage(): string {
       </div>
 
       <div class="settings-group">
+        <div class="settings-group-title">Safety</div>
+        <div class="settings-item settings-item-stacked">
+          <div>
+            <div class="settings-item-label"><i class="lucide-shield"></i> Blocked accounts</div>
+            <div class="settings-item-desc">People you've blocked. They can't see your posts or DM you.</div>
+          </div>
+          <div class="settings-blocked-list" id="settings-blocked-list">
+            <div class="text-muted text-sm" style="padding: var(--space-2);">Loading…</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-group">
         <div class="settings-group-title">Account</div>
         <div class="settings-item">
           <div>
             <div class="settings-item-label">Edit Profile</div>
             <div class="settings-item-desc">Update your name, photo, and bio</div>
           </div>
-          <button class="btn btn-sm btn-secondary" id="settings-edit-profile">Edit</button>
+          <a class="btn btn-sm btn-secondary" href="#/profile/edit">Edit</a>
         </div>
         <div class="settings-item">
           <div>
@@ -81,6 +98,59 @@ export function renderSettingsPage(): string {
       </div>
     </div>
   `;
+}
+
+async function renderBlockedList() {
+  const wrap = document.getElementById('settings-blocked-list');
+  if (!wrap) return;
+  if (!isLoggedIn()) {
+    wrap.innerHTML = `<div class="text-muted text-sm">Sign in to manage blocked accounts.</div>`;
+    return;
+  }
+  let rows: any[] = [];
+  try { rows = await api.listBlockedUsers(); } catch { rows = []; }
+  if (!rows.length) {
+    wrap.innerHTML = `<div class="text-muted text-sm">You haven't blocked anyone.</div>`;
+    return;
+  }
+  wrap.innerHTML = rows.map(r => {
+    const u = r.user || {};
+    const seed = encodeURIComponent(u.fullName || u.id);
+    const av = u.avatar && (String(u.avatar).startsWith('http') || String(u.avatar).startsWith('data:'))
+      ? u.avatar
+      : `https://api.dicebear.com/9.x/thumbs/svg?seed=${seed}`;
+    return `
+      <div class="blocked-row" data-id="${u.id}">
+        <a class="blocked-user" href="#/user/${u.id}">
+          <img src="${av}" alt="" />
+          <div>
+            <strong>${(u.fullName || 'Unknown').replace(/</g, '&lt;')}</strong>
+            ${u.country ? `<span class="text-xs text-muted">${(u.country || '').replace(/</g, '&lt;')}</span>` : ''}
+          </div>
+        </a>
+        <button class="btn btn-sm btn-outline blocked-unblock" data-id="${u.id}">
+          <i class="lucide-user-check"></i> Unblock
+        </button>
+      </div>
+    `;
+  }).join('');
+  replaceIcons(wrap);
+
+  wrap.querySelectorAll<HTMLButtonElement>('.blocked-unblock').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id = btn.dataset.id;
+      if (!id) return;
+      btn.disabled = true;
+      try {
+        await api.unblockUser(id);
+        showToast('Unblocked');
+        await renderBlockedList();
+      } catch (e: any) {
+        btn.disabled = false;
+        showToast(e?.message || 'Could not unblock', { type: 'error' });
+      }
+    });
+  });
 }
 
 export function initSettingsPage() {
@@ -98,9 +168,7 @@ export function initSettingsPage() {
     });
   }
 
-  document.getElementById('settings-edit-profile')?.addEventListener('click', () => {
-    location.hash = '#/profile';
-  });
+  renderBlockedList();
 
   document.getElementById('settings-delete-account')?.addEventListener('click', () => {
     const ok = window.confirm('Delete your account permanently? This action cannot be undone.');

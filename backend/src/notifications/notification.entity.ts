@@ -7,6 +7,7 @@ import { User } from '../users/user.entity';
 export enum NotificationType {
     EVENT = 'event', TIP = 'tip', BADGE = 'badge',
     SPONSOR = 'sponsor', SYSTEM = 'system', PROMO = 'promo',
+    FOLLOW = 'follow', COMMENT = 'comment', DONATION = 'donation', MENTION = 'mention',
 }
 
 @Entity('notifications')

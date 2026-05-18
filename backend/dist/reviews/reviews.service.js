@@ -34,11 +34,62 @@ let ReviewsService = class ReviewsService {
         return saved;
     }
     async findByPlace(placeId) {
+        if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(placeId)) {
+            return [];
+        }
         return this.reviewsRepo.find({
             where: { placeId },
             relations: ['user'],
             order: { createdAt: 'DESC' },
         });
+    }
+    async findFeed(opts = {}) {
+        const page = Math.max(1, Number(opts.page) || 1);
+        const limit = Math.min(50, Math.max(1, Number(opts.limit) || 10));
+        const offset = (page - 1) * limit;
+        const qb = this.reviewsRepo.createQueryBuilder('r')
+            .leftJoinAndSelect('r.user', 'u')
+            .leftJoinAndSelect('r.place', 'p');
+        if (opts.sort === 'top') {
+            qb.orderBy('r.rating', 'DESC').addOrderBy('r.createdAt', 'DESC');
+        }
+        else if (opts.sort === 'hot') {
+            qb.orderBy('r.rating', 'DESC').addOrderBy('r.createdAt', 'DESC');
+        }
+        else {
+            qb.orderBy('r.createdAt', 'DESC');
+        }
+        const [rows, total] = await qb.skip(offset).take(limit).getManyAndCount();
+        const data = rows.map((r) => ({
+            id: r.id,
+            type: 'review',
+            title: r.place ? `Visited ${r.place.name}` : 'Travel note',
+            body: r.comment,
+            rating: r.rating != null ? Number(r.rating) : null,
+            category: r.place?.category?.name || null,
+            location: r.place ? `${r.place.city}, ${r.place.governorate}` : null,
+            images: r.images && r.images.length
+                ? r.images
+                : (r.place?.coverImage ? [r.place.coverImage] : []),
+            place: r.place ? {
+                id: r.place.id, name: r.place.name, slug: r.place.slug, city: r.place.city,
+                coverImage: r.place.coverImage,
+            } : null,
+            authorId: r.userId,
+            author: r.user ? {
+                id: r.user.id,
+                fullName: r.user.fullName,
+                avatar: r.user.avatar || null,
+            } : null,
+            upvotes: 5 + Math.floor((Number(r.rating) || 4) * 12) + (r.id.charCodeAt(0) % 40),
+            downvotes: r.id.charCodeAt(2) % 4,
+            commentCount: r.id.charCodeAt(1) % 25,
+            createdAt: r.createdAt,
+        }));
+        return {
+            data,
+            meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
+        };
     }
     async findByUser(userId) {
         return this.reviewsRepo.find({

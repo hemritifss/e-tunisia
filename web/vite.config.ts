@@ -7,6 +7,23 @@ export default defineConfig({
   server: {
     port: 5173,
     open: true,
+    host: true,
+    allowedHosts: ['.ngrok-free.app', '.ngrok-free.dev', '.ngrok.app', '.ngrok.io'],
+    // Same-origin proxy so the dev server can talk to the NestJS backend
+    // without tripping Chrome's Private Network Access checks.
+    proxy: {
+      '/api': { target: 'http://localhost:3000', changeOrigin: true },
+      '/uploads': { target: 'http://localhost:3000', changeOrigin: true },
+    },
+  },
+  preview: {
+    port: 4173,
+    host: true,
+    allowedHosts: ['.ngrok-free.app', '.ngrok-free.dev', '.ngrok.app', '.ngrok.io'],
+    proxy: {
+      '/api': { target: 'http://localhost:3000', changeOrigin: true },
+      '/uploads': { target: 'http://localhost:3000', changeOrigin: true },
+    },
   },
   build: {
     outDir: 'dist',
@@ -29,6 +46,10 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
+      // self-destroying SW: any existing service worker unregisters itself on next visit,
+      // and no new SW is registered. Eliminates stale-cache pain during active development.
+      // Re-enable later by removing `selfDestroying`.
+      selfDestroying: true,
       registerType: 'autoUpdate',
       manifest: {
         name: 'e-Tunisia',

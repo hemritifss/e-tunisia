@@ -80,4 +80,26 @@ export class UsersService {
         const user = await this.findById(userId);
         return user.visitedPlaceIds || [];
     }
+
+    /** Cold-start suggestions: real users excluding the platform / inactive accounts. */
+    async suggestedUsers(limit = 6) {
+        const rows = await this.usersRepository
+            .createQueryBuilder('u')
+            .where('u.isActive = :a', { a: true })
+            .andWhere('u.email NOT LIKE :p', { p: 'platform@%' })
+            .andWhere('u.email NOT LIKE :a', { a: 'admin@%' })
+            .orderBy('u.points', 'DESC')
+            .addOrderBy('u.createdAt', 'DESC')
+            .take(limit)
+            .getMany();
+        return rows.map((u: any) => ({
+            id: u.id,
+            fullName: u.fullName,
+            avatar: u.avatar || null,
+            country: u.country || null,
+            bio: u.bio || null,
+            level: u.level || 1,
+            points: u.points || 0,
+        }));
+    }
 }

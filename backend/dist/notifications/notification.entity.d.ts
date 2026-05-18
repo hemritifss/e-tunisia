@@ -5,7 +5,11 @@ export declare enum NotificationType {
     BADGE = "badge",
     SPONSOR = "sponsor",
     SYSTEM = "system",
-    PROMO = "promo"
+    PROMO = "promo",
+    FOLLOW = "follow",
+    COMMENT = "comment",
+    DONATION = "donation",
+    MENTION = "mention"
 }
 export declare class Notification {
     id: string;

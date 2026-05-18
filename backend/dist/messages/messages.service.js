@@ -18,22 +18,32 @@ const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const message_entity_1 = require("./message.entity");
 const chat_room_entity_1 = require("./chat-room.entity");
+const websocket_gateway_1 = require("../websocket/websocket.gateway");
 let MessagesService = class MessagesService {
-    constructor(messageRepo, roomRepo) {
+    constructor(messageRepo, roomRepo, gateway) {
         this.messageRepo = messageRepo;
         this.roomRepo = roomRepo;
+        this.gateway = gateway;
     }
     async createRoom(creatorId, participantIds, name, type = 'direct') {
         const allParticipants = [...new Set([creatorId, ...participantIds])];
         if (type === 'direct' && allParticipants.length === 2) {
-            const existing = await this.roomRepo
+            const candidates = await this.roomRepo
                 .createQueryBuilder('room')
                 .where('room.type = :type', { type: 'direct' })
-                .andWhere('room.participantIds @> :ids', { ids: JSON.stringify(allParticipants) })
-                .andWhere('room.participantIds <@ :ids', { ids: JSON.stringify(allParticipants) })
-                .getOne();
-            if (existing)
+                .andWhere('room.participantIds LIKE :a', { a: `%${allParticipants[0]}%` })
+                .andWhere('room.participantIds LIKE :b', { b: `%${allParticipants[1]}%` })
+                .getMany();
+            const existing = candidates.find(r => Array.isArray(r.participantIds) &&
+                r.participantIds.length === 2 &&
+                allParticipants.every(id => r.participantIds.includes(id)));
+            if (existing) {
+                if (!existing.isActive) {
+                    existing.isActive = true;
+                    await this.roomRepo.save(existing);
+                }
                 return existing;
+            }
         }
         const room = this.roomRepo.create({
             name: name || (type === 'direct' ? 'Direct Message' : 'Group Chat'),
@@ -45,12 +55,13 @@ let MessagesService = class MessagesService {
         return this.roomRepo.save(room);
     }
     async getRooms(userId) {
-        return this.roomRepo
+        const rooms = await this.roomRepo
             .createQueryBuilder('room')
-            .where(':userId = ANY(room.participantIds)', { userId })
+            .where('room.participantIds LIKE :u', { u: `%${userId}%` })
             .andWhere('room.isActive = true')
             .orderBy('room.updatedAt', 'DESC')
             .getMany();
+        return rooms.filter(r => Array.isArray(r.participantIds) && r.participantIds.includes(userId));
     }
     async getRoom(roomId, userId) {
         const room = await this.roomRepo.findOne({ where: { id: roomId } });
@@ -87,6 +98,15 @@ let MessagesService = class MessagesService {
             timestamp: new Date(),
         };
         await this.roomRepo.save(room);
+        try {
+            for (const uid of room.participantIds || []) {
+                this.gateway?.broadcastToUser(uid, 'dm:new-message', {
+                    roomId,
+                    message: saved,
+                });
+            }
+        }
+        catch { }
         return saved;
     }
     async markAsRead(roomId, userId) {
@@ -118,7 +138,10 @@ exports.MessagesService = MessagesService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(message_entity_1.Message)),
     __param(1, (0, typeorm_1.InjectRepository)(chat_room_entity_1.ChatRoom)),
+    __param(2, (0, common_1.Optional)()),
+    __param(2, (0, common_1.Inject)((0, common_1.forwardRef)(() => websocket_gateway_1.EventsGateway))),
     __metadata("design:paramtypes", [typeorm_2.Repository,
-        typeorm_2.Repository])
+        typeorm_2.Repository,
+        websocket_gateway_1.EventsGateway])
 ], MessagesService);
 //# sourceMappingURL=messages.service.js.map

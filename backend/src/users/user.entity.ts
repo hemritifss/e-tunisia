@@ -45,6 +45,18 @@ export class User {
     @Column({ nullable: true })
     country: string;
 
+    @Column({ nullable: true, length: 320 })
+    bio: string;
+
+    @Column({ nullable: true, length: 200 })
+    website: string;
+
+    @Column('simple-array', { nullable: true })
+    interests: string[];
+
+    @Column({ default: false })
+    onboardingComplete: boolean;
+
     @Column({ default: UserRole.USER })
     role: UserRole;
 
