@@ -1,4 +1,6 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import type { Cache } from 'cache-manager';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
@@ -17,6 +19,7 @@ export class UsersService {
         @InjectRepository(Place) private placesRepo: Repository<Place>,
         @InjectRepository(TripPlan) private tripsRepo: Repository<TripPlan>,
         @InjectRepository(SavedPost) private savesRepo: Repository<SavedPost>,
+        @Inject(CACHE_MANAGER) private cache: Cache,
     ) { }
 
     async findByEmail(email: string): Promise<User | null> {
@@ -58,6 +61,7 @@ export class UsersService {
 
     async update(id: string, data: Partial<User>): Promise<User> {
         await this.usersRepository.update(id, data);
+        await this.invalidatePassportCache(id);
         return this.findById(id);
     }
 
@@ -74,6 +78,7 @@ export class UsersService {
 
         user.favoriteIds = favorites;
         await this.usersRepository.save(user);
+        await this.invalidatePassportCache(userId);
         return favorites;
     }
 
@@ -95,6 +100,7 @@ export class UsersService {
 
         user.visitedPlaceIds = visited;
         await this.usersRepository.save(user);
+        await this.invalidatePassportCache(userId);
         return visited;
     }
 
@@ -127,6 +133,10 @@ export class UsersService {
 
     /** Public passport view. Excludes sensitive fields. Throws NotFound if handle missing. */
     async assemblePassport(handle: string): Promise<PassportDto> {
+        const key = `passport:${handle}`;
+        const cached = await this.cache.get<PassportDto>(key);
+        if (cached) return cached;
+
         const user = await this.findByHandle(handle);
         if (!user) throw new NotFoundException('Passport not found');
 
@@ -147,7 +157,7 @@ export class UsersService {
                 : Promise.resolve([] as string[]),
         ]);
 
-        return {
+        const passport: PassportDto = {
             handle: user.handle as string,
             fullName: user.fullName,
             avatar: user.avatar || null,
@@ -168,5 +178,14 @@ export class UsersService {
             },
             visitedCities,
         };
+
+        await this.cache.set(key, passport, 300_000);
+        return passport;
+    }
+
+    /** Call this whenever a user's data changes. */
+    async invalidatePassportCache(userId: string): Promise<void> {
+        const user = await this.usersRepository.findOne({ where: { id: userId }, select: ['handle'] });
+        if (user?.handle) await this.cache.del(`passport:${user.handle}`);
     }
 }

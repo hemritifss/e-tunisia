@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { CacheModule } from '@nestjs/cache-manager';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { PlacesModule } from './places/places.module';
@@ -59,6 +60,7 @@ import { getDatabaseConfig } from './database/database.config';
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => getDatabaseConfig(configService),
     }),
+    CacheModule.register({ isGlobal: true, ttl: 300_000 }),
     RedisModule,
     StorageModule,
     HealthModule,
