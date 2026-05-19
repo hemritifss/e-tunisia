@@ -74,6 +74,24 @@ async function bootstrap() {
   // Static files (fallback for local uploads during migration)
   app.use('/uploads', express.static(join(__dirname, '..', 'uploads')));
 
+  // Reverse proxy /uploads/<key> → MinIO so the browser can fetch with a same-origin URL.
+  // Static-disk uploads above are checked first (legacy). Anything else falls through here.
+  try {
+    const { createProxyMiddleware } = await import('http-proxy-middleware');
+    const s3Endpoint = process.env.S3_ENDPOINT || 'http://localhost:9000';
+    const s3Bucket = process.env.S3_BUCKET || 'etunisia';
+    app.use(
+      '/uploads',
+      createProxyMiddleware({
+        target: s3Endpoint,
+        changeOrigin: true,
+        pathRewrite: (path) => `/${s3Bucket}${path}`,
+      } as any),
+    );
+  } catch (e: any) {
+    console.warn('Could not mount /uploads → MinIO proxy:', e?.message);
+  }
+
   // Swagger
   const config = new DocumentBuilder()
     .setTitle('e-Tunisia API')
