@@ -22,5 +22,5 @@ export function isHandleFormatValid(h: string): boolean {
 }
 
 export function isHandleReserved(h: string): boolean {
-    return RESERVED_HANDLES.has(h.toLowerCase());
+    return typeof h === 'string' && RESERVED_HANDLES.has(h.toLowerCase());
 }
