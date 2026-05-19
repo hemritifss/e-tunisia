@@ -124,5 +124,17 @@ async function bootstrap() {
   console.log(`🇹🇳 e-Tunisia API running on http://localhost:${port}`);
   console.log(`📚 Swagger docs: http://localhost:${port}/api/docs`);
   console.log(`❤️ Health check: http://localhost:${port}/health`);
+
+  // One-shot handle backfill (idempotent — safe to leave in place; runs <50ms on empty result).
+  try {
+    const { DataSource } = await import('typeorm');
+    const ds = app.get(DataSource);
+    const { backfillHandles } = await import('./users/backfill-handles');
+    const { User } = await import('./users/user.entity');
+    const n = await backfillHandles(ds.getRepository(User));
+    if (n > 0) console.log(`[backfill] assigned handle to ${n} legacy users`);
+  } catch (e) {
+    console.warn('[backfill] handle backfill skipped:', (e as Error).message);
+  }
 }
 bootstrap();
