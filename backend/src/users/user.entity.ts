@@ -5,6 +5,7 @@ import {
     CreateDateColumn,
     UpdateDateColumn,
     OneToMany,
+    Index,
 } from 'typeorm';
 import { Exclude } from 'class-transformer';
 import { Review } from '../reviews/review.entity';
@@ -31,6 +32,10 @@ export class User {
 
     @Column({ unique: true })
     email: string;
+
+    @Column({ length: 30, unique: true, nullable: true })
+    @Index()
+    handle: string | null;
 
     @Column()
     @Exclude()
