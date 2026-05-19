@@ -25,6 +25,18 @@ export class UsersController {
         return this.usersService.findById(req.user.id);
     }
 
+    /** Public: live availability check used by the signup form. */
+    @Get('handle-available')
+    async handleAvailable(@Query('h') h: string): Promise<{ available: boolean; reason?: string }> {
+        const { isHandleFormatValid, isHandleReserved } = await import('./reserved-handles');
+        const handle = (h || '').toLowerCase().trim();
+        if (!handle) return { available: false, reason: 'empty' };
+        if (!isHandleFormatValid(handle)) return { available: false, reason: 'format' };
+        if (isHandleReserved(handle)) return { available: false, reason: 'reserved' };
+        const ok = await this.usersService.isHandleAvailable(handle);
+        return { available: ok, reason: ok ? undefined : 'taken' };
+    }
+
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()
     @Put('me')

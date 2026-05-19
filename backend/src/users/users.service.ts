@@ -15,6 +15,20 @@ export class UsersService {
         return this.usersRepository.findOne({ where: { email } });
     }
 
+    async findByHandle(handle: string): Promise<User | null> {
+        if (!handle) return null;
+        return this.usersRepository.findOne({ where: { handle: handle.toLowerCase() } });
+    }
+
+    async isHandleAvailable(handle: string): Promise<boolean> {
+        const h = (handle || '').toLowerCase();
+        const { isHandleFormatValid, isHandleReserved } = await import('./reserved-handles');
+        if (!isHandleFormatValid(h)) return false;
+        if (isHandleReserved(h)) return false;
+        const existing = await this.usersRepository.findOne({ where: { handle: h } });
+        return !existing;
+    }
+
     async findById(id: string): Promise<User> {
         const user = await this.usersRepository.findOne({
             where: { id },

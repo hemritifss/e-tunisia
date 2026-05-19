@@ -17,18 +17,25 @@ export class AuthService {
     ) { }
 
     async register(dto: RegisterDto) {
-        const existing = await this.usersService.findByEmail(dto.email);
-        if (existing) {
+        const existingEmail = await this.usersService.findByEmail(dto.email);
+        if (existingEmail) {
             throw new ConflictException('Email already registered');
         }
 
-        const user = await this.usersService.create(dto);
+        const handleLower = (dto.handle || '').toLowerCase();
+        const available = await this.usersService.isHandleAvailable(handleLower);
+        if (!available) {
+            throw new ConflictException('Handle is unavailable');
+        }
+
+        const user = await this.usersService.create({ ...dto, handle: handleLower });
         const token = this.generateToken(user);
 
         return {
             user: {
                 id: user.id,
                 fullName: user.fullName,
+                handle: user.handle,
                 email: user.email,
                 avatar: user.avatar,
                 role: user.role,
