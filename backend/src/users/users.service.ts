@@ -3,12 +3,20 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
 import * as bcrypt from 'bcrypt';
+import { Review } from '../reviews/review.entity';
+import { Place } from '../places/place.entity';
+import { TripPlan } from '../itineraries/trip-plan.entity';
+import { SavedPost } from '../posts/saved-post.entity';
+import { PassportDto, deriveLevel } from './dto/passport.dto';
 
 @Injectable()
 export class UsersService {
     constructor(
-        @InjectRepository(User)
-        private usersRepository: Repository<User>,
+        @InjectRepository(User) private usersRepository: Repository<User>,
+        @InjectRepository(Review) private reviewsRepo: Repository<Review>,
+        @InjectRepository(Place) private placesRepo: Repository<Place>,
+        @InjectRepository(TripPlan) private tripsRepo: Repository<TripPlan>,
+        @InjectRepository(SavedPost) private savesRepo: Repository<SavedPost>,
     ) { }
 
     async findByEmail(email: string): Promise<User | null> {
@@ -115,5 +123,50 @@ export class UsersService {
             level: u.level || 1,
             points: u.points || 0,
         }));
+    }
+
+    /** Public passport view. Excludes sensitive fields. Throws NotFound if handle missing. */
+    async assemblePassport(handle: string): Promise<PassportDto> {
+        const user = await this.findByHandle(handle);
+        if (!user) throw new NotFoundException('Passport not found');
+
+        const visitedIds = Array.isArray(user.visitedPlaceIds) ? user.visitedPlaceIds : [];
+
+        const [reviewsCount, tripsPlanned, savesCount, visitedCities] = await Promise.all([
+            this.reviewsRepo.count({ where: { user: { id: user.id } } as any }).catch(() => 0),
+            this.tripsRepo.count({ where: { userId: user.id } }).catch(() => 0),
+            this.savesRepo.count({ where: { userId: user.id } as any }).catch(() => 0),
+            visitedIds.length
+                ? this.placesRepo
+                    .createQueryBuilder('p')
+                    .select('DISTINCT p.city', 'city')
+                    .where('p.id IN (:...ids)', { ids: visitedIds })
+                    .getRawMany()
+                    .then((rows) => rows.map((r) => r.city).filter(Boolean))
+                    .catch(() => [])
+                : Promise.resolve([] as string[]),
+        ]);
+
+        return {
+            handle: user.handle as string,
+            fullName: user.fullName,
+            avatar: user.avatar || null,
+            country: user.country || null,
+            bio: user.bio || null,
+            website: user.website || null,
+            interests: Array.isArray(user.interests) ? user.interests : [],
+            badges: Array.isArray(user.badges) ? user.badges : [],
+            points: user.points || 0,
+            passportLevel: deriveLevel(user.points || 0),
+            role: user.role as any,
+            joinedAt: user.createdAt.toISOString(),
+            stats: {
+                citiesVisited: visitedCities.length,
+                tripsPlanned,
+                reviewsCount,
+                savesCount,
+            },
+            visitedCities,
+        };
     }
 }

@@ -37,6 +37,16 @@ export class UsersController {
         return { available: ok, reason: ok ? undefined : 'taken' };
     }
 
+    @Get('by-handle/:handle')
+    async byHandle(@Param('handle') rawHandle: string) {
+        const handle = (rawHandle || '').toLowerCase();
+        const passport = await this.usersService.assemblePassport(handle).catch(() => null);
+        if (!passport) {
+            return { error: 'passport_not_found', handle };
+        }
+        return passport;
+    }
+
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()
     @Put('me')
