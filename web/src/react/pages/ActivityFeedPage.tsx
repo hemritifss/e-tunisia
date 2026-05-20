@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api, getImageUrl } from '../../shared/api';
-import { Star, Compass, Award, UserPlus, MapPin } from 'lucide-react';
+import { Star, Compass, Award, UserPlus, MapPin, Globe2, Users } from 'lucide-react';
 import { TOPIC_BY_ID } from '../components/endorsement-topics';
 
 interface Actor { id: string; handle: string | null; fullName: string; avatar: string | null; }
@@ -108,10 +108,35 @@ function EntryRow({ entry }: { entry: Entry }) {
     );
 }
 
+type FeedMode = 'following' | 'global';
+
+function isAnon(): boolean {
+    try { return !localStorage.getItem('auth_token'); } catch { return true; }
+}
+
+function readMode(): FeedMode {
+    if (isAnon()) return 'global';
+    return localStorage.getItem('activity-feed-mode') === 'global' ? 'global' : 'following';
+}
+
 export default function ActivityFeedPage() {
+    const anon = isAnon();
+    const [mode, setMode] = useState<FeedMode>(readMode());
+    const setModePersist = (m: FeedMode) => {
+        if (m === 'following' && anon) {
+            // Anonymous viewer trying to peek at the following tab — bump to signup.
+            window.location.hash = '#/login';
+            return;
+        }
+        localStorage.setItem('activity-feed-mode', m);
+        setMode(m);
+    };
+
+    const effectiveMode: FeedMode = anon ? 'global' : mode;
+
     const { data, isLoading, error } = useQuery({
-        queryKey: ['activity-feed'],
-        queryFn: () => api.getFollowingActivity(30),
+        queryKey: ['activity-feed', effectiveMode],
+        queryFn: () => (effectiveMode === 'following' ? api.getFollowingActivity(30) : api.getGlobalActivity(30)),
         staleTime: 60_000,
     });
 
@@ -120,8 +145,30 @@ export default function ActivityFeedPage() {
     return (
         <main className="activity-page">
             <header className="activity-page-head">
-                <h1>Following</h1>
-                <p>What people you follow are doing across Tunisia.</p>
+                <h1>{effectiveMode === 'following' ? 'Following' : 'Discover'}</h1>
+                <p>
+                    {effectiveMode === 'following'
+                        ? 'What people you follow are doing across Tunisia.'
+                        : 'Fresh activity from travelers exploring Tunisia right now.'}
+                </p>
+                <div className="activity-tabs" role="tablist">
+                    <button
+                        role="tab"
+                        aria-selected={effectiveMode === 'following'}
+                        className={effectiveMode === 'following' ? 'active' : ''}
+                        onClick={() => setModePersist('following')}
+                    >
+                        <Users size={14} /> {anon ? 'Following (sign in)' : 'Following'}
+                    </button>
+                    <button
+                        role="tab"
+                        aria-selected={effectiveMode === 'global'}
+                        className={effectiveMode === 'global' ? 'active' : ''}
+                        onClick={() => setModePersist('global')}
+                    >
+                        <Globe2 size={14} /> Discover
+                    </button>
+                </div>
             </header>
 
             {isLoading && (
@@ -131,15 +178,23 @@ export default function ActivityFeedPage() {
             )}
 
             {!isLoading && error && (
-                <div className="passport-empty">Couldn't load your feed.</div>
+                <div className="passport-empty">Couldn't load the feed.</div>
             )}
 
             {!isLoading && !error && entries.length === 0 && (
                 <div className="activity-empty">
                     <div className="activity-empty-emoji">🌍</div>
-                    <h3>Your feed is quiet.</h3>
-                    <p>Follow a few travelers and their reviews, trips, and endorsements will land here.</p>
-                    <a className="btn primary" href="#/leaderboard">Find people to follow →</a>
+                    <h3>{effectiveMode === 'following' ? 'Your feed is quiet.' : 'No recent activity yet.'}</h3>
+                    <p>
+                        {effectiveMode === 'following'
+                            ? 'Follow a few travelers and their reviews, trips, and endorsements will land here.'
+                            : "Be the first to add to the story — review a place, plan a trip, endorse a local."}
+                    </p>
+                    {effectiveMode === 'following' ? (
+                        <button className="btn primary" onClick={() => setModePersist('global')}>See what's happening now →</button>
+                    ) : (
+                        <a className="btn primary" href="#/explore">Explore Tunisia →</a>
+                    )}
                 </div>
             )}
 

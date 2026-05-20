@@ -230,6 +230,8 @@ export const api = {
     fetchWithAuth('/api/v1/users/me/apply-local-guide', { method: 'POST' }),
   getFollowingActivity: (limit = 20) =>
     fetchWithAuth(`/api/v1/users/me/activity-feed?limit=${limit}`),
+  getGlobalActivity: (limit = 20) =>
+    fetchWithAuth(`/api/v1/users/activity-feed/global?limit=${limit}`),
   searchUsers: (q: string, limit = 12) =>
     fetchWithAuth(`/api/v1/users/search?q=${encodeURIComponent(q)}&limit=${limit}`),
 

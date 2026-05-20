@@ -67,7 +67,7 @@ function getRoute(hash: string): Route {
 
   // --- Auth Guard ---
   // Routes that REQUIRE login (personal data). Everything else is browsable as guest.
-  const authRequiredPrefixes = ['/profile', '/favorites', '/saved', '/inquiries', '/owner', '/settings', '/badges', '/leaderboard', '/credits', '/messages', '/activity'];
+  const authRequiredPrefixes = ['/profile', '/favorites', '/saved', '/inquiries', '/owner', '/settings', '/badges', '/leaderboard', '/credits', '/messages'];
   const authOnlyHome = path === '/';
   const requiresAuth = authOnlyHome || authRequiredPrefixes.some(p => path === p || path.startsWith(p + '/'));
   const heroOnlyRoutes = ['/login', '/register'];

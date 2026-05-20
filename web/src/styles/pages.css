@@ -13486,6 +13486,23 @@ section[class^="hero-"] {
 .activity-page-head { margin-bottom: 18px; }
 .activity-page-head h1 { font-size: 24px; margin: 0 0 4px; color: var(--text, #1a1a1a); }
 .activity-page-head p { margin: 0; color: var(--text-muted, #9aa0a6); font-size: 14px; }
+.activity-tabs { display: flex; gap: 6px; margin-top: 14px; flex-wrap: wrap; }
+.activity-tabs button {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 14px; border-radius: 999px;
+    background: transparent;
+    border: 1px solid var(--border, #e5e7eb);
+    color: var(--text, #1a1a1a);
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 120ms;
+}
+.activity-tabs button:hover { border-color: #d4623a; }
+.activity-tabs button.active { background: #0b1e3f; color: #fff; border-color: #0b1e3f; }
+@media (prefers-color-scheme: dark) {
+    .activity-tabs button { color: #e8eaed; border-color: #2a2f37; }
+    .activity-tabs button.active { background: #d4623a; border-color: #d4623a; }
+}
 
 .activity-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
 .activity-entry {

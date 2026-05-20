@@ -183,6 +183,12 @@ export class UsersController {
         return this.activityService.followingFeed(req.user.id, limit ? Number(limit) : 20);
     }
 
+    /** Recent activity across the platform — discovery surface (public). */
+    @Get('activity-feed/global')
+    globalActivityFeed(@Query('limit') limit?: string) {
+        return this.activityService.globalFeed(limit ? Number(limit) : 20);
+    }
+
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()
     @Put('me')

@@ -47,6 +47,100 @@ export class ActivityService {
         @Inject(forwardRef(() => UsersService)) private users: UsersService,
     ) {}
 
+    /** Recent activity across the whole platform (discovery surface). */
+    async globalFeed(limit = 20): Promise<ActivityEntry[]> {
+        const [reviews, trips, endorsements] = await Promise.all([
+            this.reviewsRepo
+                .find({
+                    order: { createdAt: 'DESC' },
+                    take: PER_SOURCE,
+                    relations: ['place'],
+                })
+                .catch(() => [] as Review[]),
+            this.tripsRepo
+                .find({
+                    where: { isPublic: true },
+                    order: { createdAt: 'DESC' },
+                    take: PER_SOURCE,
+                })
+                .catch(() => [] as TripPlan[]),
+            this.endorsementsRepo
+                .find({
+                    order: { createdAt: 'DESC' },
+                    take: PER_SOURCE,
+                })
+                .catch(() => [] as Endorsement[]),
+        ]);
+
+        const actorIds = new Set<string>();
+        const targetUserIds = new Set<string>();
+        reviews.forEach((r) => actorIds.add(r.userId));
+        trips.forEach((t) => t.userId && actorIds.add(t.userId));
+        endorsements.forEach((e) => {
+            actorIds.add(e.endorserId);
+            targetUserIds.add(e.endorsedId);
+        });
+
+        const allUserIds = Array.from(new Set([...actorIds, ...targetUserIds]));
+        const userRows = allUserIds.length
+            ? await this.usersRepo.find({
+                  where: allUserIds.map((id) => ({ id })),
+                  select: ['id', 'handle', 'fullName', 'avatar'] as any,
+              })
+            : [];
+        const userById = new Map<string, ActivityActor>(
+            userRows.map((u: any) => [
+                u.id,
+                { id: u.id, handle: u.handle ?? null, fullName: u.fullName, avatar: u.avatar || null },
+            ]),
+        );
+        const actor = (id: string) =>
+            userById.get(id) || { id, handle: null, fullName: 'Someone', avatar: null };
+
+        const entries: ActivityEntry[] = [];
+
+        for (const r of reviews) {
+            entries.push({
+                type: 'review',
+                createdAt: r.createdAt.toISOString(),
+                actor: actor(r.userId),
+                target: {
+                    placeId: r.placeId,
+                    placeName: (r as any).place?.name || null,
+                    placeCity: (r as any).place?.city || null,
+                    rating: r.rating,
+                    snippet: (r.comment || '').slice(0, 140),
+                },
+            });
+        }
+        for (const t of trips) {
+            if (!t.userId) continue;
+            entries.push({
+                type: 'trip',
+                createdAt: t.createdAt.toISOString(),
+                actor: actor(t.userId),
+                target: {
+                    slug: t.slug,
+                    title: t.title,
+                    days: t.days,
+                    travelers: t.travelers,
+                    stopCount: Array.isArray(t.stops) ? t.stops.length : 0,
+                },
+            });
+        }
+        for (const e of endorsements) {
+            entries.push({
+                type: 'endorse',
+                createdAt: e.createdAt.toISOString(),
+                actor: actor(e.endorserId),
+                target: { user: actor(e.endorsedId), topic: e.topic },
+            });
+        }
+
+        entries.sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
+        return entries.slice(0, Math.min(100, Math.max(1, limit)));
+    }
+
     /** Recent activity from users that the viewer follows. */
     async followingFeed(viewerId: string, limit = 20): Promise<ActivityEntry[]> {
         const follows = await this.followsRepo.find({
