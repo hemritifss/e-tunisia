@@ -8,15 +8,22 @@ import {
     UseGuards,
     Request,
     Post,
+    Header,
+    Res,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import type { Response } from 'express';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { UsersService } from './users.service';
+import { OgService } from '../og/og.service';
 
 @ApiTags('users')
 @Controller('users')
 export class UsersController {
-    constructor(private usersService: UsersService) { }
+    constructor(
+        private usersService: UsersService,
+        private ogService: OgService,
+    ) { }
 
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()
@@ -45,6 +52,26 @@ export class UsersController {
             return { error: 'passport_not_found', handle };
         }
         return passport;
+    }
+
+    /** Shareable 1200×630 PNG postcard for social previews. 24h HTTP cache + SWR. */
+    @Get('by-handle/:handle/og.png')
+    @Header('Content-Type', 'image/png')
+    @Header('Cache-Control', 'public, max-age=86400, stale-while-revalidate=604800')
+    async ogImage(@Param('handle') rawHandle: string, @Res() res: Response) {
+        const handle = (rawHandle || '').toLowerCase();
+        try {
+            const passport = await this.usersService.assemblePassport(handle);
+            const png = await this.ogService.renderPassportCard(passport);
+            res.send(png);
+        } catch {
+            // 1×1 transparent PNG fallback — never block the page on this.
+            const transparent = Buffer.from(
+                '89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c4890000000a49444154789c63000000000200015c34a40d0000000049454e44ae426082',
+                'hex',
+            );
+            res.send(transparent);
+        }
     }
 
     @UseGuards(JwtAuthGuard)

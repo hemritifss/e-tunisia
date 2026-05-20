@@ -8,9 +8,10 @@ import { SavedPost } from '../posts/saved-post.entity';
 import { UsersService } from './users.service';
 import { UsersController } from './users.controller';
 import { BadgesModule } from '../badges/badges.module';
+import { OgModule } from '../og/og.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, Review, Place, TripPlan, SavedPost]), BadgesModule],
+  imports: [TypeOrmModule.forFeature([User, Review, Place, TripPlan, SavedPost]), BadgesModule, OgModule],
   providers: [UsersService],
   controllers: [UsersController],
   exports: [UsersService],
