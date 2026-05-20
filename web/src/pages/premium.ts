@@ -209,9 +209,8 @@ export function initPremiumPage() {
       await api.upgradePlan(selectedPlan, selectedMethod);
       closeModal();
       alert(`🎉 Upgraded to ${selectedPlan}!`);
-    } catch {
-      alert('Payment submitted! We will process your upgrade shortly.');
-      closeModal();
+    } catch (err: any) {
+      alert(`Upgrade failed: ${err?.message || 'network error'}.\nNo charge was made. Please try again or email support@etunisia.com.`);
     }
     confirmBtn.textContent = 'Confirm Payment';
     (confirmBtn as HTMLButtonElement).disabled = false;

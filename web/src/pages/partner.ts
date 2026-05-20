@@ -283,9 +283,8 @@ export function initPartnerPage() {
       });
       alert('Application submitted! We\'ll be in touch within 48 hours.');
       form.reset();
-    } catch {
-      alert('Application submitted! We\'ll be in touch within 48 hours.');
-      form.reset();
+    } catch (err: any) {
+      alert(`Couldn't submit your application: ${err?.message || 'network error'}.\nEmail support@etunisia.com and we'll follow up.`);
     }
 
     submitBtn.textContent = originalText;

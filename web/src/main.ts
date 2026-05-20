@@ -294,6 +294,18 @@ async function hydrateCurrentUser() {
     document.querySelectorAll<HTMLElement>('[data-user-name]').forEach(el => { el.textContent = name; });
     document.querySelectorAll<HTMLElement>('[data-user-level]').forEach(el => { el.textContent = level; });
     document.querySelectorAll<HTMLImageElement>('img[data-user-avatar]').forEach(el => { el.src = avatar; });
+
+    // Rewrite the placeholder "My Passport" link to the user's real handle.
+    if (me.handle) {
+      document.querySelectorAll<HTMLAnchorElement>('a[data-passport-link]').forEach(el => {
+        el.href = `#/u/${encodeURIComponent(me.handle)}`;
+      });
+    } else {
+      // No handle yet (legacy account before A1 backfill ran) — hide the entry.
+      document.querySelectorAll<HTMLElement>('a[data-passport-link]').forEach(el => {
+        el.style.display = 'none';
+      });
+    }
   } catch {
     // 401 already redirects to /hero inside the api wrapper.
   }

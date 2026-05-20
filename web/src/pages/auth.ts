@@ -93,7 +93,7 @@ function renderAuthPage(cfg: AuthConfig): string {
                   <input type="checkbox" />
                   <span>Remember me</span>
                 </label>
-                <a href="#" class="tn-auth-link">Forgot password?</a>
+                <a href="mailto:support@etunisia.com?subject=Password%20reset" class="tn-auth-link">Forgot password?</a>
               </div>
             ` : ''}
 

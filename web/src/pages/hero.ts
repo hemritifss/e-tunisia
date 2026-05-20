@@ -468,11 +468,10 @@ export function initHeroPage() {
       btn.textContent = 'Application Sent!';
       partnerForm.reset();
       setTimeout(() => { btn.disabled = false; btn.textContent = 'Apply Now — Free'; }, 3000);
-    } catch {
+    } catch (err: any) {
       btn.textContent = 'Apply Now — Free';
       btn.disabled = false;
-      alert('Application submitted! We will contact you soon.');
-      partnerForm.reset();
+      alert(`Couldn't submit: ${err?.message || 'network error'}.\nEmail support@etunisia.com and we'll follow up.`);
     }
   });
 }
