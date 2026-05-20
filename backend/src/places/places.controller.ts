@@ -1,12 +1,20 @@
 import {
     Controller, Get, Post, Put, Body, Param,
-    Query, UseGuards,
+    Query, UseGuards, Request,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags, ApiOperation } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { PlacesService } from './places.service';
 import { CreatePlaceDto } from './dto/create-place.dto';
 import { QueryPlacesDto } from './dto/query-places.dto';
+import { IsIn, IsInt } from 'class-validator';
+import { BOOST_TIERS } from './places.service';
+
+class BoostListingDto {
+    @IsInt()
+    @IsIn([1, 7, 30])
+    days: 1 | 7 | 30;
+}
 
 @ApiTags('places')
 @Controller('places')
@@ -39,6 +47,28 @@ export class PlacesController {
         @Query('radius') radius?: number,
     ) {
         return this.placesService.getNearby(lat, lng, radius);
+    }
+
+    @Get('mine')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    @ApiOperation({ summary: "Places submitted/owned by the current user" })
+    listMine(@Request() req) {
+        return this.placesService.listMine(req.user.id);
+    }
+
+    @Get('boost/tiers')
+    @ApiOperation({ summary: 'Boost pricing tiers (credits per duration)' })
+    boostTiers() {
+        return Object.values(BOOST_TIERS);
+    }
+
+    @Post(':id/boost')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Boost a listing — deducts credits, stacks on top of any active boost' })
+    boost(@Request() req, @Param('id') id: string, @Body() body: BoostListingDto) {
+        return this.placesService.boostListing(id, req.user.id, body.days);
     }
 
     @Get('slug/:slug')
