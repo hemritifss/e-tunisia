@@ -10,7 +10,7 @@ import { SignupGate } from '../components/SignupGate';
 import { PassportOnboarding } from '../components/PassportOnboarding';
 import { FollowList } from '../components/FollowList';
 import { EndorseModal, TopEndorsementsStrip } from '../components/EndorseModal';
-import { Award } from 'lucide-react';
+import { Award, Trophy, Sparkles } from 'lucide-react';
 import { Pencil, UserPlus, UserCheck } from 'lucide-react';
 
 function handleFromHash(): string {
@@ -116,6 +116,11 @@ export default function PassportPage() {
                                 {p.country && <span>🇹🇳 {p.country}</span>}
                                 <span className={`passport-level passport-level-${p.passportLevel.toLowerCase()}`}>{p.passportLevel} Explorer</span>
                                 {p.role === 'creator' && <span className="passport-verified">✓ Local Guide</span>}
+                                {p.topCityRank && (
+                                    <span className="passport-cityrank" title={`Out of ${p.topCityRank.total} reviewers`}>
+                                        <Trophy size={12} /> #{p.topCityRank.rank} in {p.topCityRank.city}
+                                    </span>
+                                )}
                             </div>
                             <div className="passport-meta passport-followmeta">
                                 <button type="button" className="passport-followmeta-btn" onClick={() => setFollowListMode('followers')}>
@@ -130,6 +135,9 @@ export default function PassportPage() {
                         </div>
                     </div>
                     <div className="passport-hero-right">
+                        {isOwner && p.role !== 'creator' && p.role !== 'admin' && (
+                            <LocalGuideButton onPromoted={refetch} />
+                        )}
                         {isOwner && <a className="btn ghost" href="#/profile-edit"><Pencil size={14} /> Edit</a>}
                         {!isOwner && !isAnon && (
                             <>
@@ -216,6 +224,45 @@ function setMeta(name: string, content: string) {
         document.head.appendChild(el);
     }
     el.setAttribute('content', content);
+}
+
+function LocalGuideButton({ onPromoted }: { onPromoted?: () => void }) {
+    const [busy, setBusy] = useState(false);
+    const [hint, setHint] = useState<string | null>(null);
+
+    const apply = async () => {
+        if (busy) return;
+        setBusy(true);
+        setHint(null);
+        try {
+            const res: any = await api.applyLocalGuide();
+            if (res?.ok) {
+                onPromoted?.();
+            } else if (res?.reason === 'gate_not_met') {
+                const p = res.progress || {};
+                setHint(
+                    `Almost there — need one of: ${p.pointsRequired}+ pts (you have ${p.points ?? 0}), ` +
+                    `${p.reviewsRequired}+ reviews (you have ${p.reviewsCount ?? 0}), ` +
+                    `or ${p.tripsRequired}+ trips (you have ${p.tripsCount ?? 0}).`
+                );
+            } else {
+                setHint('Could not apply right now.');
+            }
+        } catch {
+            setHint('Network error.');
+        } finally {
+            setBusy(false);
+        }
+    };
+
+    return (
+        <>
+            <button className="btn primary passport-local-guide-btn" onClick={apply} disabled={busy}>
+                <Sparkles size={14} /> {busy ? 'Applying…' : 'Become a Local Guide'}
+            </button>
+            {hint && <div className="passport-local-guide-hint">{hint}</div>}
+        </>
+    );
 }
 
 function FollowButton({ handle, initiallyFollowing, onChange }: { handle: string; initiallyFollowing: boolean; onChange?: () => void }) {

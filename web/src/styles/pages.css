@@ -13422,6 +13422,35 @@ section[class^="hero-"] {
 .passport-follow-btn[aria-pressed="true"] { background: rgba(255,255,255,0.10) !important; }
 .passport-follow-btn:disabled { opacity: 0.7; cursor: progress; }
 
+.passport-cityrank {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 2px 10px; border-radius: 999px;
+    background: rgba(244, 197, 66, 0.25);
+    color: #1a1300;
+    font-size: 12px; font-weight: 600;
+}
+@media (prefers-color-scheme: dark) {
+    .passport-cityrank { background: rgba(244, 197, 66, 0.35); color: #fff8dc; }
+}
+
+.passport-local-guide-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: linear-gradient(135deg, #d4623a, #f4c542) !important;
+    color: #1a1300 !important;
+    border: none !important;
+    font-weight: 600;
+}
+.passport-local-guide-btn:hover:not(:disabled) { transform: translateY(-1px); }
+.passport-local-guide-hint {
+    position: absolute; right: 0; top: calc(100% + 8px);
+    max-width: 320px;
+    padding: 10px 12px;
+    background: rgba(0,0,0,0.85); color: #fff;
+    border-radius: 10px; font-size: 12px;
+    z-index: 5;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+}
+
 .passport-section-tight { margin: 0 0 16px; }
 .passport-endorse-strip { display: flex; flex-wrap: wrap; gap: 8px; }
 .passport-endorse-chip {

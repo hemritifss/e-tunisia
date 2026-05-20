@@ -226,6 +226,8 @@ export const api = {
     }),
   listEndorsements: (handle: string) =>
     fetchWithAuth(`/api/v1/users/by-handle/${encodeURIComponent(handle)}/endorsements`),
+  applyLocalGuide: () =>
+    fetchWithAuth('/api/v1/users/me/apply-local-guide', { method: 'POST' }),
 
   // Public trip discovery
   getTripsDiscover: (params?: { sort?: 'popular' | 'new'; limit?: number; city?: string }) => {

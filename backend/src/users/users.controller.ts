@@ -147,6 +147,14 @@ export class UsersController {
         return this.usersService.seedFromDraft(req.user.id, body || {});
     }
 
+    /** Self-attest Local Guide application. Returns { ok, role } or a gate-not-met progress payload. */
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    @Post('me/apply-local-guide')
+    applyLocalGuide(@Request() req) {
+        return this.usersService.applyLocalGuide(req.user.id);
+    }
+
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()
     @Put('me')

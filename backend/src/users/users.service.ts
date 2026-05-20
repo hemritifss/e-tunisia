@@ -190,10 +190,90 @@ export class UsersService {
             followersCount: user.followersCount || 0,
             followingCount: user.followingCount || 0,
             topEndorsements: await this.endorsements.topForUser(user.id, 3).catch(() => []),
+            topCityRank: await this.topCityRankForUser(user.id).catch(() => null),
         };
 
         await this.cache.set(key, passport, 300_000);
         return passport;
+    }
+
+    /**
+     * Compute the city where this user has their best review-count rank.
+     * Returns { city, rank, total } only when they're top-3 in that city.
+     * Cheap enough on read because Phase-1 cache already wraps the passport.
+     */
+    async topCityRankForUser(userId: string): Promise<{ city: string; rank: number; total: number } | null> {
+        const myCities = await this.reviewsRepo
+            .createQueryBuilder('r')
+            .innerJoin('r.place', 'p')
+            .select('p.city', 'city')
+            .addSelect('COUNT(*)', 'reviews')
+            .where('r.userId = :uid', { uid: userId })
+            .groupBy('p.city')
+            .orderBy('reviews', 'DESC')
+            .limit(5)
+            .getRawMany()
+            .catch(() => [] as Array<{ city: string; reviews: string }>);
+        if (!myCities.length) return null;
+
+        for (const row of myCities) {
+            const city = row.city;
+            if (!city) continue;
+            // Get every reviewer's count for this city, sorted desc.
+            const ranking = await this.reviewsRepo
+                .createQueryBuilder('r')
+                .innerJoin('r.place', 'p')
+                .select('r.userId', 'userId')
+                .addSelect('COUNT(*)', 'reviews')
+                .where('p.city = :city', { city })
+                .groupBy('r.userId')
+                .orderBy('reviews', 'DESC')
+                .limit(50)
+                .getRawMany()
+                .catch(() => [] as Array<{ userId: string; reviews: string }>);
+            const idx = ranking.findIndex((r: any) => r.userId === userId);
+            if (idx >= 0 && idx < 3) {
+                return { city, rank: idx + 1, total: ranking.length };
+            }
+        }
+        return null;
+    }
+
+    /** Self-attest Local Guide application. Promotes role: 'user' → 'creator' when the
+     *  user has built enough trust signal (points + reviews + trip plans). Idempotent. */
+    async applyLocalGuide(userId: string) {
+        const user = await this.findById(userId);
+        if (user.role === 'creator' || user.role === 'admin') {
+            return { ok: true, role: user.role, alreadyGuide: true };
+        }
+        const points = user.points || 0;
+        const reviewsCount = await this.reviewsRepo.count({ where: { user: { id: userId } } as any }).catch(() => 0);
+        const tripsCount = await this.tripsRepo.count({ where: { userId } }).catch(() => 0);
+
+        // Trust gate — at least one of:
+        //   • 50+ points (broad activity)
+        //   • 3+ reviews   (review signal)
+        //   • 2+ trips    (planning signal)
+        const passesGate = points >= 50 || reviewsCount >= 3 || tripsCount >= 2;
+        if (!passesGate) {
+            return {
+                ok: false,
+                role: user.role,
+                reason: 'gate_not_met',
+                progress: {
+                    points, pointsRequired: 50,
+                    reviewsCount, reviewsRequired: 3,
+                    tripsCount, tripsRequired: 2,
+                },
+            };
+        }
+
+        user.role = 'creator' as any;
+        // A small badge-like bump so the change is visible immediately.
+        user.points = points + 25;
+        await this.usersRepository.save(user);
+        await this.invalidatePassportCache(userId);
+        return { ok: true, role: 'creator' };
     }
 
     /** Seed a freshly-signed-up user's passport from an anonymous draft. Used post-signup. */

@@ -33,6 +33,8 @@ export interface PassportDto {
     topEndorsements: Array<{ topic: string; count: number }>;
     /** Topic ids the current viewer has already endorsed this user for. Omitted for anon. */
     viewerEndorsedTopics?: string[];
+    /** Set only when the user is top-3 by review count in at least one city. */
+    topCityRank: { city: string; rank: number; total: number } | null;
 }
 
 export function deriveLevel(points: number): PassportLevel {
