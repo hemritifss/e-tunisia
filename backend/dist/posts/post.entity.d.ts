@@ -13,6 +13,7 @@ export declare class Post {
     upvotes: number;
     downvotes: number;
     commentCount: number;
+    viewCount: number;
     isPinned: boolean;
     isActive: boolean;
     createdAt: Date;

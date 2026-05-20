@@ -32,6 +32,11 @@ export declare class FeedService {
             totalPages: number;
         };
     }>;
+    trendingHashtags(limit?: number): Promise<{
+        tag: string;
+        display: string;
+        count: number;
+    }[]>;
     stories(limit?: number): Promise<{
         stories: any;
     }>;

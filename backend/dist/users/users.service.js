@@ -14,16 +14,44 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UsersService = void 0;
 const common_1 = require("@nestjs/common");
+const cache_manager_1 = require("@nestjs/cache-manager");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const user_entity_1 = require("./user.entity");
 const bcrypt = require("bcrypt");
+const review_entity_1 = require("../reviews/review.entity");
+const place_entity_1 = require("../places/place.entity");
+const trip_plan_entity_1 = require("../itineraries/trip-plan.entity");
+const saved_post_entity_1 = require("../posts/saved-post.entity");
+const passport_dto_1 = require("./dto/passport.dto");
+const badges_service_1 = require("../badges/badges.service");
 let UsersService = class UsersService {
-    constructor(usersRepository) {
+    constructor(usersRepository, reviewsRepo, placesRepo, tripsRepo, savesRepo, cache, badges) {
         this.usersRepository = usersRepository;
+        this.reviewsRepo = reviewsRepo;
+        this.placesRepo = placesRepo;
+        this.tripsRepo = tripsRepo;
+        this.savesRepo = savesRepo;
+        this.cache = cache;
+        this.badges = badges;
     }
     async findByEmail(email) {
         return this.usersRepository.findOne({ where: { email } });
+    }
+    async findByHandle(handle) {
+        if (!handle)
+            return null;
+        return this.usersRepository.findOne({ where: { handle: handle.toLowerCase() } });
+    }
+    async isHandleAvailable(handle) {
+        const h = (handle || '').toLowerCase();
+        const { isHandleFormatValid, isHandleReserved } = await Promise.resolve().then(() => require('./reserved-handles'));
+        if (!isHandleFormatValid(h))
+            return false;
+        if (isHandleReserved(h))
+            return false;
+        const existing = await this.usersRepository.findOne({ where: { handle: h } });
+        return !existing;
     }
     async findById(id) {
         const user = await this.usersRepository.findOne({
@@ -45,6 +73,7 @@ let UsersService = class UsersService {
     }
     async update(id, data) {
         await this.usersRepository.update(id, data);
+        await this.invalidatePassportCache(id);
         return this.findById(id);
     }
     async toggleFavorite(userId, placeId) {
@@ -59,6 +88,7 @@ let UsersService = class UsersService {
         }
         user.favoriteIds = favorites;
         await this.usersRepository.save(user);
+        await this.invalidatePassportCache(userId);
         return favorites;
     }
     async getFavoriteIds(userId) {
@@ -69,6 +99,7 @@ let UsersService = class UsersService {
         const user = await this.findById(userId);
         const visited = user.visitedPlaceIds || [];
         const index = visited.indexOf(placeId);
+        const wasAdded = index === -1;
         if (index > -1) {
             visited.splice(index, 1);
         }
@@ -77,6 +108,11 @@ let UsersService = class UsersService {
         }
         user.visitedPlaceIds = visited;
         await this.usersRepository.save(user);
+        await this.invalidatePassportCache(userId);
+        if (wasAdded && this.badges) {
+            const place = await this.placesRepo.findOne({ where: { id: placeId }, select: ['city'] }).catch(() => null);
+            await this.badges.awardIfEligible(userId, 'place.visited', { city: place?.city });
+        }
         return visited;
     }
     async getVisitedIds(userId) {
@@ -103,11 +139,100 @@ let UsersService = class UsersService {
             points: u.points || 0,
         }));
     }
+    async assemblePassport(handle) {
+        const key = `passport:${handle}`;
+        const cached = await this.cache.get(key);
+        if (cached)
+            return cached;
+        const user = await this.findByHandle(handle);
+        if (!user)
+            throw new common_1.NotFoundException('Passport not found');
+        const visitedIds = Array.isArray(user.visitedPlaceIds) ? user.visitedPlaceIds : [];
+        const [reviewsCount, tripsPlanned, savesCount, visitedCities] = await Promise.all([
+            this.reviewsRepo.count({ where: { user: { id: user.id } } }).catch(() => 0),
+            this.tripsRepo.count({ where: { userId: user.id } }).catch(() => 0),
+            this.savesRepo.count({ where: { userId: user.id } }).catch(() => 0),
+            visitedIds.length
+                ? this.placesRepo
+                    .createQueryBuilder('p')
+                    .select('DISTINCT p.city', 'city')
+                    .where('p.id IN (:...ids)', { ids: visitedIds })
+                    .getRawMany()
+                    .then((rows) => rows.map((r) => r.city).filter(Boolean))
+                    .catch(() => [])
+                : Promise.resolve([]),
+        ]);
+        const passport = {
+            handle: user.handle,
+            fullName: user.fullName,
+            avatar: user.avatar || null,
+            country: user.country || null,
+            bio: user.bio || null,
+            website: user.website || null,
+            interests: Array.isArray(user.interests) ? user.interests : [],
+            badges: Array.isArray(user.badges) ? user.badges : [],
+            points: user.points || 0,
+            passportLevel: (0, passport_dto_1.deriveLevel)(user.points || 0),
+            role: user.role,
+            joinedAt: user.createdAt.toISOString(),
+            stats: {
+                citiesVisited: visitedCities.length,
+                tripsPlanned,
+                reviewsCount,
+                savesCount,
+            },
+            visitedCities,
+        };
+        await this.cache.set(key, passport, 300_000);
+        return passport;
+    }
+    async seedFromDraft(userId, draft) {
+        const user = await this.findById(userId);
+        const existingInterests = Array.isArray(user.interests) ? user.interests : [];
+        const newInterests = (draft.interests || []).map(s => (s || '').trim()).filter(Boolean);
+        const interests = Array.from(new Set([...existingInterests, ...newInterests])).slice(0, 16);
+        let visitedPlaceIds = Array.isArray(user.visitedPlaceIds) ? user.visitedPlaceIds : [];
+        const cities = (draft.visitedCities || []).map(s => (s || '').trim()).filter(Boolean);
+        if (cities.length) {
+            const matched = await this.placesRepo
+                .createQueryBuilder('p')
+                .where('LOWER(p.city) IN (:...c)', { c: cities.map((c) => c.toLowerCase()) })
+                .select(['p.id', 'p.city'])
+                .getMany()
+                .catch(() => []);
+            const newIds = matched.map((p) => p.id).filter((id) => !visitedPlaceIds.includes(id));
+            visitedPlaceIds = visitedPlaceIds.concat(newIds);
+        }
+        user.interests = interests;
+        user.visitedPlaceIds = visitedPlaceIds;
+        await this.usersRepository.save(user);
+        await this.invalidatePassportCache(userId);
+        if (this.badges) {
+            for (const c of cities) {
+                await this.badges.awardIfEligible(userId, 'place.visited', { city: c });
+            }
+        }
+        return { ok: true, visitedPlaceIds: visitedPlaceIds.length, interests: interests.length };
+    }
+    async invalidatePassportCache(userId) {
+        const user = await this.usersRepository.findOne({ where: { id: userId }, select: ['handle'] });
+        if (user?.handle)
+            await this.cache.del(`passport:${user.handle}`);
+    }
 };
 exports.UsersService = UsersService;
 exports.UsersService = UsersService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(user_entity_1.User)),
-    __metadata("design:paramtypes", [typeorm_2.Repository])
+    __param(1, (0, typeorm_1.InjectRepository)(review_entity_1.Review)),
+    __param(2, (0, typeorm_1.InjectRepository)(place_entity_1.Place)),
+    __param(3, (0, typeorm_1.InjectRepository)(trip_plan_entity_1.TripPlan)),
+    __param(4, (0, typeorm_1.InjectRepository)(saved_post_entity_1.SavedPost)),
+    __param(5, (0, common_1.Inject)(cache_manager_1.CACHE_MANAGER)),
+    __metadata("design:paramtypes", [typeorm_2.Repository,
+        typeorm_2.Repository,
+        typeorm_2.Repository,
+        typeorm_2.Repository,
+        typeorm_2.Repository, Object, badges_service_1.BadgesService])
 ], UsersService);
 //# sourceMappingURL=users.service.js.map

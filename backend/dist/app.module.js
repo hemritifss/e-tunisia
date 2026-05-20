@@ -11,8 +11,11 @@ const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const config_1 = require("@nestjs/config");
 const throttler_1 = require("@nestjs/throttler");
+const cache_manager_1 = require("@nestjs/cache-manager");
 const auth_module_1 = require("./auth/auth.module");
 const users_module_1 = require("./users/users.module");
+const badges_module_1 = require("./badges/badges.module");
+const og_module_1 = require("./og/og.module");
 const places_module_1 = require("./places/places.module");
 const categories_module_1 = require("./categories/categories.module");
 const reviews_module_1 = require("./reviews/reviews.module");
@@ -71,11 +74,14 @@ exports.AppModule = AppModule = __decorate([
                 inject: [config_1.ConfigService],
                 useFactory: (configService) => (0, database_config_1.getDatabaseConfig)(configService),
             }),
+            cache_manager_1.CacheModule.register({ isGlobal: true, ttl: 300_000 }),
             redis_module_1.RedisModule,
             storage_module_1.StorageModule,
             health_module_1.HealthModule,
             auth_module_1.AuthModule,
             users_module_1.UsersModule,
+            badges_module_1.BadgesModule,
+            og_module_1.OgModule,
             places_module_1.PlacesModule,
             categories_module_1.CategoriesModule,
             reviews_module_1.ReviewsModule,

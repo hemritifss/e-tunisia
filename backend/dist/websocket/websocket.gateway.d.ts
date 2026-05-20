@@ -11,6 +11,18 @@ export declare class EventsGateway implements OnGatewayConnection, OnGatewayDisc
     constructor(jwtService: JwtService, redisService: RedisService);
     handleConnection(client: Socket): Promise<void>;
     handleDisconnect(client: Socket): void;
+    handlePresenceList(): string[];
+    handleDmTyping(client: Socket, payload: {
+        roomId: string;
+        participantIds: string[];
+        isTyping: boolean;
+    }): {
+        error: string;
+        status?: undefined;
+    } | {
+        status: string;
+        error?: undefined;
+    };
     handleFeedSubscribe(client: Socket): {
         status: string;
     };
@@ -79,4 +91,5 @@ export declare class EventsGateway implements OnGatewayConnection, OnGatewayDisc
     broadcastNotification(userId: string, notification: any): void;
     getOnlineUsersCount(): number;
     isUserOnline(userId: string): boolean;
+    broadcastReadReceipt(roomId: string, readerId: string, participantIds: string[]): void;
 }

@@ -1,15 +1,18 @@
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
+import { BadgesService } from '../badges/badges.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 export declare class AuthService {
     private usersService;
     private jwtService;
-    constructor(usersService: UsersService, jwtService: JwtService);
+    private badgesService;
+    constructor(usersService: UsersService, jwtService: JwtService, badgesService: BadgesService);
     register(dto: RegisterDto): Promise<{
         user: {
             id: string;
             fullName: string;
+            handle: string;
             email: string;
             avatar: string;
             role: import("../users/user.entity").UserRole;

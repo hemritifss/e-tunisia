@@ -90,6 +90,46 @@ let CreditsService = class CreditsService {
             return mgr.save(tx);
         });
     }
+    async chargeBoost(payerUserId, amount, note, placeId) {
+        if (amount <= 0)
+            throw new common_1.BadRequestException('Boost amount must be > 0');
+        const platform = await this.ensurePlatformUser();
+        return this.dataSource.transaction(async (mgr) => {
+            const bal = await mgr.findOne(credit_balance_entity_1.CreditBalance, { where: { userId: payerUserId } });
+            const current = Number(bal?.balance || 0);
+            if (current < amount)
+                throw new common_1.BadRequestException('Insufficient credits — top up to boost');
+            const newBalance = current - amount;
+            bal.balance = newBalance;
+            bal.lifetimeOut = Number(bal.lifetimeOut) + amount;
+            await mgr.save(bal);
+            await mgr.save(mgr.create(credit_transaction_entity_1.CreditTransaction, {
+                userId: payerUserId,
+                kind: credit_transaction_entity_1.CreditTxKind.BOOST,
+                amount: -amount,
+                counterpartyId: platform.id,
+                note,
+                balanceAfter: newBalance,
+                donationId: placeId,
+            }));
+            const platBal = await mgr.findOne(credit_balance_entity_1.CreditBalance, { where: { userId: platform.id } })
+                ?? mgr.create(credit_balance_entity_1.CreditBalance, { userId: platform.id, balance: 0 });
+            const platNew = Number(platBal.balance || 0) + amount;
+            platBal.balance = platNew;
+            platBal.lifetimeIn = Number(platBal.lifetimeIn || 0) + amount;
+            await mgr.save(platBal);
+            await mgr.save(mgr.create(credit_transaction_entity_1.CreditTransaction, {
+                userId: platform.id,
+                kind: credit_transaction_entity_1.CreditTxKind.BOOST,
+                amount,
+                counterpartyId: payerUserId,
+                note: `Boost revenue: ${note}`,
+                balanceAfter: platNew,
+                donationId: placeId,
+            }));
+            return { balance: newBalance, charged: amount };
+        });
+    }
     async donate(fromUserId, opts) {
         const amount = Number(opts.amount);
         if (!Number.isFinite(amount) || amount <= 0) {

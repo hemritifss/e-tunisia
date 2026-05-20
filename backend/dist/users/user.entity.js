@@ -41,6 +41,10 @@ __decorate([
     __metadata("design:type", String)
 ], User.prototype, "email", void 0);
 __decorate([
+    (0, typeorm_1.Column)({ length: 30, unique: true, nullable: true }),
+    __metadata("design:type", String)
+], User.prototype, "handle", void 0);
+__decorate([
     (0, typeorm_1.Column)(),
     (0, class_transformer_1.Exclude)(),
     __metadata("design:type", String)

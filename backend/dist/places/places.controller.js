@@ -19,6 +19,15 @@ const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 const places_service_1 = require("./places.service");
 const create_place_dto_1 = require("./dto/create-place.dto");
 const query_places_dto_1 = require("./dto/query-places.dto");
+const class_validator_1 = require("class-validator");
+const places_service_2 = require("./places.service");
+class BoostListingDto {
+}
+__decorate([
+    (0, class_validator_1.IsInt)(),
+    (0, class_validator_1.IsIn)([1, 7, 30]),
+    __metadata("design:type", Number)
+], BoostListingDto.prototype, "days", void 0);
 let PlacesController = class PlacesController {
     constructor(placesService) {
         this.placesService = placesService;
@@ -34,6 +43,15 @@ let PlacesController = class PlacesController {
     }
     getNearby(lat, lng, radius) {
         return this.placesService.getNearby(lat, lng, radius);
+    }
+    listMine(req) {
+        return this.placesService.listMine(req.user.id);
+    }
+    boostTiers() {
+        return Object.values(places_service_2.BOOST_TIERS);
+    }
+    boost(req, id, body) {
+        return this.placesService.boostListing(id, req.user.id, body.days);
     }
     findBySlug(slug) {
         return this.placesService.findBySlug(slug);
@@ -81,6 +99,35 @@ __decorate([
     __metadata("design:paramtypes", [Number, Number, Number]),
     __metadata("design:returntype", void 0)
 ], PlacesController.prototype, "getNearby", null);
+__decorate([
+    (0, common_1.Get)('mine'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, swagger_1.ApiOperation)({ summary: "Places submitted/owned by the current user" }),
+    __param(0, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], PlacesController.prototype, "listMine", null);
+__decorate([
+    (0, common_1.Get)('boost/tiers'),
+    (0, swagger_1.ApiOperation)({ summary: 'Boost pricing tiers (credits per duration)' }),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], PlacesController.prototype, "boostTiers", null);
+__decorate([
+    (0, common_1.Post)(':id/boost'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, swagger_1.ApiOperation)({ summary: 'Boost a listing — deducts credits, stacks on top of any active boost' }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)('id')),
+    __param(2, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String, BoostListingDto]),
+    __metadata("design:returntype", void 0)
+], PlacesController.prototype, "boost", null);
 __decorate([
     (0, common_1.Get)('slug/:slug'),
     (0, swagger_1.ApiOperation)({ summary: 'Get place by slug' }),

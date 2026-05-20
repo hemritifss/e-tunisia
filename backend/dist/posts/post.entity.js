@@ -70,6 +70,10 @@ __decorate([
     __metadata("design:type", Number)
 ], Post.prototype, "commentCount", void 0);
 __decorate([
+    (0, typeorm_1.Column)({ default: 0 }),
+    __metadata("design:type", Number)
+], Post.prototype, "viewCount", void 0);
+__decorate([
     (0, typeorm_1.Column)({ default: false }),
     __metadata("design:type", Boolean)
 ], Post.prototype, "isPinned", void 0);

@@ -35,4 +35,9 @@ export declare class FeedController {
     stories(limit?: string): Promise<{
         stories: any;
     }>;
+    trending(limit?: string): Promise<{
+        tag: string;
+        display: string;
+        count: number;
+    }[]>;
 }

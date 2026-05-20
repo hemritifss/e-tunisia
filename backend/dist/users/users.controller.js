@@ -17,12 +17,49 @@ const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 const users_service_1 = require("./users.service");
+const og_service_1 = require("../og/og.service");
 let UsersController = class UsersController {
-    constructor(usersService) {
+    constructor(usersService, ogService) {
         this.usersService = usersService;
+        this.ogService = ogService;
     }
     getProfile(req) {
         return this.usersService.findById(req.user.id);
+    }
+    async handleAvailable(h) {
+        const { isHandleFormatValid, isHandleReserved } = await Promise.resolve().then(() => require('./reserved-handles'));
+        const handle = (h || '').toLowerCase().trim();
+        if (!handle)
+            return { available: false, reason: 'empty' };
+        if (!isHandleFormatValid(handle))
+            return { available: false, reason: 'format' };
+        if (isHandleReserved(handle))
+            return { available: false, reason: 'reserved' };
+        const ok = await this.usersService.isHandleAvailable(handle);
+        return { available: ok, reason: ok ? undefined : 'taken' };
+    }
+    async byHandle(rawHandle) {
+        const handle = (rawHandle || '').toLowerCase();
+        const passport = await this.usersService.assemblePassport(handle).catch(() => null);
+        if (!passport) {
+            return { error: 'passport_not_found', handle };
+        }
+        return passport;
+    }
+    async ogImage(rawHandle, res) {
+        const handle = (rawHandle || '').toLowerCase();
+        try {
+            const passport = await this.usersService.assemblePassport(handle);
+            const png = await this.ogService.renderPassportCard(passport);
+            res.send(png);
+        }
+        catch {
+            const transparent = Buffer.from('89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c4890000000a49444154789c63000000000200015c34a40d0000000049454e44ae426082', 'hex');
+            res.send(transparent);
+        }
+    }
+    seedDraft(req, body) {
+        return this.usersService.seedFromDraft(req.user.id, body || {});
     }
     updateProfile(req, body) {
         return this.usersService.update(req.user.id, body);
@@ -78,6 +115,40 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "getProfile", null);
+__decorate([
+    (0, common_1.Get)('handle-available'),
+    __param(0, (0, common_1.Query)('h')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], UsersController.prototype, "handleAvailable", null);
+__decorate([
+    (0, common_1.Get)('by-handle/:handle'),
+    __param(0, (0, common_1.Param)('handle')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], UsersController.prototype, "byHandle", null);
+__decorate([
+    (0, common_1.Get)('by-handle/:handle/og.png'),
+    (0, common_1.Header)('Content-Type', 'image/png'),
+    (0, common_1.Header)('Cache-Control', 'public, max-age=86400, stale-while-revalidate=604800'),
+    __param(0, (0, common_1.Param)('handle')),
+    __param(1, (0, common_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
+], UsersController.prototype, "ogImage", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.Post)('me/seed'),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "seedDraft", null);
 __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, swagger_1.ApiBearerAuth)(),
@@ -143,6 +214,7 @@ __decorate([
 exports.UsersController = UsersController = __decorate([
     (0, swagger_1.ApiTags)('users'),
     (0, common_1.Controller)('users'),
-    __metadata("design:paramtypes", [users_service_1.UsersService])
+    __metadata("design:paramtypes", [users_service_1.UsersService,
+        og_service_1.OgService])
 ], UsersController);
 //# sourceMappingURL=users.controller.js.map

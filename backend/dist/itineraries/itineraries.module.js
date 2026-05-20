@@ -10,17 +10,30 @@ exports.ItinerariesModule = void 0;
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const itinerary_entity_1 = require("./itinerary.entity");
+const trip_plan_entity_1 = require("./trip-plan.entity");
 const itineraries_service_1 = require("./itineraries.service");
 const itineraries_controller_1 = require("./itineraries.controller");
+const trips_service_1 = require("./trips.service");
+const trips_controller_1 = require("./trips.controller");
+const place_entity_1 = require("../places/place.entity");
+const tour_package_entity_1 = require("../places/tour-package.entity");
+const places_module_1 = require("../places/places.module");
+const users_module_1 = require("../users/users.module");
+const badges_module_1 = require("../badges/badges.module");
 let ItinerariesModule = class ItinerariesModule {
 };
 exports.ItinerariesModule = ItinerariesModule;
 exports.ItinerariesModule = ItinerariesModule = __decorate([
     (0, common_1.Module)({
-        imports: [typeorm_1.TypeOrmModule.forFeature([itinerary_entity_1.Itinerary])],
-        controllers: [itineraries_controller_1.ItinerariesController],
-        providers: [itineraries_service_1.ItinerariesService],
-        exports: [itineraries_service_1.ItinerariesService],
+        imports: [
+            typeorm_1.TypeOrmModule.forFeature([itinerary_entity_1.Itinerary, trip_plan_entity_1.TripPlan, place_entity_1.Place, tour_package_entity_1.TourPackage]),
+            places_module_1.PlacesModule,
+            users_module_1.UsersModule,
+            badges_module_1.BadgesModule,
+        ],
+        controllers: [itineraries_controller_1.ItinerariesController, trips_controller_1.TripsController],
+        providers: [itineraries_service_1.ItinerariesService, trips_service_1.TripsService],
+        exports: [itineraries_service_1.ItinerariesService, trips_service_1.TripsService],
     })
 ], ItinerariesModule);
 //# sourceMappingURL=itineraries.module.js.map

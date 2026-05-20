@@ -21,6 +21,10 @@ export declare class CreditsService {
         recent: CreditTransaction[];
     }>;
     deposit(userId: string, amount: number, note?: string): Promise<CreditTransaction>;
+    chargeBoost(payerUserId: string, amount: number, note: string, placeId: string): Promise<{
+        balance: number;
+        charged: number;
+    }>;
     donate(fromUserId: string, opts: {
         target: DonationTarget;
         toUserId?: string;

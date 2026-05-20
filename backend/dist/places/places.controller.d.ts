@@ -1,6 +1,9 @@
 import { PlacesService } from './places.service';
 import { CreatePlaceDto } from './dto/create-place.dto';
 import { QueryPlacesDto } from './dto/query-places.dto';
+declare class BoostListingDto {
+    days: 1 | 7 | 30;
+}
 export declare class PlacesController {
     private placesService;
     constructor(placesService: PlacesService);
@@ -16,6 +19,27 @@ export declare class PlacesController {
     getFeatured(): Promise<import("./place.entity").Place[]>;
     getPopular(): Promise<import("./place.entity").Place[]>;
     getNearby(lat: number, lng: number, radius?: number): Promise<import("./place.entity").Place[]>;
+    listMine(req: any): Promise<import("./place.entity").Place[]>;
+    boostTiers(): ({
+        readonly days: 1;
+        readonly credits: 50;
+        readonly label: "1 day";
+    } | {
+        readonly days: 7;
+        readonly credits: 280;
+        readonly label: "7 days";
+    } | {
+        readonly days: 30;
+        readonly credits: 1000;
+        readonly label: "30 days";
+    })[];
+    boost(req: any, id: string, body: BoostListingDto): Promise<{
+        placeId: string;
+        isBoosted: boolean;
+        boostExpiresAt: Date;
+        balanceAfter: number;
+        charged: number;
+    }>;
     findBySlug(slug: string): Promise<import("./place.entity").Place>;
     findOne(id: string): Promise<import("./place.entity").Place>;
     create(dto: CreatePlaceDto): Promise<import("./place.entity").Place>;
@@ -23,3 +47,4 @@ export declare class PlacesController {
         ids: string[];
     }): Promise<import("./place.entity").Place[]>;
 }
+export {};

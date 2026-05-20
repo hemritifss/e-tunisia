@@ -27,6 +27,7 @@ let StorageService = StorageService_1 = class StorageService {
         const accessKey = this.configService.get('S3_ACCESS_KEY') || 'minioadmin';
         const secretKey = this.configService.get('S3_SECRET_KEY') || 'minioadmin';
         const forcePathStyle = this.configService.get('S3_FORCE_PATH_STYLE') === 'true';
+        this.publicBase = (this.configService.get('S3_PUBLIC_URL') || '/uploads').replace(/\/+$/, '');
         this.s3Client = new client_s3_1.S3Client({
             region,
             endpoint: this.endpoint,
@@ -36,6 +37,45 @@ let StorageService = StorageService_1 = class StorageService {
                 secretAccessKey: secretKey,
             },
         });
+    }
+    async onModuleInit() {
+        try {
+            await this.s3Client.send(new client_s3_1.HeadBucketCommand({ Bucket: this.bucket }));
+        }
+        catch {
+            try {
+                await this.s3Client.send(new client_s3_1.CreateBucketCommand({ Bucket: this.bucket }));
+                this.logger.log(`Created bucket "${this.bucket}"`);
+            }
+            catch (e) {
+                this.logger.warn(`Could not create bucket "${this.bucket}": ${e?.message}`);
+            }
+        }
+        try {
+            const policy = {
+                Version: '2012-10-17',
+                Statement: [{
+                        Effect: 'Allow',
+                        Principal: { AWS: ['*'] },
+                        Action: ['s3:GetObject'],
+                        Resource: [`arn:aws:s3:::${this.bucket}/*`],
+                    }],
+            };
+            await this.s3Client.send(new client_s3_1.PutBucketPolicyCommand({
+                Bucket: this.bucket,
+                Policy: JSON.stringify(policy),
+            }));
+            this.logger.log(`Bucket "${this.bucket}" is publicly readable`);
+        }
+        catch (e) {
+            this.logger.warn(`Could not set bucket policy: ${e?.message}`);
+        }
+    }
+    publicUrl(key) {
+        return `${this.publicBase}/${key}`;
+    }
+    internalUrl(key) {
+        return `${this.endpoint.replace(/\/+$/, '')}/${this.bucket}/${key}`;
     }
     async uploadFile(buffer, originalName, folder = 'uploads', mimeType) {
         const extension = (0, path_1.extname)(originalName).toLowerCase();
@@ -47,7 +87,7 @@ let StorageService = StorageService_1 = class StorageService {
                 Body: buffer,
                 ContentType: mimeType || this.getMimeType(extension),
             }));
-            const url = `${this.endpoint}/${this.bucket}/${key}`;
+            const url = this.publicUrl(key);
             this.logger.log(`File uploaded: ${key}`);
             return { url, key, bucket: this.bucket };
         }
@@ -55,6 +95,33 @@ let StorageService = StorageService_1 = class StorageService {
             this.logger.error(`Failed to upload file: ${error.message}`);
             throw error;
         }
+    }
+    async uploadDataUrl(dataUrl, folder = 'uploads') {
+        if (!dataUrl || !dataUrl.startsWith('data:')) {
+            throw new Error('Not a data URL');
+        }
+        const match = dataUrl.match(/^data:([^;,]+)(?:;([^,]+))?,(.+)$/);
+        if (!match)
+            throw new Error('Malformed data URL');
+        const mime = match[1] || 'application/octet-stream';
+        const isBase64 = (match[2] || '').includes('base64');
+        const rawData = match[3];
+        const buffer = isBase64
+            ? Buffer.from(rawData, 'base64')
+            : Buffer.from(decodeURIComponent(rawData), 'utf8');
+        if (buffer.length > 12 * 1024 * 1024) {
+            throw new Error('File too large (max 12MB)');
+        }
+        const ext = {
+            'image/jpeg': '.jpg',
+            'image/png': '.png',
+            'image/gif': '.gif',
+            'image/webp': '.webp',
+            'image/svg+xml': '.svg',
+            'video/mp4': '.mp4',
+            'video/webm': '.webm',
+        }[mime] || '.bin';
+        return this.uploadFile(buffer, `file${ext}`, folder, mime);
     }
     async deleteFile(key) {
         try {

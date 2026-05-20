@@ -34,9 +34,17 @@ let EventsGateway = EventsGateway_1 = class EventsGateway {
             client.data.userId = payload.sub;
             client.data.user = payload;
             const sockets = this.userSockets.get(payload.sub) || [];
+            const wasOffline = sockets.length === 0;
             sockets.push(client.id);
             this.userSockets.set(payload.sub, sockets);
             client.join(`user:${payload.sub}`);
+            if (wasOffline) {
+                this.server.emit('presence:update', {
+                    userId: payload.sub,
+                    online: true,
+                    ts: new Date().toISOString(),
+                });
+            }
             this.logger.log(`Client connected: ${client.id}, user: ${payload.sub}`);
         }
         catch (error) {
@@ -51,12 +59,35 @@ let EventsGateway = EventsGateway_1 = class EventsGateway {
             const filtered = sockets.filter((id) => id !== client.id);
             if (filtered.length === 0) {
                 this.userSockets.delete(userId);
+                this.server.emit('presence:update', {
+                    userId,
+                    online: false,
+                    ts: new Date().toISOString(),
+                });
             }
             else {
                 this.userSockets.set(userId, filtered);
             }
         }
         this.logger.log(`Client disconnected: ${client.id}`);
+    }
+    handlePresenceList() {
+        return Array.from(this.userSockets.keys());
+    }
+    handleDmTyping(client, payload) {
+        const senderId = client.data.userId;
+        if (!senderId || !payload?.participantIds)
+            return { error: 'Unauthorized' };
+        for (const uid of payload.participantIds) {
+            if (uid === senderId)
+                continue;
+            this.server.to(`user:${uid}`).emit('dm:typing', {
+                roomId: payload.roomId,
+                userId: senderId,
+                isTyping: !!payload.isTyping,
+            });
+        }
+        return { status: 'ok' };
     }
     handleFeedSubscribe(client) {
         client.join('feed:global');
@@ -160,12 +191,32 @@ let EventsGateway = EventsGateway_1 = class EventsGateway {
     isUserOnline(userId) {
         return this.userSockets.has(userId);
     }
+    broadcastReadReceipt(roomId, readerId, participantIds) {
+        const payload = { roomId, readerId, ts: new Date().toISOString() };
+        for (const uid of participantIds) {
+            if (uid === readerId)
+                continue;
+            this.server.to(`user:${uid}`).emit('dm:read', payload);
+        }
+    }
 };
 exports.EventsGateway = EventsGateway;
 __decorate([
     (0, websockets_1.WebSocketServer)(),
     __metadata("design:type", socket_io_1.Server)
 ], EventsGateway.prototype, "server", void 0);
+__decorate([
+    (0, websockets_1.SubscribeMessage)('presence:list'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], EventsGateway.prototype, "handlePresenceList", null);
+__decorate([
+    (0, websockets_1.SubscribeMessage)('dm:typing'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [socket_io_1.Socket, Object]),
+    __metadata("design:returntype", void 0)
+], EventsGateway.prototype, "handleDmTyping", null);
 __decorate([
     (0, websockets_1.SubscribeMessage)('feed:subscribe'),
     __metadata("design:type", Function),

@@ -13,23 +13,32 @@ exports.AuthService = void 0;
 const common_1 = require("@nestjs/common");
 const jwt_1 = require("@nestjs/jwt");
 const users_service_1 = require("../users/users.service");
+const badges_service_1 = require("../badges/badges.service");
 const bcrypt = require("bcrypt");
 let AuthService = class AuthService {
-    constructor(usersService, jwtService) {
+    constructor(usersService, jwtService, badgesService) {
         this.usersService = usersService;
         this.jwtService = jwtService;
+        this.badgesService = badgesService;
     }
     async register(dto) {
-        const existing = await this.usersService.findByEmail(dto.email);
-        if (existing) {
+        const existingEmail = await this.usersService.findByEmail(dto.email);
+        if (existingEmail) {
             throw new common_1.ConflictException('Email already registered');
         }
-        const user = await this.usersService.create(dto);
+        const handleLower = (dto.handle || '').toLowerCase();
+        const available = await this.usersService.isHandleAvailable(handleLower);
+        if (!available) {
+            throw new common_1.ConflictException('Handle is unavailable');
+        }
+        const user = await this.usersService.create({ ...dto, handle: handleLower });
+        await this.badgesService.awardIfEligible(user.id, 'user.created', {});
         const token = this.generateToken(user);
         return {
             user: {
                 id: user.id,
                 fullName: user.fullName,
+                handle: user.handle,
                 email: user.email,
                 avatar: user.avatar,
                 role: user.role,
@@ -70,6 +79,7 @@ exports.AuthService = AuthService;
 exports.AuthService = AuthService = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [users_service_1.UsersService,
-        jwt_1.JwtService])
+        jwt_1.JwtService,
+        badges_service_1.BadgesService])
 ], AuthService);
 //# sourceMappingURL=auth.service.js.map

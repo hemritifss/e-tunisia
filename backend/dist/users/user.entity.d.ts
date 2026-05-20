@@ -13,6 +13,7 @@ export declare class User {
     id: string;
     fullName: string;
     email: string;
+    handle: string | null;
     password: string;
     avatar: string;
     phone: string;

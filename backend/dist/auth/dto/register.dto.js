@@ -32,6 +32,14 @@ __decorate([
     __metadata("design:type", String)
 ], RegisterDto.prototype, "password", void 0);
 __decorate([
+    (0, swagger_1.ApiProperty)({ example: 'ahmed_t', description: 'Public handle, 3-30 chars, [a-z0-9_], must start with a letter' }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.MinLength)(3),
+    (0, class_validator_1.MaxLength)(30),
+    (0, class_validator_1.Matches)(/^[a-z][a-z0-9_]{2,29}$/),
+    __metadata("design:type", String)
+], RegisterDto.prototype, "handle", void 0);
+__decorate([
     (0, swagger_1.ApiProperty)({ example: 'Tunisia', required: false }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),

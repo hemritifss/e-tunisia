@@ -18,15 +18,210 @@ const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const post_entity_1 = require("./post.entity");
 const comment_entity_1 = require("./comment.entity");
+const comment_like_entity_1 = require("./comment-like.entity");
+const post_reaction_entity_1 = require("./post-reaction.entity");
+const saved_post_entity_1 = require("./saved-post.entity");
+const badges_service_1 = require("../badges/badges.service");
+const user_entity_1 = require("../users/user.entity");
 const notifications_service_1 = require("../notifications/notifications.service");
 const notification_entity_1 = require("../notifications/notification.entity");
 let PostsService = class PostsService {
-    constructor(postsRepo, commentsRepo, notifications) {
+    constructor(postsRepo, commentsRepo, commentLikesRepo, reactionsRepo, savedRepo, usersRepo, notifications, badges) {
         this.postsRepo = postsRepo;
         this.commentsRepo = commentsRepo;
+        this.commentLikesRepo = commentLikesRepo;
+        this.reactionsRepo = reactionsRepo;
+        this.savedRepo = savedRepo;
+        this.usersRepo = usersRepo;
         this.notifications = notifications;
+        this.badges = badges;
     }
-    async listComments(postId) {
+    async listReactors(postId, opts = {}) {
+        if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(postId)) {
+            return { data: [], meta: { page: 1, limit: 0, total: 0, totalPages: 0 } };
+        }
+        const page = Math.max(1, Number(opts.page) || 1);
+        const limit = Math.min(100, Math.max(1, Number(opts.limit) || 30));
+        const offset = (page - 1) * limit;
+        const where = { postId };
+        if (opts.type)
+            where.type = opts.type;
+        const [rows, total] = await this.reactionsRepo.findAndCount({
+            where,
+            order: { createdAt: 'DESC' },
+            skip: offset,
+            take: limit,
+        });
+        if (rows.length === 0)
+            return { data: [], meta: { page, limit, total, totalPages: 0 } };
+        const users = await this.usersRepo.find({
+            where: { id: (0, typeorm_2.In)(rows.map(r => r.userId)) },
+            select: ['id', 'fullName', 'avatar', 'country', 'handle'],
+        });
+        const byId = new Map(users.map(u => [u.id, u]));
+        const data = rows.map(r => {
+            const u = byId.get(r.userId);
+            return {
+                userId: r.userId,
+                type: r.type,
+                createdAt: r.createdAt,
+                user: u ? { id: u.id, fullName: u.fullName, avatar: u.avatar, country: u.country, handle: u.handle } : null,
+            };
+        }).filter(r => r.user);
+        return { data, meta: { page, limit, total, totalPages: Math.ceil(total / limit) } };
+    }
+    isUuid(id) {
+        return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+    }
+    async savePost(postId, userId) {
+        if (!this.isUuid(postId))
+            throw new common_1.NotFoundException('Post not found');
+        const post = await this.postsRepo.findOne({ where: { id: postId } });
+        if (!post)
+            throw new common_1.NotFoundException('Post not found');
+        const existing = await this.savedRepo.findOne({ where: { postId, userId } });
+        if (!existing) {
+            await this.savedRepo.save(this.savedRepo.create({ postId, userId }));
+            if (this.badges)
+                await this.badges.awardIfEligible(userId, 'post.saved', {});
+        }
+        return { saved: true };
+    }
+    async unsavePost(postId, userId) {
+        if (!this.isUuid(postId))
+            return { saved: false };
+        await this.savedRepo.delete({ postId, userId });
+        return { saved: false };
+    }
+    async listSavedByHandle(handle, opts = {}) {
+        const user = await this.usersRepo.findOne({ where: { handle: (handle || '').toLowerCase() } });
+        if (!user)
+            return { data: [], meta: { page: 1, limit: 0, total: 0, totalPages: 0 } };
+        return this.listSaved(user.id, opts);
+    }
+    async listSaved(userId, opts = {}) {
+        const page = Math.max(1, Number(opts.page) || 1);
+        const limit = Math.min(50, Math.max(1, Number(opts.limit) || 12));
+        const offset = (page - 1) * limit;
+        const [rows, total] = await this.savedRepo.findAndCount({
+            where: { userId },
+            order: { createdAt: 'DESC' },
+            skip: offset,
+            take: limit,
+        });
+        if (rows.length === 0) {
+            return { data: [], meta: { page, limit, total, totalPages: 0 } };
+        }
+        const posts = await this.postsRepo.createQueryBuilder('p')
+            .leftJoinAndSelect('p.author', 'a')
+            .where('p.id IN (:...ids)', { ids: rows.map(r => r.postId) })
+            .andWhere('p.isActive = :a', { a: true })
+            .getMany();
+        const byId = new Map(posts.map(p => [p.id, p]));
+        const data = rows.map(r => {
+            const p = byId.get(r.postId);
+            if (!p)
+                return null;
+            return {
+                id: p.id,
+                type: 'post',
+                title: p.title,
+                body: p.body,
+                category: p.category,
+                location: p.location,
+                placeId: p.placeId,
+                images: p.images || [],
+                tags: p.tags || [],
+                authorId: p.authorId,
+                author: p.author ? {
+                    id: p.author.id,
+                    fullName: p.author.fullName,
+                    avatar: p.author.avatar,
+                    handle: p.author.handle ?? null,
+                } : null,
+                upvotes: p.upvotes,
+                downvotes: p.downvotes,
+                commentCount: p.commentCount,
+                isPinned: p.isPinned,
+                createdAt: p.createdAt,
+                savedAt: r.createdAt,
+            };
+        }).filter(Boolean);
+        return { data, meta: { page, limit, total, totalPages: Math.ceil(total / limit) } };
+    }
+    async savedBulk(postIds, viewerId) {
+        const out = {};
+        for (const id of postIds)
+            out[id] = false;
+        if (!viewerId || postIds.length === 0)
+            return out;
+        const rows = await this.savedRepo.find({
+            where: { userId: viewerId, postId: (0, typeorm_2.In)(postIds) },
+        });
+        for (const r of rows)
+            out[r.postId] = true;
+        return out;
+    }
+    async react(postId, userId, type) {
+        const post = await this.postsRepo.findOne({ where: { id: postId } });
+        if (!post)
+            throw new common_1.NotFoundException('Post not found');
+        const existing = await this.reactionsRepo.findOne({ where: { postId, userId } });
+        if (!type) {
+            if (existing)
+                await this.reactionsRepo.delete({ postId, userId });
+        }
+        else if (existing) {
+            existing.type = type;
+            await this.reactionsRepo.save(existing);
+        }
+        else {
+            await this.reactionsRepo.save(this.reactionsRepo.create({ postId, userId, type }));
+        }
+        const total = await this.reactionsRepo.count({ where: { postId } });
+        post.upvotes = total;
+        await this.postsRepo.save(post);
+        if (type && post.authorId && post.authorId !== userId) {
+            try {
+                await this.notifications.create(post.authorId, 'Someone reacted', `Your post "${post.title}" got a new ${type}`, notification_entity_1.NotificationType.COMMENT, { postId: post.id, fromUserId: userId, reaction: type });
+            }
+            catch { }
+        }
+        return this.aggregate(postId);
+    }
+    async aggregate(postId, viewerId) {
+        if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(postId)) {
+            return { total: 0, breakdown: {}, mine: null };
+        }
+        const rows = await this.reactionsRepo.find({ where: { postId } });
+        const breakdown = {};
+        let mine = null;
+        for (const r of rows) {
+            breakdown[r.type] = (breakdown[r.type] || 0) + 1;
+            if (viewerId && r.userId === viewerId)
+                mine = r.type;
+        }
+        return { total: rows.length, breakdown, mine };
+    }
+    async aggregateBulk(postIds, viewerId) {
+        if (postIds.length === 0)
+            return {};
+        const rows = await this.reactionsRepo.find({ where: { postId: (0, typeorm_2.In)(postIds) } });
+        const out = {};
+        for (const id of postIds)
+            out[id] = { total: 0, breakdown: {}, mine: null };
+        for (const r of rows) {
+            const bucket = out[r.postId];
+            if (!bucket)
+                continue;
+            bucket.total++;
+            bucket.breakdown[r.type] = (bucket.breakdown[r.type] || 0) + 1;
+            if (viewerId && r.userId === viewerId)
+                bucket.mine = r.type;
+        }
+        return out;
+    }
+    async listComments(postId, viewerId) {
         if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(postId)) {
             return [];
         }
@@ -34,37 +229,115 @@ let PostsService = class PostsService {
             where: { postId },
             order: { createdAt: 'ASC' },
         });
-        return rows.map((c) => ({
+        let myLikes = new Set();
+        if (viewerId && rows.length > 0) {
+            const likes = await this.commentLikesRepo.find({
+                where: { userId: viewerId, commentId: (0, typeorm_2.In)(rows.map(r => r.id)) },
+            });
+            myLikes = new Set(likes.map(l => l.commentId));
+        }
+        const shape = (c) => ({
             id: c.id,
             postId: c.postId,
             body: c.body,
-            upvotes: c.upvotes,
+            parentId: c.parentId || null,
+            likeCount: c.likeCount || 0,
+            replyCount: c.replyCount || 0,
+            likedByMe: myLikes.has(c.id),
             createdAt: c.createdAt,
             author: c.author ? {
                 id: c.author.id,
                 fullName: c.author.fullName,
                 avatar: c.author.avatar || null,
             } : null,
-        }));
+        });
+        const byId = new Map();
+        const top = [];
+        for (const c of rows) {
+            const v = { ...shape(c), replies: [] };
+            byId.set(c.id, v);
+            if (!c.parentId)
+                top.push(v);
+        }
+        for (const c of rows) {
+            if (c.parentId) {
+                const parent = byId.get(c.parentId);
+                if (parent)
+                    parent.replies.push(byId.get(c.id));
+                else
+                    top.push(byId.get(c.id));
+            }
+        }
+        return top;
     }
-    async addComment(postId, authorId, body) {
+    async addComment(postId, authorId, body, parentId) {
         if (!body || !body.trim())
             throw new common_1.ForbiddenException('Comment cannot be empty');
         const post = await this.postsRepo.findOne({ where: { id: postId } });
         if (!post)
             throw new common_1.NotFoundException('Post not found');
+        let parent = null;
+        if (parentId) {
+            parent = await this.commentsRepo.findOne({ where: { id: parentId, postId } });
+            if (!parent)
+                throw new common_1.NotFoundException('Parent comment not found');
+            if (parent.parentId)
+                parentId = parent.parentId;
+        }
         const saved = await this.commentsRepo.save(this.commentsRepo.create({
             postId, authorId, body: body.trim(),
+            parentId: parentId || null,
         }));
         post.commentCount = (post.commentCount || 0) + 1;
         await this.postsRepo.save(post);
-        if (post.authorId && post.authorId !== authorId) {
+        if (parent) {
+            parent.replyCount = (parent.replyCount || 0) + 1;
+            await this.commentsRepo.save(parent);
+        }
+        const notifyTargets = new Set();
+        if (post.authorId && post.authorId !== authorId)
+            notifyTargets.add(post.authorId);
+        if (parent && parent.authorId && parent.authorId !== authorId)
+            notifyTargets.add(parent.authorId);
+        for (const targetId of notifyTargets) {
             try {
-                await this.notifications.create(post.authorId, 'New comment', `Someone commented on "${post.title}"`, notification_entity_1.NotificationType.COMMENT, { postId: post.id, fromUserId: authorId });
+                await this.notifications.create(targetId, parent ? 'New reply' : 'New comment', parent
+                    ? `Someone replied to your comment on "${post.title}"`
+                    : `Someone commented on "${post.title}"`, notification_entity_1.NotificationType.COMMENT, { postId: post.id, commentId: saved.id, fromUserId: authorId });
             }
             catch { }
         }
         return saved;
+    }
+    async toggleCommentLike(commentId, userId) {
+        const comment = await this.commentsRepo.findOne({ where: { id: commentId } });
+        if (!comment)
+            throw new common_1.NotFoundException('Comment not found');
+        const existing = await this.commentLikesRepo.findOne({ where: { commentId, userId } });
+        let liked;
+        if (existing) {
+            await this.commentLikesRepo.delete({ commentId, userId });
+            comment.likeCount = Math.max(0, (comment.likeCount || 0) - 1);
+            liked = false;
+        }
+        else {
+            await this.commentLikesRepo.save(this.commentLikesRepo.create({ commentId, userId }));
+            comment.likeCount = (comment.likeCount || 0) + 1;
+            liked = true;
+        }
+        await this.commentsRepo.save(comment);
+        if (liked && comment.authorId && comment.authorId !== userId) {
+            try {
+                await this.notifications.create(comment.authorId, 'Comment liked', `Someone liked your comment`, notification_entity_1.NotificationType.COMMENT, { postId: comment.postId, commentId, fromUserId: userId });
+            }
+            catch { }
+        }
+        return { liked, likeCount: comment.likeCount };
+    }
+    async trackView(postId) {
+        if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(postId))
+            return;
+        await this.postsRepo.increment({ id: postId }, 'viewCount', 1);
     }
     async create(authorId, data) {
         const post = this.postsRepo.create({
@@ -155,8 +428,17 @@ exports.PostsService = PostsService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(post_entity_1.Post)),
     __param(1, (0, typeorm_1.InjectRepository)(comment_entity_1.Comment)),
+    __param(2, (0, typeorm_1.InjectRepository)(comment_like_entity_1.CommentLike)),
+    __param(3, (0, typeorm_1.InjectRepository)(post_reaction_entity_1.PostReaction)),
+    __param(4, (0, typeorm_1.InjectRepository)(saved_post_entity_1.SavedPost)),
+    __param(5, (0, typeorm_1.InjectRepository)(user_entity_1.User)),
     __metadata("design:paramtypes", [typeorm_2.Repository,
         typeorm_2.Repository,
-        notifications_service_1.NotificationsService])
+        typeorm_2.Repository,
+        typeorm_2.Repository,
+        typeorm_2.Repository,
+        typeorm_2.Repository,
+        notifications_service_1.NotificationsService,
+        badges_service_1.BadgesService])
 ], PostsService);
 //# sourceMappingURL=posts.service.js.map

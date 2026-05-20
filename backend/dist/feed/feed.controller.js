@@ -69,6 +69,9 @@ let FeedController = class FeedController {
     stories(limit) {
         return this.feed.stories(limit ? Number(limit) : 12);
     }
+    trending(limit) {
+        return this.feed.trendingHashtags(limit ? Number(limit) : 8);
+    }
 };
 exports.FeedController = FeedController;
 __decorate([
@@ -124,6 +127,15 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], FeedController.prototype, "stories", null);
+__decorate([
+    (0, common_1.Get)('trending-hashtags'),
+    (0, swagger_1.ApiOperation)({ summary: 'Top hashtags across recent posts + reviews' }),
+    (0, swagger_1.ApiQuery)({ name: 'limit', required: false }),
+    __param(0, (0, common_1.Query)('limit')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], FeedController.prototype, "trending", null);
 exports.FeedController = FeedController = __decorate([
     (0, swagger_1.ApiTags)('feed'),
     (0, common_1.Controller)('feed'),

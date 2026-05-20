@@ -9,6 +9,15 @@ export declare class MediaController {
         bucket: string;
         size: number;
     }>;
+    uploadDataUrl(body: {
+        dataUrl: string;
+        folder?: string;
+    }): Promise<{
+        success: boolean;
+        url: string;
+        key: string;
+        bucket: string;
+    }>;
     uploadFiles(files: Express.Multer.File[], folder?: string): Promise<{
         success: boolean;
         url: string;

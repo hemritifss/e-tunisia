@@ -33,6 +33,15 @@ let MediaController = class MediaController {
             size: file.size,
         };
     }
+    async uploadDataUrl(body) {
+        const result = await this.storageService.uploadDataUrl(body.dataUrl, body.folder || 'uploads');
+        return {
+            success: true,
+            url: result.url,
+            key: result.key,
+            bucket: result.bucket,
+        };
+    }
     async uploadFiles(files, folder) {
         const uploads = await Promise.all(files.map((file) => this.storageService.uploadFile(file.buffer, file.originalname, folder || 'uploads', file.mimetype)));
         return uploads.map((result, index) => ({
@@ -65,6 +74,24 @@ __decorate([
     __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", Promise)
 ], MediaController.prototype, "uploadFile", null);
+__decorate([
+    (0, common_1.Post)('from-data-url'),
+    (0, common_2.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBody)({
+        schema: {
+            type: 'object',
+            properties: {
+                dataUrl: { type: 'string' },
+                folder: { type: 'string', default: 'uploads' },
+            },
+            required: ['dataUrl'],
+        },
+    }),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], MediaController.prototype, "uploadDataUrl", null);
 __decorate([
     (0, common_1.Post)('upload-multiple'),
     (0, common_2.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),

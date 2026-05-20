@@ -20,6 +20,7 @@ var CreditTxKind;
     CreditTxKind["DONATION_IN"] = "donation_in";
     CreditTxKind["PLATFORM_FEE"] = "platform_fee";
     CreditTxKind["REFUND"] = "refund";
+    CreditTxKind["BOOST"] = "boost";
 })(CreditTxKind || (exports.CreditTxKind = CreditTxKind = {}));
 let CreditTransaction = class CreditTransaction {
 };

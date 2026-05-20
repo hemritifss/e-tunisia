@@ -136,6 +136,44 @@ let FeedService = class FeedService {
             meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
         };
     }
+    async trendingHashtags(limit = 8) {
+        const lim = Math.max(1, Math.min(30, limit));
+        const days = 30;
+        const [postsRes, reviewsRes] = await Promise.all([
+            this.posts.list({ page: 1, limit: 200, sort: 'new' }).catch(() => ({ data: [] })),
+            this.reviews.findFeed({ page: 1, limit: 200, sort: 'new' }).catch(() => ({ data: [] })),
+        ]);
+        const items = [...(postsRes.data || []), ...(reviewsRes.data || [])];
+        const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
+        const counts = new Map();
+        const TAG_RE = /#([\p{L}\p{N}_]{2,40})/gu;
+        for (const item of items) {
+            const at = new Date(item.createdAt).getTime();
+            if (!Number.isFinite(at) || at < cutoff)
+                continue;
+            const blob = `${item.title || ''} ${item.body || ''}`;
+            let m;
+            while ((m = TAG_RE.exec(blob)) !== null) {
+                const raw = m[1];
+                const key = raw.toLowerCase();
+                const prev = counts.get(key);
+                if (prev) {
+                    prev.count++;
+                    if (at > prev.lastAt) {
+                        prev.lastAt = at;
+                        prev.original = raw;
+                    }
+                }
+                else {
+                    counts.set(key, { count: 1, original: raw, lastAt: at });
+                }
+            }
+        }
+        return Array.from(counts.entries())
+            .sort((a, b) => b[1].count - a[1].count || b[1].lastAt - a[1].lastAt)
+            .slice(0, lim)
+            .map(([key, v]) => ({ tag: key, display: v.original, count: v.count }));
+    }
     async stories(limit = 12) {
         const placesPage = await this.places
             .findAll({ limit, featured: 'true', sortBy: 'rating', order: 'DESC' })

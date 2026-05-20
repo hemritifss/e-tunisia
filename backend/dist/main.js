@@ -55,6 +55,19 @@ async function bootstrap() {
     app.useGlobalFilters(new http_exception_filter_1.GlobalExceptionFilter());
     app.useGlobalInterceptors(new transform_interceptor_1.TransformInterceptor(), new logging_interceptor_1.LoggingInterceptor());
     app.use('/uploads', express.static((0, path_1.join)(__dirname, '..', 'uploads')));
+    try {
+        const { createProxyMiddleware } = await Promise.resolve().then(() => require('http-proxy-middleware'));
+        const s3Endpoint = process.env.S3_ENDPOINT || 'http://localhost:9000';
+        const s3Bucket = process.env.S3_BUCKET || 'etunisia';
+        app.use('/uploads', createProxyMiddleware({
+            target: s3Endpoint,
+            changeOrigin: true,
+            pathRewrite: (path) => `/${s3Bucket}${path}`,
+        }));
+    }
+    catch (e) {
+        console.warn('Could not mount /uploads → MinIO proxy:', e?.message);
+    }
     const config = new swagger_1.DocumentBuilder()
         .setTitle('e-Tunisia API')
         .setDescription('The ultimate platform for discovering Tunisia — culture, cuisine, nature & hidden gems. Expedia + Reddit + TikTok combined.')
@@ -97,6 +110,18 @@ async function bootstrap() {
     console.log(`🇹🇳 e-Tunisia API running on http://localhost:${port}`);
     console.log(`📚 Swagger docs: http://localhost:${port}/api/docs`);
     console.log(`❤️ Health check: http://localhost:${port}/health`);
+    try {
+        const { DataSource } = await Promise.resolve().then(() => require('typeorm'));
+        const ds = app.get(DataSource);
+        const { backfillHandles } = await Promise.resolve().then(() => require('./users/backfill-handles'));
+        const { User } = await Promise.resolve().then(() => require('./users/user.entity'));
+        const n = await backfillHandles(ds.getRepository(User));
+        if (n > 0)
+            console.log(`[backfill] assigned handle to ${n} legacy users`);
+    }
+    catch (e) {
+        console.warn('[backfill] handle backfill skipped:', e.message);
+    }
 }
 bootstrap();
 //# sourceMappingURL=main.js.map
