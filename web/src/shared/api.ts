@@ -184,6 +184,29 @@ export const api = {
     fetchWithAuth(`/api/v1/posts/${postId}/save`, { method: 'POST' }),
   unsavePost: (postId: string) =>
     fetchWithAuth(`/api/v1/posts/${postId}/save`, { method: 'DELETE' }),
+  // ── Passport ──────────────────────────────────────────────────
+  getPassport: (handle: string) =>
+    fetchWithAuth(`/api/v1/users/by-handle/${encodeURIComponent(handle)}`),
+  checkHandle: (h: string) =>
+    fetchWithAuth(`/api/v1/users/handle-available?h=${encodeURIComponent(h)}`),
+  getPassportOgUrl: (handle: string, version?: string | number) => {
+    const v = version ? `?v=${encodeURIComponent(String(version))}` : '';
+    return `/api/v1/users/by-handle/${encodeURIComponent(handle)}/og.png${v}`;
+  },
+  seedPassport: (draft: { visitedCities?: string[]; interests?: string[] }) =>
+    fetchWithAuth('/api/v1/users/me/seed', {
+      method: 'POST',
+      body: JSON.stringify(draft),
+    }),
+  getTripsByHandle: (handle: string) =>
+    fetchWithAuth(`/api/v1/trips/by-handle/${encodeURIComponent(handle)}`),
+  getReviewsByHandle: (handle: string) =>
+    fetchWithAuth(`/api/v1/reviews/by-handle/${encodeURIComponent(handle)}`),
+  getSavesByHandle: (handle: string, params?: { page?: number; limit?: number }) => {
+    const qs = params ? '?' + new URLSearchParams(Object.entries(params).map(([k, v]) => [k, String(v)])).toString() : '';
+    return fetchWithAuth(`/api/v1/posts/saved-by-handle/${encodeURIComponent(handle)}${qs}`);
+  },
+
   // Public trip discovery
   getTripsDiscover: (params?: { sort?: 'popular' | 'new'; limit?: number; city?: string }) => {
     const qs = params ? '?' + new URLSearchParams(
