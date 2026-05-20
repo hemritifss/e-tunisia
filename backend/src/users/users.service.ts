@@ -198,6 +198,51 @@ export class UsersService {
     }
 
     /**
+     * Search users by handle prefix or fullName substring. Public-safe shape.
+     * Returns up to `limit` matches sorted by points DESC then fullName ASC.
+     */
+    async searchUsers(query: string, limit = 12) {
+        const q = (query || '').trim();
+        if (q.length < 1) return [];
+        const safe = q.replace(/[%_]/g, (m) => `\\${m}`);
+        const handlePrefix = `${safe.toLowerCase()}%`;
+        const nameNeedle = `%${safe}%`;
+        const lim = Math.min(50, Math.max(1, limit));
+
+        const rows = await this.usersRepository
+            .createQueryBuilder('u')
+            .where('LOWER(u.handle) LIKE :hp', { hp: handlePrefix })
+            .orWhere('u.fullName ILIKE :nn', { nn: nameNeedle })
+            .orderBy('u.points', 'DESC')
+            .addOrderBy('u.fullName', 'ASC')
+            .limit(lim)
+            .getMany()
+            .catch(async () => {
+                // SQLite / MySQL fallback (no ILIKE): use LOWER + LIKE.
+                return this.usersRepository
+                    .createQueryBuilder('u')
+                    .where('LOWER(u.handle) LIKE :hp', { hp: handlePrefix })
+                    .orWhere('LOWER(u.fullName) LIKE :nn', { nn: nameNeedle.toLowerCase() })
+                    .orderBy('u.points', 'DESC')
+                    .addOrderBy('u.fullName', 'ASC')
+                    .limit(lim)
+                    .getMany();
+            });
+
+        return rows.map((u: any) => ({
+            id: u.id,
+            handle: u.handle ?? null,
+            fullName: u.fullName,
+            avatar: u.avatar || null,
+            country: u.country || null,
+            bio: u.bio ? u.bio.slice(0, 120) : null,
+            points: u.points || 0,
+            role: u.role,
+            followersCount: u.followersCount || 0,
+        }));
+    }
+
+    /**
      * Cities (with at least one review) for the leaderboard city picker.
      * Sorted by total review activity DESC. Public surface, used by the
      * frontend leaderboard page dropdown.

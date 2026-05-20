@@ -10,7 +10,7 @@ import { SignupGate } from '../components/SignupGate';
 import { PassportOnboarding } from '../components/PassportOnboarding';
 import { FollowList } from '../components/FollowList';
 import { EndorseModal, TopEndorsementsStrip } from '../components/EndorseModal';
-import { Award, Trophy, Sparkles } from 'lucide-react';
+import { Award, Trophy, Sparkles, X } from 'lucide-react';
 import { Pencil, UserPlus, UserCheck } from 'lucide-react';
 
 function handleFromHash(): string {
@@ -155,6 +155,8 @@ export default function PassportPage() {
                 </div>
             </section>
 
+            {isOwner && <ProfileCompletion passport={p} />}
+
             {p.topEndorsements?.length > 0 && (
                 <section className="passport-section passport-section-tight">
                     <TopEndorsementsStrip topEndorsements={p.topEndorsements} />
@@ -224,6 +226,56 @@ function setMeta(name: string, content: string) {
         document.head.appendChild(el);
     }
     el.setAttribute('content', content);
+}
+
+interface ProfileCompletionField { label: string; done: boolean; cta?: string; href?: string; }
+
+function ProfileCompletion({ passport }: { passport: any }) {
+    const fields: ProfileCompletionField[] = [
+        { label: 'Add an avatar', done: !!passport.avatar, cta: 'Upload', href: '#/profile-edit' },
+        { label: 'Write a bio', done: !!passport.bio && passport.bio.length > 10, cta: 'Add bio', href: '#/profile-edit' },
+        { label: 'Set your country', done: !!passport.country, cta: 'Add country', href: '#/profile-edit' },
+        { label: 'Pick at least 3 interests', done: (passport.interests?.length || 0) >= 3, cta: 'Choose', href: '#/profile-edit' },
+        { label: 'Plan your first trip', done: passport.stats?.tripsPlanned > 0, cta: 'Plan', href: '#/explore' },
+        { label: 'Mark a place visited', done: passport.stats?.citiesVisited > 0, cta: 'Explore', href: '#/explore' },
+    ];
+    const done = fields.filter((f) => f.done).length;
+    const pct = Math.round((done / fields.length) * 100);
+    const [dismissed, setDismissed] = useState(() => localStorage.getItem('passport-completion-dismissed') === '1');
+
+    if (pct === 100 || dismissed) return null;
+
+    const next = fields.find((f) => !f.done);
+
+    return (
+        <section className="passport-completion">
+            <div className="passport-completion-head">
+                <div>
+                    <strong>Your passport is {pct}% complete</strong>
+                    <span>The more you fill in, the more people discover you.</span>
+                </div>
+                <button
+                    className="passport-completion-dismiss"
+                    aria-label="Dismiss"
+                    onClick={() => { localStorage.setItem('passport-completion-dismissed', '1'); setDismissed(true); }}
+                >
+                    <X size={16} />
+                </button>
+            </div>
+            <div className="passport-completion-bar"><span style={{ width: `${pct}%` }} /></div>
+            <ul className="passport-completion-list">
+                {fields.map((f) => (
+                    <li key={f.label} className={f.done ? 'done' : ''}>
+                        <span className="passport-completion-check">{f.done ? '✓' : ''}</span>
+                        <span className="passport-completion-label">{f.label}</span>
+                        {!f.done && f.href && next === f && (
+                            <a className="btn ghost sm passport-completion-cta" href={f.href}>{f.cta} →</a>
+                        )}
+                    </li>
+                ))}
+            </ul>
+        </section>
+    );
 }
 
 function LocalGuideButton({ onPromoted }: { onPromoted?: () => void }) {

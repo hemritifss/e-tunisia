@@ -40,6 +40,12 @@ export class UsersController {
         return this.usersService.findById(req.user.id);
     }
 
+    /** Public: search users by handle prefix or fullName substring. */
+    @Get('search')
+    searchUsers(@Query('q') q: string, @Query('limit') limit?: string) {
+        return this.usersService.searchUsers(q || '', limit ? Number(limit) : 12);
+    }
+
     /** Public: live availability check used by the signup form. */
     @Get('handle-available')
     async handleAvailable(@Query('h') h: string): Promise<{ available: boolean; reason?: string }> {

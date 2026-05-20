@@ -64,25 +64,143 @@ async function doSearch(q: string, container: HTMLElement) {
     return;
   }
 
-  container.innerHTML = `<div class="text-muted text-center" style="padding:var(--space-4);">Searching…</div>`;
-  let res: { places: any[] } = { places: [] };
-  try { res = await api.search(query); } catch {}
+  // Loading state (text-only, no untrusted interpolation)
+  container.textContent = '';
+  const loader = document.createElement('div');
+  loader.className = 'text-muted text-center';
+  loader.style.padding = 'var(--space-4)';
+  loader.textContent = 'Searching…';
+  container.appendChild(loader);
 
-  if (!res.places.length) {
-    container.innerHTML = `<div class="empty-state" style="padding:var(--space-8);"><i class="lucide-search-x" style="font-size:2.5rem;color:var(--text-muted);"></i><h3>No matches for “${escapeHtml(query)}”</h3><p>Try a different city or tag.</p></div>`;
-    replaceIcons(container);
+  // Places + people in parallel — neither blocks the other.
+  const [placesRes, peopleRes] = await Promise.all([
+    api.search(query).catch(() => ({ places: [] as any[] })),
+    fetch(`/api/v1/users/search?q=${encodeURIComponent(query)}&limit=12`)
+      .then((r) => r.json())
+      .then((r) => (Array.isArray(r) ? r : r?.data ?? []))
+      .catch(() => [] as any[]),
+  ]);
+  const places = placesRes?.places || [];
+  const people: any[] = peopleRes || [];
+
+  container.textContent = '';
+
+  if (!places.length && !people.length) {
+    renderEmptyState(container, query);
     return;
   }
 
-  container.innerHTML = `
-    <section class="search-section">
-      <h3 class="search-section-title">Places <span class="text-muted">(${res.places.length})</span></h3>
-      <div class="search-place-grid">
-        ${res.places.map(renderPlaceTile).join('')}
-      </div>
-    </section>
-  `;
+  if (people.length) container.appendChild(buildPeopleSection(people));
+  if (places.length) container.appendChild(buildPlacesSection(places));
   replaceIcons(container);
+}
+
+function renderEmptyState(container: HTMLElement, query: string) {
+  const wrap = document.createElement('div');
+  wrap.className = 'empty-state';
+  wrap.style.padding = 'var(--space-8)';
+  const icon = document.createElement('i');
+  icon.className = 'lucide-search-x';
+  icon.style.fontSize = '2.5rem';
+  icon.style.color = 'var(--text-muted)';
+  const h3 = document.createElement('h3');
+  h3.textContent = `No matches for "${query}"`;
+  const p = document.createElement('p');
+  p.textContent = 'Try a different city, tag, or handle.';
+  wrap.append(icon, h3, p);
+  container.appendChild(wrap);
+  replaceIcons(container);
+}
+
+function buildPeopleSection(people: any[]): HTMLElement {
+  const section = document.createElement('section');
+  section.className = 'search-section';
+  const heading = document.createElement('h3');
+  heading.className = 'search-section-title';
+  heading.append('People ');
+  const meta = document.createElement('span');
+  meta.className = 'text-muted';
+  meta.textContent = `(${people.length})`;
+  heading.appendChild(meta);
+  section.appendChild(heading);
+  const list = document.createElement('div');
+  list.className = 'search-people-list';
+  people.forEach((u) => list.appendChild(buildPersonCard(u)));
+  section.appendChild(list);
+  return section;
+}
+
+function buildPersonCard(u: any): HTMLAnchorElement {
+  const card = document.createElement('a');
+  card.className = 'search-person-card';
+  card.href = u.handle ? `#/u/${encodeURIComponent(u.handle)}` : '#';
+
+  const img = document.createElement('img');
+  img.alt = u.fullName || 'Traveler';
+  img.loading = 'lazy';
+  img.src = u.avatar
+    ? api.getImageUrl(u.avatar, 'avatar')
+    : `https://api.dicebear.com/9.x/thumbs/svg?seed=${encodeURIComponent(u.fullName || u.handle || 'u')}`;
+  card.appendChild(img);
+
+  const meta = document.createElement('div');
+  meta.className = 'search-person-meta';
+  const nameLine = document.createElement('strong');
+  nameLine.textContent = u.fullName || 'Traveler';
+  if (u.role === 'creator') {
+    nameLine.append(' ');
+    const guide = document.createElement('span');
+    guide.className = 'search-person-guide';
+    guide.title = 'Local Guide';
+    guide.textContent = '✓';
+    nameLine.appendChild(guide);
+  }
+  meta.appendChild(nameLine);
+
+  const sub = document.createElement('span');
+  sub.className = 'text-xs text-muted';
+  const handlePart = u.handle ? `@${u.handle}` : '';
+  const countryPart = u.country ? ` · ${u.country}` : '';
+  sub.textContent = `${handlePart}${countryPart}`.trim() || ' ';
+  meta.appendChild(sub);
+
+  if (u.bio) {
+    const bio = document.createElement('span');
+    bio.className = 'search-person-bio text-xs';
+    bio.textContent = u.bio;
+    meta.appendChild(bio);
+  }
+  card.appendChild(meta);
+
+  const followers = document.createElement('span');
+  followers.className = 'search-person-followers text-xs text-muted';
+  const icon = document.createElement('i');
+  icon.className = 'lucide-users';
+  icon.style.fontSize = '.7rem';
+  followers.append(icon, ` ${u.followersCount || 0}`);
+  card.appendChild(followers);
+
+  return card;
+}
+
+function buildPlacesSection(places: any[]): HTMLElement {
+  const section = document.createElement('section');
+  section.className = 'search-section';
+  const heading = document.createElement('h3');
+  heading.className = 'search-section-title';
+  heading.append('Places ');
+  const meta = document.createElement('span');
+  meta.className = 'text-muted';
+  meta.textContent = `(${places.length})`;
+  heading.appendChild(meta);
+  section.appendChild(heading);
+  const grid = document.createElement('div');
+  grid.className = 'search-place-grid';
+  const tpl = document.createElement('template');
+  tpl.innerHTML = places.map(renderPlaceTile).join('');
+  grid.appendChild(tpl.content.cloneNode(true));
+  section.appendChild(grid);
+  return section;
 }
 
 function renderPlaceTile(p: any): string {
