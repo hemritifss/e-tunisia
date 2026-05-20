@@ -13416,9 +13416,30 @@ section[class^="hero-"] {
 .passport-followmeta { margin-top: 8px; font-size: 13px; align-items: baseline; }
 .passport-followmeta strong { font-size: 14px; }
 .passport-followmeta-sep { opacity: 0.5; padding: 0 2px; }
+.passport-followmeta-btn { background: transparent; border: none; color: inherit; cursor: pointer; padding: 2px 4px; font-size: 13px; transition: opacity 120ms; }
+.passport-followmeta-btn:hover { opacity: 0.75; text-decoration: underline; }
 .passport-follow-btn { transition: background 120ms, color 120ms; min-width: 110px; justify-content: center; }
 .passport-follow-btn[aria-pressed="true"] { background: rgba(255,255,255,0.10) !important; }
 .passport-follow-btn:disabled { opacity: 0.7; cursor: progress; }
+
+.follow-list-sheet { max-height: min(70vh, 600px); display: flex; flex-direction: column; }
+.follow-list { list-style: none; padding: 0; margin: 8px 0 0; overflow-y: auto; flex: 1; }
+.follow-list-row { display: flex; align-items: center; gap: 12px; padding: 10px 6px; border-radius: 10px; text-decoration: none; color: inherit; transition: background 120ms; }
+.follow-list-row:hover { background: rgba(0,0,0,0.04); }
+.follow-list-row img, .follow-list-avatar-fallback {
+    width: 40px; height: 40px; border-radius: 50%; object-fit: cover;
+    flex-shrink: 0;
+    background: rgba(26,58,115,0.15);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; color: #1a3a73;
+}
+.follow-list-meta { display: flex; flex-direction: column; min-width: 0; }
+.follow-list-meta strong { color: var(--text, #1a1a1a); font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.follow-list-meta span { color: var(--text-muted, #9aa0a6); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (prefers-color-scheme: dark) {
+    .follow-list-row:hover { background: rgba(255,255,255,0.06); }
+    .follow-list-meta strong { color: #e8eaed; }
+}
 
 /* Signup Gate modal */
 .signup-gate-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 16px; backdrop-filter: blur(4px); }

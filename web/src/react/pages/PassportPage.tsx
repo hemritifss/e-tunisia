@@ -8,6 +8,7 @@ import { SharePassport } from '../components/SharePassport';
 import { PassportTabs } from '../components/PassportTabs';
 import { SignupGate } from '../components/SignupGate';
 import { PassportOnboarding } from '../components/PassportOnboarding';
+import { FollowList } from '../components/FollowList';
 import { Pencil, UserPlus, UserCheck } from 'lucide-react';
 
 function handleFromHash(): string {
@@ -40,6 +41,7 @@ export default function PassportPage() {
 
     const [signupOpen, setSignupOpen] = useState(false);
     const [onboardingUser, setOnboardingUser] = useState<{ handle: string; fullName: string } | null>(null);
+    const [followListMode, setFollowListMode] = useState<'followers' | 'following' | null>(null);
 
     const { data, isLoading, error, refetch } = useQuery({
         queryKey: ['passport', handle],
@@ -113,9 +115,13 @@ export default function PassportPage() {
                                 {p.role === 'creator' && <span className="passport-verified">✓ Local Guide</span>}
                             </div>
                             <div className="passport-meta passport-followmeta">
-                                <strong>{p.followersCount ?? 0}</strong> followers
+                                <button type="button" className="passport-followmeta-btn" onClick={() => setFollowListMode('followers')}>
+                                    <strong>{p.followersCount ?? 0}</strong> followers
+                                </button>
                                 <span className="passport-followmeta-sep">·</span>
-                                <strong>{p.followingCount ?? 0}</strong> following
+                                <button type="button" className="passport-followmeta-btn" onClick={() => setFollowListMode('following')}>
+                                    <strong>{p.followingCount ?? 0}</strong> following
+                                </button>
                             </div>
                             {p.bio && <p className="passport-bio">{p.bio}</p>}
                         </div>
@@ -155,6 +161,10 @@ export default function PassportPage() {
             </section>
 
             {isAnon && <AnonPill onClaim={() => setSignupOpen(true)} />}
+
+            {followListMode && (
+                <FollowList handle={p.handle} mode={followListMode} onClose={() => setFollowListMode(null)} />
+            )}
 
             <SignupGate
                 open={signupOpen}

@@ -11,9 +11,10 @@ import { FollowsService } from './follows.service';
 import { UsersController } from './users.controller';
 import { BadgesModule } from '../badges/badges.module';
 import { OgModule } from '../og/og.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, Follow, Review, Place, TripPlan, SavedPost]), BadgesModule, OgModule],
+  imports: [TypeOrmModule.forFeature([User, Follow, Review, Place, TripPlan, SavedPost]), BadgesModule, OgModule, NotificationsModule],
   providers: [UsersService, FollowsService],
   controllers: [UsersController],
   exports: [UsersService, FollowsService],

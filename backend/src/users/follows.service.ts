@@ -4,6 +4,8 @@ import { DataSource, Repository } from 'typeorm';
 import { User } from './user.entity';
 import { Follow } from './follow.entity';
 import { UsersService } from './users.service';
+import { NotificationsService } from '../notifications/notifications.service';
+import { NotificationType } from '../notifications/notification.entity';
 
 @Injectable()
 export class FollowsService {
@@ -11,6 +13,7 @@ export class FollowsService {
         @InjectRepository(Follow) private followsRepo: Repository<Follow>,
         @InjectRepository(User) private usersRepo: Repository<User>,
         @Inject(forwardRef(() => UsersService)) private users: UsersService,
+        private notifications: NotificationsService,
         private dataSource: DataSource,
     ) {}
 
@@ -42,6 +45,23 @@ export class FollowsService {
 
         await this.users.invalidatePassportCache(followed.id);
         await this.users.invalidatePassportCache(followerId);
+
+        // Notify the followed user. Best-effort — never block the follow on a notif failure.
+        try {
+            const follower = await this.usersRepo.findOne({
+                where: { id: followerId },
+                select: ['id', 'fullName', 'handle', 'avatar'] as any,
+            });
+            if (follower) {
+                await this.notifications.create(
+                    followed.id,
+                    `${follower.fullName} started following you`,
+                    `@${follower.handle ?? 'someone'} is now on your follower list.`,
+                    NotificationType.FOLLOW,
+                    { followerId: follower.id, followerHandle: follower.handle, followerAvatar: follower.avatar },
+                );
+            }
+        } catch {}
 
         const fresh = await this.usersRepo.findOne({ where: { id: followed.id }, select: ['followersCount'] });
         return { following: true, followersCount: fresh?.followersCount ?? followed.followersCount + 1 };
