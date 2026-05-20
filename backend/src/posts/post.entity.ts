@@ -47,6 +47,9 @@ export class Post {
     @Column({ default: 0 })
     commentCount: number;
 
+    @Column({ default: 0 })
+    viewCount: number;
+
     @Column({ default: false })
     isPinned: boolean;
 
