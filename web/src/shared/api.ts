@@ -228,6 +228,8 @@ export const api = {
     fetchWithAuth(`/api/v1/users/by-handle/${encodeURIComponent(handle)}/endorsements`),
   applyLocalGuide: () =>
     fetchWithAuth('/api/v1/users/me/apply-local-guide', { method: 'POST' }),
+  getFollowingActivity: (limit = 20) =>
+    fetchWithAuth(`/api/v1/users/me/activity-feed?limit=${limit}`),
 
   // Public trip discovery
   getTripsDiscover: (params?: { sort?: 'popular' | 'new'; limit?: number; city?: string }) => {

@@ -18,6 +18,7 @@ import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard';
 import { UsersService } from './users.service';
 import { FollowsService } from './follows.service';
 import { EndorsementsService } from './endorsements.service';
+import { ActivityService } from './activity.service';
 import { ENDORSEMENT_TOPICS } from './endorsement-topics';
 import { OgService } from '../og/og.service';
 
@@ -28,6 +29,7 @@ export class UsersController {
         private usersService: UsersService,
         private followsService: FollowsService,
         private endorsementsService: EndorsementsService,
+        private activityService: ActivityService,
         private ogService: OgService,
     ) { }
 
@@ -165,6 +167,14 @@ export class UsersController {
     @Post('me/apply-local-guide')
     applyLocalGuide(@Request() req) {
         return this.usersService.applyLocalGuide(req.user.id);
+    }
+
+    /** Recent activity from users you follow (reviews, trips, endorsements, follows). */
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    @Get('me/activity-feed')
+    activityFeed(@Request() req, @Query('limit') limit?: string) {
+        return this.activityService.followingFeed(req.user.id, limit ? Number(limit) : 20);
     }
 
     @UseGuards(JwtAuthGuard)

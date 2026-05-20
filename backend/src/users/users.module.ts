@@ -10,6 +10,7 @@ import { SavedPost } from '../posts/saved-post.entity';
 import { UsersService } from './users.service';
 import { FollowsService } from './follows.service';
 import { EndorsementsService } from './endorsements.service';
+import { ActivityService } from './activity.service';
 import { UsersController } from './users.controller';
 import { BadgesModule } from '../badges/badges.module';
 import { OgModule } from '../og/og.module';
@@ -17,8 +18,8 @@ import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
   imports: [TypeOrmModule.forFeature([User, Follow, Endorsement, Review, Place, TripPlan, SavedPost]), BadgesModule, OgModule, NotificationsModule],
-  providers: [UsersService, FollowsService, EndorsementsService],
+  providers: [UsersService, FollowsService, EndorsementsService, ActivityService],
   controllers: [UsersController],
-  exports: [UsersService, FollowsService, EndorsementsService],
+  exports: [UsersService, FollowsService, EndorsementsService, ActivityService],
 })
 export class UsersModule {}

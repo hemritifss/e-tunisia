@@ -9,6 +9,7 @@ import ExplorePage from './react/pages/ExplorePage';
 import AITravelPlanner from './react/pages/AITravelPlanner';
 import ChallengesPage from './react/pages/ChallengesPage';
 import PassportPage from './react/pages/PassportPage';
+import ActivityFeedPage from './react/pages/ActivityFeedPage';
 
 // Vanilla pages
 import { renderFeedPage, initFeedPage } from './pages/feed';
@@ -66,7 +67,7 @@ function getRoute(hash: string): Route {
 
   // --- Auth Guard ---
   // Routes that REQUIRE login (personal data). Everything else is browsable as guest.
-  const authRequiredPrefixes = ['/profile', '/favorites', '/saved', '/inquiries', '/owner', '/settings', '/badges', '/leaderboard', '/credits', '/messages'];
+  const authRequiredPrefixes = ['/profile', '/favorites', '/saved', '/inquiries', '/owner', '/settings', '/badges', '/leaderboard', '/credits', '/messages', '/activity'];
   const authOnlyHome = path === '/';
   const requiresAuth = authOnlyHome || authRequiredPrefixes.some(p => path === p || path.startsWith(p + '/'));
   const heroOnlyRoutes = ['/login', '/register'];
@@ -121,6 +122,11 @@ function getRoute(hash: string): Route {
   const passportMatch = path.match(/^\/u\/([a-z0-9_]{3,30})/i);
   if (passportMatch) {
     return { render: () => '', init: () => {}, page: 'passport', isReact: true };
+  }
+
+  // Following activity feed (authed) — React island
+  if (path === '/activity') {
+    return { render: () => '', init: () => {}, page: 'activity', isReact: true };
   }
 
   // Public user profile (uuid)
@@ -238,6 +244,8 @@ function navigate() {
         currentUnmount = mountIsland(ChallengesPage, islandRoot);
       } else if (/^\/u\/[a-z0-9_]{3,30}/i.test(path)) {
         currentUnmount = mountIsland(PassportPage, islandRoot);
+      } else if (path === '/activity') {
+        currentUnmount = mountIsland(ActivityFeedPage, islandRoot);
       }
     }
   } else {

@@ -13451,6 +13451,87 @@ section[class^="hero-"] {
     box-shadow: 0 8px 20px rgba(0,0,0,0.3);
 }
 
+/* ============================================
+   ACTIVITY FEED (following)
+   ============================================ */
+.activity-page { max-width: 720px; margin: 0 auto; padding: 24px 16px 80px; }
+.activity-page-head { margin-bottom: 18px; }
+.activity-page-head h1 { font-size: 24px; margin: 0 0 4px; color: var(--text, #1a1a1a); }
+.activity-page-head p { margin: 0; color: var(--text-muted, #9aa0a6); font-size: 14px; }
+
+.activity-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
+.activity-entry {
+    display: flex; gap: 12px; align-items: flex-start;
+    padding: 14px;
+    background: var(--card-bg, #fff);
+    border: 1px solid var(--border, #e5e7eb);
+    border-radius: 14px;
+    font-size: 14px;
+}
+.activity-entry-icon {
+    display: flex; align-items: center; justify-content: center;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: rgba(212, 98, 58, 0.12);
+    color: #d4623a;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+.activity-entry-review .activity-entry-icon { background: rgba(255,209,102,0.18); color: #b8841a; }
+.activity-entry-trip   .activity-entry-icon { background: rgba(163,113,247,0.18); color: #6e3ee8; }
+.activity-entry-endorse .activity-entry-icon { background: rgba(86,207,225,0.18); color: #1e8aa0; }
+.activity-entry-follow .activity-entry-icon { background: rgba(86,211,100,0.18); color: #1f7a35; }
+
+.activity-avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+.activity-avatar-fallback {
+    background: rgba(26,58,115,0.15); color: #1a3a73;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 13px;
+}
+.activity-entry-body { flex: 1; min-width: 0; color: var(--text, #1a1a1a); line-height: 1.45; }
+.activity-actor-link { color: var(--text, #1a1a1a); font-weight: 600; text-decoration: none; }
+.activity-actor-link:hover { color: #d4623a; }
+.activity-meta { color: var(--text-muted, #9aa0a6); font-size: 12px; margin-left: 6px; display: inline-flex; align-items: center; gap: 3px; }
+.activity-rating { color: #f4c542; margin-left: 6px; letter-spacing: -1px; }
+.activity-snippet {
+    margin: 4px 0 0;
+    color: var(--text-muted, #9aa0a6);
+    font-size: 13px; font-style: italic;
+    border-left: 2px solid var(--border, #e5e7eb);
+    padding-left: 8px;
+}
+.activity-topic-chip {
+    display: inline-flex; align-items: center; gap: 4px;
+    margin-left: 6px;
+    padding: 2px 8px; border-radius: 999px;
+    background: rgba(212,98,58,0.12); color: #d4623a;
+    font-size: 12px;
+}
+.activity-time { display: block; margin-top: 4px; color: var(--text-muted, #9aa0a6); font-size: 11px; }
+
+.activity-skel { display: flex; flex-direction: column; gap: 10px; }
+.activity-skel-row {
+    height: 72px; border-radius: 14px;
+    background: linear-gradient(90deg, #eee 25%, #f5f5f5 50%, #eee 75%);
+    background-size: 200% 100%;
+    animation: passport-shimmer 1.4s infinite;
+}
+
+.activity-empty { text-align: center; padding: 56px 24px; color: var(--text-muted, #9aa0a6); }
+.activity-empty-emoji { font-size: 48px; margin-bottom: 12px; }
+.activity-empty h3 { color: var(--text, #1a1a1a); margin: 0 0 6px; font-size: 18px; }
+.activity-empty p { margin: 0 0 18px; }
+
+@media (prefers-color-scheme: dark) {
+    .activity-entry, .activity-skel-row { background: #1a1d23; border-color: #2a2f37; }
+    .activity-skel-row {
+        background: linear-gradient(90deg, #1a1d23 25%, #20242a 50%, #1a1d23 75%);
+        background-size: 200% 100%;
+    }
+    .activity-entry-body, .activity-page-head h1, .activity-actor-link, .activity-empty h3 { color: #e8eaed; }
+    .activity-snippet { border-left-color: #2a2f37; }
+}
+
 /* Leaderboard tabs + city picker */
 .leaderboard-tabs { display: flex; gap: 6px; margin-top: 16px; flex-wrap: wrap; }
 .leaderboard-tab {
