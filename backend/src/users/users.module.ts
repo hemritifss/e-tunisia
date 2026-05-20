@@ -7,9 +7,10 @@ import { TripPlan } from '../itineraries/trip-plan.entity';
 import { SavedPost } from '../posts/saved-post.entity';
 import { UsersService } from './users.service';
 import { UsersController } from './users.controller';
+import { BadgesModule } from '../badges/badges.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, Review, Place, TripPlan, SavedPost])],
+  imports: [TypeOrmModule.forFeature([User, Review, Place, TripPlan, SavedPost]), BadgesModule],
   providers: [UsersService],
   controllers: [UsersController],
   exports: [UsersService],

@@ -9,9 +9,10 @@ import { User } from '../users/user.entity';
 import { PostsController } from './posts.controller';
 import { PostsService } from './posts.service';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { BadgesModule } from '../badges/badges.module';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([Post, Comment, CommentLike, PostReaction, SavedPost, User]), NotificationsModule],
+    imports: [TypeOrmModule.forFeature([Post, Comment, CommentLike, PostReaction, SavedPost, User]), NotificationsModule, BadgesModule],
     controllers: [PostsController],
     providers: [PostsService],
     exports: [PostsService],

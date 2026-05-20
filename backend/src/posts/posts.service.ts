@@ -6,6 +6,7 @@ import { Comment } from './comment.entity';
 import { CommentLike } from './comment-like.entity';
 import { PostReaction, ReactionType } from './post-reaction.entity';
 import { SavedPost } from './saved-post.entity';
+import { BadgesService } from '../badges/badges.service';
 import { User } from '../users/user.entity';
 import { NotificationsService } from '../notifications/notifications.service';
 import { NotificationType } from '../notifications/notification.entity';
@@ -28,6 +29,7 @@ export class PostsService {
         @InjectRepository(SavedPost) private savedRepo: Repository<SavedPost>,
         @InjectRepository(User) private usersRepo: Repository<User>,
         private notifications: NotificationsService,
+        private badges: BadgesService,
     ) {}
 
     /** Who reacted to a post — paginated, optionally filtered by reaction type. */
@@ -80,6 +82,7 @@ export class PostsService {
         const existing = await this.savedRepo.findOne({ where: { postId, userId } });
         if (!existing) {
             await this.savedRepo.save(this.savedRepo.create({ postId, userId }));
+            if (this.badges) await this.badges.awardIfEligible(userId, 'post.saved', {});
         }
         return { saved: true };
     }

@@ -6,6 +6,7 @@ import { Place } from '../places/place.entity';
 import { TourPackage } from '../places/tour-package.entity';
 import { InquiriesService } from '../places/inquiries.service';
 import { UsersService } from '../users/users.service';
+import { BadgesService } from '../badges/badges.service';
 
 interface BatchInquiryInput {
     name: string;
@@ -40,6 +41,7 @@ export class TripsService {
         @InjectRepository(TourPackage) private packages: Repository<TourPackage>,
         private inquiries: InquiriesService,
         private users: UsersService,
+        private badges: BadgesService,
     ) {}
 
     /** Public list of trips authored by a given handle. Empty array on unknown handle. */
@@ -192,6 +194,7 @@ export class TripsService {
             days,
             isPublic: input.isPublic !== false,
         }));
+        if (userId) await this.badges.awardIfEligible(userId, 'trip.created', {});
         return saved;
     }
 

@@ -6,6 +6,7 @@ import { PlacesService } from '../places/places.service';
 import { PlaceInquiry, InquiryStatus } from '../places/place-inquiry.entity';
 import { Place } from '../places/place.entity';
 import { UsersService } from '../users/users.service';
+import { BadgesService } from '../badges/badges.service';
 
 @Injectable()
 export class ReviewsService {
@@ -15,6 +16,7 @@ export class ReviewsService {
         @InjectRepository(Place) private placesRepo: Repository<Place>,
         private placesService: PlacesService,
         private usersService: UsersService,
+        private badgesService: BadgesService,
     ) { }
 
     /** Public list of reviews authored by a given handle. Empty array on unknown handle. */
@@ -56,6 +58,7 @@ export class ReviewsService {
         });
         const saved = await this.reviewsRepo.save(review);
         await this.placesService.updateRating(placeId);
+        await this.badgesService.awardIfEligible(userId, 'review.created', {});
         return saved;
     }
 

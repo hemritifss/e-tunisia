@@ -10,6 +10,7 @@ import { Place } from '../places/place.entity';
 import { TripPlan } from '../itineraries/trip-plan.entity';
 import { SavedPost } from '../posts/saved-post.entity';
 import { PassportDto, deriveLevel } from './dto/passport.dto';
+import { BadgesService } from '../badges/badges.service';
 
 @Injectable()
 export class UsersService {
@@ -20,6 +21,7 @@ export class UsersService {
         @InjectRepository(TripPlan) private tripsRepo: Repository<TripPlan>,
         @InjectRepository(SavedPost) private savesRepo: Repository<SavedPost>,
         @Inject(CACHE_MANAGER) private cache: Cache,
+        private badges: BadgesService,
     ) { }
 
     async findByEmail(email: string): Promise<User | null> {
@@ -91,6 +93,7 @@ export class UsersService {
         const user = await this.findById(userId);
         const visited = user.visitedPlaceIds || [];
         const index = visited.indexOf(placeId);
+        const wasAdded = index === -1;
 
         if (index > -1) {
             visited.splice(index, 1);
@@ -101,6 +104,11 @@ export class UsersService {
         user.visitedPlaceIds = visited;
         await this.usersRepository.save(user);
         await this.invalidatePassportCache(userId);
+
+        if (wasAdded && this.badges) {
+            const place = await this.placesRepo.findOne({ where: { id: placeId }, select: ['city'] }).catch(() => null);
+            await this.badges.awardIfEligible(userId, 'place.visited', { city: place?.city });
+        }
         return visited;
     }
 

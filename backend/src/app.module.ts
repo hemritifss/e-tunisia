@@ -5,6 +5,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { CacheModule } from '@nestjs/cache-manager';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
+import { BadgesModule } from './badges/badges.module';
 import { PlacesModule } from './places/places.module';
 import { CategoriesModule } from './categories/categories.module';
 import { ReviewsModule } from './reviews/reviews.module';
@@ -66,6 +67,7 @@ import { getDatabaseConfig } from './database/database.config';
     HealthModule,
     AuthModule,
     UsersModule,
+    BadgesModule,
     PlacesModule,
     CategoriesModule,
     ReviewsModule,

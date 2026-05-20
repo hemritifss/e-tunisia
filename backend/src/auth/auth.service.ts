@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
+import { BadgesService } from '../badges/badges.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import * as bcrypt from 'bcrypt';
@@ -14,6 +15,7 @@ export class AuthService {
     constructor(
         private usersService: UsersService,
         private jwtService: JwtService,
+        private badgesService: BadgesService,
     ) { }
 
     async register(dto: RegisterDto) {
@@ -29,6 +31,7 @@ export class AuthService {
         }
 
         const user = await this.usersService.create({ ...dto, handle: handleLower });
+        await this.badgesService.awardIfEligible(user.id, 'user.created', {});
         const token = this.generateToken(user);
 
         return {

@@ -10,6 +10,7 @@ import { Place } from '../places/place.entity';
 import { TourPackage } from '../places/tour-package.entity';
 import { PlacesModule } from '../places/places.module';
 import { UsersModule } from '../users/users.module';
+import { BadgesModule } from '../badges/badges.module';
 
 @Module({
     imports: [
@@ -17,6 +18,7 @@ import { UsersModule } from '../users/users.module';
         // Pulls in InquiriesService so a trip can fan-out one inquiry per stop.
         PlacesModule,
         UsersModule,
+        BadgesModule,
     ],
     controllers: [ItinerariesController, TripsController],
     providers: [ItinerariesService, TripsService],
