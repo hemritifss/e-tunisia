@@ -45,9 +45,33 @@ export function StoriesStrip() {
   const groups = useMemo(() => (Array.isArray(data) ? data : []), [data]);
 
   const createMutation = useMutation({
-    mutationFn: (payload: { imageUrl: string; caption?: string }) => api.createStory(payload),
+    mutationFn: async (payload: { imageUrl: string; caption?: string }) => {
+      // Upload the data URL to MinIO first so we don't bloat the DB with base64.
+      const hosted = await uploadDataUrlOnClient(payload.imageUrl, 'stories');
+      return api.createStory({ ...payload, imageUrl: hosted });
+    },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['stories'] }),
   });
+
+  async function uploadDataUrlOnClient(dataUrl: string, folder = 'uploads'): Promise<string> {
+    if (!dataUrl || !dataUrl.startsWith('data:')) return dataUrl;
+    try {
+      const token = localStorage.getItem('etunisia_token');
+      const res = await fetch('/api/v1/media/from-data-url', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ dataUrl, folder }),
+      });
+      const body = await res.json().catch(() => ({}));
+      const url = body?.data?.url || body?.url;
+      return url || dataUrl;
+    } catch {
+      return dataUrl;
+    }
+  }
 
   const onFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

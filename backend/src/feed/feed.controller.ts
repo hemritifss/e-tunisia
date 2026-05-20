@@ -92,4 +92,11 @@ export class FeedController {
     stories(@Query('limit') limit?: string) {
         return this.feed.stories(limit ? Number(limit) : 12);
     }
+
+    @Get('trending-hashtags')
+    @ApiOperation({ summary: 'Top hashtags across recent posts + reviews' })
+    @ApiQuery({ name: 'limit', required: false })
+    trending(@Query('limit') limit?: string) {
+        return this.feed.trendingHashtags(limit ? Number(limit) : 8);
+    }
 }

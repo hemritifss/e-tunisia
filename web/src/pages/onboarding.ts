@@ -385,7 +385,9 @@ async function onNext() {
         country: state.country.trim(),
         bio: state.bio.trim(),
       };
-      if (state.avatarDataUrl) patch.avatar = state.avatarDataUrl;
+      if (state.avatarDataUrl) {
+        patch.avatar = await api.uploadDataUrl(state.avatarDataUrl, 'avatars');
+      }
       await api.updateMyProfile(patch);
       // re-hydrate navbar
       (window as any).__userHydrated = false;

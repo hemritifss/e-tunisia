@@ -1,26 +1,77 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Review } from './review.entity';
 import { PlacesService } from '../places/places.service';
+import { PlaceInquiry, InquiryStatus } from '../places/place-inquiry.entity';
+import { Place } from '../places/place.entity';
 
 @Injectable()
 export class ReviewsService {
     constructor(
-        @InjectRepository(Review)
-        private reviewsRepo: Repository<Review>,
+        @InjectRepository(Review) private reviewsRepo: Repository<Review>,
+        @InjectRepository(PlaceInquiry) private inquiriesRepo: Repository<PlaceInquiry>,
+        @InjectRepository(Place) private placesRepo: Repository<Place>,
         private placesService: PlacesService,
     ) { }
 
-    async create(userId: string, placeId: string, data: { rating: number; comment: string; images?: string[] }): Promise<Review> {
+    private static UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+    async create(
+        userId: string,
+        placeId: string,
+        data: { rating: number; comment: string; images?: string[]; inquiryId?: string | null },
+    ): Promise<Review> {
+        // If the user passed an inquiryId, verify it belongs to them, is for THIS place,
+        // and was actually booked. Otherwise the review is "unverified" (still valid, just no badge).
+        let verifiedInquiryId: string | null = null;
+        if (data.inquiryId && ReviewsService.UUID_RE.test(data.inquiryId)) {
+            const inq = await this.inquiriesRepo.findOne({ where: { id: data.inquiryId } });
+            if (inq && inq.userId === userId && inq.placeId === placeId && inq.status === InquiryStatus.BOOKED) {
+                verifiedInquiryId = inq.id;
+            }
+        }
+
         const review = this.reviewsRepo.create({
-            ...data,
+            rating: data.rating,
+            comment: data.comment,
+            images: data.images,
             userId,
             placeId,
+            verifiedInquiryId,
         });
         const saved = await this.reviewsRepo.save(review);
         await this.placesService.updateRating(placeId);
         return saved;
+    }
+
+    async hostReply(reviewId: string, hostUserId: string, body: string): Promise<Review> {
+        if (!ReviewsService.UUID_RE.test(reviewId)) throw new NotFoundException('Review not found');
+        const review = await this.reviewsRepo.findOne({ where: { id: reviewId } });
+        if (!review) throw new NotFoundException('Review not found');
+        const place = await this.placesRepo.findOne({ where: { id: review.placeId } });
+        if (!place) throw new NotFoundException('Place not found');
+        if (place.submittedBy !== hostUserId) {
+            throw new ForbiddenException('Only the listing owner can reply');
+        }
+        const trimmed = String(body || '').trim().slice(0, 2000);
+        if (trimmed.length < 2) throw new BadRequestException('Reply is too short');
+        review.hostReply = trimmed;
+        review.hostRepliedAt = new Date();
+        return this.reviewsRepo.save(review);
+    }
+
+    async deleteHostReply(reviewId: string, hostUserId: string): Promise<Review> {
+        if (!ReviewsService.UUID_RE.test(reviewId)) throw new NotFoundException('Review not found');
+        const review = await this.reviewsRepo.findOne({ where: { id: reviewId } });
+        if (!review) throw new NotFoundException('Review not found');
+        const place = await this.placesRepo.findOne({ where: { id: review.placeId } });
+        if (!place || place.submittedBy !== hostUserId) {
+            throw new ForbiddenException('Only the listing owner can edit the reply');
+        }
+        review.hostReply = null;
+        review.hostRepliedAt = null;
+        return this.reviewsRepo.save(review);
     }
 
     async findByPlace(placeId: string): Promise<Review[]> {

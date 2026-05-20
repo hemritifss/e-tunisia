@@ -2,8 +2,6 @@ import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  ArrowBigUp,
-  ArrowBigDown,
   MessageCircle,
   Share2,
   Bookmark,
@@ -11,7 +9,6 @@ import {
   Clock,
   TrendingUp,
   Flame,
-  Navigation,
   Coins,
 } from 'lucide-react';
 import { openDonateModal } from '../../donate-modal';
@@ -29,6 +26,11 @@ import { StoriesStrip } from '../components/StoriesStrip';
 import { AdCard } from '../components/AdCard';
 import { ComposeBox } from '../components/ComposeBox';
 import { SuggestedUsers } from '../components/SuggestedUsers';
+import { TrendingHashtags } from '../components/TrendingHashtags';
+import { ReactionPicker, REACTIONS } from '../components/ReactionPicker';
+import { OnboardingBanner } from '../components/OnboardingBanner';
+import { FeaturedPlaces } from '../components/FeaturedPlaces';
+import { DiscoverTrips } from '../components/DiscoverTrips';
 import { Plus, User as UserIcon, RefreshCcw, Users as UsersIcon } from 'lucide-react';
 import { useAuthStore as _useAuthStoreFeed } from '../stores/auth-store';
 import { requireAuth } from '../../ui-utils';
@@ -43,26 +45,7 @@ const sortLabels: Record<SortType, { label: string; icon: React.ReactNode }> = {
   mine:      { label: 'Mine',      icon: <UserIcon size={14} /> },
 };
 
-function PostCard({
-  post,
-  onVote,
-}: {
-  post: Post;
-  onVote: (id: string, direction: 'up' | 'down') => void;
-}) {
-  // Restore prior vote from localStorage so the UI survives a refresh.
-  const initialVote: 'up' | 'down' | null = (() => {
-    try {
-      const map = JSON.parse(localStorage.getItem('etunisia_votes') || '{}');
-      const v = map[post.id];
-      return v === 'up' || v === 'down' ? v : null;
-    } catch { return null; }
-  })();
-  const [voteState, setVoteState] = useState<'up' | 'down' | null>(initialVote);
-  const baseScore = (Number(post.upvotes) || 0) - (Number(post.downvotes) || 0);
-  const [localScore, setLocalScore] = useState(
-    baseScore + (initialVote === 'up' ? 1 : initialVote === 'down' ? -1 : 0),
-  );
+function PostCard({ post }: { post: Post }) {
   const [isSavedLocal, setIsSavedLocal] = useState(() => {
     try {
       const map = JSON.parse(localStorage.getItem('etunisia_saved_items') || '{}');
@@ -72,33 +55,6 @@ function PostCard({
     }
   });
   const showToast = useUIStore((s) => s.showToast);
-
-  const persistVote = (v: 'up' | 'down' | null) => {
-    try {
-      const map = JSON.parse(localStorage.getItem('etunisia_votes') || '{}');
-      if (!v) delete map[post.id]; else map[post.id] = v;
-      localStorage.setItem('etunisia_votes', JSON.stringify(map));
-    } catch {}
-  };
-
-  const handleVote = (direction: 'up' | 'down') => {
-    if (!requireAuth('vote on posts')) return;
-    if (voteState === direction) {
-      setVoteState(null);
-      setLocalScore((prev) => (direction === 'up' ? prev - 1 : prev + 1));
-      persistVote(null);
-    } else {
-      const oldVote = voteState;
-      setVoteState(direction);
-      if (oldVote) {
-        setLocalScore((prev) => (direction === 'up' ? prev + 2 : prev - 2));
-      } else {
-        setLocalScore((prev) => (direction === 'up' ? prev + 1 : prev - 1));
-      }
-      persistVote(direction);
-    }
-    onVote(post.id, direction);
-  };
 
   // For review items, navigate to the underlying place; for real posts, the post itself.
   const detailHash =
@@ -126,23 +82,45 @@ function PostCard({
     }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!requireAuth('save posts')) return;
+    // Only real posts can be persisted server-side. Reviews/ads fall back to local-only.
+    const canPersist = (post as any).type === 'post' || !(post as any).type;
+    const key = 'post:' + post.id;
+    const wasSaved = isSavedLocal;
+    // Optimistic flip
+    setIsSavedLocal(!wasSaved);
     try {
       const map = JSON.parse(localStorage.getItem('etunisia_saved_items') || '{}');
-      const key = 'post:' + post.id;
-      if (map[key]) {
-        delete map[key];
-        localStorage.setItem('etunisia_saved_items', JSON.stringify(map));
-        setIsSavedLocal(false);
+      if (wasSaved) delete map[key];
+      else map[key] = true;
+      localStorage.setItem('etunisia_saved_items', JSON.stringify(map));
+    } catch {}
+
+    if (!canPersist) {
+      showToast(wasSaved ? 'Removed from bookmarks' : 'Saved to bookmarks', wasSaved ? 'info' : 'success');
+      return;
+    }
+
+    try {
+      if (wasSaved) {
+        await api.unsavePost(post.id);
         showToast('Removed from bookmarks', 'info');
       } else {
-        map[key] = true;
-        localStorage.setItem('etunisia_saved_items', JSON.stringify(map));
-        setIsSavedLocal(true);
+        await api.savePost(post.id);
         showToast('Saved to bookmarks', 'success');
       }
-    } catch {}
+    } catch {
+      // Revert on failure
+      setIsSavedLocal(wasSaved);
+      try {
+        const map = JSON.parse(localStorage.getItem('etunisia_saved_items') || '{}');
+        if (wasSaved) map[key] = true;
+        else delete map[key];
+        localStorage.setItem('etunisia_saved_items', JSON.stringify(map));
+      } catch {}
+      showToast('Could not update bookmark', 'error');
+    }
   };
 
   return (
@@ -154,40 +132,6 @@ function PostCard({
       <Card hover className="group">
         <CardContent className="p-0">
           <div className="flex">
-            {/* Vote sidebar */}
-            <div className="flex flex-col items-center gap-1 p-3 bg-black/[0.02] dark:bg-white/[0.02] border-r border-black/5 dark:border-white/5">
-              <button
-                onClick={() => handleVote('up')}
-                className={`p-1 rounded-lg transition-colors ${
-                  voteState === 'up'
-                    ? 'text-orange-500 bg-orange-500/10'
-                    : 'text-gray-400 hover:text-orange-500 hover:bg-orange-500/10'
-                }`}
-              >
-                <ArrowBigUp size={24} />
-              </button>
-              <span
-                className={`text-sm font-bold ${
-                  voteState === 'up'
-                    ? 'text-orange-500'
-                    : voteState === 'down'
-                      ? 'text-indigo-500'
-                      : 'text-foreground'
-                }`}
-              >
-                {formatNumber(localScore)}
-              </span>
-              <button
-                onClick={() => handleVote('down')}
-                className={`p-1 rounded-lg transition-colors ${
-                  voteState === 'down'
-                    ? 'text-indigo-500 bg-indigo-500/10'
-                    : 'text-gray-400 hover:text-indigo-500 hover:bg-indigo-500/10'
-                }`}
-              >
-                <ArrowBigDown size={24} />
-              </button>
-            </div>
 
             {/* Content */}
             <div className="flex-1 p-4 min-w-0">
@@ -253,6 +197,16 @@ function PostCard({
 
               {/* Actions */}
               <div className="flex items-center gap-2 flex-wrap">
+                <ReactionPicker
+                  postId={post.id}
+                  initialMine={(post as any).myReaction || null}
+                  initialBreakdown={(post as any).reactions?.breakdown || {}}
+                  initialTotal={
+                    typeof (post as any).reactions?.total === 'number'
+                      ? (post as any).reactions.total
+                      : (Number(post.upvotes) || 0)
+                  }
+                />
                 <Button
                   variant="ghost"
                   size="sm"
@@ -367,23 +321,6 @@ export default function FeedPage() {
     return () => observerRef.current?.disconnect();
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  const voteMutation = useMutation({
-    mutationFn: async ({ id, direction }: { id: string; direction: 'up' | 'down' }) => {
-      // Will be replaced with actual API
-      return { id, direction };
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['posts'] });
-    },
-  });
-
-  const handleVote = useCallback(
-    (id: string, direction: 'up' | 'down') => {
-      voteMutation.mutate({ id, direction });
-    },
-    [voteMutation],
-  );
-
   const allItems = (() => {
     const pages = data?.pages || [];
     const out: any[] = [];
@@ -409,11 +346,23 @@ export default function FeedPage() {
 
   return (
     <div className="max-w-2xl mx-auto space-y-4 animate-fade-in">
+      {/* Onboarding-incomplete banner — only renders when the API says onboardingComplete=false */}
+      {isAuth && <OnboardingBanner />}
+
       {/* Stories — 24h ephemeral images uploaded by users (Facebook-style) */}
       <StoriesStrip />
 
       {/* Facebook-style "What's on your mind?" composer box */}
       {isAuth && <ComposeBox user={user} />}
+
+      {/* Featured places — sponsored placements (revenue surface) */}
+      <FeaturedPlaces />
+
+      {/* Community trip plans — the viral discovery loop */}
+      <DiscoverTrips />
+
+      {/* Trending hashtags */}
+      <TrendingHashtags />
 
       {/* Who-to-follow widget — cold-start nudge */}
       <SuggestedUsers />
@@ -478,7 +427,7 @@ export default function FeedPage() {
             allItems.map((item: any) =>
               item.type === 'ad'
                 ? <AdCard key={item.id} ad={item} />
-                : <PostCard key={item.id} post={item} onVote={handleVote} />
+                : <PostCard key={item.id} post={item} />
             )
           )}
         </AnimatePresence>
