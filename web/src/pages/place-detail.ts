@@ -8,6 +8,7 @@ import { places as mockPlaces } from '../data';
 import { replaceIcons } from '../icons';
 import { shareUrl, toggleSaved, isSaved, showToast } from '../ui-utils';
 import * as tripCart from '../trip-cart';
+import { addVisitedCity, isAnonymous } from '../passport-draft';
 
 const mockComments = [
   { author: 'Sarah M.', avatar: 'https://api.dicebear.com/9.x/thumbs/svg?seed=Sarah', text: 'Absolutely stunning place! The views are breathtaking.', rating: 5, timeAgo: '2d ago', votes: 12 },
@@ -227,6 +228,13 @@ export async function initPlaceDetailPage() {
       name: 'Place Not Found', description: 'This place could not be loaded.',
       image: '', category: '', location: '', rating: 0, reviewCount: 0,
     };
+  }
+
+  // Anonymous-visitor passport seeding: every city they actually open the detail
+  // page for gets remembered locally. Right after they claim a handle the draft
+  // is POSTed to /users/me/seed so their map opens with cities already lit up.
+  if (place?.city && isAnonymous()) {
+    try { addVisitedCity(place.city); } catch {}
   }
 
   try {
