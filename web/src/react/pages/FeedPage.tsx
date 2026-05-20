@@ -31,8 +31,8 @@ import { ReactionPicker, REACTIONS } from '../components/ReactionPicker';
 import { OnboardingBanner } from '../components/OnboardingBanner';
 import { FeaturedPlaces } from '../components/FeaturedPlaces';
 import { DiscoverTrips } from '../components/DiscoverTrips';
-import { FeedShortcuts } from '../components/FeedShortcuts';
-import { FeedRightRail } from '../components/FeedRightRail';
+import { WelcomeStrip } from '../components/WelcomeStrip';
+import { TunisiaPulse } from '../components/TunisiaPulse';
 import { Plus, User as UserIcon, RefreshCcw, Users as UsersIcon } from 'lucide-react';
 import { useAuthStore as _useAuthStoreFeed } from '../stores/auth-store';
 import { requireAuth } from '../../ui-utils';
@@ -347,26 +347,39 @@ export default function FeedPage() {
   };
 
   return (
-    <div className="feed-shell">
-      {/* Left rail — Facebook-style shortcuts + profile mini-card. Hidden below 1100px. */}
-      <FeedShortcuts />
+    <div className="magazine animate-fade-in">
+      {/* 1. Hero / welcome — anonymous gets the editorial hero; registered gets a personal status strip. */}
+      <WelcomeStrip />
 
-      {/* Center column — the actual feed */}
-      <div className="feed-center animate-fade-in">
-      {/* Onboarding-incomplete banner — only renders when the API says onboardingComplete=false */}
+      {/* 2. Onboarding-incomplete banner — only renders when the API says onboardingComplete=false */}
       {isAuth && <OnboardingBanner />}
 
-      {/* Stories — 24h ephemeral images uploaded by users (Facebook-style) */}
+      {/* 3. Live pulse — "Tunisia is alive right now" rotating summary of recent activity */}
+      <TunisiaPulse />
+
+      {/* 4. Stories — 24h ephemeral images uploaded by users */}
       <StoriesStrip />
 
-      {/* Facebook-style "What's on your mind?" composer box */}
+      {/* 5. Composer (registered only) */}
       {isAuth && <ComposeBox user={user} />}
 
-      {/* Inline-on-mobile discovery surfaces — also live in the right rail on desktop */}
-      <div className="feed-mobile-discovery">
+      {/* 6. Where Tunisia is buzzing — visual destination cards */}
+      <div className="magazine-section">
         <FeaturedPlaces />
+      </div>
+
+      {/* 7. Trip plans by travelers — the viral discovery loop */}
+      <div className="magazine-section">
         <DiscoverTrips />
+      </div>
+
+      {/* 8. Trending hashtags chip strip */}
+      <div className="magazine-section">
         <TrendingHashtags />
+      </div>
+
+      {/* 9. Who-to-follow */}
+      <div className="magazine-section">
         <SuggestedUsers />
       </div>
 
@@ -448,10 +461,6 @@ export default function FeedPage() {
           <p className="text-sm text-muted-foreground">You've reached the end!</p>
         )}
       </div>
-      </div>{/* /feed-center */}
-
-      {/* Right rail — discovery widgets. Hidden below 1280px. */}
-      <FeedRightRail />
     </div>
   );
 }

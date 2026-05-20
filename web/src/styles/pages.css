@@ -13452,7 +13452,253 @@ section[class^="hero-"] {
 }
 
 /* ============================================
-   FEED SHELL — 3-column desktop layout
+   "TUNISIA TODAY" magazine feed
+   A single, well-paced center column.
+   Branded palette: terracotta · navy · gold · cream.
+   ============================================ */
+
+.magazine {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 16px 16px 96px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+.magazine-section { display: contents; }
+
+/* ─── ANON HERO ────────────────────────────────────── */
+.hero-anon {
+    position: relative;
+    overflow: hidden;
+    border-radius: 28px;
+    min-height: 360px;
+    padding: 44px 36px;
+    color: #fff;
+    isolation: isolate;
+    background:
+        radial-gradient(70% 50% at 90% 10%, rgba(244, 197, 66, 0.35), transparent 70%),
+        radial-gradient(60% 60% at 0% 100%, rgba(212, 98, 58, 0.55), transparent 70%),
+        linear-gradient(135deg, #0b1e3f 0%, #1a3a73 50%, #d4623a 100%);
+}
+.hero-anon::before {
+    /* Faint star/sun pattern reminiscent of Tunisian flag + medina motifs. */
+    content: '';
+    position: absolute; inset: 0;
+    background-image:
+        radial-gradient(circle at 20% 30%, rgba(255,255,255,0.10) 0 1px, transparent 2px),
+        radial-gradient(circle at 70% 60%, rgba(255,255,255,0.08) 0 1px, transparent 2px),
+        radial-gradient(circle at 90% 25%, rgba(244,197,66,0.20) 0 2px, transparent 4px);
+    background-size: 140px 140px, 200px 200px, 300px 300px;
+    z-index: -1;
+}
+.hero-anon-overlay {
+    position: absolute; inset: 0; z-index: -1;
+    background: radial-gradient(110% 70% at 50% 100%, rgba(11,30,63,0.5), transparent 60%);
+}
+.hero-anon-inner { max-width: 560px; }
+.hero-anon-kicker {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 12px; border-radius: 999px;
+    background: rgba(255,255,255,0.14);
+    border: 1px solid rgba(255,255,255,0.20);
+    font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase;
+    margin-bottom: 18px;
+}
+.hero-anon h1 {
+    font-size: clamp(28px, 5vw, 44px);
+    line-height: 1.05;
+    font-weight: 800;
+    color: #fff;
+    margin: 0 0 14px;
+    letter-spacing: -0.02em;
+}
+.hero-anon h1 + p {
+    font-size: 16px;
+    line-height: 1.5;
+    color: rgba(255,255,255,0.88);
+    margin: 0 0 24px;
+    max-width: 480px;
+}
+.hero-anon-cta { display: flex; gap: 10px; flex-wrap: wrap; }
+.hero-anon-cta .btn { padding: 12px 22px; font-size: 15px; font-weight: 600; }
+.hero-anon-cta .btn.primary { background: #fff; color: #0b1e3f; border-color: #fff; }
+.hero-anon-cta .btn.ghost { background: rgba(255,255,255,0.14); color: #fff; border: 1px solid rgba(255,255,255,0.30); }
+.hero-anon-cta .btn.ghost:hover { background: rgba(255,255,255,0.22); }
+.hero-anon-meta {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    margin-top: 22px;
+    color: rgba(255,255,255,0.75);
+    font-size: 13px;
+    align-items: center;
+}
+.hero-anon-meta span { display: inline-flex; align-items: center; gap: 4px; }
+.btn.lg { padding: 12px 22px; font-size: 15px; }
+
+/* ─── REGISTERED WELCOME STRIP ─────────────────────── */
+.welcome-strip {
+    background: linear-gradient(135deg, rgba(244,197,66,0.10) 0%, rgba(212,98,58,0.08) 100%);
+    border: 1px solid rgba(212,98,58,0.20);
+    border-radius: 20px;
+    padding: 18px 20px;
+}
+.welcome-strip-row {
+    display: flex; align-items: center; gap: 14px;
+    flex-wrap: wrap;
+}
+.welcome-strip-avatar { flex-shrink: 0; text-decoration: none; }
+.welcome-strip-avatar img,
+.welcome-strip-avatar-fallback {
+    width: 52px; height: 52px; border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #fff;
+    box-shadow: 0 4px 14px rgba(11,30,63,0.15);
+}
+.welcome-strip-avatar-fallback {
+    background: linear-gradient(135deg, #1a3a73, #d4623a);
+    color: #fff;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 22px;
+}
+.welcome-strip-text { flex: 1; min-width: 0; }
+.welcome-strip-greeting {
+    font-size: 16px; color: var(--text-muted, #5a6371);
+    display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap;
+}
+.welcome-strip-greeting strong { font-size: 18px; font-weight: 700; color: var(--text, #1a1a1a); }
+.welcome-level {
+    display: inline-block;
+    padding: 2px 10px; border-radius: 999px;
+    font-size: 11px; letter-spacing: 0.04em; font-weight: 600;
+    background: rgba(255,215,0,0.4);
+    color: #1a1300;
+}
+.welcome-level-bronze { background: rgba(205,127,50,0.4); }
+.welcome-level-silver { background: rgba(192,192,192,0.4); }
+.welcome-level-gold { background: rgba(255,215,0,0.5); color: #1a1300; }
+.welcome-level-platinum { background: rgba(229,228,226,0.55); color: #14202b; }
+.welcome-strip-sub { margin: 4px 0 0; color: var(--text-muted, #5a6371); font-size: 13px; }
+.welcome-strip-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.welcome-action-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 14px; border-radius: 999px;
+    background: rgba(255,255,255,0.7);
+    border: 1px solid rgba(11,30,63,0.10);
+    color: var(--text, #1a1a1a);
+    font-size: 13px; font-weight: 500;
+    text-decoration: none;
+    transition: all 120ms ease;
+}
+.welcome-action-pill:hover { transform: translateY(-1px); border-color: #d4623a; }
+.welcome-action-pill.primary {
+    background: #0b1e3f; color: #fff; border-color: #0b1e3f;
+}
+.welcome-action-pill.primary:hover { background: #1a3a73; border-color: #1a3a73; }
+
+.welcome-strip-stats {
+    display: flex; gap: 8px; align-items: stretch;
+    margin-top: 16px; padding-top: 14px;
+    border-top: 1px dashed rgba(212,98,58,0.25);
+    flex-wrap: wrap;
+}
+.welcome-stat {
+    flex: 1; min-width: 70px;
+    display: flex; flex-direction: column; align-items: flex-start;
+    padding: 6px 10px;
+    border-radius: 10px;
+    text-decoration: none;
+    color: var(--text, #1a1a1a);
+    transition: background 120ms ease;
+}
+.welcome-stat:hover { background: rgba(255,255,255,0.5); }
+.welcome-stat strong { font-size: 20px; font-weight: 700; line-height: 1.05; }
+.welcome-stat span { font-size: 11px; color: var(--text-muted, #5a6371); letter-spacing: 0.04em; text-transform: uppercase; }
+.welcome-stat-link {
+    margin-left: auto; align-self: center;
+    display: inline-flex; align-items: center; gap: 4px;
+    color: #d4623a; font-size: 13px; font-weight: 600;
+    text-decoration: none;
+}
+.welcome-stat-link:hover { transform: translateX(2px); }
+
+/* ─── TUNISIA PULSE BAR ────────────────────────────── */
+.tunisia-pulse {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 18px;
+    background: linear-gradient(90deg, rgba(11,30,63,0.95), rgba(26,58,115,0.95));
+    color: #fff;
+    border-radius: 16px;
+    overflow: hidden;
+    position: relative;
+}
+.tunisia-pulse-dot { position: relative; width: 12px; height: 12px; flex-shrink: 0; }
+.tunisia-pulse-dot-core {
+    position: absolute; inset: 3px;
+    background: #56d364; border-radius: 50%;
+    box-shadow: 0 0 8px #56d364;
+}
+.tunisia-pulse-dot-ring {
+    position: absolute; inset: 0;
+    border: 2px solid #56d364;
+    border-radius: 50%;
+    animation: pulse-ring 1.8s ease-out infinite;
+}
+@keyframes pulse-ring {
+    0% { transform: scale(0.6); opacity: 0.9; }
+    100% { transform: scale(2.2); opacity: 0; }
+}
+.tunisia-pulse-text { flex: 1; min-width: 0; line-height: 1.3; }
+.tunisia-pulse-text strong { display: block; font-size: 13px; opacity: 0.7; letter-spacing: 0.04em; text-transform: uppercase; color: rgba(255,255,255,0.85); }
+.tunisia-pulse-summary {
+    display: inline-flex; align-items: baseline; gap: 8px;
+    color: #fff;
+    text-decoration: none;
+    font-size: 15px; font-weight: 500;
+    animation: pulse-fade 4s ease-in-out infinite;
+}
+.tunisia-pulse-summary-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tunisia-pulse-time { font-size: 12px; color: rgba(255,255,255,0.55); flex-shrink: 0; }
+.tunisia-pulse-summary-loading { animation: none; opacity: 0.6; }
+@keyframes pulse-fade {
+    0%, 90%, 100% { opacity: 1; }
+    95% { opacity: 0.35; }
+}
+.tunisia-pulse-link {
+    color: rgba(255,255,255,0.8);
+    font-size: 13px; font-weight: 600;
+    text-decoration: none;
+    flex-shrink: 0;
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.20);
+    transition: background 120ms;
+}
+.tunisia-pulse-link:hover { background: rgba(255,255,255,0.10); }
+
+/* ─── DARK MODE ────────────────────────────────────── */
+@media (prefers-color-scheme: dark) {
+    .welcome-strip { background: linear-gradient(135deg, rgba(244,197,66,0.06) 0%, rgba(212,98,58,0.06) 100%); border-color: rgba(212,98,58,0.30); }
+    .welcome-strip-greeting strong, .welcome-stat strong { color: #e8eaed; }
+    .welcome-action-pill { background: rgba(255,255,255,0.06); color: #e8eaed; border-color: rgba(255,255,255,0.10); }
+    .welcome-action-pill.primary { background: #d4623a; color: #fff; border-color: #d4623a; }
+    .welcome-action-pill.primary:hover { background: #c25030; border-color: #c25030; }
+    .welcome-stat { color: #e8eaed; }
+    .welcome-stat:hover { background: rgba(255,255,255,0.06); }
+}
+
+/* ─── KILL OLD FACEBOOK 3-COLUMN (deprecated) ────── */
+.feed-shell {
+    display: block;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 0 16px;
+}
+.feed-shortcuts, .feed-rail { display: none !important; }
+.feed-center { gap: 18px; }
+.feed-mobile-discovery { gap: 18px; }
+
+/* ============================================
+   FEED SHELL — 3-column desktop layout (legacy below)
    Left: shortcuts · Center: feed · Right: rail
    ============================================ */
 
