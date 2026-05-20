@@ -8,7 +8,7 @@ import { SharePassport } from '../components/SharePassport';
 import { PassportTabs } from '../components/PassportTabs';
 import { SignupGate } from '../components/SignupGate';
 import { PassportOnboarding } from '../components/PassportOnboarding';
-import { Pencil, Plus } from 'lucide-react';
+import { Pencil, UserPlus, UserCheck } from 'lucide-react';
 
 function handleFromHash(): string {
     const m = (window.location.hash || '').match(/^#\/u\/([^/?]+)/);
@@ -112,15 +112,18 @@ export default function PassportPage() {
                                 <span className={`passport-level passport-level-${p.passportLevel.toLowerCase()}`}>{p.passportLevel} Explorer</span>
                                 {p.role === 'creator' && <span className="passport-verified">✓ Local Guide</span>}
                             </div>
+                            <div className="passport-meta passport-followmeta">
+                                <strong>{p.followersCount ?? 0}</strong> followers
+                                <span className="passport-followmeta-sep">·</span>
+                                <strong>{p.followingCount ?? 0}</strong> following
+                            </div>
                             {p.bio && <p className="passport-bio">{p.bio}</p>}
                         </div>
                     </div>
                     <div className="passport-hero-right">
                         {isOwner && <a className="btn ghost" href="#/profile-edit"><Pencil size={14} /> Edit</a>}
                         {!isOwner && !isAnon && (
-                            <button className="btn ghost" onClick={() => alert('Following arrives in Phase 2 — coming soon.')}>
-                                <Plus size={14} /> Follow
-                            </button>
+                            <FollowButton handle={p.handle} initiallyFollowing={!!p.viewerIsFollowing} onChange={refetch} />
                         )}
                         {isAnon && (
                             <button className="btn primary" onClick={() => setSignupOpen(true)}>Claim your passport →</button>
@@ -179,6 +182,40 @@ function setMeta(name: string, content: string) {
         document.head.appendChild(el);
     }
     el.setAttribute('content', content);
+}
+
+function FollowButton({ handle, initiallyFollowing, onChange }: { handle: string; initiallyFollowing: boolean; onChange?: () => void }) {
+    const [following, setFollowing] = useState(initiallyFollowing);
+    const [busy, setBusy] = useState(false);
+
+    useEffect(() => { setFollowing(initiallyFollowing); }, [initiallyFollowing, handle]);
+
+    const toggle = async () => {
+        if (busy) return;
+        const next = !following;
+        setFollowing(next); // optimistic
+        setBusy(true);
+        try {
+            if (next) await api.followHandle(handle);
+            else await api.unfollowHandle(handle);
+            onChange?.();
+        } catch {
+            setFollowing(!next); // rollback
+        } finally {
+            setBusy(false);
+        }
+    };
+
+    return (
+        <button
+            className={`btn ${following ? 'ghost' : 'primary'} passport-follow-btn`}
+            onClick={toggle}
+            disabled={busy}
+            aria-pressed={following}
+        >
+            {following ? <><UserCheck size={14} /> Following</> : <><UserPlus size={14} /> Follow</>}
+        </button>
+    );
 }
 
 function AnonPill({ onClaim }: { onClaim: () => void }) {

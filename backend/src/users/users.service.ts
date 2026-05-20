@@ -185,6 +185,8 @@ export class UsersService {
                 savesCount,
             },
             visitedCities,
+            followersCount: user.followersCount || 0,
+            followingCount: user.followingCount || 0,
         };
 
         await this.cache.set(key, passport, 300_000);

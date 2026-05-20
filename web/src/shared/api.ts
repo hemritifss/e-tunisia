@@ -206,6 +206,14 @@ export const api = {
     const qs = params ? '?' + new URLSearchParams(Object.entries(params).map(([k, v]) => [k, String(v)])).toString() : '';
     return fetchWithAuth(`/api/v1/posts/saved-by-handle/${encodeURIComponent(handle)}${qs}`);
   },
+  followHandle: (handle: string) =>
+    fetchWithAuth(`/api/v1/users/by-handle/${encodeURIComponent(handle)}/follow`, { method: 'POST' }),
+  unfollowHandle: (handle: string) =>
+    fetchWithAuth(`/api/v1/users/by-handle/${encodeURIComponent(handle)}/unfollow`, { method: 'POST' }),
+  listFollowers: (handle: string, limit = 50) =>
+    fetchWithAuth(`/api/v1/users/by-handle/${encodeURIComponent(handle)}/followers?limit=${limit}`),
+  listFollowing: (handle: string, limit = 50) =>
+    fetchWithAuth(`/api/v1/users/by-handle/${encodeURIComponent(handle)}/following?limit=${limit}`),
 
   // Public trip discovery
   getTripsDiscover: (params?: { sort?: 'popular' | 'new'; limit?: number; city?: string }) => {

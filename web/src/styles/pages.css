@@ -13413,6 +13413,13 @@ section[class^="hero-"] {
 }
 .passport-anon-pill-x { background: transparent; border: none; color: rgba(255,255,255,0.7); font-size: 22px; cursor: pointer; line-height: 1; padding: 0 4px; }
 
+.passport-followmeta { margin-top: 8px; font-size: 13px; align-items: baseline; }
+.passport-followmeta strong { font-size: 14px; }
+.passport-followmeta-sep { opacity: 0.5; padding: 0 2px; }
+.passport-follow-btn { transition: background 120ms, color 120ms; min-width: 110px; justify-content: center; }
+.passport-follow-btn[aria-pressed="true"] { background: rgba(255,255,255,0.10) !important; }
+.passport-follow-btn:disabled { opacity: 0.7; cursor: progress; }
+
 /* Signup Gate modal */
 .signup-gate-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 16px; backdrop-filter: blur(4px); }
 .signup-gate { background: var(--card-bg, #fff); border-radius: 18px; width: min(440px, 100%); padding: 26px; position: relative; box-shadow: 0 24px 70px rgba(0,0,0,0.4); }

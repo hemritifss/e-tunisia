@@ -84,6 +84,12 @@ export class User {
     @Column({ default: 0 })
     points: number;
 
+    @Column({ type: 'int', default: 0 })
+    followersCount: number;
+
+    @Column({ type: 'int', default: 0 })
+    followingCount: number;
+
     @OneToMany(() => Review, (review) => review.user)
     reviews: Review[];
 

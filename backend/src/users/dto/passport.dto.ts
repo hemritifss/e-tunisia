@@ -22,6 +22,13 @@ export interface PassportDto {
     joinedAt: string;
     stats: PassportStats;
     visitedCities: string[];
+    /** Total followers + following (denormalized counts on User). */
+    followersCount: number;
+    followingCount: number;
+    /** True only when the request was made by a signed-in viewer who follows this passport. */
+    viewerIsFollowing?: boolean;
+    /** True when the request was made by the passport owner themselves. */
+    isOwner?: boolean;
 }
 
 export function deriveLevel(points: number): PassportLevel {

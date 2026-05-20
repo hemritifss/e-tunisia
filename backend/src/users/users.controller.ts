@@ -14,7 +14,9 @@ import {
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import type { Response } from 'express';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard';
 import { UsersService } from './users.service';
+import { FollowsService } from './follows.service';
 import { OgService } from '../og/og.service';
 
 @ApiTags('users')
@@ -22,6 +24,7 @@ import { OgService } from '../og/og.service';
 export class UsersController {
     constructor(
         private usersService: UsersService,
+        private followsService: FollowsService,
         private ogService: OgService,
     ) { }
 
@@ -45,13 +48,45 @@ export class UsersController {
     }
 
     @Get('by-handle/:handle')
-    async byHandle(@Param('handle') rawHandle: string) {
+    @UseGuards(OptionalJwtAuthGuard)
+    async byHandle(@Request() req, @Param('handle') rawHandle: string) {
         const handle = (rawHandle || '').toLowerCase();
         const passport = await this.usersService.assemblePassport(handle).catch(() => null);
         if (!passport) {
             return { error: 'passport_not_found', handle };
         }
+        const viewerId = req?.user?.id || null;
+        if (viewerId) {
+            const me = await this.usersService.findById(viewerId).catch(() => null);
+            const isOwner = !!me?.handle && me.handle === passport.handle;
+            const viewerIsFollowing = isOwner ? false : await this.followsService.isFollowing(viewerId, handle);
+            return { ...passport, isOwner, viewerIsFollowing };
+        }
         return passport;
+    }
+
+    @Post('by-handle/:handle/follow')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    follow(@Request() req, @Param('handle') handle: string) {
+        return this.followsService.follow(req.user.id, (handle || '').toLowerCase());
+    }
+
+    @Post('by-handle/:handle/unfollow')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    unfollow(@Request() req, @Param('handle') handle: string) {
+        return this.followsService.unfollow(req.user.id, (handle || '').toLowerCase());
+    }
+
+    @Get('by-handle/:handle/followers')
+    listFollowers(@Param('handle') handle: string, @Query('limit') limit?: string) {
+        return this.followsService.listFollowers((handle || '').toLowerCase(), limit ? Number(limit) : 50);
+    }
+
+    @Get('by-handle/:handle/following')
+    listFollowing(@Param('handle') handle: string, @Query('limit') limit?: string) {
+        return this.followsService.listFollowing((handle || '').toLowerCase(), limit ? Number(limit) : 50);
     }
 
     /** Shareable 1200×630 PNG postcard for social previews. 24h HTTP cache + SWR. */
