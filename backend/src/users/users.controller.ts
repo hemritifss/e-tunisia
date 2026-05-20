@@ -49,6 +49,13 @@ export class UsersController {
 
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()
+    @Post('me/seed')
+    seedDraft(@Request() req, @Body() body: { visitedCities?: string[]; interests?: string[] }) {
+        return this.usersService.seedFromDraft(req.user.id, body || {});
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
     @Put('me')
     updateProfile(@Request() req, @Body() body: Partial<any>) {
         return this.usersService.update(req.user.id, body);

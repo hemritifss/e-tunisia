@@ -191,6 +191,40 @@ export class UsersService {
         return passport;
     }
 
+    /** Seed a freshly-signed-up user's passport from an anonymous draft. Used post-signup. */
+    async seedFromDraft(userId: string, draft: { visitedCities?: string[]; interests?: string[] }) {
+        const user = await this.findById(userId);
+        const existingInterests = Array.isArray(user.interests) ? user.interests : [];
+        const newInterests = (draft.interests || []).map(s => (s || '').trim()).filter(Boolean);
+        const interests = Array.from(new Set([...existingInterests, ...newInterests])).slice(0, 16);
+
+        let visitedPlaceIds = Array.isArray(user.visitedPlaceIds) ? user.visitedPlaceIds : [];
+        const cities = (draft.visitedCities || []).map(s => (s || '').trim()).filter(Boolean);
+        if (cities.length) {
+            const matched = await this.placesRepo
+                .createQueryBuilder('p')
+                .where('LOWER(p.city) IN (:...c)', { c: cities.map((c) => c.toLowerCase()) })
+                .select(['p.id', 'p.city'])
+                .getMany()
+                .catch(() => [] as Array<{ id: string; city: string }>);
+            const newIds = matched.map((p) => p.id).filter((id) => !visitedPlaceIds.includes(id));
+            visitedPlaceIds = visitedPlaceIds.concat(newIds);
+        }
+
+        user.interests = interests;
+        user.visitedPlaceIds = visitedPlaceIds;
+        await this.usersRepository.save(user);
+        await this.invalidatePassportCache(userId);
+
+        // Each newly-marked city can earn first_steps / medina / desert / beach badges.
+        if (this.badges) {
+            for (const c of cities) {
+                await this.badges.awardIfEligible(userId, 'place.visited', { city: c });
+            }
+        }
+        return { ok: true, visitedPlaceIds: visitedPlaceIds.length, interests: interests.length };
+    }
+
     /** Call this whenever a user's data changes. */
     async invalidatePassportCache(userId: string): Promise<void> {
         const user = await this.usersRepository.findOne({ where: { id: userId }, select: ['handle'] });
