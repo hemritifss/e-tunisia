@@ -94,6 +94,19 @@ export class PostsController {
         });
     }
 
+    @Get('saved-by-handle/:handle')
+    @ApiOperation({ summary: 'Public list of saved posts for a given handle (passport tab)' })
+    savedByHandle(
+        @Param('handle') handle: string,
+        @Query('page') page?: string,
+        @Query('limit') limit?: string,
+    ) {
+        return this.posts.listSavedByHandle((handle || '').toLowerCase(), {
+            page: page ? Number(page) : undefined,
+            limit: limit ? Number(limit) : undefined,
+        });
+    }
+
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()
     @Post(':id/save')

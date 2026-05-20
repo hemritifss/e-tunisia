@@ -5,6 +5,7 @@ import { TripPlan, TripStop } from './trip-plan.entity';
 import { Place } from '../places/place.entity';
 import { TourPackage } from '../places/tour-package.entity';
 import { InquiriesService } from '../places/inquiries.service';
+import { UsersService } from '../users/users.service';
 
 interface BatchInquiryInput {
     name: string;
@@ -38,7 +39,19 @@ export class TripsService {
         @InjectRepository(Place) private places: Repository<Place>,
         @InjectRepository(TourPackage) private packages: Repository<TourPackage>,
         private inquiries: InquiriesService,
+        private users: UsersService,
     ) {}
+
+    /** Public list of trips authored by a given handle. Empty array on unknown handle. */
+    async listByHandle(handle: string) {
+        const user = await this.users.findByHandle(handle);
+        if (!user) return [];
+        return this.trips.find({
+            where: { userId: user.id, isPublic: true },
+            order: { updatedAt: 'DESC' },
+            take: 50,
+        });
+    }
 
     /**
      * Fan out a single bundle inquiry across every stop in a trip.

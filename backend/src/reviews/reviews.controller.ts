@@ -24,6 +24,12 @@ class HostReplyDto {
 export class ReviewsController {
     constructor(private reviewsService: ReviewsService) { }
 
+    @Get('by-handle/:handle')
+    @ApiOperation({ summary: 'Public reviews authored by the given user handle' })
+    byHandle(@Param('handle') handle: string) {
+        return this.reviewsService.listByHandle((handle || '').toLowerCase());
+    }
+
     @Get('feed')
     @ApiOperation({ summary: 'Get reviews shaped as posts for the social feed' })
     @ApiQuery({ name: 'page', required: false })

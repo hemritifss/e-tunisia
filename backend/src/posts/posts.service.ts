@@ -90,6 +90,13 @@ export class PostsService {
         return { saved: false };
     }
 
+    /** Public: list a given handle's saved posts. Empty result for unknown handle. */
+    async listSavedByHandle(handle: string, opts: { page?: number; limit?: number } = {}) {
+        const user = await this.usersRepo.findOne({ where: { handle: (handle || '').toLowerCase() } });
+        if (!user) return { data: [], meta: { page: 1, limit: 0, total: 0, totalPages: 0 } };
+        return this.listSaved(user.id, opts);
+    }
+
     async listSaved(userId: string, opts: { page?: number; limit?: number } = {}) {
         const page = Math.max(1, Number(opts.page) || 1);
         const limit = Math.min(50, Math.max(1, Number(opts.limit) || 12));

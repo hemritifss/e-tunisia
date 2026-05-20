@@ -84,6 +84,12 @@ export class TripsController {
         });
     }
 
+    @Get('by-handle/:handle')
+    @ApiOperation({ summary: 'Public trips authored by the given user handle' })
+    byHandle(@Param('handle') handle: string) {
+        return this.trips.listByHandle((handle || '').toLowerCase());
+    }
+
     @Get(':slug')
     @UseGuards(OptionalJwtAuthGuard)
     @ApiOperation({ summary: 'Read a trip by its public slug' })

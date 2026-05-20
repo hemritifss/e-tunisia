@@ -9,12 +9,14 @@ import { TripsController } from './trips.controller';
 import { Place } from '../places/place.entity';
 import { TourPackage } from '../places/tour-package.entity';
 import { PlacesModule } from '../places/places.module';
+import { UsersModule } from '../users/users.module';
 
 @Module({
     imports: [
         TypeOrmModule.forFeature([Itinerary, TripPlan, Place, TourPackage]),
         // Pulls in InquiriesService so a trip can fan-out one inquiry per stop.
         PlacesModule,
+        UsersModule,
     ],
     controllers: [ItinerariesController, TripsController],
     providers: [ItinerariesService, TripsService],

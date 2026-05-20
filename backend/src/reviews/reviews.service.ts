@@ -5,6 +5,7 @@ import { Review } from './review.entity';
 import { PlacesService } from '../places/places.service';
 import { PlaceInquiry, InquiryStatus } from '../places/place-inquiry.entity';
 import { Place } from '../places/place.entity';
+import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class ReviewsService {
@@ -13,7 +14,20 @@ export class ReviewsService {
         @InjectRepository(PlaceInquiry) private inquiriesRepo: Repository<PlaceInquiry>,
         @InjectRepository(Place) private placesRepo: Repository<Place>,
         private placesService: PlacesService,
+        private usersService: UsersService,
     ) { }
+
+    /** Public list of reviews authored by a given handle. Empty array on unknown handle. */
+    async listByHandle(handle: string) {
+        const user = await this.usersService.findByHandle(handle);
+        if (!user) return [];
+        return this.reviewsRepo.find({
+            where: { userId: user.id },
+            order: { createdAt: 'DESC' },
+            relations: ['place'],
+            take: 50,
+        });
+    }
 
     private static UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
