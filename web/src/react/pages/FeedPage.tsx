@@ -31,6 +31,8 @@ import { ReactionPicker, REACTIONS } from '../components/ReactionPicker';
 import { OnboardingBanner } from '../components/OnboardingBanner';
 import { FeaturedPlaces } from '../components/FeaturedPlaces';
 import { DiscoverTrips } from '../components/DiscoverTrips';
+import { FeedShortcuts } from '../components/FeedShortcuts';
+import { FeedRightRail } from '../components/FeedRightRail';
 import { Plus, User as UserIcon, RefreshCcw, Users as UsersIcon } from 'lucide-react';
 import { useAuthStore as _useAuthStoreFeed } from '../stores/auth-store';
 import { requireAuth } from '../../ui-utils';
@@ -345,7 +347,12 @@ export default function FeedPage() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-4 animate-fade-in">
+    <div className="feed-shell">
+      {/* Left rail — Facebook-style shortcuts + profile mini-card. Hidden below 1100px. */}
+      <FeedShortcuts />
+
+      {/* Center column — the actual feed */}
+      <div className="feed-center animate-fade-in">
       {/* Onboarding-incomplete banner — only renders when the API says onboardingComplete=false */}
       {isAuth && <OnboardingBanner />}
 
@@ -355,17 +362,13 @@ export default function FeedPage() {
       {/* Facebook-style "What's on your mind?" composer box */}
       {isAuth && <ComposeBox user={user} />}
 
-      {/* Featured places — sponsored placements (revenue surface) */}
-      <FeaturedPlaces />
-
-      {/* Community trip plans — the viral discovery loop */}
-      <DiscoverTrips />
-
-      {/* Trending hashtags */}
-      <TrendingHashtags />
-
-      {/* Who-to-follow widget — cold-start nudge */}
-      <SuggestedUsers />
+      {/* Inline-on-mobile discovery surfaces — also live in the right rail on desktop */}
+      <div className="feed-mobile-discovery">
+        <FeaturedPlaces />
+        <DiscoverTrips />
+        <TrendingHashtags />
+        <SuggestedUsers />
+      </div>
 
       {/* Sort bar */}
       <div className="flex items-center gap-2 p-1 bg-surface rounded-xl shadow-sm sticky top-20 z-10 overflow-x-auto scrollbar-hide">
@@ -445,6 +448,10 @@ export default function FeedPage() {
           <p className="text-sm text-muted-foreground">You've reached the end!</p>
         )}
       </div>
+      </div>{/* /feed-center */}
+
+      {/* Right rail — discovery widgets. Hidden below 1280px. */}
+      <FeedRightRail />
     </div>
   );
 }
