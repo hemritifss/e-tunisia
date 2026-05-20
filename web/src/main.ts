@@ -8,6 +8,7 @@ import FeedPage from './react/pages/FeedPage';
 import ExplorePage from './react/pages/ExplorePage';
 import AITravelPlanner from './react/pages/AITravelPlanner';
 import ChallengesPage from './react/pages/ChallengesPage';
+import PassportPage from './react/pages/PassportPage';
 
 // Vanilla pages
 import { renderFeedPage, initFeedPage } from './pages/feed';
@@ -114,6 +115,12 @@ function getRoute(hash: string): Route {
       init: () => initTripPage(slug),
       page: 'itineraries',
     };
+  }
+
+  // Public passport (handle): /u/<handle> — React island
+  const passportMatch = path.match(/^\/u\/([a-z0-9_]{3,30})/i);
+  if (passportMatch) {
+    return { render: () => '', init: () => {}, page: 'passport', isReact: true };
   }
 
   // Public user profile (uuid)
@@ -229,6 +236,8 @@ function navigate() {
         currentUnmount = mountIsland(AITravelPlanner, islandRoot);
       } else if (path === '/challenges') {
         currentUnmount = mountIsland(ChallengesPage, islandRoot);
+      } else if (/^\/u\/[a-z0-9_]{3,30}/i.test(path)) {
+        currentUnmount = mountIsland(PassportPage, islandRoot);
       }
     }
   } else {
