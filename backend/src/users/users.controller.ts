@@ -17,6 +17,8 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard';
 import { UsersService } from './users.service';
 import { FollowsService } from './follows.service';
+import { EndorsementsService } from './endorsements.service';
+import { ENDORSEMENT_TOPICS } from './endorsement-topics';
 import { OgService } from '../og/og.service';
 
 @ApiTags('users')
@@ -25,6 +27,7 @@ export class UsersController {
     constructor(
         private usersService: UsersService,
         private followsService: FollowsService,
+        private endorsementsService: EndorsementsService,
         private ogService: OgService,
     ) { }
 
@@ -59,10 +62,38 @@ export class UsersController {
         if (viewerId) {
             const me = await this.usersService.findById(viewerId).catch(() => null);
             const isOwner = !!me?.handle && me.handle === passport.handle;
-            const viewerIsFollowing = isOwner ? false : await this.followsService.isFollowing(viewerId, handle);
-            return { ...passport, isOwner, viewerIsFollowing };
+            const [viewerIsFollowing, viewerEndorsedTopics] = await Promise.all([
+                isOwner ? Promise.resolve(false) : this.followsService.isFollowing(viewerId, handle),
+                isOwner ? Promise.resolve([] as string[]) : this.endorsementsService.myEndorsementsFor(viewerId, handle),
+            ]);
+            return { ...passport, isOwner, viewerIsFollowing, viewerEndorsedTopics };
         }
         return passport;
+    }
+
+    /** Static list of valid endorsement topics. */
+    @Get('endorsement-topics')
+    endorsementTopics() {
+        return ENDORSEMENT_TOPICS;
+    }
+
+    @Post('by-handle/:handle/endorse')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    endorse(@Request() req, @Param('handle') handle: string, @Body() body: { topic: string }) {
+        return this.endorsementsService.endorse(req.user.id, (handle || '').toLowerCase(), body?.topic);
+    }
+
+    @Post('by-handle/:handle/unendorse')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    unendorse(@Request() req, @Param('handle') handle: string, @Body() body: { topic: string }) {
+        return this.endorsementsService.unendorse(req.user.id, (handle || '').toLowerCase(), body?.topic);
+    }
+
+    @Get('by-handle/:handle/endorsements')
+    listEndorsements(@Param('handle') handle: string) {
+        return this.endorsementsService.listForHandle((handle || '').toLowerCase());
     }
 
     @Post('by-handle/:handle/follow')

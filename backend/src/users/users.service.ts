@@ -1,4 +1,4 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException, forwardRef } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -11,6 +11,7 @@ import { TripPlan } from '../itineraries/trip-plan.entity';
 import { SavedPost } from '../posts/saved-post.entity';
 import { PassportDto, deriveLevel } from './dto/passport.dto';
 import { BadgesService } from '../badges/badges.service';
+import { EndorsementsService } from './endorsements.service';
 
 @Injectable()
 export class UsersService {
@@ -22,6 +23,7 @@ export class UsersService {
         @InjectRepository(SavedPost) private savesRepo: Repository<SavedPost>,
         @Inject(CACHE_MANAGER) private cache: Cache,
         private badges: BadgesService,
+        @Inject(forwardRef(() => EndorsementsService)) private endorsements: EndorsementsService,
     ) { }
 
     async findByEmail(email: string): Promise<User | null> {
@@ -187,6 +189,7 @@ export class UsersService {
             visitedCities,
             followersCount: user.followersCount || 0,
             followingCount: user.followingCount || 0,
+            topEndorsements: await this.endorsements.topForUser(user.id, 3).catch(() => []),
         };
 
         await this.cache.set(key, passport, 300_000);

@@ -29,6 +29,10 @@ export interface PassportDto {
     viewerIsFollowing?: boolean;
     /** True when the request was made by the passport owner themselves. */
     isOwner?: boolean;
+    /** Top 3 endorsement topics by count, for the hero badge strip. */
+    topEndorsements: Array<{ topic: string; count: number }>;
+    /** Topic ids the current viewer has already endorsed this user for. Omitted for anon. */
+    viewerEndorsedTopics?: string[];
 }
 
 export function deriveLevel(points: number): PassportLevel {

@@ -9,6 +9,8 @@ import { PassportTabs } from '../components/PassportTabs';
 import { SignupGate } from '../components/SignupGate';
 import { PassportOnboarding } from '../components/PassportOnboarding';
 import { FollowList } from '../components/FollowList';
+import { EndorseModal, TopEndorsementsStrip } from '../components/EndorseModal';
+import { Award } from 'lucide-react';
 import { Pencil, UserPlus, UserCheck } from 'lucide-react';
 
 function handleFromHash(): string {
@@ -42,6 +44,7 @@ export default function PassportPage() {
     const [signupOpen, setSignupOpen] = useState(false);
     const [onboardingUser, setOnboardingUser] = useState<{ handle: string; fullName: string } | null>(null);
     const [followListMode, setFollowListMode] = useState<'followers' | 'following' | null>(null);
+    const [endorseOpen, setEndorseOpen] = useState(false);
 
     const { data, isLoading, error, refetch } = useQuery({
         queryKey: ['passport', handle],
@@ -129,7 +132,12 @@ export default function PassportPage() {
                     <div className="passport-hero-right">
                         {isOwner && <a className="btn ghost" href="#/profile-edit"><Pencil size={14} /> Edit</a>}
                         {!isOwner && !isAnon && (
-                            <FollowButton handle={p.handle} initiallyFollowing={!!p.viewerIsFollowing} onChange={refetch} />
+                            <>
+                                <FollowButton handle={p.handle} initiallyFollowing={!!p.viewerIsFollowing} onChange={refetch} />
+                                <button className="btn ghost passport-endorse-btn" onClick={() => setEndorseOpen(true)}>
+                                    <Award size={14} /> Endorse
+                                </button>
+                            </>
                         )}
                         {isAnon && (
                             <button className="btn primary" onClick={() => setSignupOpen(true)}>Claim your passport →</button>
@@ -138,6 +146,12 @@ export default function PassportPage() {
                     </div>
                 </div>
             </section>
+
+            {p.topEndorsements?.length > 0 && (
+                <section className="passport-section passport-section-tight">
+                    <TopEndorsementsStrip topEndorsements={p.topEndorsements} />
+                </section>
+            )}
 
             <section className="passport-section">
                 <PassportStats {...p.stats} />
@@ -164,6 +178,16 @@ export default function PassportPage() {
 
             {followListMode && (
                 <FollowList handle={p.handle} mode={followListMode} onClose={() => setFollowListMode(null)} />
+            )}
+
+            {endorseOpen && (
+                <EndorseModal
+                    handle={p.handle}
+                    fullName={p.fullName}
+                    avatar={p.avatar}
+                    initiallyEndorsed={p.viewerEndorsedTopics || []}
+                    onClose={() => { setEndorseOpen(false); refetch(); }}
+                />
             )}
 
             <SignupGate

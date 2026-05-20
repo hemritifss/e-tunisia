@@ -13422,6 +13422,56 @@ section[class^="hero-"] {
 .passport-follow-btn[aria-pressed="true"] { background: rgba(255,255,255,0.10) !important; }
 .passport-follow-btn:disabled { opacity: 0.7; cursor: progress; }
 
+.passport-section-tight { margin: 0 0 16px; }
+.passport-endorse-strip { display: flex; flex-wrap: wrap; gap: 8px; }
+.passport-endorse-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 12px; border-radius: 999px;
+    background: rgba(212, 98, 58, 0.10);
+    border: 1px solid rgba(212, 98, 58, 0.30);
+    color: #d4623a;
+    font-size: 13px;
+}
+.passport-endorse-chip strong { color: #0b1e3f; padding-left: 4px; }
+.passport-endorse-btn { padding: 8px 14px; }
+
+.endorse-modal { max-width: 520px; }
+.endorse-modal-head { display: flex; gap: 14px; align-items: center; margin-bottom: 14px; }
+.endorse-modal-head img, .endorse-modal-head .follow-list-avatar-fallback { width: 48px; height: 48px; border-radius: 50%; flex-shrink: 0; }
+.endorse-modal-head h4 { margin: 0 0 2px; }
+.endorse-modal-head p { margin: 0; font-size: 13px; color: var(--text-muted, #9aa0a6); }
+.endorse-topic-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 8px;
+    margin: 12px 0;
+}
+.endorse-topic {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    border: 1px solid var(--border, #e5e7eb);
+    background: var(--card-bg, #fff);
+    color: var(--text, #1a1a1a);
+    cursor: pointer;
+    transition: all 120ms ease;
+    font-size: 13px;
+    text-align: left;
+}
+.endorse-topic:hover { border-color: #d4623a; transform: translateY(-1px); }
+.endorse-topic.on { background: rgba(212,98,58,0.12); border-color: #d4623a; color: #d4623a; font-weight: 600; }
+.endorse-topic-emoji { font-size: 18px; line-height: 1; flex-shrink: 0; }
+.endorse-topic-label { flex: 1; min-width: 0; }
+.endorse-topic-state { width: 18px; display: flex; align-items: center; justify-content: center; }
+.endorse-topic:disabled { opacity: 0.7; cursor: progress; }
+.endorse-modal-footer { margin: 4px 0 0; font-size: 12px; color: var(--text-muted, #9aa0a6); text-align: center; }
+
+@media (prefers-color-scheme: dark) {
+    .passport-endorse-chip { background: rgba(212,98,58,0.18); color: #f4a07d; }
+    .passport-endorse-chip strong { color: #e8eaed; }
+    .endorse-topic.on { background: rgba(212,98,58,0.22); color: #f4a07d; }
+}
+
 .follow-list-sheet { max-height: min(70vh, 600px); display: flex; flex-direction: column; }
 .follow-list { list-style: none; padding: 0; margin: 8px 0 0; overflow-y: auto; flex: 1; }
 .follow-list-row { display: flex; align-items: center; gap: 12px; padding: 10px 6px; border-radius: 10px; text-decoration: none; color: inherit; transition: background 120ms; }

@@ -214,6 +214,18 @@ export const api = {
     fetchWithAuth(`/api/v1/users/by-handle/${encodeURIComponent(handle)}/followers?limit=${limit}`),
   listFollowing: (handle: string, limit = 50) =>
     fetchWithAuth(`/api/v1/users/by-handle/${encodeURIComponent(handle)}/following?limit=${limit}`),
+  endorseHandle: (handle: string, topic: string) =>
+    fetchWithAuth(`/api/v1/users/by-handle/${encodeURIComponent(handle)}/endorse`, {
+      method: 'POST',
+      body: JSON.stringify({ topic }),
+    }),
+  unendorseHandle: (handle: string, topic: string) =>
+    fetchWithAuth(`/api/v1/users/by-handle/${encodeURIComponent(handle)}/unendorse`, {
+      method: 'POST',
+      body: JSON.stringify({ topic }),
+    }),
+  listEndorsements: (handle: string) =>
+    fetchWithAuth(`/api/v1/users/by-handle/${encodeURIComponent(handle)}/endorsements`),
 
   // Public trip discovery
   getTripsDiscover: (params?: { sort?: 'popular' | 'new'; limit?: number; city?: string }) => {
