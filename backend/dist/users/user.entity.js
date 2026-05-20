@@ -110,6 +110,14 @@ __decorate([
     __metadata("design:type", Number)
 ], User.prototype, "points", void 0);
 __decorate([
+    (0, typeorm_1.Column)({ type: 'int', default: 0 }),
+    __metadata("design:type", Number)
+], User.prototype, "followersCount", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'int', default: 0 }),
+    __metadata("design:type", Number)
+], User.prototype, "followingCount", void 0);
+__decorate([
     (0, typeorm_1.OneToMany)(() => review_entity_1.Review, (review) => review.user),
     __metadata("design:type", Array)
 ], User.prototype, "reviews", void 0);

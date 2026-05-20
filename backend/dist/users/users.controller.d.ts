@@ -1,16 +1,75 @@
 import type { Response } from 'express';
 import { UsersService } from './users.service';
+import { FollowsService } from './follows.service';
+import { EndorsementsService } from './endorsements.service';
+import { ActivityService } from './activity.service';
 import { OgService } from '../og/og.service';
 export declare class UsersController {
     private usersService;
+    private followsService;
+    private endorsementsService;
+    private activityService;
     private ogService;
-    constructor(usersService: UsersService, ogService: OgService);
+    constructor(usersService: UsersService, followsService: FollowsService, endorsementsService: EndorsementsService, activityService: ActivityService, ogService: OgService);
     getProfile(req: any): Promise<import("./user.entity").User>;
     handleAvailable(h: string): Promise<{
         available: boolean;
         reason?: string;
     }>;
-    byHandle(rawHandle: string): Promise<any>;
+    byHandle(req: any, rawHandle: string): Promise<any>;
+    endorsementTopics(): import("./endorsement-topics").EndorsementTopic[];
+    leaderboardCities(limit?: string): Promise<{
+        city: string;
+        reviews: number;
+    }[]>;
+    leaderboardByCity(city: string, limit?: string): Promise<{
+        rank: number;
+        reviews: number;
+        user: {
+            id: any;
+            handle: any;
+            fullName: any;
+            avatar: any;
+            country: any;
+            points: any;
+            role: any;
+        };
+    }[]>;
+    endorse(req: any, handle: string, body: {
+        topic: string;
+    }): Promise<{
+        endorsed: boolean;
+        count: number;
+    }>;
+    unendorse(req: any, handle: string, body: {
+        topic: string;
+    }): Promise<{
+        endorsed: boolean;
+        count: number;
+    }>;
+    listEndorsements(handle: string): Promise<import("./endorsements.service").EndorsementGroup[]>;
+    follow(req: any, handle: string): Promise<{
+        following: boolean;
+        followersCount: number;
+    }>;
+    unfollow(req: any, handle: string): Promise<{
+        following: boolean;
+        followersCount: number;
+    }>;
+    listFollowers(handle: string, limit?: string): Promise<{
+        id: any;
+        handle: any;
+        fullName: any;
+        avatar: any;
+        country: any;
+    }[]>;
+    listFollowing(handle: string, limit?: string): Promise<{
+        id: any;
+        handle: any;
+        fullName: any;
+        avatar: any;
+        country: any;
+    }[]>;
     ogImage(rawHandle: string, res: Response): Promise<void>;
     seedDraft(req: any, body: {
         visitedCities?: string[];
@@ -20,6 +79,33 @@ export declare class UsersController {
         visitedPlaceIds: number;
         interests: number;
     }>;
+    applyLocalGuide(req: any): Promise<{
+        ok: boolean;
+        role: import("./user.entity").UserRole.CREATOR | import("./user.entity").UserRole.ADMIN;
+        alreadyGuide: boolean;
+        reason?: undefined;
+        progress?: undefined;
+    } | {
+        ok: boolean;
+        role: import("./user.entity").UserRole.USER;
+        reason: string;
+        progress: {
+            points: number;
+            pointsRequired: number;
+            reviewsCount: number;
+            reviewsRequired: number;
+            tripsCount: number;
+            tripsRequired: number;
+        };
+        alreadyGuide?: undefined;
+    } | {
+        ok: boolean;
+        role: string;
+        alreadyGuide?: undefined;
+        reason?: undefined;
+        progress?: undefined;
+    }>;
+    activityFeed(req: any, limit?: string): Promise<import("./activity.service").ActivityEntry[]>;
     updateProfile(req: any, body: Partial<any>): Promise<import("./user.entity").User>;
     toggleFavorite(req: any, placeId: string): Promise<string[]>;
     getFavorites(req: any): Promise<string[]>;

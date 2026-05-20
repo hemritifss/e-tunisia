@@ -25,8 +25,9 @@ const trip_plan_entity_1 = require("../itineraries/trip-plan.entity");
 const saved_post_entity_1 = require("../posts/saved-post.entity");
 const passport_dto_1 = require("./dto/passport.dto");
 const badges_service_1 = require("../badges/badges.service");
+const endorsements_service_1 = require("./endorsements.service");
 let UsersService = class UsersService {
-    constructor(usersRepository, reviewsRepo, placesRepo, tripsRepo, savesRepo, cache, badges) {
+    constructor(usersRepository, reviewsRepo, placesRepo, tripsRepo, savesRepo, cache, badges, endorsements) {
         this.usersRepository = usersRepository;
         this.reviewsRepo = reviewsRepo;
         this.placesRepo = placesRepo;
@@ -34,6 +35,7 @@ let UsersService = class UsersService {
         this.savesRepo = savesRepo;
         this.cache = cache;
         this.badges = badges;
+        this.endorsements = endorsements;
     }
     async findByEmail(email) {
         return this.usersRepository.findOne({ where: { email } });
@@ -182,9 +184,134 @@ let UsersService = class UsersService {
                 savesCount,
             },
             visitedCities,
+            followersCount: user.followersCount || 0,
+            followingCount: user.followingCount || 0,
+            topEndorsements: await this.endorsements.topForUser(user.id, 3).catch(() => []),
+            topCityRank: await this.topCityRankForUser(user.id).catch(() => null),
         };
         await this.cache.set(key, passport, 300_000);
         return passport;
+    }
+    async listCitiesWithReviews(limit = 30) {
+        const rows = await this.reviewsRepo
+            .createQueryBuilder('r')
+            .innerJoin('r.place', 'p')
+            .select('p.city', 'city')
+            .addSelect('COUNT(*)', 'reviews')
+            .where("p.city IS NOT NULL AND p.city <> ''")
+            .groupBy('p.city')
+            .orderBy('reviews', 'DESC')
+            .limit(Math.min(100, Math.max(1, limit)))
+            .getRawMany()
+            .catch(() => []);
+        return rows.map((r) => ({ city: r.city, reviews: Number(r.reviews) }));
+    }
+    async getCityReviewerLeaderboard(city, limit = 20) {
+        const trimmed = (city || '').trim();
+        if (!trimmed)
+            return [];
+        const rows = await this.reviewsRepo
+            .createQueryBuilder('r')
+            .innerJoin('r.place', 'p')
+            .select('r.userId', 'userId')
+            .addSelect('COUNT(*)', 'reviews')
+            .where('p.city = :city', { city: trimmed })
+            .groupBy('r.userId')
+            .orderBy('reviews', 'DESC')
+            .limit(Math.min(100, Math.max(1, limit)))
+            .getRawMany()
+            .catch(() => []);
+        if (!rows.length)
+            return [];
+        const userIds = rows.map((r) => r.userId);
+        const users = await this.usersRepository.find({
+            where: userIds.map((id) => ({ id })),
+            select: ['id', 'handle', 'fullName', 'avatar', 'country', 'points', 'role'],
+        });
+        const byId = new Map(users.map((u) => [u.id, u]));
+        return rows
+            .map((r, i) => {
+            const u = byId.get(r.userId);
+            if (!u)
+                return null;
+            return {
+                rank: i + 1,
+                reviews: Number(r.reviews),
+                user: {
+                    id: u.id,
+                    handle: u.handle ?? null,
+                    fullName: u.fullName,
+                    avatar: u.avatar || null,
+                    country: u.country || null,
+                    points: u.points || 0,
+                    role: u.role,
+                },
+            };
+        })
+            .filter(Boolean);
+    }
+    async topCityRankForUser(userId) {
+        const myCities = await this.reviewsRepo
+            .createQueryBuilder('r')
+            .innerJoin('r.place', 'p')
+            .select('p.city', 'city')
+            .addSelect('COUNT(*)', 'reviews')
+            .where('r.userId = :uid', { uid: userId })
+            .groupBy('p.city')
+            .orderBy('reviews', 'DESC')
+            .limit(5)
+            .getRawMany()
+            .catch(() => []);
+        if (!myCities.length)
+            return null;
+        for (const row of myCities) {
+            const city = row.city;
+            if (!city)
+                continue;
+            const ranking = await this.reviewsRepo
+                .createQueryBuilder('r')
+                .innerJoin('r.place', 'p')
+                .select('r.userId', 'userId')
+                .addSelect('COUNT(*)', 'reviews')
+                .where('p.city = :city', { city })
+                .groupBy('r.userId')
+                .orderBy('reviews', 'DESC')
+                .limit(50)
+                .getRawMany()
+                .catch(() => []);
+            const idx = ranking.findIndex((r) => r.userId === userId);
+            if (idx >= 0 && idx < 3) {
+                return { city, rank: idx + 1, total: ranking.length };
+            }
+        }
+        return null;
+    }
+    async applyLocalGuide(userId) {
+        const user = await this.findById(userId);
+        if (user.role === 'creator' || user.role === 'admin') {
+            return { ok: true, role: user.role, alreadyGuide: true };
+        }
+        const points = user.points || 0;
+        const reviewsCount = await this.reviewsRepo.count({ where: { user: { id: userId } } }).catch(() => 0);
+        const tripsCount = await this.tripsRepo.count({ where: { userId } }).catch(() => 0);
+        const passesGate = points >= 50 || reviewsCount >= 3 || tripsCount >= 2;
+        if (!passesGate) {
+            return {
+                ok: false,
+                role: user.role,
+                reason: 'gate_not_met',
+                progress: {
+                    points, pointsRequired: 50,
+                    reviewsCount, reviewsRequired: 3,
+                    tripsCount, tripsRequired: 2,
+                },
+            };
+        }
+        user.role = 'creator';
+        user.points = points + 25;
+        await this.usersRepository.save(user);
+        await this.invalidatePassportCache(userId);
+        return { ok: true, role: 'creator' };
     }
     async seedFromDraft(userId, draft) {
         const user = await this.findById(userId);
@@ -229,10 +356,12 @@ exports.UsersService = UsersService = __decorate([
     __param(3, (0, typeorm_1.InjectRepository)(trip_plan_entity_1.TripPlan)),
     __param(4, (0, typeorm_1.InjectRepository)(saved_post_entity_1.SavedPost)),
     __param(5, (0, common_1.Inject)(cache_manager_1.CACHE_MANAGER)),
+    __param(7, (0, common_1.Inject)((0, common_1.forwardRef)(() => endorsements_service_1.EndorsementsService))),
     __metadata("design:paramtypes", [typeorm_2.Repository,
         typeorm_2.Repository,
         typeorm_2.Repository,
         typeorm_2.Repository,
-        typeorm_2.Repository, Object, badges_service_1.BadgesService])
+        typeorm_2.Repository, Object, badges_service_1.BadgesService,
+        endorsements_service_1.EndorsementsService])
 ], UsersService);
 //# sourceMappingURL=users.service.js.map

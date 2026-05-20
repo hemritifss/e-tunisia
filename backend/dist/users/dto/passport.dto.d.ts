@@ -20,5 +20,19 @@ export interface PassportDto {
     joinedAt: string;
     stats: PassportStats;
     visitedCities: string[];
+    followersCount: number;
+    followingCount: number;
+    viewerIsFollowing?: boolean;
+    isOwner?: boolean;
+    topEndorsements: Array<{
+        topic: string;
+        count: number;
+    }>;
+    viewerEndorsedTopics?: string[];
+    topCityRank: {
+        city: string;
+        rank: number;
+        total: number;
+    } | null;
 }
 export declare function deriveLevel(points: number): PassportLevel;

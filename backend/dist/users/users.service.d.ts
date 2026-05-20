@@ -7,6 +7,7 @@ import { TripPlan } from '../itineraries/trip-plan.entity';
 import { SavedPost } from '../posts/saved-post.entity';
 import { PassportDto } from './dto/passport.dto';
 import { BadgesService } from '../badges/badges.service';
+import { EndorsementsService } from './endorsements.service';
 export declare class UsersService {
     private usersRepository;
     private reviewsRepo;
@@ -15,7 +16,8 @@ export declare class UsersService {
     private savesRepo;
     private cache;
     private badges;
-    constructor(usersRepository: Repository<User>, reviewsRepo: Repository<Review>, placesRepo: Repository<Place>, tripsRepo: Repository<TripPlan>, savesRepo: Repository<SavedPost>, cache: Cache, badges: BadgesService);
+    private endorsements;
+    constructor(usersRepository: Repository<User>, reviewsRepo: Repository<Review>, placesRepo: Repository<Place>, tripsRepo: Repository<TripPlan>, savesRepo: Repository<SavedPost>, cache: Cache, badges: BadgesService, endorsements: EndorsementsService);
     findByEmail(email: string): Promise<User | null>;
     findByHandle(handle: string): Promise<User | null>;
     isHandleAvailable(handle: string): Promise<boolean>;
@@ -36,6 +38,54 @@ export declare class UsersService {
         points: any;
     }[]>;
     assemblePassport(handle: string): Promise<PassportDto>;
+    listCitiesWithReviews(limit?: number): Promise<Array<{
+        city: string;
+        reviews: number;
+    }>>;
+    getCityReviewerLeaderboard(city: string, limit?: number): Promise<{
+        rank: number;
+        reviews: number;
+        user: {
+            id: any;
+            handle: any;
+            fullName: any;
+            avatar: any;
+            country: any;
+            points: any;
+            role: any;
+        };
+    }[]>;
+    topCityRankForUser(userId: string): Promise<{
+        city: string;
+        rank: number;
+        total: number;
+    } | null>;
+    applyLocalGuide(userId: string): Promise<{
+        ok: boolean;
+        role: import("./user.entity").UserRole.CREATOR | import("./user.entity").UserRole.ADMIN;
+        alreadyGuide: boolean;
+        reason?: undefined;
+        progress?: undefined;
+    } | {
+        ok: boolean;
+        role: import("./user.entity").UserRole.USER;
+        reason: string;
+        progress: {
+            points: number;
+            pointsRequired: number;
+            reviewsCount: number;
+            reviewsRequired: number;
+            tripsCount: number;
+            tripsRequired: number;
+        };
+        alreadyGuide?: undefined;
+    } | {
+        ok: boolean;
+        role: string;
+        alreadyGuide?: undefined;
+        reason?: undefined;
+        progress?: undefined;
+    }>;
     seedFromDraft(userId: string, draft: {
         visitedCities?: string[];
         interests?: string[];

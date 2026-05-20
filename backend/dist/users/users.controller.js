@@ -16,11 +16,19 @@ exports.UsersController = void 0;
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
+const optional_jwt_auth_guard_1 = require("../auth/guards/optional-jwt-auth.guard");
 const users_service_1 = require("./users.service");
+const follows_service_1 = require("./follows.service");
+const endorsements_service_1 = require("./endorsements.service");
+const activity_service_1 = require("./activity.service");
+const endorsement_topics_1 = require("./endorsement-topics");
 const og_service_1 = require("../og/og.service");
 let UsersController = class UsersController {
-    constructor(usersService, ogService) {
+    constructor(usersService, followsService, endorsementsService, activityService, ogService) {
         this.usersService = usersService;
+        this.followsService = followsService;
+        this.endorsementsService = endorsementsService;
+        this.activityService = activityService;
         this.ogService = ogService;
     }
     getProfile(req) {
@@ -38,13 +46,53 @@ let UsersController = class UsersController {
         const ok = await this.usersService.isHandleAvailable(handle);
         return { available: ok, reason: ok ? undefined : 'taken' };
     }
-    async byHandle(rawHandle) {
+    async byHandle(req, rawHandle) {
         const handle = (rawHandle || '').toLowerCase();
         const passport = await this.usersService.assemblePassport(handle).catch(() => null);
         if (!passport) {
             return { error: 'passport_not_found', handle };
         }
+        const viewerId = req?.user?.id || null;
+        if (viewerId) {
+            const me = await this.usersService.findById(viewerId).catch(() => null);
+            const isOwner = !!me?.handle && me.handle === passport.handle;
+            const [viewerIsFollowing, viewerEndorsedTopics] = await Promise.all([
+                isOwner ? Promise.resolve(false) : this.followsService.isFollowing(viewerId, handle),
+                isOwner ? Promise.resolve([]) : this.endorsementsService.myEndorsementsFor(viewerId, handle),
+            ]);
+            return { ...passport, isOwner, viewerIsFollowing, viewerEndorsedTopics };
+        }
         return passport;
+    }
+    endorsementTopics() {
+        return endorsement_topics_1.ENDORSEMENT_TOPICS;
+    }
+    leaderboardCities(limit) {
+        return this.usersService.listCitiesWithReviews(limit ? Number(limit) : 30);
+    }
+    leaderboardByCity(city, limit) {
+        return this.usersService.getCityReviewerLeaderboard(decodeURIComponent(city), limit ? Number(limit) : 20);
+    }
+    endorse(req, handle, body) {
+        return this.endorsementsService.endorse(req.user.id, (handle || '').toLowerCase(), body?.topic);
+    }
+    unendorse(req, handle, body) {
+        return this.endorsementsService.unendorse(req.user.id, (handle || '').toLowerCase(), body?.topic);
+    }
+    listEndorsements(handle) {
+        return this.endorsementsService.listForHandle((handle || '').toLowerCase());
+    }
+    follow(req, handle) {
+        return this.followsService.follow(req.user.id, (handle || '').toLowerCase());
+    }
+    unfollow(req, handle) {
+        return this.followsService.unfollow(req.user.id, (handle || '').toLowerCase());
+    }
+    listFollowers(handle, limit) {
+        return this.followsService.listFollowers((handle || '').toLowerCase(), limit ? Number(limit) : 50);
+    }
+    listFollowing(handle, limit) {
+        return this.followsService.listFollowing((handle || '').toLowerCase(), limit ? Number(limit) : 50);
     }
     async ogImage(rawHandle, res) {
         const handle = (rawHandle || '').toLowerCase();
@@ -60,6 +108,12 @@ let UsersController = class UsersController {
     }
     seedDraft(req, body) {
         return this.usersService.seedFromDraft(req.user.id, body || {});
+    }
+    applyLocalGuide(req) {
+        return this.usersService.applyLocalGuide(req.user.id);
+    }
+    activityFeed(req, limit) {
+        return this.activityService.followingFeed(req.user.id, limit ? Number(limit) : 20);
     }
     updateProfile(req, body) {
         return this.usersService.update(req.user.id, body);
@@ -124,11 +178,99 @@ __decorate([
 ], UsersController.prototype, "handleAvailable", null);
 __decorate([
     (0, common_1.Get)('by-handle/:handle'),
+    (0, common_1.UseGuards)(optional_jwt_auth_guard_1.OptionalJwtAuthGuard),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)('handle')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", Promise)
+], UsersController.prototype, "byHandle", null);
+__decorate([
+    (0, common_1.Get)('endorsement-topics'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "endorsementTopics", null);
+__decorate([
+    (0, common_1.Get)('leaderboards/cities'),
+    __param(0, (0, common_1.Query)('limit')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "leaderboardCities", null);
+__decorate([
+    (0, common_1.Get)('leaderboards/city/:city'),
+    __param(0, (0, common_1.Param)('city')),
+    __param(1, (0, common_1.Query)('limit')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "leaderboardByCity", null);
+__decorate([
+    (0, common_1.Post)('by-handle/:handle/endorse'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)('handle')),
+    __param(2, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String, Object]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "endorse", null);
+__decorate([
+    (0, common_1.Post)('by-handle/:handle/unendorse'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)('handle')),
+    __param(2, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String, Object]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "unendorse", null);
+__decorate([
+    (0, common_1.Get)('by-handle/:handle/endorsements'),
     __param(0, (0, common_1.Param)('handle')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
-    __metadata("design:returntype", Promise)
-], UsersController.prototype, "byHandle", null);
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "listEndorsements", null);
+__decorate([
+    (0, common_1.Post)('by-handle/:handle/follow'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)('handle')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "follow", null);
+__decorate([
+    (0, common_1.Post)('by-handle/:handle/unfollow'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)('handle')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "unfollow", null);
+__decorate([
+    (0, common_1.Get)('by-handle/:handle/followers'),
+    __param(0, (0, common_1.Param)('handle')),
+    __param(1, (0, common_1.Query)('limit')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "listFollowers", null);
+__decorate([
+    (0, common_1.Get)('by-handle/:handle/following'),
+    __param(0, (0, common_1.Param)('handle')),
+    __param(1, (0, common_1.Query)('limit')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "listFollowing", null);
 __decorate([
     (0, common_1.Get)('by-handle/:handle/og.png'),
     (0, common_1.Header)('Content-Type', 'image/png'),
@@ -149,6 +291,25 @@ __decorate([
     __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "seedDraft", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.Post)('me/apply-local-guide'),
+    __param(0, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "applyLocalGuide", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.Get)('me/activity-feed'),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Query)('limit')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "activityFeed", null);
 __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, swagger_1.ApiBearerAuth)(),
@@ -215,6 +376,9 @@ exports.UsersController = UsersController = __decorate([
     (0, swagger_1.ApiTags)('users'),
     (0, common_1.Controller)('users'),
     __metadata("design:paramtypes", [users_service_1.UsersService,
+        follows_service_1.FollowsService,
+        endorsements_service_1.EndorsementsService,
+        activity_service_1.ActivityService,
         og_service_1.OgService])
 ], UsersController);
 //# sourceMappingURL=users.controller.js.map

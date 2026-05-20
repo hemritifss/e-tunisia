@@ -30,6 +30,8 @@ export declare class User {
     subscriptionExpiresAt: Date;
     badges: string[];
     points: number;
+    followersCount: number;
+    followingCount: number;
     reviews: Review[];
     createdAt: Date;
     updatedAt: Date;
