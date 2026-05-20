@@ -14,6 +14,8 @@ export default defineConfig({
     proxy: {
       '/api': { target: 'http://localhost:3000', changeOrigin: true },
       '/uploads': { target: 'http://localhost:3000', changeOrigin: true },
+      // Socket.io: proxy both HTTP handshake and the WS upgrade.
+      '/socket.io': { target: 'http://localhost:3000', changeOrigin: true, ws: true },
     },
   },
   preview: {
@@ -23,6 +25,7 @@ export default defineConfig({
     proxy: {
       '/api': { target: 'http://localhost:3000', changeOrigin: true },
       '/uploads': { target: 'http://localhost:3000', changeOrigin: true },
+      '/socket.io': { target: 'http://localhost:3000', changeOrigin: true, ws: true },
     },
   },
   build: {

@@ -9,6 +9,7 @@
 import * as api from '../api';
 import { replaceIcons } from '../icons';
 import { requireAuth, showToast } from '../ui-utils';
+import { emitDmTyping, isUserOnline } from '../realtime';
 
 // ───────── Shell ─────────
 export function renderMessagesPage(): string {
@@ -199,14 +200,20 @@ async function renderThread(roomId: string) {
   // Messages come DESC from API — flip to ASC for display
   const asc = [...messages].reverse();
 
+  const presenceOnline = otherId ? isUserOnline(otherId) : false;
   pane.innerHTML = `
     <header class="dm-thread-head">
       <a href="#/messages" class="dm-icon-btn dm-mobile-only" aria-label="Back to inbox"><i class="lucide-arrow-left"></i></a>
       <a class="dm-thread-user" href="${otherId ? `#/user/${otherId}` : '#'}">
-        <img src="${avatar}" alt="" />
+        <span class="dm-avatar-wrap">
+          <img src="${avatar}" alt="" />
+          <span class="dm-presence-dot ${presenceOnline ? 'is-online' : ''}" data-presence-for="${otherId || ''}" title="${presenceOnline ? 'Online' : 'Offline'}"></span>
+        </span>
         <div>
           <strong>${escapeHtml(name)}</strong>
-          ${other?.country ? `<span class="text-xs text-muted">${escapeHtml(other.country)}</span>` : ''}
+          <span class="text-xs text-muted dm-thread-substatus" data-substatus-for="${otherId || ''}">
+            ${presenceOnline ? 'Online now' : (other?.country ? escapeHtml(other.country) : 'Offline')}
+          </span>
         </div>
       </a>
       <span class="dm-icon-btn" aria-hidden="true"><i class="lucide-info"></i></span>
@@ -219,6 +226,10 @@ async function renderThread(roomId: string) {
             <div class="dm-day-divider"><span>${group.label}</span></div>
             ${group.items.map((m: any) => renderBubble(m, avatar)).join('')}
           `).join('')}
+      <div class="dm-typing-row" id="dm-typing-row" hidden>
+        <img src="${avatar}" alt="" />
+        <div class="dm-typing-bubble"><span></span><span></span><span></span></div>
+      </div>
     </div>
 
     <form class="dm-composer" id="dm-composer" autocomplete="off">
@@ -235,13 +246,33 @@ async function renderThread(roomId: string) {
   // Mark as read (fire-and-forget)
   api.markRoomRead(roomId).catch(() => {});
 
-  // Autosize textarea
+  // If the most-recent message I sent is already read on the server, drop a "Seen" marker right away.
+  const lastMine = [...asc].reverse().find(m => m.senderId === myId);
+  if (lastMine && lastMine.isRead) markOwnBubblesAsSeen();
+
+  // Autosize textarea + typing indicator emit
   const ta = document.getElementById('dm-composer-input') as HTMLTextAreaElement;
   const autosize = () => {
     ta.style.height = 'auto';
     ta.style.height = Math.min(120, ta.scrollHeight) + 'px';
   };
-  ta?.addEventListener('input', autosize);
+  let typingTimer: number | null = null;
+  let lastTypingEmit = 0;
+  ta?.addEventListener('input', () => {
+    autosize();
+    // Throttle "I'm typing" to once every 2 s. After 3 s of silence, send "stopped".
+    if (!otherId) return;
+    const now = Date.now();
+    if (now - lastTypingEmit > 2000) {
+      emitDmTyping(roomId, [myId!, otherId], true);
+      lastTypingEmit = now;
+    }
+    if (typingTimer) window.clearTimeout(typingTimer);
+    typingTimer = window.setTimeout(() => {
+      emitDmTyping(roomId, [myId!, otherId], false);
+      lastTypingEmit = 0;
+    }, 3000);
+  });
 
   // Submit
   document.getElementById('dm-composer')?.addEventListener('submit', async (e) => {
@@ -276,8 +307,8 @@ async function renderThread(roomId: string) {
     }
   });
 
-  // Light polling — fetch new messages every 5 s while thread is open
-  startThreadPolling(roomId, avatar);
+  // Light polling fallback + live socket listeners (typing, read, presence)
+  startThreadPolling(roomId, avatar, otherId);
 
   setTimeout(() => ta?.focus(), 50);
 }
@@ -335,14 +366,107 @@ function groupByDay(messages: any[]) {
   return groups;
 }
 
-// ───────── Polling ─────────
+// ───────── Live (WebSocket) + fallback polling ─────────
 let pollTimer: number | null = null;
-function startThreadPolling(roomId: string, otherAvatar: string) {
+let socketListener: ((e: Event) => void) | null = null;
+let typingListener: ((e: Event) => void) | null = null;
+let readListener: ((e: Event) => void) | null = null;
+let presenceListener: ((e: Event) => void) | null = null;
+let typingHideTimer: number | null = null;
+let currentRoomForLive: string | null = null;
+let avatarForLive: string = '';
+let otherIdForLive: string | null = null;
+
+function mergeFreshMessage(m: any) {
+  // Drop the matching optimistic placeholder (same content from me) if present
+  if (m.senderId === myId) {
+    document.querySelectorAll<HTMLElement>('.dm-bubble-row.mine[data-msg-id^="tmp-"]').forEach(el => {
+      const text = el.querySelector('.dm-bubble p')?.textContent || '';
+      if (text === (m.content || '')) el.remove();
+    });
+  }
+  const haveIds = new Set(Array.from(document.querySelectorAll<HTMLElement>('.dm-bubble-row'))
+    .map(el => el.dataset.msgId));
+  if (haveIds.has(m.id)) return;
+  appendBubble(m, avatarForLive);
+  scrollToBottom();
+}
+
+function startThreadPolling(roomId: string, otherAvatar: string, otherId: string | null) {
+  // Set up shared live state
+  avatarForLive = otherAvatar;
+  currentRoomForLive = roomId;
+  otherIdForLive = otherId;
+
+  const cleanup = () => {
+    if (pollTimer) { window.clearInterval(pollTimer); pollTimer = null; }
+    if (typingHideTimer) { window.clearTimeout(typingHideTimer); typingHideTimer = null; }
+    if (socketListener)   window.removeEventListener('etunisia:dm-new-message', socketListener);
+    if (typingListener)   window.removeEventListener('etunisia:dm-typing', typingListener);
+    if (readListener)     window.removeEventListener('etunisia:dm-read', readListener);
+    if (presenceListener) window.removeEventListener('etunisia:presence-update', presenceListener);
+    socketListener = typingListener = readListener = presenceListener = null;
+    currentRoomForLive = null;
+    otherIdForLive = null;
+  };
+
+  // ── New message (live) ──
+  socketListener = (e: Event) => {
+    const payload = (e as CustomEvent).detail;
+    if (!payload || payload.roomId !== currentRoomForLive) {
+      // Different room — refresh inbox last-message preview
+      renderInbox();
+      return;
+    }
+    if (payload.message) {
+      mergeFreshMessage(payload.message);
+      api.markRoomRead(currentRoomForLive).catch(() => {});
+    }
+  };
+  window.addEventListener('etunisia:dm-new-message', socketListener);
+
+  // ── Typing indicator (live) ──
+  typingListener = (e: Event) => {
+    const p = (e as CustomEvent).detail;
+    if (!p || p.roomId !== currentRoomForLive) return;
+    if (p.userId === myId) return; // ignore echo of own typing
+    const row = document.getElementById('dm-typing-row');
+    if (!row) return;
+    if (p.isTyping) {
+      row.hidden = false;
+      scrollToBottom();
+      if (typingHideTimer) window.clearTimeout(typingHideTimer);
+      // Auto-hide if no fresh signal arrives in 5 s
+      typingHideTimer = window.setTimeout(() => { row.hidden = true; }, 5000);
+    } else {
+      row.hidden = true;
+      if (typingHideTimer) { window.clearTimeout(typingHideTimer); typingHideTimer = null; }
+    }
+  };
+  window.addEventListener('etunisia:dm-typing', typingListener);
+
+  // ── Read receipt (live) ──
+  readListener = (e: Event) => {
+    const p = (e as CustomEvent).detail;
+    if (!p || p.roomId !== currentRoomForLive) return;
+    if (p.readerId === myId) return;
+    markOwnBubblesAsSeen();
+  };
+  window.addEventListener('etunisia:dm-read', readListener);
+
+  // ── Presence (live) ──
+  presenceListener = (e: Event) => {
+    const p = (e as CustomEvent).detail;
+    if (!p || !otherIdForLive || p.userId !== otherIdForLive) return;
+    updatePresenceUI(p.userId, !!p.online);
+  };
+  window.addEventListener('etunisia:presence-update', presenceListener);
+
+  // Fallback poll (slow now that WS is in place)
   if (pollTimer) window.clearInterval(pollTimer);
   pollTimer = window.setInterval(async () => {
-    // Stop polling if user navigated away
     if (!location.hash.startsWith(`#/messages/${roomId}`)) {
-      if (pollTimer) window.clearInterval(pollTimer);
+      cleanup();
       return;
     }
     try {
@@ -350,15 +474,34 @@ function startThreadPolling(roomId: string, otherAvatar: string) {
       const have = new Set(Array.from(document.querySelectorAll<HTMLElement>('.dm-bubble-row')).map(el => el.dataset.msgId));
       const fresh = (latest || []).slice().reverse().filter((m: any) => !have.has(m.id) && !String(m.id).startsWith('tmp-'));
       if (fresh.length === 0) return;
-      // Drop optimistic placeholders if their content matches any fresh server-saved one from me
-      document.querySelectorAll<HTMLElement>('.dm-bubble-row.mine[data-msg-id^="tmp-"]').forEach(el => {
-        const text = el.querySelector('.dm-bubble p')?.textContent || '';
-        const matched = fresh.find((m: any) => m.senderId === myId && m.content === text);
-        if (matched) el.remove();
-      });
-      for (const m of fresh) appendBubble(m, otherAvatar);
-      scrollToBottom();
+      for (const m of fresh) mergeFreshMessage(m);
       api.markRoomRead(roomId).catch(() => {});
     } catch {}
-  }, 5000);
+  }, 20000);
+}
+
+/** Adds a "Seen" subscript under the last `.mine` bubble (Instagram-style). */
+function markOwnBubblesAsSeen() {
+  const body = document.getElementById('dm-thread-body');
+  if (!body) return;
+  // Remove any earlier seen markers — only the last one matters.
+  body.querySelectorAll('.dm-seen-marker').forEach(el => el.remove());
+  const mineRows = body.querySelectorAll<HTMLElement>('.dm-bubble-row.mine');
+  const last = mineRows[mineRows.length - 1];
+  if (!last) return;
+  const seen = document.createElement('div');
+  seen.className = 'dm-seen-marker';
+  seen.textContent = 'Seen';
+  last.insertAdjacentElement('afterend', seen);
+}
+
+/** Sync the presence dot + subtitle for the other participant. */
+function updatePresenceUI(userId: string, online: boolean) {
+  document.querySelectorAll<HTMLElement>(`.dm-presence-dot[data-presence-for="${userId}"]`).forEach(el => {
+    el.classList.toggle('is-online', online);
+    el.title = online ? 'Online' : 'Offline';
+  });
+  document.querySelectorAll<HTMLElement>(`.dm-thread-substatus[data-substatus-for="${userId}"]`).forEach(el => {
+    el.textContent = online ? 'Online now' : 'Offline';
+  });
 }

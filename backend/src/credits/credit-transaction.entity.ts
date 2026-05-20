@@ -11,6 +11,7 @@ export enum CreditTxKind {
     DONATION_IN = 'donation_in',   // user received a donation
     PLATFORM_FEE = 'platform_fee', // commission going to platform account
     REFUND = 'refund',
+    BOOST = 'boost',               // paid to promote a place listing
 }
 
 @Entity('credit_transactions')

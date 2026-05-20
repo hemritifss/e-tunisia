@@ -87,6 +87,56 @@ export class CreditsService {
         });
     }
 
+    /**
+     * Charge a user for boosting a place listing.
+     * Moves credits to the platform balance and records both legs.
+     * Throws BadRequestException if insufficient balance.
+     */
+    async chargeBoost(payerUserId: string, amount: number, note: string, placeId: string) {
+        if (amount <= 0) throw new BadRequestException('Boost amount must be > 0');
+        const platform = await this.ensurePlatformUser();
+        return this.dataSource.transaction(async (mgr) => {
+            const bal = await mgr.findOne(CreditBalance, { where: { userId: payerUserId } });
+            const current = Number(bal?.balance || 0);
+            if (current < amount) throw new BadRequestException('Insufficient credits — top up to boost');
+            const newBalance = current - amount;
+            bal!.balance = newBalance;
+            bal!.lifetimeOut = Number(bal!.lifetimeOut) + amount;
+            await mgr.save(bal!);
+
+            // Outgoing leg
+            await mgr.save(mgr.create(CreditTransaction, {
+                userId: payerUserId,
+                kind: CreditTxKind.BOOST,
+                amount: -amount,
+                counterpartyId: platform.id,
+                note,
+                balanceAfter: newBalance,
+                donationId: placeId, // re-use the column to point at the boosted place
+            }));
+
+            // Platform receives the boost spend
+            const platBal = await mgr.findOne(CreditBalance, { where: { userId: platform.id } })
+                ?? mgr.create(CreditBalance, { userId: platform.id, balance: 0 });
+            const platNew = Number(platBal.balance || 0) + amount;
+            platBal.balance = platNew;
+            platBal.lifetimeIn = Number(platBal.lifetimeIn || 0) + amount;
+            await mgr.save(platBal);
+
+            await mgr.save(mgr.create(CreditTransaction, {
+                userId: platform.id,
+                kind: CreditTxKind.BOOST,
+                amount,
+                counterpartyId: payerUserId,
+                note: `Boost revenue: ${note}`,
+                balanceAfter: platNew,
+                donationId: placeId,
+            }));
+
+            return { balance: newBalance, charged: amount };
+        });
+    }
+
     /** Move credits from sender to recipient (or platform) and skim a commission. */
     async donate(
         fromUserId: string,

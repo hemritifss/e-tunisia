@@ -51,6 +51,32 @@ export class MediaController {
     };
   }
 
+  /**
+   * JSON-body alternative for existing flows that already produce data URLs
+   * (FileReader → base64). Avoids forcing every page to switch to multipart.
+   */
+  @Post('from-data-url')
+  @UseGuards(JwtAuthGuard)
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        dataUrl: { type: 'string' },
+        folder: { type: 'string', default: 'uploads' },
+      },
+      required: ['dataUrl'],
+    },
+  })
+  async uploadDataUrl(@Body() body: { dataUrl: string; folder?: string }) {
+    const result = await this.storageService.uploadDataUrl(body.dataUrl, body.folder || 'uploads');
+    return {
+      success: true,
+      url: result.url,
+      key: result.key,
+      bucket: result.bucket,
+    };
+  }
+
   @Post('upload-multiple')
   @UseGuards(JwtAuthGuard)
   @ApiConsumes('multipart/form-data')

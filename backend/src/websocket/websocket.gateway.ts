@@ -43,11 +43,21 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
       // Track user's sockets
       const sockets = this.userSockets.get(payload.sub) || [];
+      const wasOffline = sockets.length === 0;
       sockets.push(client.id);
       this.userSockets.set(payload.sub, sockets);
 
       // Join user's personal room
       client.join(`user:${payload.sub}`);
+
+      // Broadcast presence change only on first socket
+      if (wasOffline) {
+        this.server.emit('presence:update', {
+          userId: payload.sub,
+          online: true,
+          ts: new Date().toISOString(),
+        });
+      }
 
       this.logger.log(`Client connected: ${client.id}, user: ${payload.sub}`);
     } catch (error) {
@@ -63,11 +73,40 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       const filtered = sockets.filter((id) => id !== client.id);
       if (filtered.length === 0) {
         this.userSockets.delete(userId);
+        // Last socket gone → user offline
+        this.server.emit('presence:update', {
+          userId,
+          online: false,
+          ts: new Date().toISOString(),
+        });
       } else {
         this.userSockets.set(userId, filtered);
       }
     }
     this.logger.log(`Client disconnected: ${client.id}`);
+  }
+
+  // ---- Presence ----
+  @SubscribeMessage('presence:list')
+  handlePresenceList() {
+    // Return list of currently-online userIds for snapshot syncing.
+    return Array.from(this.userSockets.keys());
+  }
+
+  // ---- DM typing indicator: relay between participants ----
+  @SubscribeMessage('dm:typing')
+  handleDmTyping(client: Socket, payload: { roomId: string; participantIds: string[]; isTyping: boolean }) {
+    const senderId = client.data.userId;
+    if (!senderId || !payload?.participantIds) return { error: 'Unauthorized' };
+    for (const uid of payload.participantIds) {
+      if (uid === senderId) continue;
+      this.server.to(`user:${uid}`).emit('dm:typing', {
+        roomId: payload.roomId,
+        userId: senderId,
+        isTyping: !!payload.isTyping,
+      });
+    }
+    return { status: 'ok' };
   }
 
   // ---- Feed Events ----
@@ -223,5 +262,13 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   isUserOnline(userId: string): boolean {
     return this.userSockets.has(userId);
+  }
+
+  broadcastReadReceipt(roomId: string, readerId: string, participantIds: string[]) {
+    const payload = { roomId, readerId, ts: new Date().toISOString() };
+    for (const uid of participantIds) {
+      if (uid === readerId) continue;
+      this.server.to(`user:${uid}`).emit('dm:read', payload);
+    }
   }
 }

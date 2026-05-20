@@ -174,11 +174,30 @@ export async function getReviews(placeId: string) {
   return api<any[]>(`/reviews/place/${placeId}`);
 }
 
-export async function addReview(placeId: string, rating: number, comment: string) {
+export async function addReview(
+  placeId: string,
+  rating: number,
+  comment: string,
+  opts: { images?: string[]; inquiryId?: string | null } = {},
+) {
+  const body: any = { rating, comment };
+  if (opts.images?.length) body.images = opts.images;
+  if (opts.inquiryId) body.inquiryId = opts.inquiryId;
   return api<any>(`/reviews/place/${placeId}`, {
     method: 'POST',
-    body: JSON.stringify({ rating, comment }),
+    body: JSON.stringify(body),
   });
+}
+
+export async function replyToReview(reviewId: string, replyBody: string) {
+  return api<any>(`/reviews/${reviewId}/reply`, {
+    method: 'POST',
+    body: JSON.stringify({ body: replyBody }),
+  });
+}
+
+export async function deleteReviewReply(reviewId: string) {
+  return api<any>(`/reviews/${reviewId}/reply`, { method: 'DELETE' });
 }
 
 // ── FAVORITES ────────────────────────────────
@@ -313,12 +332,46 @@ export async function getMyProfile() {
   return api<any>('/users/me');
 }
 
+// ── MEDIA UPLOADS ────────────────────────────
+/**
+ * Convert a base64 data URL into a hosted URL by sending it to MinIO via the backend.
+ * If anything fails (network, server, etc.) the function returns the original data URL
+ * so legacy flows still work — it just won't be hosted.
+ */
+export async function uploadDataUrl(dataUrl: string, folder = 'uploads'): Promise<string> {
+  if (!dataUrl || !dataUrl.startsWith('data:')) return dataUrl;
+  try {
+    const res = await api<{ url: string }>('/media/from-data-url', {
+      method: 'POST',
+      body: JSON.stringify({ dataUrl, folder }),
+    });
+    return res?.url || dataUrl;
+  } catch {
+    return dataUrl;
+  }
+}
+
 // ── POSTS ────────────────────────────────────
 export async function createPost(data: {
   title: string; body: string; category?: string;
   location?: string; placeId?: string; images?: string[]; tags?: string[];
 }) {
   return api<any>('/posts', { method: 'POST', body: JSON.stringify(data) });
+}
+
+// ── SAVED / BOOKMARKS ────────────────────────
+export async function savePost(postId: string) {
+  return api<{ saved: true }>(`/posts/${postId}/save`, { method: 'POST' });
+}
+
+export async function unsavePost(postId: string) {
+  return api<{ saved: false }>(`/posts/${postId}/save`, { method: 'DELETE' });
+}
+
+export async function listSavedPosts(page = 1, limit = 12) {
+  return api<{ data: any[]; meta: { page: number; limit: number; total: number; totalPages: number } }>(
+    `/posts/saved?page=${page}&limit=${limit}`,
+  );
 }
 
 // ── FEED ─────────────────────────────────────
@@ -499,11 +552,238 @@ export async function getPostComments(postId: string) {
   return api<any[]>(`/posts/${postId}/comments`);
 }
 
-export async function addPostComment(postId: string, body: string) {
+export async function addPostComment(postId: string, body: string, parentId?: string | null) {
   return api<any>(`/posts/${postId}/comments`, {
     method: 'POST',
-    body: JSON.stringify({ body }),
+    body: JSON.stringify({ body, parentId: parentId || undefined }),
   });
+}
+
+export async function likeComment(commentId: string) {
+  return api<{ liked: boolean; likeCount: number }>(`/posts/comments/${commentId}/like`, {
+    method: 'POST',
+  });
+}
+
+// ── PLACE INQUIRIES (lead-gen) ───────────────
+export async function submitPlaceInquiry(placeId: string, body: {
+  name: string; email: string; phone?: string;
+  partySize?: number; dateFrom?: string; dateTo?: string;
+  budget?: number; currency?: string;
+  message: string; source?: string;
+  packageId?: string;
+}) {
+  return api<{ id: string; placeId: string; placeName: string; status: string; createdAt: string }>(
+    `/places/${placeId}/inquiries`,
+    { method: 'POST', body: JSON.stringify(body) },
+  );
+}
+
+// ── TOUR PACKAGES ───────────────────────────
+export interface TourPackage {
+  id: string;
+  placeId: string;
+  title: string;
+  description: string;
+  durationDays: number;
+  pricePerPerson: number;
+  currency: string;
+  minPartySize: number;
+  maxPartySize: number;
+  includes: string[] | null;
+  images: string[] | null;
+  badge: string | null;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export async function listPackagesForPlace(placeId: string) {
+  return api<TourPackage[]>(`/places/${placeId}/packages`);
+}
+
+export async function createPackage(placeId: string, body: Partial<TourPackage>) {
+  return api<TourPackage>(`/places/${placeId}/packages`, {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+}
+
+export async function updatePackage(id: string, body: Partial<TourPackage>) {
+  return api<TourPackage>(`/packages/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(body),
+  });
+}
+
+export async function deletePackage(id: string) {
+  return api<{ deleted: true }>(`/packages/${id}`, { method: 'DELETE' });
+}
+
+export async function listMyPlaces() {
+  return api<any[]>('/places/mine');
+}
+
+// ── TRIP PLANS ───────────────────────────────
+export interface TripStop {
+  placeId: string;
+  placeName?: string | null;
+  placeCity?: string | null;
+  placeCover?: string | null;
+  packageId?: string | null;
+  packageTitle?: string | null;
+  pricePerPerson?: number | null;
+  currency?: string | null;
+  dayIndex: number;
+  addedAt: string;
+}
+export interface TripPlan {
+  id: string;
+  slug: string;
+  userId: string | null;
+  title: string;
+  travelers: number;
+  currency: string;
+  stops: TripStop[];
+  days: number;
+  isPublic: boolean;
+  viewCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export async function saveTrip(body: {
+  title?: string;
+  travelers?: number;
+  currency?: string;
+  days?: number;
+  isPublic?: boolean;
+  stops: Array<{ placeId: string; packageId?: string; dayIndex?: number }>;
+}) {
+  return api<TripPlan>('/trips', { method: 'POST', body: JSON.stringify(body) });
+}
+
+export async function getTripBySlug(slug: string) {
+  return api<TripPlan>(`/trips/${slug}`);
+}
+
+export interface DiscoverTripCard {
+  slug: string;
+  title: string;
+  travelers: number;
+  days: number;
+  currency: string;
+  viewCount: number;
+  stopCount: number;
+  previewCities: string[];
+  previewCovers: string[];
+  updatedAt: string;
+}
+
+export async function discoverTrips(params: {
+  page?: number; limit?: number; city?: string;
+  minDays?: number; maxDays?: number; sort?: 'popular' | 'new';
+} = {}) {
+  const qs = new URLSearchParams();
+  for (const [k, v] of Object.entries(params)) {
+    if (v !== undefined && v !== null && v !== '') qs.set(k, String(v));
+  }
+  const tail = qs.toString();
+  return api<{
+    data: DiscoverTripCard[];
+    meta: { page: number; limit: number; total: number; totalPages: number };
+  }>(`/trips/discover${tail ? `?${tail}` : ''}`);
+}
+
+export async function listMyTrips() {
+  return api<TripPlan[]>('/trips/mine');
+}
+
+export async function updateTrip(slug: string, body: any) {
+  return api<TripPlan>(`/trips/${slug}`, { method: 'PUT', body: JSON.stringify(body) });
+}
+
+export async function deleteTrip(slug: string) {
+  return api<{ deleted: true }>(`/trips/${slug}`, { method: 'DELETE' });
+}
+
+/** Fan-out one inquiry per stop in a trip. Guests allowed (returns slug + sent count + failures). */
+export async function batchInquireTrip(slug: string, body: {
+  name: string; email: string; phone?: string;
+  dateFrom?: string; dateTo?: string; budget?: number;
+  message: string;
+}) {
+  return api<{
+    slug: string;
+    sent: number;
+    failures: Array<{ placeId: string; reason: string }>;
+    inquiries: Array<{ placeId: string; inquiryId: string; placeName: string }>;
+  }>(`/trips/${slug}/inquiry`, { method: 'POST', body: JSON.stringify(body) });
+}
+
+// ── BOOST LISTING ────────────────────────────
+export interface BoostTier {
+  days: number;
+  credits: number;
+  label: string;
+}
+export async function getBoostTiers() {
+  return api<BoostTier[]>('/places/boost/tiers');
+}
+export async function boostListing(placeId: string, days: 1 | 7 | 30) {
+  return api<{
+    placeId: string;
+    isBoosted: true;
+    boostExpiresAt: string;
+    balanceAfter: number;
+    charged: number;
+  }>(`/places/${placeId}/boost`, {
+    method: 'POST',
+    body: JSON.stringify({ days }),
+  });
+}
+
+export async function getInquiryBreakdown() {
+  return api<{
+    sources: Array<{ source: string; total: number; booked: number }>;
+    packages: Array<{ id: string; title: string; pricePerPerson: number; currency: string; total: number; booked: number }>;
+  }>('/inquiries/breakdown');
+}
+
+export async function getInquiryStats() {
+  return api<{
+    placeCount: number; total: number;
+    new: number; contacted: number; quoted: number; booked: number; closed: number;
+    last7Days: number; conversionRate: number;
+  }>('/inquiries/stats');
+}
+
+export async function listMyInquiries(page = 1, limit = 20) {
+  return api<{ data: any[]; meta: { page: number; limit: number; total: number; totalPages: number } }>(
+    `/inquiries/mine?page=${page}&limit=${limit}`,
+  );
+}
+
+export async function listReceivedInquiries(page = 1, limit = 20) {
+  return api<{ data: any[]; meta: any }>(`/inquiries/received?page=${page}&limit=${limit}`);
+}
+
+export async function updateInquiryStatus(id: string, status: 'new' | 'contacted' | 'quoted' | 'booked' | 'closed') {
+  return api<any>(`/inquiries/${id}/status`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status }),
+  });
+}
+
+export async function getPostReactors(postId: string, params: { type?: string; page?: number; limit?: number } = {}) {
+  const qs = new URLSearchParams(
+    Object.entries(params)
+      .filter(([, v]) => v !== undefined && v !== null && v !== '')
+      .map(([k, v]) => [k, String(v)]),
+  ).toString();
+  return api<{ data: Array<{ userId: string; type: string; createdAt: string; user: { id: string; fullName: string; avatar: string | null; country: string | null } }>; meta: any }>(
+    `/posts/${postId}/reactors${qs ? `?${qs}` : ''}`,
+  );
 }
 
 // ── SEARCH (aggregated across places, posts, users) ──────

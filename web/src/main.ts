@@ -35,6 +35,13 @@ import { renderSearchPage, initSearchPage } from './pages/search';
 import { renderProfileEditPage, initProfileEditPage } from './pages/profile-edit';
 import { renderMessagesPage, initMessagesPage } from './pages/messages';
 import { renderOnboardingPage, initOnboardingPage } from './pages/onboarding';
+import { renderSavedPage, initSavedPage } from './pages/saved';
+import { renderTagPage, initTagPage } from './pages/tag';
+import { renderInquiriesPage, initInquiriesPage } from './pages/inquiries';
+import { renderOwnerPage, initOwnerPage } from './pages/owner';
+import { renderTripPage, initTripPage } from './pages/trip';
+import { renderDiscoverTripsPage, initDiscoverTripsPage } from './pages/discover-trips';
+import { mountTripCart } from './trip-cart-ui';
 import { connectRealtime, disconnectRealtime } from './realtime';
 import { replaceIcons } from './icons';
 import { posts, addUserPost, generateId, type Post } from './data';
@@ -58,7 +65,7 @@ function getRoute(hash: string): Route {
 
   // --- Auth Guard ---
   // Routes that REQUIRE login (personal data). Everything else is browsable as guest.
-  const authRequiredPrefixes = ['/profile', '/favorites', '/settings', '/badges', '/leaderboard', '/credits', '/messages'];
+  const authRequiredPrefixes = ['/profile', '/favorites', '/saved', '/inquiries', '/owner', '/settings', '/badges', '/leaderboard', '/credits', '/messages'];
   const authOnlyHome = path === '/';
   const requiresAuth = authOnlyHome || authRequiredPrefixes.some(p => path === p || path.startsWith(p + '/'));
   const heroOnlyRoutes = ['/login', '/register'];
@@ -84,6 +91,28 @@ function getRoute(hash: string): Route {
       render: () => renderPostDetailPage(pid),
       init: () => initPostDetailPage(pid),
       page: 'feed',
+    };
+  }
+
+  // Hashtag page — /tag/<slug>
+  const tagMatch = path.match(/^\/tag\/([^?/]+)/);
+  if (tagMatch) {
+    const tag = decodeURIComponent(tagMatch[1]);
+    return {
+      render: () => renderTagPage(tag),
+      init: () => initTagPage(tag),
+      page: 'explore',
+    };
+  }
+
+  // Trip plan — /trip (current cart) or /trip/<slug> (saved)
+  const tripMatch = path.match(/^\/trip(?:\/([a-z0-9]{4,32}))?$/i);
+  if (tripMatch) {
+    const slug = tripMatch[1] || null;
+    return {
+      render: () => renderTripPage(slug),
+      init: () => initTripPage(slug),
+      page: 'itineraries',
     };
   }
 
@@ -148,6 +177,10 @@ function getRoute(hash: string): Route {
     '/credits': { render: renderCreditsPage, init: () => initCreditsPage(), page: 'profile' },
     '/profile/edit': { render: renderProfileEditPage, init: () => initProfileEditPage(), page: 'profile' },
     '/onboarding':   { render: renderOnboardingPage,  init: () => initOnboardingPage(),  page: '' },
+    '/saved':        { render: renderSavedPage,       init: () => initSavedPage(),       page: 'favorites' },
+    '/inquiries':    { render: renderInquiriesPage,   init: () => initInquiriesPage(),   page: 'profile' },
+    '/owner':        { render: renderOwnerPage,       init: () => initOwnerPage(),       page: 'profile' },
+    '/discover-trips': { render: renderDiscoverTripsPage, init: () => initDiscoverTripsPage(), page: 'itineraries' },
   };
 
   return routes[path] || routes['/'];
@@ -172,10 +205,12 @@ function navigate() {
       (window as any).__userHydrated = true;
       hydrateCurrentUser();
       maybeRedirectToOnboarding();
+      connectRealtime(); // live notifications + DMs
     }
   } else {
     document.body.classList.add('guest-mode');
     (window as any).__userHydrated = false;
+    disconnectRealtime();
   }
 
   const route = getRoute(location.hash);
@@ -528,8 +563,33 @@ function initNotifications() {
 
   markReadBtn?.addEventListener('click', async () => {
     panel?.querySelectorAll('.notif-item.unread').forEach(item => item.classList.remove('unread'));
+    panel?.querySelectorAll('.notif-unread-dot').forEach(d => d.remove());
     if (badge) badge.style.display = 'none';
     try { await apiService.markAllNotificationsRead(); } catch {}
+  });
+
+  // Click any single notification → mark it read (without blocking the link's navigation).
+  list?.addEventListener('click', async (ev) => {
+    const target = ev.target as HTMLElement | null;
+    if (!target) return;
+    const item = target.closest('.notif-item') as HTMLElement | null;
+    if (!item) return;
+    const id = item.dataset.id;
+    if (!id) return;
+    const wasUnread = item.classList.contains('unread');
+    if (!wasUnread) return;
+    // Optimistically clear the unread state
+    item.classList.remove('unread');
+    item.querySelector('.notif-unread-dot')?.remove();
+    if (badge) {
+      const current = Number(badge.textContent || '0') || 0;
+      const next = Math.max(0, current - 1);
+      if (next === 0) badge.style.display = 'none';
+      else badge.textContent = String(next);
+    }
+    try { await apiService.markNotificationRead(id); } catch {}
+    // Close the panel on link clicks so the user sees the destination.
+    if (item.tagName === 'A') closeNotifs();
   });
 
   window.addEventListener('hashchange', closeNotifs);
@@ -546,6 +606,26 @@ function initNotifications() {
   } else if (badge) {
     badge.style.display = 'none';
   }
+
+  // ── Live notifications from WebSocket ──
+  window.addEventListener('etunisia:notification-new', (e: any) => {
+    const n = e?.detail || {};
+    // 1. Bump the badge
+    if (badge) {
+      const current = Number(badge.textContent || '0') || 0;
+      const next = current + 1;
+      badge.textContent = String(next);
+      badge.style.display = '';
+    }
+    // 2. If panel is open, prepend the new item live; otherwise refresh on next open
+    if (panel?.classList.contains('open')) {
+      loadNotifs();
+    }
+    // 3. Lightweight toast so the user knows something happened even if the panel isn't open
+    const title = n.title || 'New activity';
+    const body = n.body ? ` — ${n.body}` : '';
+    import('./ui-utils').then(({ showToast }) => showToast(`${title}${body}`.slice(0, 140), { type: 'info' }));
+  });
 }
 
 // ---- User dropdown ----
@@ -755,13 +835,17 @@ function initPostModal() {
     photoPreview.innerHTML = '';
 
     Array.from(fileInput.files).forEach(file => {
-      selectedFiles.push(file.name);
       const reader = new FileReader();
       reader.onload = (ev) => {
+        const dataUrl = (ev.target?.result as string) || '';
+        if (!dataUrl) return;
+        // Track the actual data URL so submitPost can upload + include it in the post.
+        selectedFiles.push(dataUrl);
+
         const wrapper = document.createElement('div');
         wrapper.className = 'post-modal-photo-thumb';
         wrapper.innerHTML = `
-          <img src="${ev.target?.result}" alt="${file.name}" />
+          <img src="${dataUrl}" alt="${file.name}" />
           <button class="post-modal-photo-remove" aria-label="Remove photo">
             <i class="lucide-x"></i>
           </button>
@@ -771,7 +855,7 @@ function initPostModal() {
 
         wrapper.querySelector('.post-modal-photo-remove')?.addEventListener('click', () => {
           wrapper.remove();
-          selectedFiles = selectedFiles.filter(f => f !== file.name);
+          selectedFiles = selectedFiles.filter(d => d !== dataUrl);
         });
       };
       reader.readAsDataURL(file);
@@ -877,11 +961,19 @@ function initPostModal() {
     if (apiService.isLoggedIn()) {
       try {
         if (submitBtn) submitBtn.disabled = true;
+        // Push any attached photos to MinIO and use the returned URLs.
+        let imageUrls: string[] = [];
+        if (selectedFiles.length > 0) {
+          imageUrls = await Promise.all(
+            selectedFiles.map(d => apiService.uploadDataUrl(d, 'posts')),
+          );
+        }
         await apiService.createPost({
           title: titleInput.value.trim(),
           body: bodyText,
           category: selectedCatName,
           location: selectedLocation || undefined,
+          images: imageUrls.length > 0 ? imageUrls : undefined,
         });
         savedToBackend = true;
       } catch (err) {
@@ -984,6 +1076,9 @@ function init() {
   };
   document.getElementById('logout-btn')?.addEventListener('click', handleLogout);
   document.getElementById('mobile-logout-btn')?.addEventListener('click', handleLogout);
+
+  // Mount the floating trip-cart UI once on app boot
+  mountTripCart();
 
   window.addEventListener('hashchange', navigate);
   navigate();

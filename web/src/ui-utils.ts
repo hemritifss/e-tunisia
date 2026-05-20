@@ -117,7 +117,7 @@ export function linkifyHashtagsAndMentions(text: string): string {
   // Link hashtags (Unicode letter ranges so Arabic / French chars work)
   let out = esc.replace(
     /#([\p{L}\p{N}_]{1,40})/gu,
-    (_, tag) => `<a class="hashtag-link" href="#/search?hashtag=${encodeURIComponent(tag)}">#${tag}</a>`,
+    (_, tag) => `<a class="hashtag-link" href="#/tag/${encodeURIComponent(tag)}">#${tag}</a>`,
   );
   // Link mentions: @first.last style — opens search for now since name→id resolution lives server-side later
   out = out.replace(

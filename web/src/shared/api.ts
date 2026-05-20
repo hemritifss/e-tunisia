@@ -128,6 +128,27 @@ export const api = {
   },
   // Live 24h stories grouped by author
   getStories: () => fetchWithAuth(`/api/v1/stories`),
+  getTrendingHashtags: (limit = 8) =>
+    fetchWithAuth(`/api/v1/feed/trending-hashtags?limit=${limit}`),
+
+  // Post reactions
+  reactToPost: (postId: string, type: string | null) =>
+    fetchWithAuth(`/api/v1/posts/${postId}/react`, {
+      method: 'POST',
+      body: JSON.stringify({ type }),
+    }),
+  getPostReactions: (postId: string) =>
+    fetchWithAuth(`/api/v1/posts/${postId}/reactions`),
+  getPostReactors: (postId: string, params?: { type?: string; page?: number; limit?: number }) => {
+    const qs = params
+      ? '?' + new URLSearchParams(
+          Object.entries(params)
+            .filter(([, v]) => v !== undefined && v !== null && v !== '')
+            .map(([k, v]) => [k, String(v)]),
+        ).toString()
+      : '';
+    return fetchWithAuth(`/api/v1/posts/${postId}/reactors${qs}`);
+  },
   createStory: (data: { imageUrl: string; caption?: string }) =>
     fetchWithAuth(`/api/v1/stories`, { method: 'POST', body: JSON.stringify(data) }),
   viewStory: (id: string) =>
@@ -157,6 +178,26 @@ export const api = {
   // Favorites
   toggleFavorite: (placeId: string) =>
     fetchWithAuth(`/api/v1/users/favorites/${placeId}`, { method: 'POST' }),
+
+  // Saved posts (bookmarks)
+  savePost: (postId: string) =>
+    fetchWithAuth(`/api/v1/posts/${postId}/save`, { method: 'POST' }),
+  unsavePost: (postId: string) =>
+    fetchWithAuth(`/api/v1/posts/${postId}/save`, { method: 'DELETE' }),
+  // Public trip discovery
+  getTripsDiscover: (params?: { sort?: 'popular' | 'new'; limit?: number; city?: string }) => {
+    const qs = params ? '?' + new URLSearchParams(
+      Object.entries(params)
+        .filter(([, v]) => v !== undefined && v !== null && v !== '')
+        .map(([k, v]) => [k, String(v)]),
+    ).toString() : '';
+    return fetchWithAuth(`/api/v1/trips/discover${qs}`);
+  },
+
+  listSavedPosts: (params?: { page?: number; limit?: number }) => {
+    const qs = params ? '?' + new URLSearchParams(Object.entries(params).map(([k, v]) => [k, String(v)])).toString() : '';
+    return fetchWithAuth(`/api/v1/posts/saved${qs}`);
+  },
 
   // Tips
   getTips: () => fetchWithAuth('/api/v1/tips'),

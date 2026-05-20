@@ -228,7 +228,10 @@ export async function initProfileEditPage() {
     btn.innerHTML = 'Saving…';
     try {
       const patch: any = { fullName, country, phone, bio: bioVal, website };
-      if (pendingAvatar) patch.avatar = pendingAvatar;
+      if (pendingAvatar) {
+        // Upload the data URL to MinIO so we store a short URL, not 2MB of base64 in PG.
+        patch.avatar = await api.uploadDataUrl(pendingAvatar, 'avatars');
+      }
       await api.updateMyProfile(patch);
       (window as any).__userHydrated = false;
       window.dispatchEvent(new CustomEvent('etunisia:profile-updated'));

@@ -9,6 +9,9 @@ import { io, Socket } from 'socket.io-client';
 let socket: Socket | null = null;
 let currentToken: string | null = null;
 
+// In-memory snapshot of who's online (userIds). Kept in sync with `presence:update` events.
+const onlineUsers = new Set<string>();
+
 function getSocketUrl(): string {
   // Same-origin in production behind the proxy; explicit when same-origin fails.
   // The Nest gateway lives on namespace `/events`.
@@ -50,6 +53,14 @@ export function connectRealtime() {
     // Subscribe to per-user channels
     socket?.emit('notif:subscribe');
     socket?.emit('feed:subscribe');
+    // Pull a snapshot of who's online right now
+    socket?.emit('presence:list', null, (ids: any) => {
+      if (Array.isArray(ids)) {
+        onlineUsers.clear();
+        for (const id of ids) onlineUsers.add(String(id));
+        window.dispatchEvent(new CustomEvent('etunisia:presence-snapshot', { detail: ids }));
+      }
+    });
     window.dispatchEvent(new CustomEvent('etunisia:realtime-connected'));
   });
 
@@ -70,6 +81,39 @@ export function connectRealtime() {
   socket.on('dm:new-message', (payload: any) => {
     window.dispatchEvent(new CustomEvent('etunisia:dm-new-message', { detail: payload }));
   });
+
+  // ── Presence updates (someone came online or went offline) ──
+  socket.on('presence:update', (payload: { userId: string; online: boolean }) => {
+    if (!payload?.userId) return;
+    if (payload.online) onlineUsers.add(payload.userId);
+    else onlineUsers.delete(payload.userId);
+    window.dispatchEvent(new CustomEvent('etunisia:presence-update', { detail: payload }));
+  });
+
+  // ── DM typing relay from the other participant ──
+  socket.on('dm:typing', (payload: any) => {
+    window.dispatchEvent(new CustomEvent('etunisia:dm-typing', { detail: payload }));
+  });
+
+  // ── DM read receipt — the other user saw the messages ──
+  socket.on('dm:read', (payload: any) => {
+    window.dispatchEvent(new CustomEvent('etunisia:dm-read', { detail: payload }));
+  });
+}
+
+/** Snapshot of currently online user-ids (frontend cache, kept in sync via `presence:update`). */
+export function getOnlineUsers(): Set<string> {
+  return onlineUsers;
+}
+
+export function isUserOnline(userId: string): boolean {
+  return onlineUsers.has(userId);
+}
+
+/** Tell the server I'm typing (or stopped) in a specific DM room. */
+export function emitDmTyping(roomId: string, participantIds: string[], isTyping: boolean) {
+  if (!socket?.connected) return;
+  socket.emit('dm:typing', { roomId, participantIds, isTyping });
 }
 
 export function disconnectRealtime() {
