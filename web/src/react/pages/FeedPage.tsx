@@ -138,7 +138,7 @@ function PostCard({ post }: { post: Post }) {
               {/* Header */}
               <div className="flex items-center gap-2 mb-2">
                 <a
-                  href={post.author?.id ? `#/user/${post.author.id}` : '#'}
+                  href={(post.author as any)?.handle ? `#/u/${(post.author as any).handle}` : (post.author?.id ? `#/user/${post.author.id}` : '#')}
                   className="contents"
                   onClick={(e) => { if (!post.author?.id) e.preventDefault(); }}
                 >
@@ -150,7 +150,7 @@ function PostCard({ post }: { post: Post }) {
                 </a>
                 <div className="flex-1 min-w-0">
                   <a
-                    href={post.author?.id ? `#/user/${post.author.id}` : '#'}
+                    href={(post.author as any)?.handle ? `#/u/${(post.author as any).handle}` : (post.author?.id ? `#/user/${post.author.id}` : '#')}
                     className="text-sm font-medium truncate hover:text-brand"
                     onClick={(e) => { if (!post.author?.id) e.preventDefault(); }}
                   >
