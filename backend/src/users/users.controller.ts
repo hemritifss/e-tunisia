@@ -77,6 +77,18 @@ export class UsersController {
         return ENDORSEMENT_TOPICS;
     }
 
+    /** Cities that have reviews. For the city-leaderboard dropdown. */
+    @Get('leaderboards/cities')
+    leaderboardCities(@Query('limit') limit?: string) {
+        return this.usersService.listCitiesWithReviews(limit ? Number(limit) : 30);
+    }
+
+    /** Top reviewers in a given city. */
+    @Get('leaderboards/city/:city')
+    leaderboardByCity(@Param('city') city: string, @Query('limit') limit?: string) {
+        return this.usersService.getCityReviewerLeaderboard(decodeURIComponent(city), limit ? Number(limit) : 20);
+    }
+
     @Post('by-handle/:handle/endorse')
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()

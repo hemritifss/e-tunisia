@@ -198,6 +198,75 @@ export class UsersService {
     }
 
     /**
+     * Cities (with at least one review) for the leaderboard city picker.
+     * Sorted by total review activity DESC. Public surface, used by the
+     * frontend leaderboard page dropdown.
+     */
+    async listCitiesWithReviews(limit = 30): Promise<Array<{ city: string; reviews: number }>> {
+        const rows = await this.reviewsRepo
+            .createQueryBuilder('r')
+            .innerJoin('r.place', 'p')
+            .select('p.city', 'city')
+            .addSelect('COUNT(*)', 'reviews')
+            .where("p.city IS NOT NULL AND p.city <> ''")
+            .groupBy('p.city')
+            .orderBy('reviews', 'DESC')
+            .limit(Math.min(100, Math.max(1, limit)))
+            .getRawMany()
+            .catch(() => [] as Array<{ city: string; reviews: string }>);
+        return rows.map((r: any) => ({ city: r.city, reviews: Number(r.reviews) }));
+    }
+
+    /**
+     * Top reviewers in a given city, with public-safe author fields.
+     * Returns rank-ordered list ready to render on the leaderboard page.
+     */
+    async getCityReviewerLeaderboard(city: string, limit = 20) {
+        const trimmed = (city || '').trim();
+        if (!trimmed) return [];
+
+        const rows = await this.reviewsRepo
+            .createQueryBuilder('r')
+            .innerJoin('r.place', 'p')
+            .select('r.userId', 'userId')
+            .addSelect('COUNT(*)', 'reviews')
+            .where('p.city = :city', { city: trimmed })
+            .groupBy('r.userId')
+            .orderBy('reviews', 'DESC')
+            .limit(Math.min(100, Math.max(1, limit)))
+            .getRawMany()
+            .catch(() => [] as Array<{ userId: string; reviews: string }>);
+        if (!rows.length) return [];
+
+        const userIds = rows.map((r: any) => r.userId);
+        const users = await this.usersRepository.find({
+            where: userIds.map((id) => ({ id })),
+            select: ['id', 'handle', 'fullName', 'avatar', 'country', 'points', 'role'] as any,
+        });
+        const byId = new Map(users.map((u: any) => [u.id, u]));
+
+        return rows
+            .map((r: any, i: number) => {
+                const u: any = byId.get(r.userId);
+                if (!u) return null;
+                return {
+                    rank: i + 1,
+                    reviews: Number(r.reviews),
+                    user: {
+                        id: u.id,
+                        handle: u.handle ?? null,
+                        fullName: u.fullName,
+                        avatar: u.avatar || null,
+                        country: u.country || null,
+                        points: u.points || 0,
+                        role: u.role,
+                    },
+                };
+            })
+            .filter(Boolean);
+    }
+
+    /**
      * Compute the city where this user has their best review-count rank.
      * Returns { city, rank, total } only when they're top-3 in that city.
      * Cheap enough on read because Phase-1 cache already wraps the passport.

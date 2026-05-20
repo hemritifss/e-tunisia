@@ -13451,6 +13451,48 @@ section[class^="hero-"] {
     box-shadow: 0 8px 20px rgba(0,0,0,0.3);
 }
 
+/* Leaderboard tabs + city picker */
+.leaderboard-tabs { display: flex; gap: 6px; margin-top: 16px; flex-wrap: wrap; }
+.leaderboard-tab {
+    padding: 8px 14px; border-radius: 999px;
+    background: transparent;
+    border: 1px solid var(--border, #e5e7eb);
+    color: var(--text, #1a1a1a);
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 120ms;
+}
+.leaderboard-tab:hover { border-color: #d4623a; }
+.leaderboard-tab.active { background: #0b1e3f; color: #fff; border-color: #0b1e3f; }
+.leaderboard-city-row {
+    display: flex; gap: 8px; align-items: center;
+    margin-top: 12px; font-size: 14px;
+}
+.leaderboard-city-row[hidden] { display: none; }
+.leaderboard-city-row label { color: var(--text-muted, #9aa0a6); }
+.leaderboard-city-row select {
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border, #e5e7eb);
+    background: var(--card-bg, #fff);
+    color: var(--text, #1a1a1a);
+    font-size: 13px;
+}
+.leaderboard-guide-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    margin-left: 6px;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: rgba(86,207,225,0.4);
+    color: #14202b;
+    font-size: 10px; font-weight: 700;
+}
+@media (prefers-color-scheme: dark) {
+    .leaderboard-tab { color: #e8eaed; border-color: #2a2f37; }
+    .leaderboard-tab.active { background: #d4623a; border-color: #d4623a; }
+    .leaderboard-city-row select { background: #1a1d23; color: #e8eaed; border-color: #2a2f37; }
+}
+
 .passport-section-tight { margin: 0 0 16px; }
 .passport-endorse-strip { display: flex; flex-wrap: wrap; gap: 8px; }
 .passport-endorse-chip {
