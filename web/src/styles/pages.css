@@ -13679,6 +13679,184 @@ section[class^="hero-"] {
 }
 
 /* ============================================
+   TIER BADGES — ✦ Pro, ✓ Business, ✓ Local Guide
+   ============================================ */
+.tier-badge-group {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    vertical-align: middle;
+    margin-left: 6px;
+}
+.tier-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    line-height: 1;
+    font-weight: 800;
+    flex-shrink: 0;
+    font-family: var(--font-display);
+}
+.tier-badge-xs { width: 14px; height: 14px; font-size: 9px; }
+.tier-badge-sm { width: 16px; height: 16px; font-size: 10px; }
+.tier-badge-md { width: 22px; height: 22px; font-size: 13px; }
+
+.tier-badge-pro {
+    background: linear-gradient(135deg, var(--gold), var(--amber));
+    color: oklch(20% 0.04 60);
+    box-shadow: 0 0 0 1px oklch(100% 0 0 / 0.4) inset, var(--shadow-glow-gold);
+}
+.tier-badge-business {
+    background: linear-gradient(135deg, var(--mediterranean), var(--cyan));
+    color: #fff;
+    box-shadow: 0 0 0 1px oklch(100% 0 0 / 0.4) inset, var(--shadow-glow-blue);
+}
+.tier-badge-guide {
+    background: color-mix(in oklch, var(--cyan) 35%, transparent);
+    color: oklch(20% 0.05 200);
+}
+
+/* ============================================
+   PRO GATE — soft paywalls that aren't gross
+   ============================================ */
+
+/* Full card variant — for empty-cap states (3rd trip, 20th save). */
+.pro-gate-card {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 16px;
+    background:
+        radial-gradient(80% 100% at 100% 0%, color-mix(in oklch, var(--gold) 16%, transparent), transparent 60%),
+        var(--surface);
+    border: 1px solid color-mix(in oklch, var(--gold) 22%, var(--border));
+    border-radius: var(--radius-xl);
+    text-decoration: none;
+    color: inherit;
+    transition: all var(--duration-normal) var(--ease-spring);
+    box-shadow: var(--shadow-sm);
+}
+.pro-gate-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md), var(--shadow-glow-gold);
+    border-color: var(--gold);
+}
+.pro-gate-card.is-business {
+    background:
+        radial-gradient(80% 100% at 100% 0%, color-mix(in oklch, var(--cyan) 16%, transparent), transparent 60%),
+        var(--surface);
+    border-color: color-mix(in oklch, var(--cyan) 22%, var(--border));
+}
+.pro-gate-card.is-business:hover {
+    box-shadow: var(--shadow-md), var(--shadow-glow-blue);
+    border-color: var(--cyan);
+}
+.pro-gate-card-icon {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, var(--gold), var(--amber));
+    color: oklch(20% 0.04 60);
+    flex-shrink: 0;
+    box-shadow: var(--shadow-glow-gold);
+}
+.pro-gate-card.is-business .pro-gate-card-icon {
+    background: linear-gradient(135deg, var(--mediterranean), var(--cyan));
+    color: #fff;
+    box-shadow: var(--shadow-glow-blue);
+}
+.pro-gate-card-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.pro-gate-card-body strong {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: var(--text-base);
+    color: var(--text-primary);
+    letter-spacing: var(--tracking-tight);
+}
+.pro-gate-card-body span { font-size: var(--text-sm); color: var(--text-secondary); line-height: var(--leading-snug); }
+.pro-gate-card-cta {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: var(--text-sm);
+    color: oklch(58% 0.18 70);
+    flex-shrink: 0;
+    padding: 8px 14px;
+    background: color-mix(in oklch, var(--gold) 14%, transparent);
+    border-radius: var(--radius-full);
+    transition: all var(--duration-fast) var(--ease-out);
+}
+.pro-gate-card:hover .pro-gate-card-cta { background: var(--gold); color: oklch(20% 0.04 60); }
+.pro-gate-card.is-business .pro-gate-card-cta { color: var(--mediterranean); background: color-mix(in oklch, var(--mediterranean) 14%, transparent); }
+.pro-gate-card.is-business:hover .pro-gate-card-cta { background: var(--mediterranean); color: #fff; }
+
+/* Inline pill — small gates next to feature labels. */
+.pro-gate-pill {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 10px;
+    border-radius: var(--radius-full);
+    background: color-mix(in oklch, var(--gold) 18%, transparent);
+    color: oklch(40% 0.12 70);
+    font-family: var(--font-display);
+    font-size: var(--text-xs);
+    font-weight: 600;
+    text-decoration: none;
+    transition: all var(--duration-fast) var(--ease-out);
+}
+.pro-gate-pill:hover { background: var(--gold); color: oklch(20% 0.04 60); }
+.pro-gate-pill.is-business { background: color-mix(in oklch, var(--cyan) 18%, transparent); color: oklch(40% 0.12 200); }
+.pro-gate-pill.is-business:hover { background: var(--cyan); color: #fff; }
+
+/* Tease — children rendered behind a glass overlay with the CTA on top. */
+.pro-gate-tease { position: relative; border-radius: var(--radius-xl); overflow: hidden; }
+.pro-gate-tease-inner { filter: blur(2px) saturate(0.6); opacity: 0.55; pointer-events: none; user-select: none; }
+.pro-gate-tease-overlay {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 6px;
+    padding: 24px;
+    background:
+        radial-gradient(60% 60% at 50% 50%, color-mix(in oklch, var(--gold) 25%, transparent), transparent 70%),
+        oklch(100% 0 0 / 0.4);
+    backdrop-filter: blur(8px) saturate(140%);
+    text-decoration: none;
+    color: inherit;
+    text-align: center;
+    transition: background var(--duration-fast) var(--ease-out);
+}
+.pro-gate-tease.is-business .pro-gate-tease-overlay {
+    background:
+        radial-gradient(60% 60% at 50% 50%, color-mix(in oklch, var(--cyan) 25%, transparent), transparent 70%),
+        oklch(100% 0 0 / 0.4);
+}
+.pro-gate-tease-overlay:hover { background: radial-gradient(60% 60% at 50% 50%, color-mix(in oklch, var(--gold) 35%, transparent), transparent 70%), oklch(100% 0 0 / 0.55); }
+.pro-gate-tease-emoji {
+    font-size: 36px;
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, var(--gold), var(--amber));
+    color: oklch(20% 0.04 60);
+    box-shadow: var(--shadow-glow-gold);
+}
+.pro-gate-tease.is-business .pro-gate-tease-emoji {
+    background: linear-gradient(135deg, var(--mediterranean), var(--cyan));
+    color: #fff;
+    box-shadow: var(--shadow-glow-blue);
+}
+.pro-gate-tease-overlay strong { font-family: var(--font-display); font-weight: 700; font-size: var(--text-lg); color: var(--text-primary); }
+.pro-gate-tease-overlay p { margin: 0; max-width: 320px; font-size: var(--text-sm); color: var(--text-secondary); }
+
+@media (prefers-color-scheme: dark) {
+    .pro-gate-card { background: radial-gradient(80% 100% at 100% 0%, color-mix(in oklch, var(--gold) 12%, transparent), transparent 60%), oklch(20% 0.012 260); }
+    .pro-gate-card.is-business { background: radial-gradient(80% 100% at 100% 0%, color-mix(in oklch, var(--cyan) 12%, transparent), transparent 60%), oklch(20% 0.012 260); }
+    .pro-gate-card-body strong { color: oklch(96% 0 0); }
+    .pro-gate-tease-overlay { background: radial-gradient(60% 60% at 50% 50%, color-mix(in oklch, var(--gold) 22%, transparent), transparent 70%), oklch(15% 0.01 260 / 0.6); }
+    .pro-gate-tease-overlay strong { color: oklch(96% 0 0); }
+    .pro-gate-tease.is-business .pro-gate-tease-overlay { background: radial-gradient(60% 60% at 50% 50%, color-mix(in oklch, var(--cyan) 22%, transparent), transparent 70%), oklch(15% 0.01 260 / 0.6); }
+    .pro-gate-pill { background: color-mix(in oklch, var(--gold) 22%, transparent); color: oklch(75% 0.16 80); }
+    .pro-gate-pill.is-business { background: color-mix(in oklch, var(--cyan) 22%, transparent); color: oklch(78% 0.14 200); }
+}
+
+/* ============================================
    STORIES STRIP v2 — top-of-feed ephemeral content
    Animated conic gradient ring on unviewed stories,
    premium hover lift, Tunisia palette

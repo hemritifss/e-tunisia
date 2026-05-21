@@ -6,6 +6,7 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { BadgesModule } from './badges/badges.module';
+import { BillingModule } from './billing/billing.module';
 import { OgModule } from './og/og.module';
 import { PlacesModule } from './places/places.module';
 import { CategoriesModule } from './categories/categories.module';
@@ -70,6 +71,7 @@ import { getDatabaseConfig } from './database/database.config';
     UsersModule,
     BadgesModule,
     OgModule,
+    BillingModule,
     PlacesModule,
     CategoriesModule,
     ReviewsModule,
