@@ -36,6 +36,7 @@ import { renderUserProfilePage, initUserProfilePage } from './pages/user-profile
 import { renderPostDetailPage, initPostDetailPage } from './pages/post-detail';
 import { renderSearchPage, initSearchPage } from './pages/search';
 import { initCommandPalette } from './command-palette';
+import { initToasts } from './toasts';
 import { renderProfileEditPage, initProfileEditPage } from './pages/profile-edit';
 import { renderMessagesPage, initMessagesPage } from './pages/messages';
 import { renderOnboardingPage, initOnboardingPage } from './pages/onboarding';
@@ -1146,6 +1147,7 @@ function initPostModal() {
 // ---- Init ----
 function init() {
   initTheme();
+  initToasts();
   initSearch();
   initNotifications();
   initCommandPalette();

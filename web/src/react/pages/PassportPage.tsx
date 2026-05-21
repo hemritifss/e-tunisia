@@ -332,8 +332,16 @@ function FollowButton({ handle, initiallyFollowing, onChange }: { handle: string
             if (next) await api.followHandle(handle);
             else await api.unfollowHandle(handle);
             onChange?.();
+            const fn = (window as any).showToast;
+            if (fn) fn({
+                message: next ? `You're now following @${handle}` : `Unfollowed @${handle}`,
+                type: next ? 'success' : 'info',
+                emoji: next ? '🤝' : undefined,
+            });
         } catch {
             setFollowing(!next); // rollback
+            const fn = (window as any).showToast;
+            if (fn) fn({ message: 'Could not update follow — please try again.', type: 'error' });
         } finally {
             setBusy(false);
         }

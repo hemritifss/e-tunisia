@@ -49,6 +49,11 @@ export const useUIStore = create<UIState>((set) => ({
   showToast: (message, type = 'info') => {
     toastId++;
     set({ toast: { message, type, id: toastId } });
+    // Bridge to the vanilla toast layer rendered globally by initToasts() —
+    // without this every existing showToast() call silently dropped.
+    try {
+      window.dispatchEvent(new CustomEvent('etunisia:toast', { detail: { message, type } }));
+    } catch {}
     setTimeout(() => {
       set((state) => (state.toast?.id === toastId ? { toast: null } : state));
     }, 4000);
