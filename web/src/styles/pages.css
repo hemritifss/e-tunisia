@@ -13679,6 +13679,249 @@ section[class^="hero-"] {
 }
 
 /* ============================================
+   PREMIUM POLISH LAYER — ports the new passport/feed surfaces onto the
+   existing OKLCH token system. Loaded AFTER the older block-style rules
+   below, so it overrides their hardcoded colours.
+   ============================================ */
+
+/* ─── Anonymous editorial hero ─── */
+.hero-anon {
+    background:
+        radial-gradient(120% 100% at 0% 100%, var(--terracotta-glow), transparent 60%),
+        radial-gradient(100% 100% at 100% 0%, var(--gold-glow), transparent 65%),
+        var(--gradient-hero);
+    box-shadow: var(--shadow-2xl), inset 0 1px 0 oklch(100% 0 0 / 0.10);
+    border-radius: var(--radius-3xl);
+    padding: clamp(40px, 6vw, 64px) clamp(28px, 5vw, 56px);
+}
+.hero-anon h1 {
+    font-family: var(--font-display);
+    letter-spacing: var(--tracking-tightest);
+    font-weight: 800;
+    text-wrap: balance;
+}
+.hero-anon-kicker {
+    background: var(--glass-bg-light);
+    border-color: var(--glass-border);
+    backdrop-filter: var(--glass-blur);
+    font-family: var(--font-display);
+    font-weight: 600;
+}
+.hero-anon-cta .btn.primary {
+    background: var(--surface);
+    color: oklch(14% 0.02 260);
+    box-shadow: var(--shadow-glow-gold);
+    font-family: var(--font-display);
+    font-weight: 600;
+    transition: transform var(--duration-fast) var(--ease-spring), box-shadow var(--duration-normal) var(--ease-out);
+}
+.hero-anon-cta .btn.primary:hover { transform: translateY(-2px) scale(1.02); box-shadow: var(--shadow-glow-gold), 0 24px 48px oklch(78% 0.17 80 / 0.35); }
+.hero-anon-cta .btn.ghost {
+    background: var(--glass-bg-light);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: var(--glass-blur);
+}
+
+/* ─── Registered welcome strip ─── */
+.welcome-strip {
+    background: var(--gradient-mesh), linear-gradient(135deg, var(--surface) 0%, var(--terracotta-pale) 100%);
+    border-color: oklch(80% 0.04 30 / 0.4);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-sm);
+}
+.welcome-strip-greeting strong {
+    font-family: var(--font-display);
+    letter-spacing: var(--tracking-tight);
+}
+.welcome-strip-avatar img,
+.welcome-strip-avatar-fallback {
+    box-shadow: var(--shadow-glow);
+}
+.welcome-action-pill.primary {
+    background: var(--gradient-cta);
+    color: var(--accent-text);
+    border: none;
+    box-shadow: var(--shadow-glow);
+    font-family: var(--font-display);
+    font-weight: 600;
+}
+.welcome-action-pill.primary:hover { background: var(--gradient-cta); transform: translateY(-2px) scale(1.02); box-shadow: var(--shadow-glow), var(--shadow-md); }
+.welcome-stat strong {
+    font-family: var(--font-display);
+    font-weight: 800;
+    letter-spacing: var(--tracking-tight);
+}
+
+/* ─── Tunisia Pulse — neon dot + glass + cyan glow ─── */
+.tunisia-pulse {
+    background:
+        radial-gradient(60% 100% at 100% 50%, oklch(72% 0.18 200 / 0.18), transparent 70%),
+        var(--gradient-hero);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-xl), inset 0 1px 0 oklch(100% 0 0 / 0.08);
+    border: 1px solid oklch(100% 0 0 / 0.06);
+}
+.tunisia-pulse-dot-core {
+    background: var(--cyan);
+    box-shadow: var(--neon-cyan);
+}
+.tunisia-pulse-dot-ring { border-color: var(--cyan); }
+.tunisia-pulse-text strong {
+    font-family: var(--font-display);
+    letter-spacing: var(--tracking-widest);
+}
+.tunisia-pulse-link {
+    background: var(--glass-bg-light);
+    border-color: var(--glass-border);
+    backdrop-filter: var(--glass-blur);
+    font-family: var(--font-display);
+    font-weight: 600;
+}
+
+/* ─── Mood Compass — OKLCH tints, premium shadows ─── */
+.mood-compass {
+    background: var(--gradient-mesh), linear-gradient(135deg, var(--surface) 0%, var(--sand-light) 100%);
+    border-color: oklch(80% 0.03 75);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-sm);
+}
+.mood-compass-head strong {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: var(--tracking-tight);
+}
+.mood-pill {
+    background: var(--surface);
+    border-color: var(--border-light);
+    border-radius: var(--radius-lg);
+    transition: all var(--duration-normal) var(--ease-spring);
+}
+.mood-pill:hover {
+    transform: translateY(-3px) scale(1.01);
+    box-shadow: 0 16px 32px color-mix(in oklch, var(--mood-tint) 22%, transparent), var(--shadow-md);
+    border-color: var(--mood-tint);
+}
+.mood-pill-text strong { font-family: var(--font-display); font-weight: 600; }
+
+/* ─── Tunisia Now panel — gradient-hero header, glass body ─── */
+.now-panel {
+    background: var(--surface);
+    border-color: var(--border-light);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-xl);
+    overflow: hidden;
+}
+.now-panel-head {
+    background:
+        radial-gradient(80% 100% at 0% 0%, oklch(58% 0.2 290 / 0.25), transparent 60%),
+        var(--gradient-hero);
+}
+.now-panel-title {
+    font-family: var(--font-display);
+    color: oklch(100% 0 0 / 0.92);
+    letter-spacing: var(--tracking-widest);
+}
+.now-panel-tabs button.active {
+    color: var(--gold);
+    border-bottom-color: var(--gold);
+    text-shadow: 0 0 12px oklch(78% 0.17 80 / 0.5);
+}
+.now-row a { border-radius: var(--radius-md); transition: all var(--duration-fast) var(--ease-out); }
+.now-row a:hover { background: var(--terracotta-pale); transform: translateX(2px); }
+.now-row-text strong { font-family: var(--font-display); font-weight: 600; }
+.now-panel-foot a {
+    font-family: var(--font-display);
+    font-weight: 600;
+    color: var(--accent);
+}
+.now-panel-foot a:hover { color: var(--accent-hover); }
+
+/* ─── Passport hero — full token integration ─── */
+.passport-hero {
+    border-radius: var(--radius-3xl);
+    box-shadow: var(--shadow-2xl), inset 0 1px 0 oklch(100% 0 0 / 0.10);
+}
+.passport-hero-bg {
+    background:
+        radial-gradient(120% 80% at 0% 0%, var(--terracotta-glow), transparent 60%),
+        radial-gradient(100% 80% at 100% 100%, var(--mediterranean-glow), transparent 60%),
+        radial-gradient(60% 60% at 50% 50%, var(--gold-glow), transparent 70%),
+        var(--gradient-hero);
+}
+.passport-hero-text h1 {
+    font-family: var(--font-display);
+    font-weight: 800;
+    letter-spacing: var(--tracking-tightest);
+}
+.passport-avatar { box-shadow: var(--shadow-glow); }
+.passport-hero-right .btn.primary {
+    background: var(--surface);
+    color: oklch(14% 0.02 260);
+    box-shadow: var(--shadow-glow-gold);
+    font-family: var(--font-display);
+    font-weight: 600;
+}
+
+/* ─── Section titles across the magazine ─── */
+.passport-section-title,
+.mood-section header h2,
+.activity-page-head h1 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: var(--tracking-tight);
+}
+
+/* ─── Mood landing hero — token-driven tinted gradient ─── */
+.mood-hero {
+    border-radius: var(--radius-3xl);
+    box-shadow: var(--shadow-2xl), inset 0 1px 0 oklch(100% 0 0 / 0.08);
+}
+.mood-hero-bg {
+    background:
+        radial-gradient(70% 50% at 30% 20%, color-mix(in oklch, var(--mood-tint) 55%, oklch(100% 0 0)), transparent 65%),
+        radial-gradient(60% 50% at 80% 100%, color-mix(in oklch, var(--mood-tint) 80%, oklch(0% 0 0)), transparent 70%),
+        var(--gradient-hero);
+}
+.mood-hero h1 {
+    font-family: var(--font-display);
+    font-weight: 800;
+    letter-spacing: var(--tracking-tightest);
+    text-wrap: balance;
+}
+
+/* ─── Buttons everywhere new ─── */
+.btn.primary { font-family: var(--font-display); font-weight: 600; letter-spacing: var(--tracking-normal); }
+.btn.primary:hover { transform: translateY(-1px); }
+
+/* ─── Cmd+K palette uplift ─── */
+.cmdk-panel {
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-2xl), 0 0 0 1px oklch(100% 0 0 / 0.06) inset;
+}
+.cmdk-input { font-family: var(--font-display); font-weight: 500; }
+.cmdk-item.active {
+    background: linear-gradient(90deg, var(--terracotta-glow), transparent 65%);
+    box-shadow: inset 3px 0 0 var(--terracotta);
+}
+.cmdk-section-head {
+    font-family: var(--font-display);
+    font-weight: 700;
+}
+
+/* ─── Nav search trigger ─── */
+.nav-search-trigger {
+    border-radius: var(--radius-full);
+    transition: all var(--duration-fast) var(--ease-out);
+    font-family: var(--font-sans);
+}
+.nav-search-trigger:hover {
+    border-color: var(--terracotta);
+    background: var(--terracotta-pale);
+    color: var(--text-primary);
+    box-shadow: var(--shadow-glow);
+}
+
+/* ============================================
    MOOD LANDING PAGE  (/#/mood/<id>)
    Each mood inherits its tint via the --mood-tint CSS var
    set on the page root by MoodPage.
