@@ -263,7 +263,7 @@ export const api = {
   searchUsers: (q: string, limit = 12) =>
     fetchWithAuth(`/api/v1/users/search?q=${encodeURIComponent(q)}&limit=${limit}`),
   // Billing / Pro Traveler tier
-  getMyPlan: () => fetchWithAuth('/api/v1/billing/me').catch(() => null),
+  getMyPlan: () => fetchWithAuth('/api/v1/billing/me'),
   upgradePlanTo: (plan: 'premium' | 'business', cycle: 'monthly' | 'yearly' | 'lifetime' = 'monthly') =>
     fetchWithAuth('/api/v1/billing/upgrade', { method: 'POST', body: JSON.stringify({ plan, cycle }) }),
   cancelPlan: () => fetchWithAuth('/api/v1/billing/cancel', { method: 'POST' }),

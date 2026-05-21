@@ -79,7 +79,7 @@ const PLANS: PlanCard[] = [
 ];
 
 export default function ProUpgradePage() {
-    const { plan, refetch } = useUserPlan();
+    const { plan, offline, refetch } = useUserPlan() as any;
     const [cycle, setCycle] = useState<Cycle>('yearly');
     const [busy, setBusy] = useState<Tier | null>(null);
 
@@ -87,6 +87,15 @@ export default function ProUpgradePage() {
 
     const activate = async (tier: Tier) => {
         if (tier === 'free' || busy || isAnon) return;
+        if (offline) {
+            showToast({
+                title: 'Billing offline',
+                message: 'The billing service isn\'t running. Restart the backend (cd backend && npm run start:dev) and try again.',
+                type: 'error',
+                duration: 7000,
+            });
+            return;
+        }
         setBusy(tier);
         try {
             await (api as any).upgradePlanTo(tier, cycle);
@@ -99,7 +108,11 @@ export default function ProUpgradePage() {
             });
             refetch();
         } catch (err: any) {
-            showToast({ message: err?.message || 'Upgrade failed — please try again.', type: 'error' });
+            const status = err?.status;
+            const msg = status === 404
+                ? 'Billing service offline. Restart the backend (Ctrl+C → npm run start:dev) and try again.'
+                : (err?.message || 'Upgrade failed — please try again.');
+            showToast({ message: msg, type: 'error', duration: status === 404 ? 7000 : 4200 });
         } finally {
             setBusy(null);
         }
@@ -120,6 +133,17 @@ export default function ProUpgradePage() {
 
     return (
         <main className="pro-page">
+            {offline && (
+                <div className="pro-offline-banner">
+                    <strong>Billing service offline</strong>
+                    <span>
+                        Routes are compiled but your running backend predates them. Restart
+                        with <code>cd backend &amp;&amp; npm run start:dev</code> — this banner
+                        will disappear and activate buttons will work.
+                    </span>
+                    <button onClick={() => refetch()}>Recheck</button>
+                </div>
+            )}
             <section className="pro-page-hero">
                 <div className="pro-page-hero-bg" />
                 <span className="pro-page-kicker"><Sparkles size={12} /> Membership</span>

@@ -19,6 +19,9 @@ export interface PlanState {
     rawPlan: PlanId;
     expiresAt: string | null;
     caps: FeatureCaps;
+    /** True when /billing/me has returned 404 in this session — the running
+     *  backend predates the BillingModule. UI can surface a friendly banner. */
+    offline?: boolean;
 }
 
 const FREE_FALLBACK: PlanState = {
@@ -48,8 +51,15 @@ export function useUserPlan(): PlanState & { isLoading: boolean; refetch: () => 
     const { data, isLoading } = useQuery({
         queryKey: ['my-plan'],
         queryFn: async () => {
-            const r: any = await api.getMyPlan();
-            return (r && r.plan ? r : null) as PlanState | null;
+            try {
+                const r: any = await api.getMyPlan();
+                if (r && r.plan) return r as PlanState;
+                return null;
+            } catch (e: any) {
+                // /billing/me 404 = stale backend; tag the state so UI can warn.
+                if (e?.status === 404) return { ...FREE_FALLBACK, offline: true };
+                throw e;
+            }
         },
         enabled,
         staleTime: 5 * 60_000,
