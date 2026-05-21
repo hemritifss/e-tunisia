@@ -33,6 +33,8 @@ import { FeaturedPlaces } from '../components/FeaturedPlaces';
 import { DiscoverTrips } from '../components/DiscoverTrips';
 import { WelcomeStrip } from '../components/WelcomeStrip';
 import { TunisiaPulse } from '../components/TunisiaPulse';
+import { MoodCompass } from '../components/MoodCompass';
+import { TunisiaNowPanel } from '../components/TunisiaNowPanel';
 import { Plus, User as UserIcon, RefreshCcw, Users as UsersIcon } from 'lucide-react';
 import { useAuthStore as _useAuthStoreFeed } from '../stores/auth-store';
 import { requireAuth } from '../../ui-utils';
@@ -347,41 +349,26 @@ export default function FeedPage() {
   };
 
   return (
-    <div className="magazine animate-fade-in">
-      {/* 1. Hero / welcome — anonymous gets the editorial hero; registered gets a personal status strip. */}
-      <WelcomeStrip />
-
-      {/* 2. Onboarding-incomplete banner — only renders when the API says onboardingComplete=false */}
-      {isAuth && <OnboardingBanner />}
-
-      {/* 3. Live pulse — "Tunisia is alive right now" rotating summary of recent activity */}
-      <TunisiaPulse />
-
-      {/* 4. Stories — 24h ephemeral images uploaded by users */}
-      <StoriesStrip />
-
-      {/* 5. Composer (registered only) */}
-      {isAuth && <ComposeBox user={user} />}
-
-      {/* 6. Where Tunisia is buzzing — visual destination cards */}
-      <div className="magazine-section">
-        <FeaturedPlaces />
+    <div className="compass-shell animate-fade-in">
+      {/* Top band: welcome/hero spans full width */}
+      <div className="compass-top">
+        <WelcomeStrip />
+        {isAuth && <OnboardingBanner />}
+        <TunisiaPulse />
+        <MoodCompass />
       </div>
 
-      {/* 7. Trip plans by travelers — the viral discovery loop */}
-      <div className="magazine-section">
-        <DiscoverTrips />
-      </div>
-
-      {/* 8. Trending hashtags chip strip */}
-      <div className="magazine-section">
-        <TrendingHashtags />
-      </div>
-
-      {/* 9. Who-to-follow */}
-      <div className="magazine-section">
-        <SuggestedUsers />
-      </div>
+      {/* 2-column body: wide feed + sticky discovery panel */}
+      <div className="compass-body">
+        <div className="compass-feed">
+          <StoriesStrip />
+          {isAuth && <ComposeBox user={user} />}
+          <div className="compass-discovery-mobile">
+            <FeaturedPlaces />
+            <DiscoverTrips />
+            <TrendingHashtags />
+            <SuggestedUsers />
+          </div>
 
       {/* Sort bar */}
       <div className="flex items-center gap-2 p-1 bg-surface rounded-xl shadow-sm sticky top-20 z-10 overflow-x-auto scrollbar-hide">
@@ -461,6 +448,11 @@ export default function FeedPage() {
           <p className="text-sm text-muted-foreground">You've reached the end!</p>
         )}
       </div>
+        </div>{/* /compass-feed */}
+
+        {/* Right sticky panel — single tabbed widget instead of a stack of cards. */}
+        <TunisiaNowPanel />
+      </div>{/* /compass-body */}
     </div>
   );
 }
