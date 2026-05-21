@@ -448,45 +448,54 @@ function initNotifications() {
   function notifTypeMeta(n: any): { icon: string; color: string; href: string | null } {
     const t = (n.type || '').toLowerCase();
     const data = n.data || {};
+    // Prefer passport route (handle) over UUID-based /user/:id when handle is present.
+    const fromHandle = data.followerHandle || data.endorserHandle || data.fromHandle;
+    const fromUserRef = fromHandle ? `#/u/${encodeURIComponent(fromHandle)}` : (data.fromUserId ? `#/user/${data.fromUserId}` : null);
+
     if (t === 'follow') {
-      return {
-        icon: 'lucide-user-plus',
-        color: 'oklch(60% 0.16 240)', // blue
-        href: data.fromUserId ? `#/user/${data.fromUserId}` : null,
-      };
+      return { icon: 'lucide-user-plus', color: 'oklch(58% 0.14 240)', href: fromUserRef };
     }
     if (t === 'comment') {
       return {
         icon: 'lucide-message-circle',
-        color: 'oklch(58% 0.16 145)', // green
+        color: 'oklch(58% 0.16 145)',
         href: data.postId ? `#/post/${data.postId}` : null,
       };
     }
     if (t === 'donation') {
-      return {
-        icon: 'lucide-coins',
-        color: 'oklch(70% 0.17 80)', // gold
-        href: '#/credits',
-      };
+      return { icon: 'lucide-coins', color: 'oklch(78% 0.17 80)', href: '#/credits' };
     }
     if (t === 'mention') {
-      return { icon: 'lucide-at-sign', color: 'oklch(60% 0.18 290)', href: data.postId ? `#/post/${data.postId}` : null };
+      // Endorsements ride the MENTION type but always include data.topic — distinguish them.
+      if (data.topic) {
+        return { icon: 'lucide-award', color: 'oklch(72% 0.18 200)', href: fromUserRef };
+      }
+      return { icon: 'lucide-at-sign', color: 'oklch(58% 0.20 290)', href: data.postId ? `#/post/${data.postId}` : fromUserRef };
     }
     if (t === 'badge') {
-      return { icon: 'lucide-award', color: 'oklch(70% 0.17 80)', href: '#/badges' };
+      return { icon: 'lucide-award', color: 'oklch(78% 0.17 80)', href: '#/badges' };
     }
     if (t === 'event') {
-      return { icon: 'lucide-calendar', color: 'oklch(60% 0.18 25)', href: '#/events' };
+      return { icon: 'lucide-calendar', color: 'oklch(62% 0.19 25)', href: '#/events' };
     }
     if (t === 'tip') {
-      return { icon: 'lucide-lightbulb', color: 'oklch(72% 0.15 75)', href: '#/tips' };
+      return { icon: 'lucide-lightbulb', color: 'oklch(74% 0.15 75)', href: '#/tips' };
     }
     return { icon: 'lucide-bell', color: 'var(--text-muted)', href: null };
   }
 
+  function escNotif(s: unknown): string {
+    return String(s ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
   function renderNotif(n: any): string {
     const seed = encodeURIComponent(n.fromUser?.fullName || n.data?.fromUserName || n.id || 'user');
-    const fromAvatar = n.fromUser?.avatar || n.data?.fromAvatar;
+    const fromAvatar = n.fromUser?.avatar || n.data?.fromAvatar || n.data?.followerAvatar || n.data?.endorserAvatar;
     const avatar = fromAvatar
       ? (fromAvatar.startsWith('http') || fromAvatar.startsWith('data:')
           ? fromAvatar
@@ -495,24 +504,26 @@ function initNotifications() {
     const title = n.title || 'New activity';
     const body = n.body || '';
     const meta = notifTypeMeta(n);
+    const id = String(n.id || '');
+    // All user-controlled strings escaped — title/body/id come straight from the DB.
     const inner = `
       <div class="notif-item-icon-wrap">
-        <img src="${avatar}" alt="" class="notif-avatar" />
+        <img src="${escNotif(avatar)}" alt="" class="notif-avatar" />
         <span class="notif-type-bubble" style="--type-color: ${meta.color}">
           <i class="${meta.icon}"></i>
         </span>
       </div>
       <div class="notif-body">
-        <p class="notif-title">${title}</p>
-        ${body ? `<p class="notif-sub">${body}</p>` : ''}
+        <p class="notif-title">${escNotif(title)}</p>
+        ${body ? `<p class="notif-sub">${escNotif(body)}</p>` : ''}
         <span class="notif-time">${timeAgo(n.createdAt)} ago</span>
       </div>
       ${!(n.isRead || n.read) ? '<span class="notif-unread-dot" aria-label="unread"></span>' : ''}
     `;
     if (meta.href) {
-      return `<a class="notif-item ${n.isRead || n.read ? '' : 'unread'}" data-id="${n.id}" href="${meta.href}">${inner}</a>`;
+      return `<a class="notif-item ${n.isRead || n.read ? '' : 'unread'}" data-id="${escNotif(id)}" href="${escNotif(meta.href)}">${inner}</a>`;
     }
-    return `<div class="notif-item ${n.isRead || n.read ? '' : 'unread'}" data-id="${n.id}">${inner}</div>`;
+    return `<div class="notif-item ${n.isRead || n.read ? '' : 'unread'}" data-id="${escNotif(id)}">${inner}</div>`;
   }
 
   function renderSection(label: string, items: any[]): string {
