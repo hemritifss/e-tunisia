@@ -12,6 +12,7 @@ import { SavedPost } from '../posts/saved-post.entity';
 import { PassportDto, deriveLevel } from './dto/passport.dto';
 import { BadgesService } from '../badges/badges.service';
 import { EndorsementsService } from './endorsements.service';
+import { effectivePlan } from './effective-plan';
 
 @Injectable()
 export class UsersService {
@@ -132,12 +133,15 @@ export class UsersService {
             .getMany();
         return rows.map((u: any) => ({
             id: u.id,
+            handle: u.handle ?? null,
             fullName: u.fullName,
             avatar: u.avatar || null,
             country: u.country || null,
             bio: u.bio || null,
             level: u.level || 1,
             points: u.points || 0,
+            role: u.role,
+            plan: effectivePlan(u),
         }));
     }
 
@@ -239,6 +243,7 @@ export class UsersService {
             bio: u.bio ? u.bio.slice(0, 120) : null,
             points: u.points || 0,
             role: u.role,
+            plan: effectivePlan(u),
             followersCount: u.followersCount || 0,
         }));
     }
@@ -287,7 +292,7 @@ export class UsersService {
         const userIds = rows.map((r: any) => r.userId);
         const users = await this.usersRepository.find({
             where: userIds.map((id) => ({ id })),
-            select: ['id', 'handle', 'fullName', 'avatar', 'country', 'points', 'role'] as any,
+            select: ['id', 'handle', 'fullName', 'avatar', 'country', 'points', 'role', 'plan', 'subscriptionExpiresAt'] as any,
         });
         const byId = new Map(users.map((u: any) => [u.id, u]));
 
@@ -306,6 +311,7 @@ export class UsersService {
                         country: u.country || null,
                         points: u.points || 0,
                         role: u.role,
+                        plan: effectivePlan(u),
                     },
                 };
             })
@@ -428,11 +434,7 @@ export class UsersService {
     /** Resolves the user's current effective plan. If subscriptionExpiresAt is
      *  past, premium/business silently revert to free without touching the row. */
     private resolveEffectivePlan(user: User): 'free' | 'premium' | 'business' {
-        const plan = (user.plan || 'free').toLowerCase();
-        if (plan === 'free') return 'free';
-        const exp = (user as any).subscriptionExpiresAt;
-        if (exp && new Date(exp).getTime() < Date.now()) return 'free';
-        return (plan === 'business' ? 'business' : 'premium');
+        return effectivePlan(user as any);
     }
 
     /** Call this whenever a user's data changes. */

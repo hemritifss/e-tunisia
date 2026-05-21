@@ -8,6 +8,7 @@ import { Review } from '../reviews/review.entity';
 import { Place } from '../places/place.entity';
 import { TripPlan } from '../itineraries/trip-plan.entity';
 import { UsersService } from './users.service';
+import { effectivePlan } from './effective-plan';
 
 export type ActivityType = 'review' | 'trip' | 'endorse' | 'follow';
 
@@ -16,6 +17,8 @@ export interface ActivityActor {
     handle: string | null;
     fullName: string;
     avatar: string | null;
+    plan: 'free' | 'premium' | 'business';
+    role?: string;
 }
 
 export interface ActivityEntry {
@@ -85,17 +88,17 @@ export class ActivityService {
         const userRows = allUserIds.length
             ? await this.usersRepo.find({
                   where: allUserIds.map((id) => ({ id })),
-                  select: ['id', 'handle', 'fullName', 'avatar'] as any,
+                  select: ['id', 'handle', 'fullName', 'avatar', 'plan', 'role', 'subscriptionExpiresAt'] as any,
               })
             : [];
         const userById = new Map<string, ActivityActor>(
             userRows.map((u: any) => [
                 u.id,
-                { id: u.id, handle: u.handle ?? null, fullName: u.fullName, avatar: u.avatar || null },
+                { id: u.id, handle: u.handle ?? null, fullName: u.fullName, avatar: u.avatar || null, plan: effectivePlan(u), role: u.role },
             ]),
         );
         const actor = (id: string) =>
-            userById.get(id) || { id, handle: null, fullName: 'Someone', avatar: null };
+            userById.get(id) || { id, handle: null, fullName: 'Someone', avatar: null, plan: 'free' as const };
 
         const entries: ActivityEntry[] = [];
 
@@ -200,17 +203,17 @@ export class ActivityService {
         const userRows = allUserIds.length
             ? await this.usersRepo.find({
                   where: allUserIds.map((id) => ({ id })),
-                  select: ['id', 'handle', 'fullName', 'avatar'] as any,
+                  select: ['id', 'handle', 'fullName', 'avatar', 'plan', 'role', 'subscriptionExpiresAt'] as any,
               })
             : [];
         const userById = new Map<string, ActivityActor>(
             userRows.map((u: any) => [
                 u.id,
-                { id: u.id, handle: u.handle ?? null, fullName: u.fullName, avatar: u.avatar || null },
+                { id: u.id, handle: u.handle ?? null, fullName: u.fullName, avatar: u.avatar || null, plan: effectivePlan(u), role: u.role },
             ]),
         );
         const actor = (id: string) =>
-            userById.get(id) || { id, handle: null, fullName: 'Someone', avatar: null };
+            userById.get(id) || { id, handle: null, fullName: 'Someone', avatar: null, plan: 'free' as const };
 
         const entries: ActivityEntry[] = [];
 

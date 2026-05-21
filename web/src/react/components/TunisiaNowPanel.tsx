@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { api, getImageUrl } from '../../shared/api';
 import { TOPIC_BY_ID } from './endorsement-topics';
 import { Activity, Flame, Users, Sparkles } from 'lucide-react';
+import { TierBadge } from './TierBadge';
 
 /**
  * The single right-rail widget for the home feed. Instead of a stack of
@@ -143,7 +144,7 @@ function PeopleTab() {
                                 ? <img src={getImageUrl(u.avatar)} alt="" loading="lazy" />
                                 : <span className="now-row-fallback">{(u.fullName || '?').slice(0, 1).toUpperCase()}</span>}
                             <div className="now-row-text">
-                                <strong>{u.fullName}{u.role === 'creator' && <span className="now-guide" title="Local Guide">✓</span>}</strong>
+                                <strong>{u.fullName}<TierBadge plan={u.plan} role={u.role} size="xs" /></strong>
                                 <span>{u.handle ? `@${u.handle}` : (u.country || '')}</span>
                             </div>
                             <span className="now-row-points">{(u.points || 0).toLocaleString()} XP</span>

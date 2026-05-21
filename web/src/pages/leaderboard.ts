@@ -82,7 +82,15 @@ function renderCityRow(entry: any): string {
     ? api.getImageUrl(u.avatar)
     : `https://api.dicebear.com/9.x/thumbs/svg?seed=${encodeURIComponent(name)}`;
   const profileHref = handle ? `#/u/${encodeURIComponent(handle)}` : '#';
-  const guideBadge = u.role === 'creator' ? `<span class="leaderboard-guide-badge" title="Local Guide">✓</span>` : '';
+  // Tier-aware status pill: prefer Pro/Business, fall back to Local Guide check.
+  let badge = '';
+  if (u.plan === 'business') {
+    badge = `<span class="tier-badge tier-badge-business tier-badge-xs" title="Verified Business" style="margin-left:6px">✓</span>`;
+  } else if (u.plan === 'premium') {
+    badge = `<span class="tier-badge tier-badge-pro tier-badge-xs" title="Pro Traveler" style="margin-left:6px">✦</span>`;
+  } else if (u.role === 'creator') {
+    badge = `<span class="tier-badge tier-badge-guide tier-badge-xs" title="Local Guide" style="margin-left:6px">✓</span>`;
+  }
   return `
     <a href="${esc(profileHref)}" class="leaderboard-item ${isTop3 ? 'top-' + rank : ''} reveal-on-scroll" style="text-decoration:none;color:inherit">
       <div class="leaderboard-rank">
@@ -90,7 +98,7 @@ function renderCityRow(entry: any): string {
       </div>
       <img src="${esc(avatarUrl)}" alt="${esc(name)}" class="leaderboard-avatar" />
       <div class="leaderboard-info">
-        <strong>${esc(name)}${guideBadge}</strong>
+        <strong>${esc(name)}${badge}</strong>
         <span class="text-muted text-xs">${handle ? '@' + esc(handle) : ''}${u.country ? ' · ' + esc(u.country) : ''}</span>
       </div>
       <div class="leaderboard-points">

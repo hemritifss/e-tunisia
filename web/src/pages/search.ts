@@ -147,13 +147,21 @@ function buildPersonCard(u: any): HTMLAnchorElement {
   meta.className = 'search-person-meta';
   const nameLine = document.createElement('strong');
   nameLine.textContent = u.fullName || 'Traveler';
-  if (u.role === 'creator') {
+  // Tier hierarchy: Business > Pro > Local Guide. One badge maximum.
+  if (u.plan === 'business' || u.plan === 'premium' || u.role === 'creator') {
     nameLine.append(' ');
-    const guide = document.createElement('span');
-    guide.className = 'search-person-guide';
-    guide.title = 'Local Guide';
-    guide.textContent = '✓';
-    nameLine.appendChild(guide);
+    const badge = document.createElement('span');
+    badge.className = `tier-badge tier-badge-xs ${
+      u.plan === 'business' ? 'tier-badge-business' :
+      u.plan === 'premium'  ? 'tier-badge-pro' :
+      'tier-badge-guide'
+    }`;
+    badge.title = u.plan === 'business' ? 'Verified Business'
+      : u.plan === 'premium' ? 'Pro Traveler'
+      : 'Local Guide';
+    badge.textContent = u.plan === 'premium' ? '✦' : '✓';
+    badge.style.marginLeft = '4px';
+    nameLine.appendChild(badge);
   }
   meta.appendChild(nameLine);
 

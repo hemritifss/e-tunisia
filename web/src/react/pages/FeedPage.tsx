@@ -34,6 +34,7 @@ import { DiscoverTrips } from '../components/DiscoverTrips';
 import { WelcomeStrip } from '../components/WelcomeStrip';
 import { TunisiaPulse } from '../components/TunisiaPulse';
 import { MoodCompass } from '../components/MoodCompass';
+import { TierBadge } from '../components/TierBadge';
 import { TunisiaNowPanel } from '../components/TunisiaNowPanel';
 import { Plus, User as UserIcon, RefreshCcw, Users as UsersIcon } from 'lucide-react';
 import { useAuthStore as _useAuthStoreFeed } from '../stores/auth-store';
@@ -155,7 +156,7 @@ function PostCard({ post }: { post: Post }) {
           <div className="post-card-v2-byline">
             <strong>
               {post.author?.fullName || 'Anonymous'}
-              {isCreator && <span className="post-card-v2-guide" title="Local Guide">✓</span>}
+              <TierBadge plan={(post.author as any)?.plan} role={(post.author as any)?.role} size="xs" />
             </strong>
             <span>
               {authorHandle ? `@${authorHandle} · ` : ''}{formatDate(post.createdAt)}

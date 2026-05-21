@@ -6,6 +6,7 @@ import { Comment } from './comment.entity';
 import { CommentLike } from './comment-like.entity';
 import { PostReaction, ReactionType } from './post-reaction.entity';
 import { SavedPost } from './saved-post.entity';
+import { effectivePlan } from '../users/effective-plan';
 import { BadgesService } from '../badges/badges.service';
 import { User } from '../users/user.entity';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -54,7 +55,7 @@ export class PostsService {
 
         const users = await this.usersRepo.find({
             where: { id: In(rows.map(r => r.userId)) },
-            select: ['id', 'fullName', 'avatar', 'country', 'handle'] as any,
+            select: ['id', 'fullName', 'avatar', 'country', 'handle', 'plan', 'role', 'subscriptionExpiresAt'] as any,
         });
         const byId = new Map(users.map(u => [u.id, u]));
         const data = rows.map(r => {
@@ -63,7 +64,7 @@ export class PostsService {
                 userId: r.userId,
                 type: r.type,
                 createdAt: r.createdAt,
-                user: u ? { id: u.id, fullName: u.fullName, avatar: u.avatar, country: u.country, handle: u.handle } : null,
+                user: u ? { id: u.id, fullName: u.fullName, avatar: u.avatar, country: u.country, handle: u.handle, plan: effectivePlan(u), role: u.role } : null,
             };
         }).filter(r => r.user); // drop reactions whose author was deleted
 
@@ -141,6 +142,8 @@ export class PostsService {
                     fullName: p.author.fullName,
                     avatar: p.author.avatar,
                     handle: (p.author as any).handle ?? null,
+                    plan: effectivePlan(p.author as any),
+                    role: (p.author as any).role,
                 } : null,
                 upvotes: p.upvotes,
                 downvotes: p.downvotes,
