@@ -14,8 +14,10 @@ const STATUS_ORDER: Status[] = ['new', 'contacted', 'quoted', 'booked', 'closed'
 export function renderOwnerPage(): string {
   return `
     <div class="owner-page page-enter" data-design="sleek" id="owner-root">
-      <div class="favorites-header">
-        <h1><i class="lucide-briefcase"></i> Owner Dashboard</h1>
+      <div id="owner-plan-strip" class="owner-plan-strip" hidden></div>
+
+      <div class="favorites-header owner-header">
+        <h1><i class="lucide-briefcase"></i> Owner Dashboard <span id="owner-tier-chip" class="owner-tier-chip" hidden></span></h1>
         <p>Manage the listings you host and the inquiries travelers send you.</p>
       </div>
 
@@ -909,6 +911,42 @@ function openBoostModal(place: any, onSuccess: () => void) {
   })();
 }
 
+async function hydratePlanBanner() {
+  const strip = document.getElementById('owner-plan-strip');
+  const chip = document.getElementById('owner-tier-chip');
+  if (!strip || !chip) return;
+  let info: any = null;
+  try {
+    info = await (api as any).getMyPlan?.();
+  } catch { info = null; }
+  const plan: 'free' | 'premium' | 'business' = info?.plan || 'free';
+
+  if (plan === 'business') {
+    chip.textContent = '✓ Verified Business';
+    chip.className = 'owner-tier-chip is-business';
+    chip.removeAttribute('hidden');
+    return;
+  }
+
+  // Anyone else (Free or Pro) sees the upsell strip + chip
+  chip.textContent = plan === 'premium' ? '✦ Pro Traveler' : '';
+  chip.className = `owner-tier-chip ${plan === 'premium' ? 'is-pro' : ''}`;
+  if (plan === 'premium') chip.removeAttribute('hidden');
+
+  strip.innerHTML = `
+    <a class="pro-gate-card is-business" href="#/pro">
+      <span class="pro-gate-card-icon"><i class="lucide-briefcase"></i></span>
+      <div class="pro-gate-card-body">
+        <strong>Owner Dashboard is a Business feature</strong>
+        <span>List places, claim verified status, get inquiry analytics + boost slots, and respond to reviews officially. Free + Pro travelers can still see the surface read-only.</span>
+      </div>
+      <span class="pro-gate-card-cta">Upgrade →</span>
+    </a>
+  `;
+  strip.removeAttribute('hidden');
+}
+
 export async function initOwnerPage() {
+  hydratePlanBanner();
   await Promise.all([refreshStats(), refreshInbox(), refreshBreakdown(), refreshPlaces()]);
 }

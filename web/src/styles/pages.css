@@ -13679,6 +13679,188 @@ section[class^="hero-"] {
 }
 
 /* ============================================
+   ADMIN MODERATION HUB
+   ============================================ */
+.admin-page { max-width: 1100px; margin: 0 auto; padding: 24px 20px 96px; }
+.admin-header { margin-bottom: 24px; }
+.admin-kicker {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 12px; border-radius: var(--radius-full);
+    background: linear-gradient(135deg, var(--violet), var(--mediterranean));
+    color: #fff;
+    font-family: var(--font-display);
+    font-size: var(--text-xs);
+    font-weight: 700;
+    letter-spacing: var(--tracking-widest);
+    text-transform: uppercase;
+    box-shadow: var(--shadow-glow);
+}
+.admin-header h1 {
+    margin: 14px 0 6px;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: var(--text-4xl);
+    letter-spacing: var(--tracking-tightest);
+    color: var(--text-primary);
+}
+.admin-header p { margin: 0; color: var(--text-secondary); font-size: var(--text-base); }
+
+.admin-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    margin-bottom: 32px;
+}
+.admin-stat {
+    --admin-accent: var(--terracotta);
+    display: flex; align-items: center; gap: 12px;
+    padding: 16px 18px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-sm);
+    transition: all var(--duration-normal) var(--ease-spring);
+}
+.admin-stat:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    border-color: color-mix(in oklch, var(--admin-accent) 35%, var(--border));
+}
+.admin-stat-skel {
+    height: 70px;
+    background: linear-gradient(90deg, oklch(95% 0.005 80) 25%, oklch(97% 0.005 80) 50%, oklch(95% 0.005 80) 75%);
+    background-size: 200% 100%;
+    animation: passport-shimmer 1.4s infinite;
+}
+.admin-stat-icon {
+    width: 44px; height: 44px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    background: color-mix(in oklch, var(--admin-accent) 14%, transparent);
+    color: var(--admin-accent);
+    flex-shrink: 0;
+}
+.admin-stat strong {
+    display: block;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: var(--text-2xl);
+    color: var(--text-primary);
+    line-height: 1.1;
+}
+.admin-stat span { font-size: var(--text-sm); color: var(--text-tertiary); }
+
+.admin-section { margin-bottom: 32px; }
+.admin-section header { margin-bottom: 12px; }
+.admin-section header h2 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: var(--tracking-tight);
+    margin: 0;
+    color: var(--text-primary);
+}
+
+.admin-queues {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 12px;
+}
+.admin-queue {
+    --admin-accent: var(--terracotta);
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--admin-accent);
+    border-radius: var(--radius-lg);
+    text-decoration: none;
+    color: inherit;
+    transition: all var(--duration-fast) var(--ease-out);
+}
+.admin-queue:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    background: color-mix(in oklch, var(--admin-accent) 4%, var(--surface));
+}
+.admin-queue-icon {
+    width: 36px; height: 36px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    background: color-mix(in oklch, var(--admin-accent) 14%, transparent);
+    color: var(--admin-accent);
+    flex-shrink: 0;
+}
+.admin-queue-body { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.admin-queue-body strong { font-family: var(--font-display); font-weight: 600; font-size: var(--text-base); color: var(--text-primary); }
+.admin-queue-body span { font-size: var(--text-xs); color: var(--text-tertiary); }
+.admin-queue > svg { color: var(--text-tertiary); flex-shrink: 0; }
+
+.admin-fineprint {
+    margin-top: 32px;
+    padding: 14px 18px;
+    border-radius: var(--radius-lg);
+    background: color-mix(in oklch, var(--violet) 8%, var(--surface));
+    border: 1px solid color-mix(in oklch, var(--violet) 22%, var(--border));
+    color: var(--text-secondary);
+    font-size: var(--text-sm);
+    line-height: var(--leading-snug);
+}
+
+.admin-locked { display: flex; align-items: center; justify-content: center; min-height: 60vh; }
+.admin-locked-card {
+    text-align: center;
+    padding: 40px 32px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-2xl);
+    box-shadow: var(--shadow-lg);
+    max-width: 440px;
+}
+.admin-locked-card svg { color: var(--text-tertiary); margin-bottom: 12px; }
+.admin-locked-card h1 { font-family: var(--font-display); margin: 0 0 8px; color: var(--text-primary); }
+.admin-locked-card p { color: var(--text-secondary); font-size: var(--text-sm); margin: 0 0 18px; }
+.admin-locked-card a { color: var(--terracotta); }
+
+@media (prefers-color-scheme: dark) {
+    .admin-stat, .admin-queue, .admin-locked-card { background: oklch(20% 0.012 260); border-color: oklch(28% 0.012 260); }
+    .admin-stat strong, .admin-queue-body strong, .admin-header h1, .admin-locked-card h1, .admin-section header h2 { color: oklch(96% 0 0); }
+    .admin-stat-skel { background: linear-gradient(90deg, oklch(22% 0.012 260) 25%, oklch(26% 0.012 260) 50%, oklch(22% 0.012 260) 75%); background-size: 200% 100%; }
+    .admin-fineprint { background: color-mix(in oklch, var(--violet) 14%, oklch(20% 0.012 260)); }
+}
+
+/* ============================================
+   OWNER DASHBOARD — plan strip + tier chip
+   ============================================ */
+.owner-page { max-width: 1180px; margin: 0 auto; padding: 16px 20px 96px; }
+.owner-plan-strip { margin-bottom: 18px; }
+.owner-header { display: flex; flex-direction: column; gap: 4px; margin-bottom: 24px; }
+.owner-header h1 {
+    display: inline-flex; align-items: center; gap: 10px;
+    font-family: var(--font-display);
+    letter-spacing: var(--tracking-tight);
+}
+.owner-tier-chip {
+    display: inline-flex; align-items: center;
+    padding: 4px 12px;
+    border-radius: var(--radius-full);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-wide);
+}
+.owner-tier-chip.is-business {
+    background: linear-gradient(135deg, var(--mediterranean), var(--cyan));
+    color: #fff;
+    box-shadow: var(--shadow-glow-blue), 0 0 0 1px oklch(100% 0 0 / 0.4) inset;
+}
+.owner-tier-chip.is-pro {
+    background: linear-gradient(135deg, var(--gold), var(--amber));
+    color: oklch(20% 0.04 60);
+    box-shadow: var(--shadow-glow-gold), 0 0 0 1px oklch(100% 0 0 / 0.4) inset;
+}
+.owner-tier-chip[hidden] { display: none; }
+
+/* ============================================
    PASSPORT HERO — Pro / Business chips
    ============================================ */
 .passport-pro-chip {

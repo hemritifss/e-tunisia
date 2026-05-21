@@ -12,6 +12,7 @@ import PassportPage from './react/pages/PassportPage';
 import ActivityFeedPage from './react/pages/ActivityFeedPage';
 import MoodPage from './react/pages/MoodPage';
 import ProUpgradePage from './react/pages/ProUpgradePage';
+import AdminPage from './react/pages/AdminPage';
 
 // Vanilla pages
 import { renderFeedPage, initFeedPage } from './pages/feed';
@@ -144,6 +145,11 @@ function getRoute(hash: string): Route {
     return { render: () => '', init: () => {}, page: 'premium', isReact: true };
   }
 
+  // Admin moderation hub — guard renders forbidden state if backend rejects
+  if (path === '/admin' || path.startsWith('/admin/')) {
+    return { render: () => '', init: () => {}, page: 'admin', isReact: true };
+  }
+
   // Public user profile (uuid)
   const userMatch = path.match(/^\/user\/([0-9a-fA-F-]+)/);
   if (userMatch) {
@@ -265,6 +271,8 @@ function navigate() {
         currentUnmount = mountIsland(MoodPage, islandRoot);
       } else if (path === '/pro' || path === '/premium' || path === '/upgrade') {
         currentUnmount = mountIsland(ProUpgradePage, islandRoot);
+      } else if (path === '/admin' || path.startsWith('/admin/')) {
+        currentUnmount = mountIsland(AdminPage, islandRoot);
       }
     }
   } else {
