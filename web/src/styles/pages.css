@@ -13452,6 +13452,48 @@ section[class^="hero-"] {
 }
 
 /* ============================================
+   NAV SEARCH BUTTON — the visible Cmd+K entry point
+   ============================================ */
+.nav-search-trigger {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 8px 12px 8px 12px;
+    min-width: 240px;
+    border-radius: 999px;
+    border: 1px solid var(--border, #e5e7eb);
+    background: rgba(0,0,0,0.03);
+    color: var(--text-muted, #5a6371);
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 120ms ease;
+}
+.nav-search-trigger:hover {
+    background: rgba(0,0,0,0.06);
+    border-color: #d4623a;
+    color: var(--text, #1a1a1a);
+}
+.nav-search-trigger i { font-size: 1rem; }
+.nav-search-trigger-label { flex: 1; text-align: left; }
+.nav-search-trigger-kbd {
+    background: rgba(0,0,0,0.06);
+    border: 1px solid rgba(0,0,0,0.10);
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-size: 11px;
+    font-family: ui-monospace, SFMono-Regular, monospace;
+    color: var(--text-muted, #5a6371);
+}
+.nav-search-mobile { display: none; }
+@media (max-width: 880px) {
+    .nav-search-trigger { display: none; }
+    .nav-search-mobile { display: inline-flex; }
+}
+@media (prefers-color-scheme: dark) {
+    .nav-search-trigger { background: rgba(255,255,255,0.04); border-color: #2a2f37; color: #9aa0a6; }
+    .nav-search-trigger:hover { background: rgba(255,255,255,0.07); color: #e8eaed; }
+    .nav-search-trigger-kbd { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.10); color: #d6d8db; }
+}
+
+/* ============================================
    COMMAND PALETTE (⌘K / Ctrl+K)
    Premium feel: backdrop blur, soft shadow,
    keyboard-driven, Tunisia accent on active row.

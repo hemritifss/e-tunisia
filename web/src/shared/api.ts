@@ -229,9 +229,11 @@ export const api = {
   applyLocalGuide: () =>
     fetchWithAuth('/api/v1/users/me/apply-local-guide', { method: 'POST' }),
   getFollowingActivity: (limit = 20) =>
-    fetchWithAuth(`/api/v1/users/me/activity-feed?limit=${limit}`),
+    fetchWithAuth(`/api/v1/users/me/activity-feed?limit=${limit}`)
+      .catch(() => [] as any[]),
   getGlobalActivity: (limit = 20) =>
-    fetchWithAuth(`/api/v1/users/activity-feed/global?limit=${limit}`),
+    fetchWithAuth(`/api/v1/users/activity-feed/global?limit=${limit}`)
+      .catch(() => [] as any[]),
   searchUsers: (q: string, limit = 12) =>
     fetchWithAuth(`/api/v1/users/search?q=${encodeURIComponent(q)}&limit=${limit}`),
 

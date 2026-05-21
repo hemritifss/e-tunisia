@@ -95,17 +95,35 @@ export class FeedService {
             });
         }
 
-        const score = (a: any) =>
-            (a.upvotes || 0) - (a.downvotes || 0) + (sort === 'hot' ? (a.commentCount || 0) : 0);
+        // Engagement-weighted score with time decay — the "Hot" / "For You" ranking.
+        //   score = (upvotes - downvotes) + 1.2*comments + 0.6*saves + 0.4*reactions
+        //   weighted by an age-decay factor: half-weight at ~36h, near zero past 14d.
+        // For 'top', no time decay — pure quality over the window.
+        const HALF_LIFE_HOURS = 36;
+        const decay = (createdAt: any): number => {
+            const ageHours = (Date.now() - new Date(createdAt).getTime()) / 3_600_000;
+            if (ageHours <= 0) return 1;
+            return Math.pow(0.5, ageHours / HALF_LIFE_HOURS);
+        };
+        const engagement = (a: any): number =>
+            (a.upvotes || 0)
+            - (a.downvotes || 0)
+            + 1.2 * (a.commentCount || 0)
+            + 0.6 * (a.savesCount || a.saveCount || 0)
+            + 0.4 * (a.reactionsCount || a.reactionCount || 0);
+        const hotScore = (a: any): number => engagement(a) * decay(a.createdAt);
 
-        if (sort === 'top' || sort === 'hot') {
+        if (sort === 'hot') {
             merged.sort((a: any, b: any) => {
-                const sa = score(a); const sb = score(b);
-                if (sa !== sb) return sb - sa;
-                const ta = new Date(a.createdAt).getTime();
-                const tb = new Date(b.createdAt).getTime();
-                if (ta !== tb) return tb - ta;
-                return String(a.id).localeCompare(String(b.id));
+                const sb = hotScore(b); const sa = hotScore(a);
+                if (sb !== sa) return sb - sa;
+                return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+            });
+        } else if (sort === 'top') {
+            merged.sort((a: any, b: any) => {
+                const sb = engagement(b); const sa = engagement(a);
+                if (sb !== sa) return sb - sa;
+                return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
             });
         } else {
             merged.sort((a: any, b: any) => {

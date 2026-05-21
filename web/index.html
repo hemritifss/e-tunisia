@@ -42,7 +42,12 @@
           <a href="#/collections" class="nav-link" data-page="collections">Collections</a>
         </div>
         <div class="nav-actions">
-          <button class="btn-icon" id="search-toggle" aria-label="Search">
+          <button class="nav-search-trigger" data-open-cmdk aria-label="Search anything (Ctrl+K)">
+            <i class="lucide-search"></i>
+            <span class="nav-search-trigger-label">Search anything…</span>
+            <kbd class="nav-search-trigger-kbd">⌘K</kbd>
+          </button>
+          <button class="btn-icon nav-search-mobile" id="search-toggle" aria-label="Search">
             <i class="lucide-search"></i>
           </button>
           <button class="btn-icon" id="notif-toggle" aria-label="Notifications">
