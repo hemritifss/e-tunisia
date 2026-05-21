@@ -118,25 +118,21 @@ export function StoriesStrip() {
         aria-label="Upload a story image"
       />
 
-      <div className="-mx-2 px-2">
-        <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide snap-x">
+      <div className="stories-v2-wrap">
+        <div className="stories-v2-track snap-x">
           {/* "Your story +" tile — always present, opens file picker */}
           <button
             onClick={openYourTile}
-            className="flex-shrink-0 flex flex-col items-center gap-1.5 snap-start group"
+            className="stories-v2-tile stories-v2-tile-self snap-start"
             aria-label="Add a story"
           >
-            <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-brand to-brand-dark p-[2px] transition-transform group-hover:scale-105">
-              <div className="w-full h-full rounded-full bg-surface flex items-center justify-center text-2xl text-brand">
-                {createMutation.isPending ? (
-                  <span className="animate-spin">⟳</span>
-                ) : (
-                  <Plus size={24} />
-                )}
+            <div className="stories-v2-ring stories-v2-ring-self">
+              <div className="stories-v2-add-inner">
+                {createMutation.isPending ? <span className="animate-spin">⟳</span> : <Plus size={22} />}
               </div>
             </div>
-            <span className="text-[11px] sm:text-xs text-foreground font-medium max-w-[80px] truncate text-center">
-              Your story
+            <span className="stories-v2-label">
+              {createMutation.isPending ? 'Posting…' : 'Your story'}
             </span>
           </button>
 
@@ -149,19 +145,20 @@ export function StoriesStrip() {
               <button
                 key={g.authorId}
                 onClick={() => setViewer({ authorIdx: gi, itemIdx: 0 })}
-                className="flex-shrink-0 flex flex-col items-center gap-1.5 snap-start group"
+                className="stories-v2-tile snap-start"
               >
-                <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-brand via-coral to-yellow-400 p-[2px] transition-transform group-hover:scale-105">
+                <div className="stories-v2-ring">
                   <img
                     src={top?.imageUrl || avatar}
                     alt={name}
-                    className="w-full h-full rounded-full object-cover border-2 border-surface"
+                    className="stories-v2-image"
                     loading="lazy"
                   />
+                  {g.items.length > 1 && (
+                    <span className="stories-v2-count">{g.items.length}</span>
+                  )}
                 </div>
-                <span className="text-[11px] sm:text-xs text-muted-foreground max-w-[80px] truncate text-center">
-                  {name.split(' ')[0]}
-                </span>
+                <span className="stories-v2-label stories-v2-label-muted">{name.split(' ')[0]}</span>
               </button>
             );
           })}
