@@ -1,0 +1,23 @@
+# Development image — runs `nest start --watch` inside the container.
+# Source is volume-mounted at runtime (see docker-compose.dev.yml) so every
+# save on the host triggers a recompile + Nest reload. No image rebuild
+# needed when you edit a .ts file — just save and watch the container logs.
+#
+# Stack: postgres + redis + minio stay the same; only the `api` service
+# uses this image and override.
+
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Install ALL deps (incl. dev) — we need nest CLI + watch infrastructure.
+COPY package*.json ./
+RUN npm ci --legacy-peer-deps && npm cache clean --force
+
+# Source tree is mounted as a volume at runtime so we don't COPY it here.
+# Anything copied at image-build time would be shadowed by the mount anyway.
+
+EXPOSE 3000
+
+# Nest CLI handles incremental compilation + restart on file changes.
+CMD ["npm", "run", "start:dev"]
