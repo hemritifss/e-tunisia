@@ -15,12 +15,17 @@ export class RegisterDto {
     @MinLength(6)
     password: string;
 
-    @ApiProperty({ example: 'ahmed_t', description: 'Public handle, 3-30 chars, [a-z0-9_], must start with a letter' })
+    @ApiProperty({
+        example: 'ahmed_t',
+        required: false,
+        description: 'Optional public handle. If omitted, auto-generated from fullName. 3-30 chars, [a-z0-9_], must start with a letter.',
+    })
+    @IsOptional()
     @IsString()
     @MinLength(3)
     @MaxLength(30)
     @Matches(/^[a-z][a-z0-9_]{2,29}$/)
-    handle: string;
+    handle?: string;
 
     @ApiProperty({ example: 'Tunisia', required: false })
     @IsOptional()

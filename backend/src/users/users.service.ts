@@ -36,6 +36,36 @@ export class UsersService {
         return this.usersRepository.findOne({ where: { handle: handle.toLowerCase() } });
     }
 
+    /**
+     * Auto-generate a unique handle from a fullName. Reuses the backfill
+     * algorithm so registered + backfilled accounts share a name scheme.
+     * Falls back to a random suffix after 8 collisions.
+     */
+    async generateAvailableHandle(fullName: string): Promise<string> {
+        const { HANDLE_PATTERN, RESERVED_HANDLES } = await import('./reserved-handles');
+        const slugify = (s: string) =>
+            (s || 'traveler')
+                .toLowerCase()
+                .normalize('NFKD')
+                .replace(/[^\x00-\x7f]/g, '')
+                .replace(/[^a-z0-9]+/g, '_')
+                .replace(/^_+|_+$/g, '')
+                .replace(/^[^a-z]+/, 't_')
+                .slice(0, 22) || 'traveler';
+        let base = slugify(fullName);
+        if (base.length < 3) base = base + '_t';
+
+        for (let i = 0; i < 8; i++) {
+            const candidate = i === 0 ? base : `${base}_${Math.random().toString(36).slice(2, 6)}`;
+            if (!HANDLE_PATTERN.test(candidate)) continue;
+            if (RESERVED_HANDLES.has(candidate)) continue;
+            const clash = await this.usersRepository.findOne({ where: { handle: candidate } });
+            if (!clash) return candidate;
+        }
+        // Pathological last resort: timestamp suffix.
+        return `${base}_${Date.now().toString(36)}`;
+    }
+
     async isHandleAvailable(handle: string): Promise<boolean> {
         const h = (handle || '').toLowerCase();
         const { isHandleFormatValid, isHandleReserved } = await import('./reserved-handles');
