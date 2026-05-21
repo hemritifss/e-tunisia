@@ -16,12 +16,12 @@ interface Mood {
 }
 
 const MOODS: Mood[] = [
-    { id: 'beach',     emoji: '🏖', label: 'Beach',    sub: "Hammamet · Djerba",  href: '#/explore?mood=beach',    tint: '#56cfe1' },
-    { id: 'desert',    emoji: '🐪', label: 'Desert',   sub: 'Tozeur · Matmata',   href: '#/explore?mood=desert',   tint: '#d4623a' },
-    { id: 'medina',    emoji: '🕌', label: 'Medina',   sub: 'Tunis · Kairouan',   href: '#/explore?mood=medina',   tint: '#e4b07e' },
-    { id: 'food',      emoji: '🍲', label: 'Food',     sub: 'Sfax · Sousse',      href: '#/explore?mood=food',     tint: '#f4c542' },
-    { id: 'adventure', emoji: '🏔', label: 'Adventure', sub: 'Atlas · Tabarka',   href: '#/explore?mood=adventure', tint: '#7a8c5a' },
-    { id: 'culture',   emoji: '🎭', label: 'Culture',  sub: 'Carthage · Dougga',  href: '#/explore?mood=culture',  tint: '#a371f7' },
+    { id: 'beach',     emoji: '🏖', label: 'Beach',    sub: "Hammamet · Djerba",  href: '#/mood/beach',    tint: '#56cfe1' },
+    { id: 'desert',    emoji: '🐪', label: 'Desert',   sub: 'Tozeur · Matmata',   href: '#/mood/desert',   tint: '#d4623a' },
+    { id: 'medina',    emoji: '🕌', label: 'Medina',   sub: 'Tunis · Kairouan',   href: '#/mood/medina',   tint: '#e4b07e' },
+    { id: 'food',      emoji: '🍲', label: 'Food',     sub: 'Sfax · Sousse',      href: '#/mood/food',     tint: '#f4c542' },
+    { id: 'adventure', emoji: '🏔', label: 'Adventure', sub: 'Atlas · Tabarka',   href: '#/mood/adventure', tint: '#7a8c5a' },
+    { id: 'culture',   emoji: '🎭', label: 'Culture',  sub: 'Carthage · Dougga',  href: '#/mood/culture',  tint: '#a371f7' },
 ];
 
 export function MoodCompass() {
