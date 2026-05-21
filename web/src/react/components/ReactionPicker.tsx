@@ -146,7 +146,7 @@ export function ReactionPicker({
         onMouseEnter={cancelClose}
         onMouseLeave={scheduleClose}
         role="menu"
-        {...(!open ? { inert: '' as any } : {})}
+        {...(!open ? ({ inert: true } as any) : {})}
       >
         {REACTIONS.map(r => (
           <button

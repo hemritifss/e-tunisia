@@ -14,12 +14,34 @@ class ApiError extends Error {
   }
 }
 
+/**
+ * GET endpoints that have returned 404 in this session — likely a stale
+ * backend running pre-route-registration. We stop hammering them so the
+ * console doesn't fill up and the network panel stays readable. Mutation
+ * methods (POST/PUT/DELETE) are NOT cached — they can succeed at any time.
+ *
+ * Cleared automatically on tab focus (in case the user has just restarted
+ * the backend), and explicitly via clearApi404Cache().
+ */
+const dead404Cache = new Set<string>();
+if (typeof window !== 'undefined') {
+  window.addEventListener('focus', () => dead404Cache.clear());
+}
+export function clearApi404Cache() { dead404Cache.clear(); }
+
 async function fetchWithAuth(
   endpoint: string,
   options: RequestInit = {},
 ): Promise<any> {
   const token = localStorage.getItem('etunisia_token');
   const url = `${API_BASE}${endpoint}`;
+  const method = (options.method || 'GET').toUpperCase();
+  const cacheKey = `${method} ${endpoint.split('?')[0]}`;
+
+  // Short-circuit if we've already learned this GET 404s in this session.
+  if (method === 'GET' && dead404Cache.has(cacheKey)) {
+    throw new ApiError(404, 'Route not available (cached this session)');
+  }
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -41,6 +63,10 @@ async function fetchWithAuth(
   });
 
   if (!response.ok) {
+    // Remember GET 404s for this session so we don't keep hammering.
+    if (response.status === 404 && method === 'GET') {
+      dead404Cache.add(cacheKey);
+    }
     let errorData: any = {};
     try {
       errorData = await response.json();
