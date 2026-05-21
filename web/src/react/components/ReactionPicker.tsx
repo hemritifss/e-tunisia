@@ -137,13 +137,16 @@ export function ReactionPicker({
         </a>
       )}
 
-      {/* Hover/long-press picker */}
+      {/* Hover/long-press picker. Use `inert` instead of `aria-hidden`: aria-hidden
+          throws a console warning when a focused descendant exists (we keep the
+          active reaction button focused for keyboard users), while `inert` cleanly
+          removes the subtree from a11y AND blurs focus inside it. */}
       <div
         className={`reaction-popover ${open ? 'open' : ''}`}
         onMouseEnter={cancelClose}
         onMouseLeave={scheduleClose}
         role="menu"
-        aria-hidden={!open}
+        {...(!open ? { inert: '' as any } : {})}
       >
         {REACTIONS.map(r => (
           <button

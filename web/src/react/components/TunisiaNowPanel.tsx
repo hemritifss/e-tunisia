@@ -85,7 +85,7 @@ function TrendingTab() {
         queryKey: ['now-panel-trending-places'],
         queryFn: async () => {
             try {
-                const r: any = await fetch('/api/v1/places?sort=popular&limit=5').then((r) => r.json());
+                const r: any = await fetch('/api/v1/places/popular?limit=5').then((r) => r.json());
                 return Array.isArray(r) ? r : (r?.data ?? []);
             } catch { return []; }
         },

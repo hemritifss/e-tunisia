@@ -81,7 +81,7 @@ export class PlacesService {
 
     async findAll(query: QueryPlacesDto) {
         const {
-            search, categoryId, city, governorate,
+            search, categoryId, category, city, governorate,
             minRating, page = 1, limit = 20, sortBy = 'createdAt',
             order = 'DESC', featured,
         } = query;
@@ -100,6 +100,11 @@ export class PlacesService {
 
         if (categoryId) {
             qb.andWhere('place.categoryId = :categoryId', { categoryId });
+        } else if (category) {
+            // Slug fallback: resolve "beaches", "food", "historical" etc. against the
+            // category.name column (no separate slug column exists). Tolerant ILIKE
+            // so "beach" matches "Beaches", "historical" matches "Historical Sites".
+            qb.andWhere('category.name ILIKE :catSlug', { catSlug: `%${category}%` });
         }
 
         if (city) {

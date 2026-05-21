@@ -5,6 +5,8 @@ import { Type } from 'class-transformer';
 export class QueryPlacesDto {
     @ApiPropertyOptional() @IsOptional() @IsString() search?: string;
     @ApiPropertyOptional() @IsOptional() @IsString() categoryId?: string;
+    /** Slug fallback so old frontend code that sends ?category=<slug> keeps working. */
+    @ApiPropertyOptional() @IsOptional() @IsString() category?: string;
     @ApiPropertyOptional() @IsOptional() @IsString() city?: string;
     @ApiPropertyOptional() @IsOptional() @IsString() governorate?: string;
     @ApiPropertyOptional() @IsOptional() @Type(() => Number) @IsNumber() minRating?: number;
