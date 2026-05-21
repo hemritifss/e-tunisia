@@ -127,136 +127,112 @@ function PostCard({ post }: { post: Post }) {
     }
   };
 
+  const authorHandle = (post.author as any)?.handle;
+  const authorHref = authorHandle
+    ? `#/u/${authorHandle}`
+    : (post.author?.id ? `#/user/${post.author.id}` : '#');
+  const isCreator = (post.author as any)?.role === 'creator';
+  const images: string[] = Array.isArray(post.images) ? post.images.filter(Boolean) : [];
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
+    <motion.article
+      className="post-card-v2"
+      initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
+      transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
     >
-      <Card hover className="group">
-        <CardContent className="p-0">
-          <div className="flex">
-
-            {/* Content */}
-            <div className="flex-1 p-4 min-w-0">
-              {/* Header */}
-              <div className="flex items-center gap-2 mb-2">
-                <a
-                  href={(post.author as any)?.handle ? `#/u/${(post.author as any).handle}` : (post.author?.id ? `#/user/${post.author.id}` : '#')}
-                  className="contents"
-                  onClick={(e) => { if (!post.author?.id) e.preventDefault(); }}
-                >
-                  <Avatar
-                    src={post.author?.avatar}
-                    fallback={post.author?.fullName}
-                    size="sm"
-                  />
-                </a>
-                <div className="flex-1 min-w-0">
-                  <a
-                    href={(post.author as any)?.handle ? `#/u/${(post.author as any).handle}` : (post.author?.id ? `#/user/${post.author.id}` : '#')}
-                    className="text-sm font-medium truncate hover:text-brand"
-                    onClick={(e) => { if (!post.author?.id) e.preventDefault(); }}
-                  >
-                    {post.author?.fullName || 'Anonymous'}
-                  </a>
-                  <span className="text-xs text-muted-foreground ml-2">
-                    {formatDate(post.createdAt)}
-                  </span>
-                </div>
-                {post.category && (
-                  <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-brand/10 text-brand">
-                    {post.category}
-                  </span>
-                )}
-              </div>
-
-              {/* Title & Body */}
-              <h3 className="text-base font-semibold mb-1 leading-snug">
-                {post.title}
-              </h3>
-              <p className="text-sm text-muted-foreground line-clamp-3 mb-3">
-                {post.body}
-              </p>
-
-              {/* Images */}
-              {post.images && post.images.length > 0 && (
-                <div className="mb-3 rounded-xl overflow-hidden">
-                  <img
-                    src={post.images[0]}
-                    alt={post.title}
-                    className="w-full h-48 object-cover"
-                    loading="lazy"
-                  />
-                </div>
-              )}
-
-              {/* Location */}
-              {post.location && (
-                <div className="flex items-center gap-1 text-xs text-muted-foreground mb-3">
-                  <MapPin size={12} />
-                  {post.location}
-                </div>
-              )}
-
-              {/* Actions */}
-              <div className="flex items-center gap-2 flex-wrap">
-                <ReactionPicker
-                  postId={post.id}
-                  initialMine={(post as any).myReaction || null}
-                  initialBreakdown={(post as any).reactions?.breakdown || {}}
-                  initialTotal={
-                    typeof (post as any).reactions?.total === 'number'
-                      ? (post as any).reactions.total
-                      : (Number(post.upvotes) || 0)
-                  }
-                />
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  leftIcon={<MessageCircle size={14} />}
-                  onClick={handleComment}
-                >
-                  {formatNumber(post.commentCount)}
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  leftIcon={<Share2 size={14} />}
-                  onClick={handleShare}
-                >
-                  Share
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  leftIcon={<Bookmark size={14} className={isSavedLocal ? 'fill-current' : ''} />}
-                  onClick={handleSave}
-                  className={isSavedLocal ? 'text-brand' : ''}
-                >
-                  {isSavedLocal ? 'Saved' : 'Save'}
-                </Button>
-                {post.author && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    leftIcon={<Coins size={14} className="text-amber-500" />}
-                    onClick={() => openDonateModal({
-                      target: 'user',
-                      toUserId: post.author!.id,
-                      toUserName: post.author!.fullName,
-                      toUserAvatar: post.author!.avatar || undefined,
-                    })}
-                  >
-                    Tip
-                  </Button>
-                )}
-              </div>
-            </div>
+      <header className="post-card-v2-head">
+        <a
+          className="post-card-v2-author"
+          href={authorHref}
+          onClick={(e) => { if (!post.author?.id) e.preventDefault(); }}
+        >
+          <Avatar
+            src={post.author?.avatar}
+            fallback={post.author?.fullName}
+            size="sm"
+          />
+          <div className="post-card-v2-byline">
+            <strong>
+              {post.author?.fullName || 'Anonymous'}
+              {isCreator && <span className="post-card-v2-guide" title="Local Guide">✓</span>}
+            </strong>
+            <span>
+              {authorHandle ? `@${authorHandle} · ` : ''}{formatDate(post.createdAt)}
+            </span>
           </div>
-        </CardContent>
-      </Card>
-    </motion.div>
+        </a>
+        {post.category && (
+          <span className="post-card-v2-category">{post.category}</span>
+        )}
+      </header>
+
+      <a className="post-card-v2-content" href={detailHash}>
+        {post.title && <h3 className="post-card-v2-title">{post.title}</h3>}
+        {post.body && <p className="post-card-v2-body">{post.body}</p>}
+      </a>
+
+      {images.length > 0 && (
+        <a className={`post-card-v2-media post-card-v2-media-${Math.min(images.length, 4)}`} href={detailHash} aria-label="Open post">
+          {images.slice(0, 4).map((src, i) => (
+            <img key={i} src={src} alt="" loading="lazy" />
+          ))}
+          {images.length > 4 && (
+            <span className="post-card-v2-media-overflow">+{images.length - 4}</span>
+          )}
+        </a>
+      )}
+
+      {post.location && (
+        <div className="post-card-v2-loc">
+          <MapPin size={12} /> {post.location}
+        </div>
+      )}
+
+      <footer className="post-card-v2-actions">
+        <ReactionPicker
+          postId={post.id}
+          initialMine={(post as any).myReaction || null}
+          initialBreakdown={(post as any).reactions?.breakdown || {}}
+          initialTotal={
+            typeof (post as any).reactions?.total === 'number'
+              ? (post as any).reactions.total
+              : (Number(post.upvotes) || 0)
+          }
+        />
+        <button className="post-card-v2-action" onClick={handleComment} aria-label="Comments">
+          <MessageCircle size={15} />
+          <span>{formatNumber(post.commentCount)}</span>
+        </button>
+        <button className="post-card-v2-action" onClick={handleShare} aria-label="Share">
+          <Share2 size={15} />
+          <span>Share</span>
+        </button>
+        <button
+          className={`post-card-v2-action ${isSavedLocal ? 'is-active' : ''}`}
+          onClick={handleSave}
+          aria-label={isSavedLocal ? 'Unsave' : 'Save'}
+        >
+          <Bookmark size={15} className={isSavedLocal ? 'fill-current' : ''} />
+          <span>{isSavedLocal ? 'Saved' : 'Save'}</span>
+        </button>
+        {post.author && (
+          <button
+            className="post-card-v2-action post-card-v2-tip"
+            onClick={() => openDonateModal({
+              target: 'user',
+              toUserId: post.author!.id,
+              toUserName: post.author!.fullName,
+              toUserAvatar: post.author!.avatar || undefined,
+            })}
+            aria-label="Tip"
+          >
+            <Coins size={15} />
+            <span>Tip</span>
+          </button>
+        )}
+      </footer>
+    </motion.article>
   );
 }
 
