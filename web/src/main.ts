@@ -34,6 +34,7 @@ import { renderCreditsPage, initCreditsPage } from './pages/credits';
 import { renderUserProfilePage, initUserProfilePage } from './pages/user-profile';
 import { renderPostDetailPage, initPostDetailPage } from './pages/post-detail';
 import { renderSearchPage, initSearchPage } from './pages/search';
+import { initCommandPalette } from './command-palette';
 import { renderProfileEditPage, initProfileEditPage } from './pages/profile-edit';
 import { renderMessagesPage, initMessagesPage } from './pages/messages';
 import { renderOnboardingPage, initOnboardingPage } from './pages/onboarding';
@@ -590,6 +591,59 @@ function initNotifications() {
     setTimeout(openNotifs, 100);
   });
 
+  // ── Live refresh wires ─────────────────────────────────────────────────
+  // 1) Realtime push: every NotificationsService.create() emits
+  //    'notification:new' over WebSocket → realtime.ts re-emits it as
+  //    'etunisia:notification-new'. Bump the badge + re-render the panel.
+  // 2) Poll for new notifications every 45s while a tab is visible.
+  // 3) Refresh when the tab regains focus or the route changes.
+
+  let pollTimer: number | null = null;
+
+  async function refreshBadge() {
+    if (!apiService.isLoggedIn() || !badge) return;
+    try {
+      const res: any = await apiService.getUnreadCount();
+      const n = Number(res?.unreadCount ?? res?.count ?? 0);
+      if (n > 0) { badge.textContent = String(n); badge.style.display = ''; }
+      else badge.style.display = 'none';
+    } catch {}
+  }
+
+  function startPolling() {
+    if (pollTimer != null) return;
+    pollTimer = window.setInterval(() => {
+      if (document.visibilityState !== 'visible') return;
+      refreshBadge();
+      // Re-render the open panel too, so badges + items stay in sync.
+      if (panel?.classList.contains('open')) loadNotifs();
+    }, 45_000);
+  }
+
+  function stopPolling() {
+    if (pollTimer != null) { window.clearInterval(pollTimer); pollTimer = null; }
+  }
+
+  window.addEventListener('etunisia:notification-new', () => {
+    // Live push from the WebSocket gateway — refresh immediately, no waiting.
+    refreshBadge();
+    if (panel?.classList.contains('open')) loadNotifs();
+    // Give a brief flash on the bell to draw the eye.
+    toggle?.classList.add('notif-toggle-flash');
+    window.setTimeout(() => toggle?.classList.remove('notif-toggle-flash'), 900);
+  });
+
+  window.addEventListener('focus', () => { refreshBadge(); });
+  window.addEventListener('hashchange', () => { refreshBadge(); });
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') refreshBadge();
+  });
+
+  // First load + start polling
+  refreshBadge();
+  startPolling();
+  window.addEventListener('beforeunload', stopPolling);
+
   markReadBtn?.addEventListener('click', async () => {
     panel?.querySelectorAll('.notif-item.unread').forEach(item => item.classList.remove('unread'));
     panel?.querySelectorAll('.notif-unread-dot').forEach(d => d.remove());
@@ -1085,6 +1139,7 @@ function init() {
   initTheme();
   initSearch();
   initNotifications();
+  initCommandPalette();
   initDropdown();
   initScrollNav();
   initHamburger();
