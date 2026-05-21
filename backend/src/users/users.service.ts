@@ -191,6 +191,7 @@ export class UsersService {
             followingCount: user.followingCount || 0,
             topEndorsements: await this.endorsements.topForUser(user.id, 3).catch(() => []),
             topCityRank: await this.topCityRankForUser(user.id).catch(() => null),
+            plan: this.resolveEffectivePlan(user),
         };
 
         await this.cache.set(key, passport, 300_000);
@@ -422,6 +423,16 @@ export class UsersService {
             }
         }
         return { ok: true, visitedPlaceIds: visitedPlaceIds.length, interests: interests.length };
+    }
+
+    /** Resolves the user's current effective plan. If subscriptionExpiresAt is
+     *  past, premium/business silently revert to free without touching the row. */
+    private resolveEffectivePlan(user: User): 'free' | 'premium' | 'business' {
+        const plan = (user.plan || 'free').toLowerCase();
+        if (plan === 'free') return 'free';
+        const exp = (user as any).subscriptionExpiresAt;
+        if (exp && new Date(exp).getTime() < Date.now()) return 'free';
+        return (plan === 'business' ? 'business' : 'premium');
     }
 
     /** Call this whenever a user's data changes. */

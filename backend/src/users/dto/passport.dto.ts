@@ -35,6 +35,8 @@ export interface PassportDto {
     viewerEndorsedTopics?: string[];
     /** Set only when the user is top-3 by review count in at least one city. */
     topCityRank: { city: string; rank: number; total: number } | null;
+    /** Effective subscription plan (resolves expired Pro/Biz back to Free). */
+    plan: 'free' | 'premium' | 'business';
 }
 
 export function deriveLevel(points: number): PassportLevel {

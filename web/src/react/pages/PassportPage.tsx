@@ -11,6 +11,7 @@ import { PassportOnboarding } from '../components/PassportOnboarding';
 import { FollowList } from '../components/FollowList';
 import { EndorseModal, TopEndorsementsStrip } from '../components/EndorseModal';
 import { Award, Trophy, Sparkles, X } from 'lucide-react';
+import { TierBadge } from '../components/TierBadge';
 import { Pencil, UserPlus, UserCheck } from 'lucide-react';
 
 function handleFromHash(): string {
@@ -115,7 +116,9 @@ export default function PassportPage() {
                             <div className="passport-meta">
                                 {p.country && <span>🇹🇳 {p.country}</span>}
                                 <span className={`passport-level passport-level-${p.passportLevel.toLowerCase()}`}>{p.passportLevel} Explorer</span>
-                                {p.role === 'creator' && <span className="passport-verified">✓ Local Guide</span>}
+                                {p.plan === 'premium' && <span className="passport-pro-chip"><Sparkles size={11} /> Pro Traveler</span>}
+                                {p.plan === 'business' && <span className="passport-business-chip">✓ Verified Business</span>}
+                                {p.role === 'creator' && p.plan !== 'business' && <span className="passport-verified">✓ Local Guide</span>}
                                 {p.topCityRank && (
                                     <span className="passport-cityrank" title={`Out of ${p.topCityRank.total} reviewers`}>
                                         <Trophy size={12} /> #{p.topCityRank.rank} in {p.topCityRank.city}

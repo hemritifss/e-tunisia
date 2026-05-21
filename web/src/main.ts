@@ -11,6 +11,7 @@ import ChallengesPage from './react/pages/ChallengesPage';
 import PassportPage from './react/pages/PassportPage';
 import ActivityFeedPage from './react/pages/ActivityFeedPage';
 import MoodPage from './react/pages/MoodPage';
+import ProUpgradePage from './react/pages/ProUpgradePage';
 
 // Vanilla pages
 import { renderFeedPage, initFeedPage } from './pages/feed';
@@ -138,6 +139,11 @@ function getRoute(hash: string): Route {
     return { render: () => '', init: () => {}, page: 'explore', isReact: true };
   }
 
+  // Pro / Business upgrade page — public, anon visitors get a sign-in CTA inline
+  if (path === '/pro' || path === '/premium' || path === '/upgrade') {
+    return { render: () => '', init: () => {}, page: 'premium', isReact: true };
+  }
+
   // Public user profile (uuid)
   const userMatch = path.match(/^\/user\/([0-9a-fA-F-]+)/);
   if (userMatch) {
@@ -257,6 +263,8 @@ function navigate() {
         currentUnmount = mountIsland(ActivityFeedPage, islandRoot);
       } else if (/^\/mood\//i.test(path)) {
         currentUnmount = mountIsland(MoodPage, islandRoot);
+      } else if (path === '/pro' || path === '/premium' || path === '/upgrade') {
+        currentUnmount = mountIsland(ProUpgradePage, islandRoot);
       }
     }
   } else {
