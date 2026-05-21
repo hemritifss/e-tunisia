@@ -10,9 +10,10 @@ import { PostsController } from './posts.controller';
 import { PostsService } from './posts.service';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { BadgesModule } from '../badges/badges.module';
+import { BillingModule } from '../billing/billing.module';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([Post, Comment, CommentLike, PostReaction, SavedPost, User]), NotificationsModule, BadgesModule],
+    imports: [TypeOrmModule.forFeature([Post, Comment, CommentLike, PostReaction, SavedPost, User]), NotificationsModule, BadgesModule, BillingModule],
     controllers: [PostsController],
     providers: [PostsService],
     exports: [PostsService],
