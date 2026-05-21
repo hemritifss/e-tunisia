@@ -10,11 +10,15 @@ export function SharePassport({ handle, fullName }: Props) {
     const text = `Check out ${fullName}'s Tunisia journey 🇹🇳`;
 
     const copy = async () => {
+        const showToast = (opts: any) => (window as any).showToast?.(opts);
         try {
             await navigator.clipboard.writeText(url);
             setCopied(true);
             setTimeout(() => setCopied(false), 1600);
-        } catch {}
+            showToast({ message: 'Passport link copied. Share away.', type: 'success', emoji: '🔗' });
+        } catch {
+            showToast({ message: "Couldn't copy — select the URL manually.", type: 'error' });
+        }
     };
 
     const native = async () => {

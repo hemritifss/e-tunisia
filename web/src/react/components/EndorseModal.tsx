@@ -3,6 +3,8 @@ import { api, getImageUrl } from '../../shared/api';
 import { ENDORSEMENT_TOPICS, TOPIC_BY_ID } from './endorsement-topics';
 import { Check, X, Loader2 } from 'lucide-react';
 
+const showToast = (opts: any) => (window as any).showToast?.(opts);
+
 interface Props {
     handle: string;
     fullName: string;
@@ -26,8 +28,18 @@ export function EndorseModal({ handle, fullName, avatar, initiallyEndorsed, onCl
             if (wasOn) await api.unendorseHandle(handle, topicId);
             else await api.endorseHandle(handle, topicId);
             onChange?.(next);
+            const topic = TOPIC_BY_ID[topicId];
+            const who = fullName.split(' ')[0];
+            showToast({
+                message: wasOn
+                    ? `Removed endorsement for ${topic?.label?.toLowerCase() || topicId}`
+                    : `${who} got your nod for ${topic?.label?.toLowerCase() || topicId}`,
+                type: wasOn ? 'info' : 'success',
+                emoji: wasOn ? undefined : (topic?.emoji || '🌟'),
+            });
         } catch {
             setEndorsed(endorsed); // rollback
+            showToast({ message: 'Could not save endorsement — please try again.', type: 'error' });
         } finally {
             setBusyTopic(null);
         }

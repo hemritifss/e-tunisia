@@ -286,22 +286,28 @@ function LocalGuideButton({ onPromoted }: { onPromoted?: () => void }) {
         if (busy) return;
         setBusy(true);
         setHint(null);
+        const showToast = (opts: any) => (window as any).showToast?.(opts);
         try {
             const res: any = await api.applyLocalGuide();
             if (res?.ok) {
                 onPromoted?.();
+                showToast({
+                    title: 'Local Guide unlocked',
+                    message: "You're now a verified Local Guide. Travelers will see the ✓ on your passport.",
+                    type: 'achievement',
+                });
             } else if (res?.reason === 'gate_not_met') {
                 const p = res.progress || {};
-                setHint(
-                    `Almost there — need one of: ${p.pointsRequired}+ pts (you have ${p.points ?? 0}), ` +
-                    `${p.reviewsRequired}+ reviews (you have ${p.reviewsCount ?? 0}), ` +
-                    `or ${p.tripsRequired}+ trips (you have ${p.tripsCount ?? 0}).`
-                );
+                const hint = `Almost there — need one of: ${p.pointsRequired}+ pts (you have ${p.points ?? 0}), ${p.reviewsRequired}+ reviews (you have ${p.reviewsCount ?? 0}), or ${p.tripsRequired}+ trips (you have ${p.tripsCount ?? 0}).`;
+                setHint(hint);
+                showToast({ message: hint, type: 'info' });
             } else {
                 setHint('Could not apply right now.');
+                showToast({ message: 'Could not apply right now.', type: 'error' });
             }
         } catch {
             setHint('Network error.');
+            showToast({ message: 'Network error — please try again.', type: 'error' });
         } finally {
             setBusy(false);
         }
