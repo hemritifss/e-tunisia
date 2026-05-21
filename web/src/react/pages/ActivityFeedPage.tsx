@@ -111,7 +111,7 @@ function EntryRow({ entry }: { entry: Entry }) {
 type FeedMode = 'following' | 'global';
 
 function isAnon(): boolean {
-    try { return !localStorage.getItem('auth_token'); } catch { return true; }
+    try { return !localStorage.getItem('etunisia_token'); } catch { return true; }
 }
 
 function readMode(): FeedMode {

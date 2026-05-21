@@ -11,6 +11,7 @@ import { TourPackage } from '../places/tour-package.entity';
 import { PlacesModule } from '../places/places.module';
 import { UsersModule } from '../users/users.module';
 import { BadgesModule } from '../badges/badges.module';
+import { BillingModule } from '../billing/billing.module';
 
 @Module({
     imports: [
@@ -19,6 +20,7 @@ import { BadgesModule } from '../badges/badges.module';
         PlacesModule,
         UsersModule,
         BadgesModule,
+        BillingModule,
     ],
     controllers: [ItinerariesController, TripsController],
     providers: [ItinerariesService, TripsService],

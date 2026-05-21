@@ -69,5 +69,5 @@ export function clearDraft(): void {
 
 /** Heuristic: is the user logged out? Used to gate draft-tracking. */
 export function isAnonymous(): boolean {
-    try { return !localStorage.getItem('auth_token'); } catch { return true; }
+    try { return !localStorage.getItem('etunisia_token'); } catch { return true; }
 }

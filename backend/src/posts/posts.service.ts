@@ -7,6 +7,7 @@ import { CommentLike } from './comment-like.entity';
 import { PostReaction, ReactionType } from './post-reaction.entity';
 import { SavedPost } from './saved-post.entity';
 import { effectivePlan } from '../users/effective-plan';
+import { BillingService } from '../billing/billing.service';
 import { BadgesService } from '../badges/badges.service';
 import { User } from '../users/user.entity';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -31,6 +32,7 @@ export class PostsService {
         @InjectRepository(User) private usersRepo: Repository<User>,
         private notifications: NotificationsService,
         private badges: BadgesService,
+        private billing: BillingService,
     ) {}
 
     /** Who reacted to a post — paginated, optionally filtered by reaction type. */
@@ -82,6 +84,19 @@ export class PostsService {
         if (!post) throw new NotFoundException('Post not found');
         const existing = await this.savedRepo.findOne({ where: { postId, userId } });
         if (!existing) {
+            // Plan cap: Free users get 20 saved posts. Toggling off is always allowed,
+            // so the check only fires on the additive path.
+            const current = await this.savedRepo.count({ where: { userId } });
+            const { ok, cap, plan } = await this.billing.checkCap(userId, 'maxSaves', current);
+            if (!ok) {
+                throw new ForbiddenException({
+                    code: 'cap_reached',
+                    feature: 'maxSaves',
+                    cap,
+                    plan,
+                    message: `Free plan saves up to ${cap} posts. Upgrade to Pro for unlimited.`,
+                });
+            }
             await this.savedRepo.save(this.savedRepo.create({ postId, userId }));
             if (this.badges) await this.badges.awardIfEligible(userId, 'post.saved', {});
         }

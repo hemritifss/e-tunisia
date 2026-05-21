@@ -7,6 +7,7 @@ import { TourPackage } from '../places/tour-package.entity';
 import { InquiriesService } from '../places/inquiries.service';
 import { UsersService } from '../users/users.service';
 import { BadgesService } from '../badges/badges.service';
+import { BillingService } from '../billing/billing.service';
 
 interface BatchInquiryInput {
     name: string;
@@ -42,6 +43,7 @@ export class TripsService {
         private inquiries: InquiriesService,
         private users: UsersService,
         private badges: BadgesService,
+        private billing: BillingService,
     ) {}
 
     /** Public list of trips authored by a given handle. Empty array on unknown handle. */
@@ -175,6 +177,23 @@ export class TripsService {
         if (input.stops.length > 30) {
             throw new BadRequestException('Trips capped at 30 stops');
         }
+
+        // Plan cap: Free users get 3 trip plans, Pro/Business unlimited.
+        // Anonymous drafts (userId === null) skip the cap — they're throwaway.
+        if (userId) {
+            const existing = await this.trips.count({ where: { userId } });
+            const { ok, cap, plan } = await this.billing.checkCap(userId, 'maxTrips', existing);
+            if (!ok) {
+                throw new ForbiddenException({
+                    code: 'cap_reached',
+                    feature: 'maxTrips',
+                    cap,
+                    plan,
+                    message: `Free plan allows ${cap} trips. Upgrade to Pro for unlimited.`,
+                });
+            }
+        }
+
         const stops = await this.hydrateStops(input.stops);
         if (stops.length === 0) throw new BadRequestException('No valid stops');
 

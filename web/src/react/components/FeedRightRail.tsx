@@ -133,7 +133,7 @@ function PassportCTAWidget() {
 }
 
 export function FeedRightRail() {
-    const isAnon = typeof window !== 'undefined' && !localStorage.getItem('auth_token');
+    const isAnon = typeof window !== 'undefined' && !localStorage.getItem('etunisia_token');
     return (
         <aside className="feed-rail">
             {isAnon && <PassportCTAWidget />}

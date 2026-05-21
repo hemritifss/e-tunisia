@@ -21,7 +21,7 @@ function handleFromHash(): string {
 
 function currentUser(): { id: string; handle: string | null; fullName: string } | null {
     try {
-        const raw = localStorage.getItem('auth_user');
+        const raw = localStorage.getItem('etunisia_user') || localStorage.getItem('auth_user');
         if (!raw) return null;
         const u = JSON.parse(raw);
         return u && u.id ? { id: u.id, handle: u.handle ?? null, fullName: u.fullName || u.name || u.email || 'You' } : null;

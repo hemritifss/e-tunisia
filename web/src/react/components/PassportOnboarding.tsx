@@ -32,7 +32,7 @@ export function PassportOnboarding({ handle, fullName, onDone }: Props) {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
-                        Authorization: `Bearer ${localStorage.getItem('auth_token') || ''}`,
+                        Authorization: `Bearer ${localStorage.getItem('etunisia_token') || ''}`,
                     },
                     body: JSON.stringify({ country }),
                 }).catch(() => {});

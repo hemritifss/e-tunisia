@@ -93,7 +93,7 @@ function mountShell() {
 
 function ownHandle(): string | null {
     try {
-        const raw = localStorage.getItem('auth_user');
+        const raw = localStorage.getItem('etunisia_user') || localStorage.getItem('auth_user');
         if (!raw) return null;
         const u = JSON.parse(raw);
         return u?.handle ?? null;

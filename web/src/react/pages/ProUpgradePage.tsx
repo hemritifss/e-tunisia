@@ -83,7 +83,7 @@ export default function ProUpgradePage() {
     const [cycle, setCycle] = useState<Cycle>('yearly');
     const [busy, setBusy] = useState<Tier | null>(null);
 
-    const isAnon = typeof window !== 'undefined' && !localStorage.getItem('auth_token');
+    const isAnon = typeof window !== 'undefined' && !localStorage.getItem('etunisia_token');
 
     const activate = async (tier: Tier) => {
         if (tier === 'free' || busy || isAnon) return;

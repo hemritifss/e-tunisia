@@ -56,8 +56,12 @@ export function SignupGate({ open, onClose, initialHandle, onSuccess }: Props) {
             }).then(r => r.json());
             const payload: any = (res && res.data) ? res.data : res;
             if (payload?.accessToken && payload?.user) {
-                localStorage.setItem('auth_token', payload.accessToken);
-                localStorage.setItem('auth_user', JSON.stringify(payload.user));
+                // Use the same keys the rest of the app uses (apiService.isLoggedIn checks
+                // etunisia_token + etunisia_user). Using auth_token here left the new user
+                // looking 'logged out' to every other surface — broke the /#/pro page,
+                // the welcome strip, hydrateCurrentUser, etc.
+                localStorage.setItem('etunisia_token', payload.accessToken);
+                localStorage.setItem('etunisia_user', JSON.stringify(payload.user));
                 onSuccess({ id: payload.user.id, handle: payload.user.handle, fullName: payload.user.fullName });
             } else {
                 setError(res?.message || payload?.message || 'Signup failed');
