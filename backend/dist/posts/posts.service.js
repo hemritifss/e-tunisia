@@ -21,12 +21,14 @@ const comment_entity_1 = require("./comment.entity");
 const comment_like_entity_1 = require("./comment-like.entity");
 const post_reaction_entity_1 = require("./post-reaction.entity");
 const saved_post_entity_1 = require("./saved-post.entity");
+const effective_plan_1 = require("../users/effective-plan");
+const billing_service_1 = require("../billing/billing.service");
 const badges_service_1 = require("../badges/badges.service");
 const user_entity_1 = require("../users/user.entity");
 const notifications_service_1 = require("../notifications/notifications.service");
 const notification_entity_1 = require("../notifications/notification.entity");
 let PostsService = class PostsService {
-    constructor(postsRepo, commentsRepo, commentLikesRepo, reactionsRepo, savedRepo, usersRepo, notifications, badges) {
+    constructor(postsRepo, commentsRepo, commentLikesRepo, reactionsRepo, savedRepo, usersRepo, notifications, badges, billing) {
         this.postsRepo = postsRepo;
         this.commentsRepo = commentsRepo;
         this.commentLikesRepo = commentLikesRepo;
@@ -35,6 +37,7 @@ let PostsService = class PostsService {
         this.usersRepo = usersRepo;
         this.notifications = notifications;
         this.badges = badges;
+        this.billing = billing;
     }
     async listReactors(postId, opts = {}) {
         if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(postId)) {
@@ -56,7 +59,7 @@ let PostsService = class PostsService {
             return { data: [], meta: { page, limit, total, totalPages: 0 } };
         const users = await this.usersRepo.find({
             where: { id: (0, typeorm_2.In)(rows.map(r => r.userId)) },
-            select: ['id', 'fullName', 'avatar', 'country', 'handle'],
+            select: ['id', 'fullName', 'avatar', 'country', 'handle', 'plan', 'role', 'subscriptionExpiresAt'],
         });
         const byId = new Map(users.map(u => [u.id, u]));
         const data = rows.map(r => {
@@ -65,7 +68,7 @@ let PostsService = class PostsService {
                 userId: r.userId,
                 type: r.type,
                 createdAt: r.createdAt,
-                user: u ? { id: u.id, fullName: u.fullName, avatar: u.avatar, country: u.country, handle: u.handle } : null,
+                user: u ? { id: u.id, fullName: u.fullName, avatar: u.avatar, country: u.country, handle: u.handle, plan: (0, effective_plan_1.effectivePlan)(u), role: u.role } : null,
             };
         }).filter(r => r.user);
         return { data, meta: { page, limit, total, totalPages: Math.ceil(total / limit) } };
@@ -81,6 +84,17 @@ let PostsService = class PostsService {
             throw new common_1.NotFoundException('Post not found');
         const existing = await this.savedRepo.findOne({ where: { postId, userId } });
         if (!existing) {
+            const current = await this.savedRepo.count({ where: { userId } });
+            const { ok, cap, plan } = await this.billing.checkCap(userId, 'maxSaves', current);
+            if (!ok) {
+                throw new common_1.ForbiddenException({
+                    code: 'cap_reached',
+                    feature: 'maxSaves',
+                    cap,
+                    plan,
+                    message: `Free plan saves up to ${cap} posts. Upgrade to Pro for unlimited.`,
+                });
+            }
             await this.savedRepo.save(this.savedRepo.create({ postId, userId }));
             if (this.badges)
                 await this.badges.awardIfEligible(userId, 'post.saved', {});
@@ -138,6 +152,8 @@ let PostsService = class PostsService {
                     fullName: p.author.fullName,
                     avatar: p.author.avatar,
                     handle: p.author.handle ?? null,
+                    plan: (0, effective_plan_1.effectivePlan)(p.author),
+                    role: p.author.role,
                 } : null,
                 upvotes: p.upvotes,
                 downvotes: p.downvotes,
@@ -439,6 +455,7 @@ exports.PostsService = PostsService = __decorate([
         typeorm_2.Repository,
         typeorm_2.Repository,
         notifications_service_1.NotificationsService,
-        badges_service_1.BadgesService])
+        badges_service_1.BadgesService,
+        billing_service_1.BillingService])
 ], PostsService);
 //# sourceMappingURL=posts.service.js.map

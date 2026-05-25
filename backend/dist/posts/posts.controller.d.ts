@@ -95,6 +95,8 @@ export declare class PostsController {
                 fullName: any;
                 avatar: any;
                 handle: any;
+                plan: "free" | "premium" | "business";
+                role: any;
             };
             upvotes: any;
             downvotes: any;
@@ -127,6 +129,8 @@ export declare class PostsController {
                 fullName: any;
                 avatar: any;
                 handle: any;
+                plan: "free" | "premium" | "business";
+                role: any;
             };
             upvotes: any;
             downvotes: any;
@@ -205,6 +209,8 @@ export declare class PostsController {
                 avatar: any;
                 country: any;
                 handle: any;
+                plan: "free" | "premium" | "business";
+                role: any;
             };
         }[];
         meta: {

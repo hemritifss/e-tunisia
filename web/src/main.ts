@@ -210,6 +210,7 @@ function getRoute(hash: string): Route {
     '/hero': { render: renderHeroPage, init: () => initHeroPage(), page: 'hero' },
     '/credits': { render: renderCreditsPage, init: () => initCreditsPage(), page: 'profile' },
     '/profile/edit': { render: renderProfileEditPage, init: () => initProfileEditPage(), page: 'profile' },
+    '/profile-edit': { render: renderProfileEditPage, init: () => initProfileEditPage(), page: 'profile' },
     '/onboarding':   { render: renderOnboardingPage,  init: () => initOnboardingPage(),  page: '' },
     '/saved':        { render: renderSavedPage,       init: () => initSavedPage(),       page: 'favorites' },
     '/inquiries':    { render: renderInquiriesPage,   init: () => initInquiriesPage(),   page: 'profile' },

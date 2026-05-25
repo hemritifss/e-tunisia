@@ -34,5 +34,6 @@ export interface PassportDto {
         rank: number;
         total: number;
     } | null;
+    plan: 'free' | 'premium' | 'business';
 }
 export declare function deriveLevel(points: number): PassportLevel;

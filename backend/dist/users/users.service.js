@@ -26,6 +26,7 @@ const saved_post_entity_1 = require("../posts/saved-post.entity");
 const passport_dto_1 = require("./dto/passport.dto");
 const badges_service_1 = require("../badges/badges.service");
 const endorsements_service_1 = require("./endorsements.service");
+const effective_plan_1 = require("./effective-plan");
 let UsersService = class UsersService {
     constructor(usersRepository, reviewsRepo, placesRepo, tripsRepo, savesRepo, cache, badges, endorsements) {
         this.usersRepository = usersRepository;
@@ -44,6 +45,31 @@ let UsersService = class UsersService {
         if (!handle)
             return null;
         return this.usersRepository.findOne({ where: { handle: handle.toLowerCase() } });
+    }
+    async generateAvailableHandle(fullName) {
+        const { HANDLE_PATTERN, RESERVED_HANDLES } = await Promise.resolve().then(() => require('./reserved-handles'));
+        const slugify = (s) => (s || 'traveler')
+            .toLowerCase()
+            .normalize('NFKD')
+            .replace(/[^\x00-\x7f]/g, '')
+            .replace(/[^a-z0-9]+/g, '_')
+            .replace(/^_+|_+$/g, '')
+            .replace(/^[^a-z]+/, 't_')
+            .slice(0, 22) || 'traveler';
+        let base = slugify(fullName);
+        if (base.length < 3)
+            base = base + '_t';
+        for (let i = 0; i < 8; i++) {
+            const candidate = i === 0 ? base : `${base}_${Math.random().toString(36).slice(2, 6)}`;
+            if (!HANDLE_PATTERN.test(candidate))
+                continue;
+            if (RESERVED_HANDLES.has(candidate))
+                continue;
+            const clash = await this.usersRepository.findOne({ where: { handle: candidate } });
+            if (!clash)
+                return candidate;
+        }
+        return `${base}_${Date.now().toString(36)}`;
     }
     async isHandleAvailable(handle) {
         const h = (handle || '').toLowerCase();
@@ -133,12 +159,15 @@ let UsersService = class UsersService {
             .getMany();
         return rows.map((u) => ({
             id: u.id,
+            handle: u.handle ?? null,
             fullName: u.fullName,
             avatar: u.avatar || null,
             country: u.country || null,
             bio: u.bio || null,
             level: u.level || 1,
             points: u.points || 0,
+            role: u.role,
+            plan: (0, effective_plan_1.effectivePlan)(u),
         }));
     }
     async assemblePassport(handle) {
@@ -188,9 +217,49 @@ let UsersService = class UsersService {
             followingCount: user.followingCount || 0,
             topEndorsements: await this.endorsements.topForUser(user.id, 3).catch(() => []),
             topCityRank: await this.topCityRankForUser(user.id).catch(() => null),
+            plan: this.resolveEffectivePlan(user),
         };
         await this.cache.set(key, passport, 300_000);
         return passport;
+    }
+    async searchUsers(query, limit = 12) {
+        const q = (query || '').trim();
+        if (q.length < 1)
+            return [];
+        const safe = q.replace(/[%_]/g, (m) => `\\${m}`);
+        const handlePrefix = `${safe.toLowerCase()}%`;
+        const nameNeedle = `%${safe}%`;
+        const lim = Math.min(50, Math.max(1, limit));
+        const rows = await this.usersRepository
+            .createQueryBuilder('u')
+            .where('LOWER(u.handle) LIKE :hp', { hp: handlePrefix })
+            .orWhere('u.fullName ILIKE :nn', { nn: nameNeedle })
+            .orderBy('u.points', 'DESC')
+            .addOrderBy('u.fullName', 'ASC')
+            .limit(lim)
+            .getMany()
+            .catch(async () => {
+            return this.usersRepository
+                .createQueryBuilder('u')
+                .where('LOWER(u.handle) LIKE :hp', { hp: handlePrefix })
+                .orWhere('LOWER(u.fullName) LIKE :nn', { nn: nameNeedle.toLowerCase() })
+                .orderBy('u.points', 'DESC')
+                .addOrderBy('u.fullName', 'ASC')
+                .limit(lim)
+                .getMany();
+        });
+        return rows.map((u) => ({
+            id: u.id,
+            handle: u.handle ?? null,
+            fullName: u.fullName,
+            avatar: u.avatar || null,
+            country: u.country || null,
+            bio: u.bio ? u.bio.slice(0, 120) : null,
+            points: u.points || 0,
+            role: u.role,
+            plan: (0, effective_plan_1.effectivePlan)(u),
+            followersCount: u.followersCount || 0,
+        }));
     }
     async listCitiesWithReviews(limit = 30) {
         const rows = await this.reviewsRepo
@@ -226,7 +295,7 @@ let UsersService = class UsersService {
         const userIds = rows.map((r) => r.userId);
         const users = await this.usersRepository.find({
             where: userIds.map((id) => ({ id })),
-            select: ['id', 'handle', 'fullName', 'avatar', 'country', 'points', 'role'],
+            select: ['id', 'handle', 'fullName', 'avatar', 'country', 'points', 'role', 'plan', 'subscriptionExpiresAt'],
         });
         const byId = new Map(users.map((u) => [u.id, u]));
         return rows
@@ -245,6 +314,7 @@ let UsersService = class UsersService {
                     country: u.country || null,
                     points: u.points || 0,
                     role: u.role,
+                    plan: (0, effective_plan_1.effectivePlan)(u),
                 },
             };
         })
@@ -340,6 +410,9 @@ let UsersService = class UsersService {
             }
         }
         return { ok: true, visitedPlaceIds: visitedPlaceIds.length, interests: interests.length };
+    }
+    resolveEffectivePlan(user) {
+        return (0, effective_plan_1.effectivePlan)(user);
     }
     async invalidatePassportCache(userId) {
         const user = await this.usersRepository.findOne({ where: { id: userId }, select: ['handle'] });

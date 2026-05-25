@@ -5,6 +5,7 @@ import { TourPackage } from '../places/tour-package.entity';
 import { InquiriesService } from '../places/inquiries.service';
 import { UsersService } from '../users/users.service';
 import { BadgesService } from '../badges/badges.service';
+import { BillingService } from '../billing/billing.service';
 interface BatchInquiryInput {
     name: string;
     email: string;
@@ -33,8 +34,9 @@ export declare class TripsService {
     private inquiries;
     private users;
     private badges;
+    private billing;
     private static UUID_RE;
-    constructor(trips: Repository<TripPlan>, places: Repository<Place>, packages: Repository<TourPackage>, inquiries: InquiriesService, users: UsersService, badges: BadgesService);
+    constructor(trips: Repository<TripPlan>, places: Repository<Place>, packages: Repository<TourPackage>, inquiries: InquiriesService, users: UsersService, badges: BadgesService, billing: BillingService);
     listByHandle(handle: string): Promise<TripPlan[]>;
     batchInquire(slug: string, viewerUserId: string | null, input: BatchInquiryInput): Promise<{
         slug: string;

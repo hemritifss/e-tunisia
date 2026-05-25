@@ -72,10 +72,10 @@ export default function MoodPage() {
         queryFn: async () => {
             if (!mood) return [];
             try {
-                const r: any = await fetch(`/api/v1/search?q=${encodeURIComponent(mood.searchQuery)}`).then((r) => r.json());
-                const arr: any[] = r?.places || r?.data?.places || [];
+                const r: any = await api.getPlaces({ search: mood.searchQuery, limit: '20' });
+                const arr: any[] = Array.isArray(r) ? r : (r?.data ?? []);
                 const cities = new Set(mood.cities.map((c) => c.toLowerCase()));
-                const matched = arr.filter((p) => p.city && cities.has(p.city.toLowerCase()));
+                const matched = arr.filter((p: any) => p.city && cities.has(p.city.toLowerCase()));
                 return (matched.length ? matched : arr).slice(0, 8);
             } catch { return []; }
         },

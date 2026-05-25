@@ -34,6 +34,9 @@ let UsersController = class UsersController {
     getProfile(req) {
         return this.usersService.findById(req.user.id);
     }
+    searchUsers(q, limit) {
+        return this.usersService.searchUsers(q || '', limit ? Number(limit) : 12);
+    }
     async handleAvailable(h) {
         const { isHandleFormatValid, isHandleReserved } = await Promise.resolve().then(() => require('./reserved-handles'));
         const handle = (h || '').toLowerCase().trim();
@@ -115,6 +118,9 @@ let UsersController = class UsersController {
     activityFeed(req, limit) {
         return this.activityService.followingFeed(req.user.id, limit ? Number(limit) : 20);
     }
+    globalActivityFeed(limit) {
+        return this.activityService.globalFeed(limit ? Number(limit) : 20);
+    }
     updateProfile(req, body) {
         return this.usersService.update(req.user.id, body);
     }
@@ -169,6 +175,14 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "getProfile", null);
+__decorate([
+    (0, common_1.Get)('search'),
+    __param(0, (0, common_1.Query)('q')),
+    __param(1, (0, common_1.Query)('limit')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "searchUsers", null);
 __decorate([
     (0, common_1.Get)('handle-available'),
     __param(0, (0, common_1.Query)('h')),
@@ -310,6 +324,13 @@ __decorate([
     __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "activityFeed", null);
+__decorate([
+    (0, common_1.Get)('activity-feed/global'),
+    __param(0, (0, common_1.Query)('limit')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "globalActivityFeed", null);
 __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, swagger_1.ApiBearerAuth)(),

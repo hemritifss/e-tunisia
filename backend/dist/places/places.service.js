@@ -66,7 +66,7 @@ let PlacesService = class PlacesService {
         };
     }
     async findAll(query) {
-        const { search, categoryId, city, governorate, minRating, page = 1, limit = 20, sortBy = 'createdAt', order = 'DESC', featured, } = query;
+        const { search, categoryId, category, city, governorate, minRating, page = 1, limit = 20, sortBy = 'createdAt', order = 'DESC', featured, } = query;
         const qb = this.placesRepo
             .createQueryBuilder('place')
             .leftJoinAndSelect('place.category', 'category')
@@ -76,6 +76,9 @@ let PlacesService = class PlacesService {
         }
         if (categoryId) {
             qb.andWhere('place.categoryId = :categoryId', { categoryId });
+        }
+        else if (category) {
+            qb.andWhere('category.name ILIKE :catSlug', { catSlug: `%${category}%` });
         }
         if (city) {
             qb.andWhere('place.city ILIKE :city', { city: `%${city}%` });

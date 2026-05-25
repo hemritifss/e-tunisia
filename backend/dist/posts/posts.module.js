@@ -19,12 +19,13 @@ const posts_controller_1 = require("./posts.controller");
 const posts_service_1 = require("./posts.service");
 const notifications_module_1 = require("../notifications/notifications.module");
 const badges_module_1 = require("../badges/badges.module");
+const billing_module_1 = require("../billing/billing.module");
 let PostsModule = class PostsModule {
 };
 exports.PostsModule = PostsModule;
 exports.PostsModule = PostsModule = __decorate([
     (0, common_1.Module)({
-        imports: [typeorm_1.TypeOrmModule.forFeature([post_entity_1.Post, comment_entity_1.Comment, comment_like_entity_1.CommentLike, post_reaction_entity_1.PostReaction, saved_post_entity_1.SavedPost, user_entity_1.User]), notifications_module_1.NotificationsModule, badges_module_1.BadgesModule],
+        imports: [typeorm_1.TypeOrmModule.forFeature([post_entity_1.Post, comment_entity_1.Comment, comment_like_entity_1.CommentLike, post_reaction_entity_1.PostReaction, saved_post_entity_1.SavedPost, user_entity_1.User]), notifications_module_1.NotificationsModule, badges_module_1.BadgesModule, billing_module_1.BillingModule],
         controllers: [posts_controller_1.PostsController],
         providers: [posts_service_1.PostsService],
         exports: [posts_service_1.PostsService],

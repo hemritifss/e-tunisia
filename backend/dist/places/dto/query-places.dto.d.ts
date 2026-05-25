@@ -1,6 +1,7 @@
 export declare class QueryPlacesDto {
     search?: string;
     categoryId?: string;
+    category?: string;
     city?: string;
     governorate?: string;
     minRating?: number;

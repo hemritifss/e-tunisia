@@ -4,6 +4,7 @@ import { Comment } from './comment.entity';
 import { CommentLike } from './comment-like.entity';
 import { PostReaction, ReactionType } from './post-reaction.entity';
 import { SavedPost } from './saved-post.entity';
+import { BillingService } from '../billing/billing.service';
 import { BadgesService } from '../badges/badges.service';
 import { User } from '../users/user.entity';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -23,7 +24,8 @@ export declare class PostsService {
     private usersRepo;
     private notifications;
     private badges;
-    constructor(postsRepo: Repository<Post>, commentsRepo: Repository<Comment>, commentLikesRepo: Repository<CommentLike>, reactionsRepo: Repository<PostReaction>, savedRepo: Repository<SavedPost>, usersRepo: Repository<User>, notifications: NotificationsService, badges: BadgesService);
+    private billing;
+    constructor(postsRepo: Repository<Post>, commentsRepo: Repository<Comment>, commentLikesRepo: Repository<CommentLike>, reactionsRepo: Repository<PostReaction>, savedRepo: Repository<SavedPost>, usersRepo: Repository<User>, notifications: NotificationsService, badges: BadgesService, billing: BillingService);
     listReactors(postId: string, opts?: {
         type?: string | null;
         page?: number;
@@ -39,6 +41,8 @@ export declare class PostsService {
                 avatar: any;
                 country: any;
                 handle: any;
+                plan: "free" | "premium" | "business";
+                role: any;
             };
         }[];
         meta: {
@@ -75,6 +79,8 @@ export declare class PostsService {
                 fullName: any;
                 avatar: any;
                 handle: any;
+                plan: "free" | "premium" | "business";
+                role: any;
             };
             upvotes: any;
             downvotes: any;
@@ -110,6 +116,8 @@ export declare class PostsService {
                 fullName: any;
                 avatar: any;
                 handle: any;
+                plan: "free" | "premium" | "business";
+                role: any;
             };
             upvotes: any;
             downvotes: any;

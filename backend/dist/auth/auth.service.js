@@ -26,10 +26,16 @@ let AuthService = class AuthService {
         if (existingEmail) {
             throw new common_1.ConflictException('Email already registered');
         }
-        const handleLower = (dto.handle || '').toLowerCase();
-        const available = await this.usersService.isHandleAvailable(handleLower);
-        if (!available) {
-            throw new common_1.ConflictException('Handle is unavailable');
+        let handleLower;
+        if (dto.handle && dto.handle.trim()) {
+            handleLower = dto.handle.toLowerCase();
+            const available = await this.usersService.isHandleAvailable(handleLower);
+            if (!available) {
+                throw new common_1.ConflictException('Handle is unavailable');
+            }
+        }
+        else {
+            handleLower = await this.usersService.generateAvailableHandle(dto.fullName);
         }
         const user = await this.usersService.create({ ...dto, handle: handleLower });
         await this.badgesService.awardIfEligible(user.id, 'user.created', {});

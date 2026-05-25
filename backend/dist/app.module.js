@@ -15,6 +15,7 @@ const cache_manager_1 = require("@nestjs/cache-manager");
 const auth_module_1 = require("./auth/auth.module");
 const users_module_1 = require("./users/users.module");
 const badges_module_1 = require("./badges/badges.module");
+const billing_module_1 = require("./billing/billing.module");
 const og_module_1 = require("./og/og.module");
 const places_module_1 = require("./places/places.module");
 const categories_module_1 = require("./categories/categories.module");
@@ -82,6 +83,7 @@ exports.AppModule = AppModule = __decorate([
             users_module_1.UsersModule,
             badges_module_1.BadgesModule,
             og_module_1.OgModule,
+            billing_module_1.BillingModule,
             places_module_1.PlacesModule,
             categories_module_1.CategoriesModule,
             reviews_module_1.ReviewsModule,

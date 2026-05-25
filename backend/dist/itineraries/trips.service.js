@@ -22,14 +22,16 @@ const tour_package_entity_1 = require("../places/tour-package.entity");
 const inquiries_service_1 = require("../places/inquiries.service");
 const users_service_1 = require("../users/users.service");
 const badges_service_1 = require("../badges/badges.service");
+const billing_service_1 = require("../billing/billing.service");
 let TripsService = class TripsService {
-    constructor(trips, places, packages, inquiries, users, badges) {
+    constructor(trips, places, packages, inquiries, users, badges, billing) {
         this.trips = trips;
         this.places = places;
         this.packages = packages;
         this.inquiries = inquiries;
         this.users = users;
         this.badges = badges;
+        this.billing = billing;
     }
     async listByHandle(handle) {
         const user = await this.users.findByHandle(handle);
@@ -146,6 +148,19 @@ let TripsService = class TripsService {
         }
         if (input.stops.length > 30) {
             throw new common_1.BadRequestException('Trips capped at 30 stops');
+        }
+        if (userId) {
+            const existing = await this.trips.count({ where: { userId } });
+            const { ok, cap, plan } = await this.billing.checkCap(userId, 'maxTrips', existing);
+            if (!ok) {
+                throw new common_1.ForbiddenException({
+                    code: 'cap_reached',
+                    feature: 'maxTrips',
+                    cap,
+                    plan,
+                    message: `Free plan allows ${cap} trips. Upgrade to Pro for unlimited.`,
+                });
+            }
         }
         const stops = await this.hydrateStops(input.stops);
         if (stops.length === 0)
@@ -269,6 +284,7 @@ exports.TripsService = TripsService = __decorate([
         typeorm_2.Repository,
         inquiries_service_1.InquiriesService,
         users_service_1.UsersService,
-        badges_service_1.BadgesService])
+        badges_service_1.BadgesService,
+        billing_service_1.BillingService])
 ], TripsService);
 //# sourceMappingURL=trips.service.js.map

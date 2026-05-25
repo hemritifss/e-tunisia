@@ -80,18 +80,35 @@ let FeedService = class FeedService {
                 return hay.includes(needle);
             });
         }
-        const score = (a) => (a.upvotes || 0) - (a.downvotes || 0) + (sort === 'hot' ? (a.commentCount || 0) : 0);
-        if (sort === 'top' || sort === 'hot') {
+        const HALF_LIFE_HOURS = 36;
+        const decay = (createdAt) => {
+            const ageHours = (Date.now() - new Date(createdAt).getTime()) / 3_600_000;
+            if (ageHours <= 0)
+                return 1;
+            return Math.pow(0.5, ageHours / HALF_LIFE_HOURS);
+        };
+        const engagement = (a) => (a.upvotes || 0)
+            - (a.downvotes || 0)
+            + 1.2 * (a.commentCount || 0)
+            + 0.6 * (a.savesCount || a.saveCount || 0)
+            + 0.4 * (a.reactionsCount || a.reactionCount || 0);
+        const hotScore = (a) => engagement(a) * decay(a.createdAt);
+        if (sort === 'hot') {
             merged.sort((a, b) => {
-                const sa = score(a);
-                const sb = score(b);
-                if (sa !== sb)
+                const sb = hotScore(b);
+                const sa = hotScore(a);
+                if (sb !== sa)
                     return sb - sa;
-                const ta = new Date(a.createdAt).getTime();
-                const tb = new Date(b.createdAt).getTime();
-                if (ta !== tb)
-                    return tb - ta;
-                return String(a.id).localeCompare(String(b.id));
+                return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+            });
+        }
+        else if (sort === 'top') {
+            merged.sort((a, b) => {
+                const sb = engagement(b);
+                const sa = engagement(a);
+                if (sb !== sa)
+                    return sb - sa;
+                return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
             });
         }
         else {

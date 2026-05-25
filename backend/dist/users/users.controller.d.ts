@@ -12,6 +12,18 @@ export declare class UsersController {
     private ogService;
     constructor(usersService: UsersService, followsService: FollowsService, endorsementsService: EndorsementsService, activityService: ActivityService, ogService: OgService);
     getProfile(req: any): Promise<import("./user.entity").User>;
+    searchUsers(q: string, limit?: string): Promise<{
+        id: any;
+        handle: any;
+        fullName: any;
+        avatar: any;
+        country: any;
+        bio: any;
+        points: any;
+        role: any;
+        plan: "free" | "premium" | "business";
+        followersCount: any;
+    }[]>;
     handleAvailable(h: string): Promise<{
         available: boolean;
         reason?: string;
@@ -33,6 +45,7 @@ export declare class UsersController {
             country: any;
             points: any;
             role: any;
+            plan: "free" | "premium" | "business";
         };
     }[]>;
     endorse(req: any, handle: string, body: {
@@ -106,6 +119,7 @@ export declare class UsersController {
         progress?: undefined;
     }>;
     activityFeed(req: any, limit?: string): Promise<import("./activity.service").ActivityEntry[]>;
+    globalActivityFeed(limit?: string): Promise<import("./activity.service").ActivityEntry[]>;
     updateProfile(req: any, body: Partial<any>): Promise<import("./user.entity").User>;
     toggleFavorite(req: any, placeId: string): Promise<string[]>;
     getFavorites(req: any): Promise<string[]>;

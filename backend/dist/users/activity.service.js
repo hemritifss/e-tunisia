@@ -23,6 +23,7 @@ const review_entity_1 = require("../reviews/review.entity");
 const place_entity_1 = require("../places/place.entity");
 const trip_plan_entity_1 = require("../itineraries/trip-plan.entity");
 const users_service_1 = require("./users.service");
+const effective_plan_1 = require("./effective-plan");
 const PER_SOURCE = 50;
 let ActivityService = class ActivityService {
     constructor(followsRepo, reviewsRepo, tripsRepo, endorsementsRepo, usersRepo, placesRepo, users) {
@@ -33,6 +34,91 @@ let ActivityService = class ActivityService {
         this.usersRepo = usersRepo;
         this.placesRepo = placesRepo;
         this.users = users;
+    }
+    async globalFeed(limit = 20) {
+        const [reviews, trips, endorsements] = await Promise.all([
+            this.reviewsRepo
+                .find({
+                order: { createdAt: 'DESC' },
+                take: PER_SOURCE,
+                relations: ['place'],
+            })
+                .catch(() => []),
+            this.tripsRepo
+                .find({
+                where: { isPublic: true },
+                order: { createdAt: 'DESC' },
+                take: PER_SOURCE,
+            })
+                .catch(() => []),
+            this.endorsementsRepo
+                .find({
+                order: { createdAt: 'DESC' },
+                take: PER_SOURCE,
+            })
+                .catch(() => []),
+        ]);
+        const actorIds = new Set();
+        const targetUserIds = new Set();
+        reviews.forEach((r) => actorIds.add(r.userId));
+        trips.forEach((t) => t.userId && actorIds.add(t.userId));
+        endorsements.forEach((e) => {
+            actorIds.add(e.endorserId);
+            targetUserIds.add(e.endorsedId);
+        });
+        const allUserIds = Array.from(new Set([...actorIds, ...targetUserIds]));
+        const userRows = allUserIds.length
+            ? await this.usersRepo.find({
+                where: allUserIds.map((id) => ({ id })),
+                select: ['id', 'handle', 'fullName', 'avatar', 'plan', 'role', 'subscriptionExpiresAt'],
+            })
+            : [];
+        const userById = new Map(userRows.map((u) => [
+            u.id,
+            { id: u.id, handle: u.handle ?? null, fullName: u.fullName, avatar: u.avatar || null, plan: (0, effective_plan_1.effectivePlan)(u), role: u.role },
+        ]));
+        const actor = (id) => userById.get(id) || { id, handle: null, fullName: 'Someone', avatar: null, plan: 'free' };
+        const entries = [];
+        for (const r of reviews) {
+            entries.push({
+                type: 'review',
+                createdAt: r.createdAt.toISOString(),
+                actor: actor(r.userId),
+                target: {
+                    placeId: r.placeId,
+                    placeName: r.place?.name || null,
+                    placeCity: r.place?.city || null,
+                    rating: r.rating,
+                    snippet: (r.comment || '').slice(0, 140),
+                },
+            });
+        }
+        for (const t of trips) {
+            if (!t.userId)
+                continue;
+            entries.push({
+                type: 'trip',
+                createdAt: t.createdAt.toISOString(),
+                actor: actor(t.userId),
+                target: {
+                    slug: t.slug,
+                    title: t.title,
+                    days: t.days,
+                    travelers: t.travelers,
+                    stopCount: Array.isArray(t.stops) ? t.stops.length : 0,
+                },
+            });
+        }
+        for (const e of endorsements) {
+            entries.push({
+                type: 'endorse',
+                createdAt: e.createdAt.toISOString(),
+                actor: actor(e.endorserId),
+                target: { user: actor(e.endorsedId), topic: e.topic },
+            });
+        }
+        entries.sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
+        return entries.slice(0, Math.min(100, Math.max(1, limit)));
     }
     async followingFeed(viewerId, limit = 20) {
         const follows = await this.followsRepo.find({
@@ -89,14 +175,14 @@ let ActivityService = class ActivityService {
         const userRows = allUserIds.length
             ? await this.usersRepo.find({
                 where: allUserIds.map((id) => ({ id })),
-                select: ['id', 'handle', 'fullName', 'avatar'],
+                select: ['id', 'handle', 'fullName', 'avatar', 'plan', 'role', 'subscriptionExpiresAt'],
             })
             : [];
         const userById = new Map(userRows.map((u) => [
             u.id,
-            { id: u.id, handle: u.handle ?? null, fullName: u.fullName, avatar: u.avatar || null },
+            { id: u.id, handle: u.handle ?? null, fullName: u.fullName, avatar: u.avatar || null, plan: (0, effective_plan_1.effectivePlan)(u), role: u.role },
         ]));
-        const actor = (id) => userById.get(id) || { id, handle: null, fullName: 'Someone', avatar: null };
+        const actor = (id) => userById.get(id) || { id, handle: null, fullName: 'Someone', avatar: null, plan: 'free' };
         const entries = [];
         for (const r of reviews) {
             entries.push({

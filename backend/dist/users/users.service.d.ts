@@ -20,6 +20,7 @@ export declare class UsersService {
     constructor(usersRepository: Repository<User>, reviewsRepo: Repository<Review>, placesRepo: Repository<Place>, tripsRepo: Repository<TripPlan>, savesRepo: Repository<SavedPost>, cache: Cache, badges: BadgesService, endorsements: EndorsementsService);
     findByEmail(email: string): Promise<User | null>;
     findByHandle(handle: string): Promise<User | null>;
+    generateAvailableHandle(fullName: string): Promise<string>;
     isHandleAvailable(handle: string): Promise<boolean>;
     findById(id: string): Promise<User>;
     create(data: Partial<User>): Promise<User>;
@@ -30,14 +31,29 @@ export declare class UsersService {
     getVisitedIds(userId: string): Promise<string[]>;
     suggestedUsers(limit?: number): Promise<{
         id: any;
+        handle: any;
         fullName: any;
         avatar: any;
         country: any;
         bio: any;
         level: any;
         points: any;
+        role: any;
+        plan: "free" | "premium" | "business";
     }[]>;
     assemblePassport(handle: string): Promise<PassportDto>;
+    searchUsers(query: string, limit?: number): Promise<{
+        id: any;
+        handle: any;
+        fullName: any;
+        avatar: any;
+        country: any;
+        bio: any;
+        points: any;
+        role: any;
+        plan: "free" | "premium" | "business";
+        followersCount: any;
+    }[]>;
     listCitiesWithReviews(limit?: number): Promise<Array<{
         city: string;
         reviews: number;
@@ -53,6 +69,7 @@ export declare class UsersService {
             country: any;
             points: any;
             role: any;
+            plan: "free" | "premium" | "business";
         };
     }[]>;
     topCityRankForUser(userId: string): Promise<{
@@ -94,5 +111,6 @@ export declare class UsersService {
         visitedPlaceIds: number;
         interests: number;
     }>;
+    private resolveEffectivePlan;
     invalidatePassportCache(userId: string): Promise<void>;
 }

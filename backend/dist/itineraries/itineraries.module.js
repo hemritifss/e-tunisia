@@ -20,6 +20,7 @@ const tour_package_entity_1 = require("../places/tour-package.entity");
 const places_module_1 = require("../places/places.module");
 const users_module_1 = require("../users/users.module");
 const badges_module_1 = require("../badges/badges.module");
+const billing_module_1 = require("../billing/billing.module");
 let ItinerariesModule = class ItinerariesModule {
 };
 exports.ItinerariesModule = ItinerariesModule;
@@ -30,6 +31,7 @@ exports.ItinerariesModule = ItinerariesModule = __decorate([
             places_module_1.PlacesModule,
             users_module_1.UsersModule,
             badges_module_1.BadgesModule,
+            billing_module_1.BillingModule,
         ],
         controllers: [itineraries_controller_1.ItinerariesController, trips_controller_1.TripsController],
         providers: [itineraries_service_1.ItinerariesService, trips_service_1.TripsService],

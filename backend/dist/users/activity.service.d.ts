@@ -12,6 +12,8 @@ export interface ActivityActor {
     handle: string | null;
     fullName: string;
     avatar: string | null;
+    plan: 'free' | 'premium' | 'business';
+    role?: string;
 }
 export interface ActivityEntry {
     type: ActivityType;
@@ -28,5 +30,6 @@ export declare class ActivityService {
     private placesRepo;
     private users;
     constructor(followsRepo: Repository<Follow>, reviewsRepo: Repository<Review>, tripsRepo: Repository<TripPlan>, endorsementsRepo: Repository<Endorsement>, usersRepo: Repository<User>, placesRepo: Repository<Place>, users: UsersService);
+    globalFeed(limit?: number): Promise<ActivityEntry[]>;
     followingFeed(viewerId: string, limit?: number): Promise<ActivityEntry[]>;
 }
