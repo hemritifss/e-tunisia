@@ -75,10 +75,43 @@ async function fetchWithAuth(
     }
     // Backend wraps errors as { success: false, error: { message, details }, ... }.
     const err = errorData?.error ?? errorData;
+
+    // Plan-cap shortcut: when Nest throws ForbiddenException({ code: 'cap_reached', ... }),
+    // the structured payload lands on either err.message (object) or err.details. Surface a
+    // single, action-rich toast pointing to /#/pro so every cap moment gets the same treatment.
+    if (response.status === 403) {
+      const capPayload = (err?.message && typeof err.message === 'object') ? err.message : err?.details;
+      const code = capPayload?.code;
+      if (code === 'cap_reached') {
+        const feature = capPayload.feature === 'maxTrips' ? 'trip plans'
+          : capPayload.feature === 'maxSaves' ? 'saved posts'
+          : 'this feature';
+        try {
+          (window as any).showToast?.({
+            title: `You've hit your Free ${feature} limit`,
+            message: `Free is capped at ${capPayload.cap}. Pro and Business get unlimited — and a ✦ badge.`,
+            type: 'achievement',
+            duration: 7000,
+            action: { label: 'Upgrade →', onClick: () => { window.location.hash = '#/pro'; } },
+          });
+        } catch {}
+      } else if (code === 'pro_required' || code === 'business_required') {
+        try {
+          (window as any).showToast?.({
+            title: code === 'business_required' ? 'Business members only' : 'Pro members only',
+            message: capPayload?.message || 'This feature is part of a paid plan.',
+            type: 'info',
+            duration: 6000,
+            action: { label: 'See plans →', onClick: () => { window.location.hash = '#/pro'; } },
+          });
+        } catch {}
+      }
+    }
+
     throw new ApiError(
       response.status,
-      err?.message || `HTTP ${response.status}`,
-      err?.details,
+      typeof err?.message === 'string' ? err.message : (err?.message?.message || `HTTP ${response.status}`),
+      err?.details ?? (typeof err?.message === 'object' ? err.message : undefined),
     );
   }
 
