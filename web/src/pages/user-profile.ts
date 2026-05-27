@@ -1,6 +1,8 @@
 // ============================================
-// PUBLIC USER PROFILE — /#/user/:id
-// Instagram-style cover + avatar + LinkedIn-style stats & tabs.
+// PUBLIC USER PROFILE — /#/u/<handle> or /#/user/<id>
+// Cover banner + identity + stats + about + tabs.
+// Mirrors design-system/pages/profile.md primitives for the
+// "viewing someone else" surface. See design-system/pages/user-profile.md.
 // ============================================
 
 import * as api from '../api';
@@ -8,6 +10,18 @@ import { replaceIcons } from '../icons';
 import { openDonateModal } from '../donate-modal';
 import { isLoggedIn, requireAuth, showToast, linkifyHashtagsAndMentions } from '../ui-utils';
 import { openSafetyMenu } from '../safety-menu';
+
+/** Tier → Lucide icon + label (same source-of-truth as profile.ts). */
+function tierFor(level: number): { iconName: string; label: string } {
+  if (level >= 10) return { iconName: 'crown',   label: 'Legend' };
+  if (level >= 7)  return { iconName: 'star',    label: 'Veteran' };
+  if (level >= 4)  return { iconName: 'compass', label: 'Explorer' };
+  return { iconName: 'sprout', label: 'Newcomer' };
+}
+
+function isProPlan(plan: string | null | undefined): boolean {
+  return plan === 'premium' || plan === 'business' || plan === 'admin';
+}
 
 export function renderUserProfilePage(_id: string): string {
   return `
@@ -91,22 +105,44 @@ export async function initUserProfilePage(id: string) {
   const postCount = Number(postsRes?.meta?.total ?? posts.length);
 
   const isVerified = user.role === 'admin' || user.level >= 10;
+  const plan = user.plan || null;
+  const isPro = isProPlan(plan);
+  const tier = tierFor(user.level || 1);
+  const tierIcon = isVerified ? 'crown' : tier.iconName;
+  const tierLabel = isVerified ? 'Verified' : tier.label;
 
   root.innerHTML = `
-    <!-- Cover banner (gradient placeholder; can be replaced with a real cover image later) -->
-    <header class="up-cover">
+    <!-- Cover banner — cinematic mesh + 2 floating orbs + tier badge -->
+    <header class="up-cover${isPro ? ' is-pro' : ''}">
       <div class="up-cover-gradient" aria-hidden="true"></div>
-      <a href="javascript:history.back()" class="back-floating-btn"><i class="lucide-arrow-left"></i></a>
+      <div class="up-cover-pattern" aria-hidden="true"></div>
+      <div class="up-cover-orbs" aria-hidden="true">
+        <span class="up-cover-orb"></span>
+        <span class="up-cover-orb"></span>
+      </div>
+      <a href="javascript:history.back()" class="back-floating-btn" aria-label="Back">
+        <i class="lucide-arrow-left"></i>
+      </a>
+      <div class="up-cover-tier-badge" data-tier="${tierIcon}" aria-label="Level ${user.level || 1} ${tierLabel}">
+        <span class="up-tier-icon" aria-hidden="true"><i class="lucide-${tierIcon}"></i></span>
+        <span class="up-tier-text">Level ${user.level || 1} ${tierLabel}</span>
+      </div>
       ${isMe ? `
-        <a href="#/profile/edit" class="up-cover-edit-btn">
+        <a href="#/profile-edit" class="up-cover-edit-btn">
           <i class="lucide-edit-3"></i> Edit cover
         </a>` : ''}
     </header>
 
     <!-- Identity row: avatar overlaps cover, action buttons sit beside it on desktop -->
     <section class="up-identity">
-      <div class="up-avatar-wrap">
+      <div class="up-avatar-wrap${isPro ? ' is-pro' : ''}"
+           data-user-id="${user.id}"
+           data-user-name="${escapeHtml(user.fullName)}"
+           data-user-avatar="${avatar}"
+           data-user-handle="${escapeHtml(user.handle || '')}"
+           data-user-plan="${escapeHtml(plan || '')}">
         <img src="${avatar}" alt="${escapeHtml(user.fullName)}" class="up-avatar" />
+        ${isPro ? `<span class="up-avatar-pro-mark" title="${plan === 'business' ? 'Verified Business' : 'Pro Traveler'}" aria-label="${plan === 'business' ? 'Verified Business' : 'Pro Traveler'}"><i class="lucide-sparkles"></i></span>` : ''}
       </div>
 
       <div class="up-actions">
@@ -122,9 +158,9 @@ export async function initUserProfilePage(id: string) {
             <i class="lucide-${isFollowingNow ? 'user-check' : 'user-plus'}" data-follow-icon></i>
             <span data-follow-label>${isFollowingNow ? 'Following' : 'Follow'}</span>
           </button>
-          <a class="btn btn-outline" href="#/messages/user/${user.id}">
+          <button class="btn btn-outline" id="user-profile-message-btn" data-user-id="${user.id}">
             <i class="lucide-message-circle"></i> Message
-          </a>
+          </button>
           <button class="btn btn-outline" id="user-profile-tip-btn">
             <i class="lucide-coins"></i> Tip
           </button>
@@ -139,13 +175,15 @@ export async function initUserProfilePage(id: string) {
       </div>
     </section>
 
-    <!-- Bio block: name + verified badge + role line + meta -->
+    <!-- Bio block: name + verified badge + Pro sparkle + handle + meta -->
     <section class="up-bio">
       <h1 class="up-name">
-        ${escapeHtml(user.fullName)}
+        <span class="up-name-text">${escapeHtml(user.fullName)}</span>
         ${isVerified ? '<span class="up-verified" title="Verified"><i class="lucide-badge-check"></i></span>' : ''}
+        ${isPro && !isVerified ? `<span class="up-pro-sparkle" title="${plan === 'business' ? 'Verified Business' : 'Pro Traveler'}"><i class="lucide-sparkles"></i></span>` : ''}
       </h1>
-      <p class="up-headline">${user.role === 'admin' ? 'e-Tunisia team' : `Level ${user.level || 1} Explorer`}</p>
+      ${user.handle ? `<p class="up-handle">@${escapeHtml(user.handle)}</p>` : ''}
+      <p class="up-headline">${user.role === 'admin' ? 'e-Tunisia team' : `${tier.label} · Level ${user.level || 1}`}</p>
 
       <div class="up-meta">
         ${user.country ? `<span><i class="lucide-map-pin"></i> ${escapeHtml(user.country)}</span>` : ''}
@@ -156,21 +194,25 @@ export async function initUserProfilePage(id: string) {
       </div>
     </section>
 
-    <!-- Stats bar — Instagram-style horizontal row -->
+    <!-- Stats bar — tinted icon tiles (closes the loop with explore/mood palette) -->
     <section class="up-stats">
       <div class="up-stat">
+        <div class="up-stat-icon up-stat-icon-posts"><i class="lucide-grid-3x3"></i></div>
         <strong>${fmt(postCount)}</strong>
         <span>Posts</span>
       </div>
       <div class="up-stat" id="up-stat-followers">
+        <div class="up-stat-icon up-stat-icon-followers"><i class="lucide-users"></i></div>
         <strong id="user-followers-count">${fmt(followers)}</strong>
         <span>Followers</span>
       </div>
       <div class="up-stat">
+        <div class="up-stat-icon up-stat-icon-following"><i class="lucide-user-plus"></i></div>
         <strong>${fmt(following)}</strong>
         <span>Following</span>
       </div>
       <div class="up-stat">
+        <div class="up-stat-icon up-stat-icon-xp"><i class="lucide-zap"></i></div>
         <strong>${fmt(user.points || 0)}</strong>
         <span>XP</span>
       </div>
@@ -306,6 +348,14 @@ function wireActions(root: HTMLElement, user: any, avatar: string) {
       toUserName: user.fullName,
       toUserAvatar: avatar,
     });
+  });
+
+  // Message → open Facebook-Messenger-style popup over the current page.
+  // Falls back to the full Messages route only if the global manager hasn't mounted yet.
+  root.querySelector<HTMLButtonElement>('#user-profile-message-btn')?.addEventListener('click', () => {
+    const open = (window as any).openChatPopup;
+    if (typeof open === 'function') open(user.id);
+    else location.hash = `#/messages/user/${encodeURIComponent(user.id)}`;
   });
 
   const followBtn = root.querySelector<HTMLButtonElement>('#user-follow-btn');

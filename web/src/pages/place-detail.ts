@@ -52,18 +52,24 @@ export function renderPlaceDetailPage(id: string): string {
 
 function renderReviewItem(r: any, place: any, me: any): string {
   const isOwner = !!me?.id && place?.submittedBy === me.id;
+  const reviewerId = r.user?.id || r.userId || '';
+  const reviewerHandle = r.user?.handle || '';
+  const reviewerPlan = r.user?.plan || '';
   const avatar = r.avatar || r.user?.avatar || 'https://api.dicebear.com/9.x/thumbs/svg?seed=user';
   const author = r.author || r.user?.fullName || r.user?.name || 'Anonymous';
   const when = r.timeAgo || (r.createdAt ? new Date(r.createdAt).toLocaleDateString() : '');
   const stars = r.rating
-    ? `<div class="place-review-stars">${Array.from({ length: 5 }, (_, i) =>
-        `<i class="lucide-star ${i < r.rating ? 'filled' : ''}" style="font-size:0.75rem;"></i>`,
+    ? `<div class="place-review-stars" aria-label="${r.rating} out of 5 stars">${Array.from({ length: 5 }, (_, i) =>
+        `<i class="lucide-star ${i < r.rating ? 'filled' : ''}"></i>`,
       ).join('')}</div>`
     : '';
   const verifiedBadge = r.verifiedInquiryId
     ? `<span class="review-verified-badge" title="Posted by a traveler whose booking was confirmed by the host">
          <i class="lucide-shield-check"></i> Verified booking
        </span>`
+    : '';
+  const avatarAttrs = reviewerId
+    ? `data-user-id="${escAttr(reviewerId)}" data-user-name="${escAttr(author)}" data-user-avatar="${escAttr(avatar)}" data-user-handle="${escAttr(reviewerHandle)}" data-user-plan="${escAttr(reviewerPlan)}"`
     : '';
   const hostReply = r.hostReply
     ? `<div class="review-host-reply">
@@ -81,19 +87,21 @@ function renderReviewItem(r: any, place: any, me: any): string {
         : '');
 
   return `
-    <div class="place-review-item" data-review-id="${r.id || ''}">
-      <img src="${avatar}" alt="" class="place-review-avatar" />
+    <article class="place-review-item" data-review-id="${r.id || ''}">
+      <span class="place-review-avatar-wrap" ${avatarAttrs}>
+        <img src="${avatar}" alt="" class="place-review-avatar" loading="lazy" />
+      </span>
       <div class="place-review-body">
-        <div class="place-review-header">
+        <header class="place-review-header">
           <strong>${escapeHtml(author)}</strong>
           ${verifiedBadge}
-          <span class="text-muted text-xs">${escapeHtml(when)}</span>
-        </div>
+          <span class="place-review-when">${escapeHtml(when)}</span>
+        </header>
         ${stars}
-        <p>${escapeHtml(r.text || r.comment || '')}</p>
+        <p class="place-review-text">${escapeHtml(r.text || r.comment || '')}</p>
         ${hostReply}
       </div>
-    </div>
+    </article>
   `;
 }
 

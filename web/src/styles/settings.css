@@ -1,0 +1,266 @@
+/* ============================================
+   SETTINGS PAGE (#/settings) — utility page
+   Loaded after pages.css. Token-driven.
+   No cinematic hero — Nature Distilled all the way.
+   ============================================ */
+
+.settings-page {
+    max-width: 720px;
+    margin-inline: auto;
+    padding: var(--space-5) var(--page-padding) var(--space-16);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+}
+
+/* Head */
+.settings-head {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    padding-bottom: var(--space-3);
+    border-bottom: 1px solid var(--border-light);
+}
+.settings-back {
+    width: 40px; height: 40px;
+    display: grid; place-items: center;
+    background: var(--surface-elevated);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    color: var(--text-secondary);
+    text-decoration: none;
+    flex: 0 0 auto;
+    transition: background var(--duration-fast) var(--ease-out),
+                color var(--duration-fast) var(--ease-out);
+}
+.settings-back:hover {
+    background: var(--surface-hover);
+    color: var(--text-primary);
+}
+.settings-back:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+.settings-head-text { display: flex; flex-direction: column; gap: 2px; }
+.settings-head-text h1 {
+    font-family: var(--font-display);
+    font-size: var(--text-2xl);
+    font-weight: 800;
+    color: var(--text-primary);
+    margin: 0;
+}
+.settings-head-text p {
+    color: var(--text-secondary);
+    font-size: var(--text-sm);
+    margin: 0;
+}
+
+/* Group card */
+.settings-group {
+    background: var(--surface-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    padding: var(--space-5);
+    display: flex; flex-direction: column;
+    gap: var(--space-3);
+}
+.settings-group-head {
+    display: flex; align-items: center; gap: var(--space-3);
+    padding-bottom: var(--space-3);
+    border-bottom: 1px solid var(--border-light);
+}
+.settings-group-head > div {
+    flex: 1 1 auto; min-width: 0;
+    display: flex; flex-direction: column; gap: 2px;
+}
+.settings-group-head h2 {
+    font-family: var(--font-display);
+    font-size: var(--text-lg);
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+}
+.settings-group-head p {
+    color: var(--text-tertiary);
+    font-size: var(--text-xs);
+    margin: 0;
+}
+
+/* Tinted group icon — closes the loop with explore/mood/events palette */
+.settings-group-icon {
+    width: 40px; height: 40px;
+    display: grid; place-items: center;
+    border-radius: 50%;
+    flex: 0 0 auto;
+}
+.settings-group-icon[data-tint="violet"]        { background: color-mix(in oklch, var(--violet) 16%, transparent);        color: var(--violet); }
+.settings-group-icon[data-tint="cyan"]          { background: color-mix(in oklch, var(--cyan) 16%, transparent);          color: var(--cyan); }
+.settings-group-icon[data-tint="gold"]          { background: color-mix(in oklch, var(--gold) 18%, transparent);          color: var(--gold); }
+.settings-group-icon[data-tint="mediterranean"] { background: color-mix(in oklch, var(--mediterranean) 16%, transparent); color: var(--mediterranean); }
+.settings-group-icon[data-tint="accent"]        { background: var(--accent-light);                                        color: var(--accent); }
+@supports not (color: color-mix(in oklch, red, blue)) {
+    .settings-group-icon { background: var(--bg-tertiary); }
+}
+.settings-group-icon i { font-size: 18px; }
+
+/* Items */
+.settings-item {
+    display: flex; align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3) 0;
+    border-bottom: 1px solid var(--border-light);
+}
+.settings-item:last-child { border-bottom: none; padding-bottom: 0; }
+.settings-item-text {
+    flex: 1 1 auto; min-width: 0;
+    display: flex; flex-direction: column; gap: 2px;
+}
+.settings-item-text strong {
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--text-primary);
+}
+.settings-item-text span {
+    font-size: var(--text-xs);
+    color: var(--text-tertiary);
+}
+.settings-item-danger .settings-item-text strong { color: var(--error); }
+
+/* Select */
+.settings-select {
+    padding: 6px var(--space-3);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-size: var(--text-sm);
+    min-height: 36px;
+}
+.settings-select:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px color-mix(in oklch, var(--accent) 18%, transparent);
+}
+
+/* Danger button */
+.settings-danger-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px var(--space-3);
+    min-height: 36px;
+    background: transparent;
+    color: var(--error);
+    border: 1px solid color-mix(in oklch, var(--error) 30%, transparent);
+    border-radius: var(--radius-full);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    cursor: pointer;
+    transition: background var(--duration-fast) var(--ease-out),
+                border-color var(--duration-fast) var(--ease-out);
+}
+@supports not (color: color-mix(in oklch, red, blue)) {
+    .settings-danger-btn { border-color: var(--error); }
+}
+.settings-danger-btn:hover {
+    background: var(--error-light);
+    border-color: var(--error);
+}
+
+/* Blocked list */
+.settings-blocked-list {
+    display: flex; flex-direction: column; gap: var(--space-2);
+}
+.settings-blocked-loading {
+    display: flex; align-items: center; gap: var(--space-2);
+    color: var(--text-tertiary);
+    font-size: var(--text-sm);
+    padding: var(--space-3) 0;
+}
+.settings-blocked-loading .spinner {
+    width: 16px; height: 16px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: settings-spin 0.9s linear infinite;
+}
+@keyframes settings-spin { to { transform: rotate(360deg); } }
+.settings-blocked-empty {
+    color: var(--text-tertiary);
+    font-size: var(--text-sm);
+    padding: var(--space-3) 0;
+}
+
+.blocked-row {
+    display: flex; align-items: center; gap: var(--space-3);
+    padding: var(--space-3);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+}
+.blocked-user {
+    display: flex; align-items: center; gap: var(--space-3);
+    flex: 1 1 auto; min-width: 0;
+    color: inherit;
+    text-decoration: none;
+}
+.blocked-user img {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: var(--bg-tertiary);
+    flex: 0 0 auto;
+}
+.blocked-user-meta {
+    display: flex; flex-direction: column; gap: 2px;
+    min-width: 0;
+}
+.blocked-user strong {
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--text-primary);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.blocked-user span {
+    font-size: var(--text-xs);
+    color: var(--text-tertiary);
+}
+.blocked-unblock {
+    flex: 0 0 auto;
+}
+
+/* Toggle (custom switch) */
+.settings-page .toggle {
+    position: relative;
+    width: 44px; height: 24px;
+    display: inline-block;
+    flex: 0 0 auto;
+}
+.settings-page .toggle input {
+    position: absolute; inset: 0;
+    opacity: 0; cursor: pointer;
+    width: 100%; height: 100%;
+    margin: 0;
+}
+.settings-page .toggle-track {
+    position: absolute; inset: 0;
+    background: var(--border);
+    border-radius: var(--radius-full);
+    transition: background var(--duration-fast) var(--ease-out);
+}
+.settings-page .toggle-thumb {
+    position: absolute;
+    top: 2px; left: 2px;
+    width: 20px; height: 20px;
+    background: var(--surface-elevated);
+    border-radius: 50%;
+    box-shadow: var(--shadow-sm);
+    transition: transform var(--duration-fast) var(--ease-spring);
+}
+.settings-page .toggle input:checked + .toggle-track {
+    background: var(--accent);
+}
+.settings-page .toggle input:checked + .toggle-track + .toggle-thumb {
+    transform: translateX(20px);
+}
+.settings-page .toggle input:focus-visible + .toggle-track {
+    box-shadow: 0 0 0 3px color-mix(in oklch, var(--accent) 25%, transparent);
+}

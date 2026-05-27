@@ -1,0 +1,352 @@
+/* ============================================
+   ITINERARIES PAGE (#/itineraries)
+   Loaded after pages.css. Token-driven.
+   ============================================ */
+
+.itineraries-page {
+    max-width: var(--page-max);
+    margin-inline: auto;
+    padding: 0 var(--page-padding) var(--space-16);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+}
+
+/* Hero */
+.itineraries-page .itineraries-hero {
+    position: relative;
+    overflow: hidden;
+    border-radius: 0 0 var(--radius-2xl) var(--radius-2xl);
+    margin: 0 calc(var(--page-padding) * -1);
+    padding: clamp(var(--space-8), 5vw, var(--space-12)) clamp(var(--space-5), 4vw, var(--space-10));
+    color: oklch(98% 0 0);
+    isolation: isolate;
+    box-shadow: var(--shadow-xl);
+}
+.itineraries-hero-bg   { position: absolute; inset: 0; z-index: -2; background: var(--gradient-hero); }
+.itineraries-hero-mesh { position: absolute; inset: 0; z-index: -1; background: var(--gradient-dark-mesh); pointer-events: none; }
+.itineraries-hero-orbs { position: absolute; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
+.itineraries-hero-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(70px);
+    opacity: 0.42;
+    animation: itineraries-orb 16s var(--ease-in-out) infinite;
+}
+.itineraries-hero-orb:nth-child(1) { width: 320px; height: 320px; top: -90px; left: -50px; background: var(--cyan); }
+.itineraries-hero-orb:nth-child(2) { width: 280px; height: 280px; bottom: -100px; right: -40px; background: var(--terracotta); animation-delay: -8s; }
+@keyframes itineraries-orb {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50%      { transform: translate(28px, -22px) scale(1.08); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .itineraries-hero-orb { animation: none; }
+}
+.itineraries-hero-content { position: relative; max-width: 560px; }
+.itineraries-eyebrow {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px var(--space-3);
+    background: oklch(100% 0 0 / 0.14);
+    border: 1px solid oklch(100% 0 0 / 0.22);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    border-radius: var(--radius-full);
+    color: oklch(95% 0.02 80);
+    font-size: 11px; font-weight: 600;
+    letter-spacing: var(--tracking-widest); text-transform: uppercase;
+    margin-bottom: var(--space-3);
+}
+.itineraries-page .itineraries-hero h1 {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 900; line-height: 1.05;
+    letter-spacing: var(--tracking-tight);
+    color: oklch(98% 0 0); margin: 0 0 var(--space-2);
+    text-shadow: 0 2px 12px oklch(0% 0 0 / 0.25);
+}
+.itineraries-accent {
+    background: linear-gradient(120deg, var(--gold), var(--cyan), var(--gold));
+    background-size: 200% auto;
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; color: transparent;
+    animation: itineraries-grad 6s var(--ease-in-out) infinite;
+}
+@keyframes itineraries-grad {
+    0%, 100% { background-position: 0% 50%; }
+    50%      { background-position: 100% 50%; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .itineraries-accent { animation: none; }
+}
+.itineraries-page .itineraries-hero p {
+    color: oklch(90% 0.01 80);
+    font-size: var(--text-base); margin: 0;
+    text-shadow: 0 1px 8px oklch(0% 0 0 / 0.2);
+}
+
+/* Grid */
+.itineraries-page .itineraries-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: var(--space-4);
+}
+
+/* Card */
+.itineraries-page .itinerary-card {
+    --diff-tint: var(--success);
+    background: var(--surface-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow-sm);
+    transition: transform var(--duration-normal) var(--ease-spring),
+                box-shadow var(--duration-normal) var(--ease-out),
+                border-color var(--duration-normal) var(--ease-out);
+}
+.itineraries-page .itinerary-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--diff-tint);
+}
+.itineraries-page .itinerary-card-cover {
+    position: relative;
+    aspect-ratio: 16 / 10;
+    background-size: cover;
+    background-position: center;
+    background-color: var(--bg-tertiary);
+    color: oklch(98% 0 0);
+    padding: var(--space-3) var(--space-4);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow: hidden;
+    isolation: isolate;
+}
+.itineraries-page .itinerary-card-cover-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(180deg, oklch(0% 0 0 / 0.2) 0%, transparent 40%, oklch(0% 0 0 / 0.7) 100%);
+}
+.itineraries-page .itinerary-card-cover-tags {
+    display: inline-flex; gap: var(--space-2); flex-wrap: wrap;
+}
+.itineraries-page .itinerary-duration-tag {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 4px 10px;
+    background: oklch(100% 0 0 / 0.18);
+    border: 1px solid oklch(100% 0 0 / 0.26);
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    border-radius: var(--radius-full);
+    color: oklch(98% 0 0);
+    font-size: 11px; font-weight: 700;
+    letter-spacing: var(--tracking-wide); text-transform: uppercase;
+}
+.itineraries-page .itinerary-pro-tag {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 4px 10px;
+    background: var(--gradient-gold);
+    color: oklch(20% 0.05 80);
+    border-radius: var(--radius-full);
+    font-size: 11px; font-weight: 700;
+    letter-spacing: var(--tracking-wide); text-transform: uppercase;
+    box-shadow: var(--shadow-sm);
+}
+.itineraries-page .itinerary-card-title {
+    font-family: var(--font-display);
+    font-size: var(--text-lg); font-weight: 700;
+    color: oklch(98% 0 0);
+    line-height: var(--leading-snug);
+    margin: 0;
+    text-shadow: 0 2px 8px oklch(0% 0 0 / 0.4);
+}
+.itineraries-page .itinerary-card-body {
+    padding: var(--space-4);
+    display: flex; flex-direction: column; gap: var(--space-2);
+    flex: 1 1 auto;
+}
+.itineraries-page .itinerary-difficulty {
+    display: inline-flex; align-items: center; gap: 4px;
+    color: var(--diff-tint);
+    font-size: 11px; font-weight: 700;
+    letter-spacing: var(--tracking-wide); text-transform: uppercase;
+}
+.itineraries-page .itinerary-difficulty i { font-size: 12px; }
+.itineraries-page .itinerary-desc {
+    color: var(--text-secondary);
+    font-size: var(--text-sm);
+    line-height: var(--leading-relaxed);
+    margin: 0 0 auto;
+    display: -webkit-box;
+    -webkit-line-clamp: 3; line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.itineraries-page .itinerary-view-btn {
+    margin-top: var(--space-2);
+    width: 100%;
+    justify-content: center;
+}
+
+/* Modal — shared chrome with Collections */
+.itinerary-modal,
+.collection-modal {
+    position: fixed; inset: 0;
+    z-index: var(--z-modal);
+    display: flex; align-items: center; justify-content: center;
+    padding: var(--space-4);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--duration-fast) var(--ease-out);
+}
+.itinerary-modal.open,
+.collection-modal.open {
+    opacity: 1; pointer-events: auto;
+}
+.itinerary-modal-overlay,
+.collection-modal-overlay {
+    position: absolute; inset: 0;
+    background: oklch(0% 0 0 / 0.55);
+    backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+}
+.itinerary-modal-card,
+.collection-modal-card {
+    --diff-tint: var(--accent);
+    position: relative;
+    width: 100%; max-width: 560px;
+    max-height: calc(100dvh - var(--space-8));
+    overflow-y: auto;
+    background: var(--surface-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-2xl);
+    box-shadow: var(--shadow-2xl);
+    transform: translateY(12px) scale(0.96);
+    transition: transform var(--duration-normal) var(--ease-spring);
+}
+.itinerary-modal.open .itinerary-modal-card,
+.collection-modal.open .collection-modal-card {
+    transform: translateY(0) scale(1);
+}
+@media (prefers-reduced-motion: reduce) {
+    .itinerary-modal-card,
+    .collection-modal-card { transition: none; }
+}
+.itinerary-modal-close,
+.collection-modal-close {
+    position: absolute; top: var(--space-3); right: var(--space-3);
+    width: 36px; height: 36px;
+    display: grid; place-items: center;
+    background: oklch(100% 0 0 / 0.18);
+    border: 1px solid oklch(100% 0 0 / 0.28);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    border-radius: 50%;
+    color: oklch(98% 0 0);
+    cursor: pointer;
+    z-index: 2;
+    transition: background var(--duration-fast) var(--ease-out);
+}
+.itinerary-modal-close:hover,
+.collection-modal-close:hover {
+    background: oklch(100% 0 0 / 0.28);
+}
+.itinerary-modal-cover,
+.collection-modal-cover {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    background-size: cover; background-position: center;
+    background-color: var(--bg-tertiary);
+    color: oklch(98% 0 0);
+    padding: var(--space-4) var(--space-5);
+    display: flex; flex-direction: column; justify-content: space-between;
+    isolation: isolate;
+}
+.itinerary-modal-cover-overlay,
+.collection-modal-cover-overlay {
+    position: absolute; inset: 0; z-index: -1;
+    background: linear-gradient(180deg, oklch(0% 0 0 / 0.2) 0%, transparent 35%, oklch(0% 0 0 / 0.75) 100%);
+}
+.itinerary-modal-cover-tags,
+.collection-modal-cover-tags {
+    display: inline-flex; gap: var(--space-2); flex-wrap: wrap;
+}
+.collection-modal-count-tag {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 4px 10px;
+    background: oklch(100% 0 0 / 0.18);
+    border: 1px solid oklch(100% 0 0 / 0.26);
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    border-radius: var(--radius-full);
+    color: oklch(98% 0 0);
+    font-size: 11px; font-weight: 700;
+    letter-spacing: var(--tracking-wide); text-transform: uppercase;
+}
+.itinerary-modal-cover h2,
+.collection-modal-cover h2 {
+    font-family: var(--font-display);
+    font-size: clamp(var(--text-xl), 3vw, var(--text-2xl));
+    font-weight: 800; color: oklch(98% 0 0);
+    line-height: 1.1; letter-spacing: var(--tracking-tight);
+    margin: 0;
+    text-shadow: 0 2px 12px oklch(0% 0 0 / 0.4);
+}
+.itinerary-modal-body,
+.collection-modal-body {
+    padding: var(--space-5);
+    display: flex; flex-direction: column; gap: var(--space-4);
+}
+.itinerary-modal-meta {
+    display: flex; gap: var(--space-2); flex-wrap: wrap;
+}
+.itinerary-modal-meta-chip {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 4px 10px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-full);
+    color: var(--text-secondary);
+    font-size: 11px; font-weight: 600;
+    letter-spacing: var(--tracking-wide); text-transform: uppercase;
+}
+.itinerary-modal-desc,
+.collection-modal-desc {
+    color: var(--text-primary);
+    font-size: var(--text-base);
+    line-height: var(--leading-relaxed);
+    margin: 0;
+    max-width: 60ch;
+}
+.itinerary-modal-actions,
+.collection-modal-actions {
+    display: flex; gap: var(--space-2); flex-wrap: wrap;
+}
+.itinerary-modal-cta,
+.collection-modal-cta {
+    background: var(--gradient-cta) !important;
+    color: var(--text-inverse) !important;
+    box-shadow: var(--shadow-glow);
+    border: none !important;
+}
+
+/* Loading */
+.itineraries-loading,
+.collections-loading {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: var(--space-12) var(--space-4);
+    color: var(--text-tertiary);
+    display: flex; flex-direction: column; align-items: center; gap: var(--space-3);
+}
+.itineraries-loading .spinner,
+.collections-loading .spinner {
+    width: 32px; height: 32px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: itin-spin 0.9s linear infinite;
+}
+@keyframes itin-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+    .itineraries-loading .spinner,
+    .collections-loading .spinner { animation-duration: 2s; }
+}

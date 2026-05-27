@@ -1,22 +1,42 @@
+// ============================================
+// SETTINGS PAGE — Account preferences
+// Per design-system/pages/settings.md.
+// Utility page — no cinematic hero, focused chrome.
+// ============================================
+
 import * as api from '../api';
 import { replaceIcons } from '../icons';
 import { showToast, isLoggedIn } from '../ui-utils';
 
+function esc(v: unknown): string {
+  return String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
 export function renderSettingsPage(): string {
   return `
-    <div class="settings-page page-enter" data-design="sleek">
-      <a href="#/profile" class="btn btn-ghost" style="margin-bottom: var(--space-4);">
-        <i class="lucide-arrow-left"></i> Back
-      </a>
+    <div class="settings-page page-enter">
+      <header class="settings-head">
+        <a href="#/profile" class="settings-back" aria-label="Back to profile">
+          <i class="lucide-arrow-left"></i>
+        </a>
+        <div class="settings-head-text">
+          <h1>Settings</h1>
+          <p>Manage your account, appearance, and notifications.</p>
+        </div>
+      </header>
 
-      <h2 style="margin-bottom: var(--space-6);">Settings</h2>
-
-      <div class="settings-group">
-        <div class="settings-group-title">Appearance</div>
-        <div class="settings-item">
+      <section class="settings-group">
+        <header class="settings-group-head">
+          <span class="settings-group-icon" data-tint="violet"><i class="lucide-palette"></i></span>
           <div>
-            <div class="settings-item-label">Dark Mode</div>
-            <div class="settings-item-desc">Switch between light and dark themes</div>
+            <h2>Appearance</h2>
+            <p>How e-Tunisia looks on your device.</p>
+          </div>
+        </header>
+        <div class="settings-item">
+          <div class="settings-item-text">
+            <strong>Dark mode</strong>
+            <span>Switch between light and dark themes.</span>
           </div>
           <label class="toggle">
             <input type="checkbox" id="settings-dark-mode" />
@@ -24,28 +44,40 @@ export function renderSettingsPage(): string {
             <span class="toggle-thumb"></span>
           </label>
         </div>
-      </div>
+      </section>
 
-      <div class="settings-group">
-        <div class="settings-group-title">Language</div>
-        <div class="settings-item">
+      <section class="settings-group">
+        <header class="settings-group-head">
+          <span class="settings-group-icon" data-tint="cyan"><i class="lucide-languages"></i></span>
           <div>
-            <div class="settings-item-label">Display Language</div>
-            <div class="settings-item-desc">Choose your preferred language</div>
+            <h2>Language</h2>
+            <p>Localized content and UI.</p>
           </div>
-          <select class="input" style="width: auto; padding: var(--space-2) var(--space-3);">
+        </header>
+        <div class="settings-item">
+          <div class="settings-item-text">
+            <strong>Display language</strong>
+            <span>Choose your preferred language.</span>
+          </div>
+          <select class="settings-select" aria-label="Display language">
             <option>English</option>
-            <option>Francais</option>
+            <option>Français</option>
           </select>
         </div>
-      </div>
+      </section>
 
-      <div class="settings-group">
-        <div class="settings-group-title">Notifications</div>
-        <div class="settings-item">
+      <section class="settings-group">
+        <header class="settings-group-head">
+          <span class="settings-group-icon" data-tint="gold"><i class="lucide-bell"></i></span>
           <div>
-            <div class="settings-item-label">Push Notifications</div>
-            <div class="settings-item-desc">Receive alerts for new events and tips</div>
+            <h2>Notifications</h2>
+            <p>When and how we reach you.</p>
+          </div>
+        </header>
+        <div class="settings-item">
+          <div class="settings-item-text">
+            <strong>Push notifications</strong>
+            <span>Alerts for new events, tips, and DMs.</span>
           </div>
           <label class="toggle">
             <input type="checkbox" checked />
@@ -54,9 +86,9 @@ export function renderSettingsPage(): string {
           </label>
         </div>
         <div class="settings-item">
-          <div>
-            <div class="settings-item-label">Email Digest</div>
-            <div class="settings-item-desc">Weekly summary of popular posts</div>
+          <div class="settings-item-text">
+            <strong>Email digest</strong>
+            <span>Weekly summary of popular posts.</span>
           </div>
           <label class="toggle">
             <input type="checkbox" />
@@ -64,38 +96,51 @@ export function renderSettingsPage(): string {
             <span class="toggle-thumb"></span>
           </label>
         </div>
-      </div>
+      </section>
 
-      <div class="settings-group">
-        <div class="settings-group-title">Safety</div>
-        <div class="settings-item settings-item-stacked">
+      <section class="settings-group">
+        <header class="settings-group-head">
+          <span class="settings-group-icon" data-tint="mediterranean"><i class="lucide-shield"></i></span>
           <div>
-            <div class="settings-item-label"><i class="lucide-shield"></i> Blocked accounts</div>
-            <div class="settings-item-desc">People you've blocked. They can't see your posts or DM you.</div>
+            <h2>Safety</h2>
+            <p>People you've blocked. They can't see your posts or DM you.</p>
           </div>
-          <div class="settings-blocked-list" id="settings-blocked-list">
-            <div class="text-muted text-sm" style="padding: var(--space-2);">Loading…</div>
+        </header>
+        <div class="settings-blocked-list" id="settings-blocked-list">
+          <div class="settings-blocked-loading">
+            <div class="spinner"></div>
+            <span>Loading…</span>
           </div>
         </div>
-      </div>
+      </section>
 
-      <div class="settings-group">
-        <div class="settings-group-title">Account</div>
-        <div class="settings-item">
+      <section class="settings-group">
+        <header class="settings-group-head">
+          <span class="settings-group-icon" data-tint="accent"><i class="lucide-user"></i></span>
           <div>
-            <div class="settings-item-label">Edit Profile</div>
-            <div class="settings-item-desc">Update your name, photo, and bio</div>
+            <h2>Account</h2>
+            <p>Profile and account-level controls.</p>
           </div>
-          <a class="btn btn-sm btn-secondary" href="#/profile/edit">Edit</a>
-        </div>
+        </header>
         <div class="settings-item">
-          <div>
-            <div class="settings-item-label text-danger">Delete Account</div>
-            <div class="settings-item-desc">Permanently delete your account and data</div>
+          <div class="settings-item-text">
+            <strong>Edit profile</strong>
+            <span>Update your name, photo, and bio.</span>
           </div>
-          <button class="btn btn-sm btn-secondary text-danger" id="settings-delete-account">Delete</button>
+          <a class="btn btn-outline btn-sm" href="#/profile-edit">
+            <i class="lucide-pencil"></i> Edit
+          </a>
         </div>
-      </div>
+        <div class="settings-item settings-item-danger">
+          <div class="settings-item-text">
+            <strong>Delete account</strong>
+            <span>Permanently delete your account and data. This cannot be undone.</span>
+          </div>
+          <button type="button" class="settings-danger-btn" id="settings-delete-account">
+            <i class="lucide-trash-2"></i> Delete
+          </button>
+        </div>
+      </section>
     </div>
   `;
 }
@@ -104,31 +149,36 @@ async function renderBlockedList() {
   const wrap = document.getElementById('settings-blocked-list');
   if (!wrap) return;
   if (!isLoggedIn()) {
-    wrap.innerHTML = `<div class="text-muted text-sm">Sign in to manage blocked accounts.</div>`;
+    wrap.innerHTML = `<div class="settings-blocked-empty">Sign in to manage blocked accounts.</div>`;
     return;
   }
   let rows: any[] = [];
   try { rows = await api.listBlockedUsers(); } catch { rows = []; }
   if (!rows.length) {
-    wrap.innerHTML = `<div class="text-muted text-sm">You haven't blocked anyone.</div>`;
+    wrap.innerHTML = `<div class="settings-blocked-empty">You haven't blocked anyone.</div>`;
     return;
   }
-  wrap.innerHTML = rows.map(r => {
+  wrap.innerHTML = rows.map((r) => {
     const u = r.user || {};
     const seed = encodeURIComponent(u.fullName || u.id);
     const av = u.avatar && (String(u.avatar).startsWith('http') || String(u.avatar).startsWith('data:'))
       ? u.avatar
       : `https://api.dicebear.com/9.x/thumbs/svg?seed=${seed}`;
     return `
-      <div class="blocked-row" data-id="${u.id}">
-        <a class="blocked-user" href="#/user/${u.id}">
-          <img src="${av}" alt="" />
-          <div>
-            <strong>${(u.fullName || 'Unknown').replace(/</g, '&lt;')}</strong>
-            ${u.country ? `<span class="text-xs text-muted">${(u.country || '').replace(/</g, '&lt;')}</span>` : ''}
+      <div class="blocked-row" data-id="${esc(u.id)}">
+        <a class="blocked-user"
+           href="#/user/${esc(u.id)}"
+           data-user-id="${esc(u.id)}"
+           data-user-name="${esc(u.fullName || '')}"
+           data-user-avatar="${esc(av)}"
+           data-user-handle="${esc(u.handle || '')}">
+          <img src="${esc(av)}" alt="" loading="lazy" />
+          <div class="blocked-user-meta">
+            <strong>${esc(u.fullName || 'Unknown')}</strong>
+            ${u.country ? `<span>${esc(u.country)}</span>` : ''}
           </div>
         </a>
-        <button class="btn btn-sm btn-outline blocked-unblock" data-id="${u.id}">
+        <button type="button" class="btn btn-outline btn-sm blocked-unblock" data-id="${esc(u.id)}">
           <i class="lucide-user-check"></i> Unblock
         </button>
       </div>
@@ -136,7 +186,7 @@ async function renderBlockedList() {
   }).join('');
   replaceIcons(wrap);
 
-  wrap.querySelectorAll<HTMLButtonElement>('.blocked-unblock').forEach(btn => {
+  wrap.querySelectorAll<HTMLButtonElement>('.blocked-unblock').forEach((btn) => {
     btn.addEventListener('click', async () => {
       const id = btn.dataset.id;
       if (!id) return;
@@ -154,7 +204,7 @@ async function renderBlockedList() {
 }
 
 export function initSettingsPage() {
-  const darkToggle = document.getElementById('settings-dark-mode') as HTMLInputElement;
+  const darkToggle = document.getElementById('settings-dark-mode') as HTMLInputElement | null;
   if (darkToggle) {
     darkToggle.checked = document.documentElement.dataset.theme === 'dark';
     darkToggle.addEventListener('change', () => {

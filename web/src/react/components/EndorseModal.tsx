@@ -1,9 +1,46 @@
 import React, { useState } from 'react';
 import { api, getImageUrl } from '../../shared/api';
 import { ENDORSEMENT_TOPICS, TOPIC_BY_ID } from './endorsement-topics';
-import { Check, X, Loader2 } from 'lucide-react';
+import {
+    Check,
+    X,
+    Loader2,
+    Award,
+    Landmark,
+    Sparkles,
+    Waves,
+    UtensilsCrossed,
+    Camera,
+    Moon,
+    Users,
+    PiggyBank,
+    Crown,
+    ScrollText,
+    ShoppingBag,
+    Gem,
+    type LucideIcon,
+} from 'lucide-react';
 
 const showToast = (opts: any) => (window as any).showToast?.(opts);
+
+const TOPIC_ICON: Record<string, LucideIcon> = {
+    landmark: Landmark,
+    sparkles: Sparkles,
+    waves: Waves,
+    'utensils-crossed': UtensilsCrossed,
+    camera: Camera,
+    moon: Moon,
+    users: Users,
+    'piggy-bank': PiggyBank,
+    crown: Crown,
+    'scroll-text': ScrollText,
+    'shopping-bag': ShoppingBag,
+    gem: Gem,
+};
+function topicIcon(name: string | undefined): LucideIcon {
+    if (!name) return Award;
+    return TOPIC_ICON[name] || Award;
+}
 
 interface Props {
     handle: string;
@@ -35,7 +72,6 @@ export function EndorseModal({ handle, fullName, avatar, initiallyEndorsed, onCl
                     ? `Removed endorsement for ${topic?.label?.toLowerCase() || topicId}`
                     : `${who} got your nod for ${topic?.label?.toLowerCase() || topicId}`,
                 type: wasOn ? 'info' : 'success',
-                emoji: wasOn ? undefined : (topic?.emoji || '🌟'),
             });
         } catch {
             setEndorsed(endorsed); // rollback
@@ -67,18 +103,21 @@ export function EndorseModal({ handle, fullName, avatar, initiallyEndorsed, onCl
                     {ENDORSEMENT_TOPICS.map((t) => {
                         const isOn = endorsed.includes(t.id);
                         const isBusy = busyTopic === t.id;
+                        const Icon = topicIcon(t.icon);
                         return (
                             <button
                                 key={t.id}
                                 type="button"
-                                className={`endorse-topic ${isOn ? 'on' : ''}`}
+                                className={`endorse-topic ${isOn ? 'is-on' : ''}`}
                                 onClick={() => toggle(t.id)}
                                 disabled={isBusy}
                                 aria-pressed={isOn}
                             >
-                                <span className="endorse-topic-emoji">{t.emoji}</span>
+                                <span className="endorse-topic-icon" aria-hidden="true">
+                                    <Icon size={16} strokeWidth={1.75} />
+                                </span>
                                 <span className="endorse-topic-label">{t.label}</span>
-                                <span className="endorse-topic-state">
+                                <span className="endorse-topic-state" aria-hidden="true">
                                     {isBusy ? <Loader2 size={14} className="spin" /> : isOn ? <Check size={14} /> : null}
                                 </span>
                             </button>
@@ -103,9 +142,14 @@ export function TopEndorsementsStrip({ topEndorsements }: { topEndorsements: Arr
             {topEndorsements.map((e) => {
                 const meta = TOPIC_BY_ID[e.topic];
                 if (!meta) return null;
+                const Icon = topicIcon(meta.icon);
                 return (
-                    <span key={e.topic} className="passport-endorse-chip" title={`${e.count} endorsement${e.count === 1 ? '' : 's'}`}>
-                        <span>{meta.emoji}</span>
+                    <span
+                        key={e.topic}
+                        className="passport-endorse-chip"
+                        title={`${e.count} endorsement${e.count === 1 ? '' : 's'}`}
+                    >
+                        <Icon size={12} strokeWidth={1.75} />
                         <span>{meta.label}</span>
                         <strong>{e.count}</strong>
                     </span>

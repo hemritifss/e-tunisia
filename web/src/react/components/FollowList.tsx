@@ -46,9 +46,17 @@ export function FollowList({ handle, mode, onClose }: Props) {
                     <ul className="follow-list">
                         {items.map((u) => (
                             <li key={u.id}>
-                                <a className="follow-list-row" href={`#/u/${u.handle}`} onClick={onClose}>
+                                <a
+                                    className="follow-list-row"
+                                    href={`#/u/${u.handle}`}
+                                    onClick={onClose}
+                                    data-user-id={u.id}
+                                    data-user-name={u.fullName}
+                                    data-user-avatar={u.avatar ? getImageUrl(u.avatar) : undefined}
+                                    data-user-handle={u.handle}
+                                >
                                     {u.avatar ? (
-                                        <img src={getImageUrl(u.avatar)} alt="" />
+                                        <img src={getImageUrl(u.avatar)} alt="" loading="lazy" />
                                     ) : (
                                         <span className="follow-list-avatar-fallback">{(u.fullName || '?').slice(0, 1).toUpperCase()}</span>
                                     )}

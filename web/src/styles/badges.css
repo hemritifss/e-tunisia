@@ -1,0 +1,418 @@
+/* ============================================
+   BADGES PAGE (#/badges)
+   Loaded after pages.css so refinements win.
+   ============================================ */
+
+.badges-page {
+    max-width: 960px;
+    margin-inline: auto;
+    padding: 0 var(--page-padding) var(--space-16);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+}
+
+/* ── Hero ────────────────────────────────── */
+.badges-page .badges-hero {
+    position: relative;
+    overflow: hidden;
+    border-radius: 0 0 var(--radius-2xl) var(--radius-2xl);
+    margin: 0 calc(var(--page-padding) * -1);
+    padding: clamp(var(--space-8), 5vw, var(--space-12)) clamp(var(--space-5), 4vw, var(--space-10));
+    color: oklch(98% 0 0);
+    isolation: isolate;
+    box-shadow: var(--shadow-xl);
+}
+.badges-hero-bg {
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    background: var(--gradient-hero);
+}
+.badges-hero-mesh {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--gradient-dark-mesh);
+    pointer-events: none;
+}
+.badges-hero-orbs {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+    pointer-events: none;
+}
+.badges-hero-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(70px);
+    opacity: 0.42;
+    animation: badges-orb 16s var(--ease-in-out) infinite;
+}
+.badges-hero-orb:nth-child(1) {
+    width: 320px;
+    height: 320px;
+    top: -90px;
+    left: -40px;
+    background: var(--gold);
+}
+.badges-hero-orb:nth-child(2) {
+    width: 280px;
+    height: 280px;
+    bottom: -100px;
+    right: -40px;
+    background: var(--violet);
+    animation-delay: -8s;
+}
+@keyframes badges-orb {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50%      { transform: translate(28px, -22px) scale(1.08); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .badges-hero-orb { animation: none; }
+}
+
+.badges-hero-content {
+    position: relative;
+    max-width: 560px;
+}
+.badges-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px var(--space-3);
+    background: oklch(100% 0 0 / 0.14);
+    border: 1px solid oklch(100% 0 0 / 0.22);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: var(--radius-full);
+    color: oklch(95% 0.02 80);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: var(--tracking-widest);
+    text-transform: uppercase;
+    margin-bottom: var(--space-3);
+}
+.badges-page .badges-hero h1 {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 900;
+    line-height: 1.05;
+    letter-spacing: var(--tracking-tight);
+    color: oklch(98% 0 0);
+    margin: 0 0 var(--space-2);
+    text-shadow: 0 2px 12px oklch(0% 0 0 / 0.25);
+}
+.badges-accent {
+    background: linear-gradient(120deg, var(--gold), var(--violet), var(--gold));
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    animation: badges-grad 6s var(--ease-in-out) infinite;
+}
+@keyframes badges-grad {
+    0%, 100% { background-position: 0% 50%; }
+    50%      { background-position: 100% 50%; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .badges-accent { animation: none; }
+}
+.badges-page .badges-hero p {
+    color: oklch(90% 0.01 80);
+    font-size: var(--text-base);
+    margin: 0;
+    text-shadow: 0 1px 8px oklch(0% 0 0 / 0.2);
+}
+
+/* ── Stats section ───────────────────────── */
+.badges-page .badges-stats {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.badges-progress-card {
+    background: var(--surface-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    padding: var(--space-5);
+    position: relative;
+    overflow: hidden;
+}
+.badges-progress-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--gradient-mesh);
+    opacity: 0.3;
+    pointer-events: none;
+    z-index: 0;
+}
+.badges-progress-card > * { position: relative; z-index: 1; }
+
+.badges-progress-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    margin-bottom: var(--space-3);
+}
+.badges-progress-head > div {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.badges-progress-head strong {
+    font-family: var(--font-display);
+    font-size: var(--text-base);
+    font-weight: 700;
+    color: var(--text-primary);
+}
+.badges-progress-head span {
+    color: var(--text-secondary);
+    font-size: var(--text-sm);
+}
+.badges-progress-pct {
+    font-family: var(--font-display);
+    font-size: var(--text-2xl);
+    font-weight: 900;
+    color: var(--gold);
+    font-variant-numeric: tabular-nums;
+}
+.badges-progress-bar {
+    height: 10px;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+}
+.badges-progress-bar span {
+    display: block;
+    height: 100%;
+    background: var(--gradient-gold);
+    border-radius: inherit;
+    box-shadow: 0 0 16px oklch(78% 0.17 80 / 0.4);
+    transition: width var(--duration-slow) var(--ease-out);
+}
+
+.badges-stat-tiles {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-3);
+}
+@media (max-width: 540px) {
+    .badges-stat-tiles { grid-template-columns: repeat(3, 1fr); gap: var(--space-2); }
+}
+
+.badges-stat-card {
+    background: var(--surface-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    padding: var(--space-4) var(--space-3);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 4px;
+    transition: transform var(--duration-fast) var(--ease-spring),
+                box-shadow var(--duration-normal) var(--ease-out);
+}
+.badges-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+.badges-stat-icon {
+    width: 40px;
+    height: 40px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    margin-bottom: 2px;
+}
+.badges-stat-card.is-earned .badges-stat-icon  { background: color-mix(in oklch, var(--success) 16%, transparent); color: var(--success); }
+.badges-stat-card.is-locked .badges-stat-icon  { background: color-mix(in oklch, var(--text-tertiary) 16%, transparent); color: var(--text-tertiary); }
+.badges-stat-card.is-progress .badges-stat-icon { background: color-mix(in oklch, var(--gold) 18%, transparent); color: var(--gold); }
+@supports not (color: color-mix(in oklch, red, blue)) {
+    .badges-stat-card .badges-stat-icon { background: var(--bg-tertiary); }
+}
+.badges-stat-card strong {
+    font-family: var(--font-display);
+    font-size: var(--text-xl);
+    font-weight: 800;
+    color: var(--text-primary);
+    font-variant-numeric: tabular-nums;
+}
+.badges-stat-card span {
+    font-size: var(--text-xs);
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wide);
+    font-weight: 600;
+}
+
+/* ── Badge grid ──────────────────────────── */
+.badges-page .badges-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: var(--space-4);
+}
+
+.badges-page .badge-card {
+    background: var(--surface-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    padding: var(--space-5);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2);
+    box-shadow: var(--shadow-xs);
+    transition: transform var(--duration-fast) var(--ease-spring),
+                box-shadow var(--duration-normal) var(--ease-out),
+                border-color var(--duration-normal) var(--ease-out);
+    position: relative;
+}
+.badges-page .badge-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+}
+
+/* Earned: gold-tinted */
+.badges-page .badge-card.is-earned {
+    border-color: transparent;
+    background:
+        linear-gradient(var(--surface-elevated), var(--surface-elevated)) padding-box,
+        var(--gradient-gold) border-box;
+    box-shadow: var(--shadow-sm), 0 4px 18px oklch(78% 0.17 80 / 0.12);
+}
+.badges-page .badge-card.is-earned:hover {
+    box-shadow: var(--shadow-lg), 0 8px 24px oklch(78% 0.17 80 / 0.2);
+}
+
+/* Locked: desaturated */
+.badges-page .badge-card.is-locked {
+    opacity: 0.62;
+}
+.badges-page .badge-card.is-locked .badge-icon { filter: grayscale(0.5); }
+.badges-page .badge-card.is-locked:hover {
+    opacity: 0.85;
+}
+
+.badges-page .badge-icon {
+    width: 80px;
+    height: 80px;
+    display: grid;
+    place-items: center;
+    background: color-mix(in oklch, var(--gold) 14%, var(--bg-secondary));
+    color: var(--gold);
+    border-radius: 50%;
+    position: relative;
+}
+@supports not (color: color-mix(in oklch, red, blue)) {
+    .badges-page .badge-icon { background: var(--bg-secondary); }
+}
+.badges-page .badge-card.is-earned .badge-icon {
+    background: var(--gradient-gold);
+    color: oklch(20% 0.05 80);
+}
+.badges-page .badge-icon i { font-size: 36px; }
+
+.badge-lock-overlay {
+    position: absolute;
+    inset: 0;
+    background: oklch(0% 0 0 / 0.35);
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    color: oklch(98% 0 0);
+}
+.badge-lock-overlay i { font-size: 24px; }
+
+.badges-page .badge-name {
+    font-family: var(--font-display);
+    font-size: var(--text-base);
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+    line-height: var(--leading-snug);
+}
+.badges-page .badge-desc {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    line-height: var(--leading-snug);
+    margin: 0;
+    max-width: 32ch;
+}
+.badge-cat {
+    display: inline-flex;
+    padding: 2px 8px;
+    background: var(--bg-secondary);
+    color: var(--text-tertiary);
+    border-radius: var(--radius-full);
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wide);
+    margin-top: 2px;
+}
+.badge-card.is-earned .badge-cat {
+    background: color-mix(in oklch, var(--gold) 14%, transparent);
+    color: var(--gold);
+}
+@supports not (color: color-mix(in oklch, red, blue)) {
+    .badge-card.is-earned .badge-cat { background: var(--bg-tertiary); }
+}
+
+.badges-page .badge-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: var(--radius-full);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+    margin-top: var(--space-2);
+}
+.badge-status.is-earned {
+    background: color-mix(in oklch, var(--success) 14%, transparent);
+    color: var(--success);
+    border: 1px solid color-mix(in oklch, var(--success) 30%, transparent);
+}
+.badge-status.is-locked {
+    background: var(--bg-secondary);
+    color: var(--text-tertiary);
+    border: 1px solid var(--border-light);
+}
+@supports not (color: color-mix(in oklch, red, blue)) {
+    .badge-status.is-earned { background: var(--success-light); border-color: var(--success); }
+}
+.badge-status i { font-size: 11px; }
+
+/* ── Loading ─────────────────────────────── */
+.badges-loading {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: var(--space-12) var(--space-4);
+    color: var(--text-tertiary);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-3);
+}
+.badges-loading .spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: badges-spin 0.9s linear infinite;
+}
+@keyframes badges-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+    .badges-loading .spinner { animation-duration: 2s; }
+}

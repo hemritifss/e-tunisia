@@ -24,17 +24,30 @@ interface State {
   me: any | null;
 }
 
-const INTERESTS: Array<{ id: string; label: string; emoji: string }> = [
-  { id: 'beaches',    label: 'Beaches',         emoji: '🏖️' },
-  { id: 'historical', label: 'Historical sites', emoji: '🏛️' },
-  { id: 'food',       label: 'Food & drink',    emoji: '🍽️' },
-  { id: 'nature',     label: 'Nature & parks',  emoji: '🌿' },
-  { id: 'culture',    label: 'Culture & arts',  emoji: '🎭' },
-  { id: 'adventure',  label: 'Adventure',       emoji: '🏔️' },
-  { id: 'desert',     label: 'Sahara & deserts', emoji: '🐪' },
-  { id: 'photography', label: 'Photography',    emoji: '📸' },
-  { id: 'budget',     label: 'Budget travel',   emoji: '💸' },
-  { id: 'nightlife',  label: 'Nightlife',       emoji: '🌙' },
+/**
+ * Each interest is a (id, label, icon, tint) tuple. Icon is the Lucide name;
+ * tint is a brand-token CSS variable reference. Aligns with the Mood / Explore
+ * / Events / Tips category vocabulary — same icon for the same concept across
+ * the app (e.g. Beaches always uses Waves, Food always uses UtensilsCrossed).
+ */
+interface Interest {
+  id: string;
+  label: string;
+  icon: string;
+  tint: string;
+}
+
+const INTERESTS: Interest[] = [
+  { id: 'beaches',     label: 'Beaches',          icon: 'waves',             tint: 'var(--cyan)' },
+  { id: 'historical',  label: 'Historical sites', icon: 'landmark',          tint: 'var(--sand)' },
+  { id: 'food',        label: 'Food & drink',     icon: 'utensils-crossed',  tint: 'var(--accent)' },
+  { id: 'nature',      label: 'Nature & parks',   icon: 'trees',             tint: 'var(--olive)' },
+  { id: 'culture',     label: 'Culture & arts',   icon: 'library',           tint: 'var(--violet)' },
+  { id: 'adventure',   label: 'Adventure',        icon: 'mountain',          tint: 'var(--gold)' },
+  { id: 'desert',      label: 'Sahara & deserts', icon: 'sun',               tint: 'var(--amber)' },
+  { id: 'photography', label: 'Photography',      icon: 'camera',            tint: 'var(--mediterranean)' },
+  { id: 'budget',      label: 'Budget travel',    icon: 'piggy-bank',        tint: 'var(--success)' },
+  { id: 'nightlife',   label: 'Nightlife',        icon: 'moon',              tint: 'var(--rose)' },
 ];
 
 const state: State = {
@@ -122,19 +135,27 @@ function stepWelcome(): string {
   const firstName = (state.fullName || 'there').split(' ')[0];
   return `
     <section class="onb-card onb-welcome">
-      <div class="onb-illustration">
-        <span class="onb-flag" aria-hidden="true">🇹🇳</span>
+      <div class="onb-illustration onb-illustration-welcome" aria-hidden="true">
+        <div class="onb-illustration-orbs">
+          <span class="onb-illustration-orb"></span>
+          <span class="onb-illustration-orb"></span>
+        </div>
+        <div class="onb-illustration-icon">
+          <i class="lucide-compass"></i>
+        </div>
       </div>
-      <h1>Ahlan wa Sahlan, <span class="onb-name-highlight">${escapeHtml(firstName)}</span></h1>
+      <h1>Ahlan wa sahlan, <span class="onb-name-highlight">${escapeHtml(firstName)}</span></h1>
       <p class="onb-sub">Welcome to e-Tunisia — the platform where locals share real Tunisia.<br>Let's set you up in under a minute.</p>
       <ul class="onb-perks">
-        <li><i class="lucide-circle-check"></i> Pick what you love so the feed feels personal</li>
-        <li><i class="lucide-circle-check"></i> Follow other explorers — share tips, ask questions</li>
-        <li><i class="lucide-circle-check"></i> Earn XP, badges, and credits as you go</li>
+        <li><span class="onb-perk-icon"><i class="lucide-sparkles"></i></span>Pick what you love so the feed feels personal</li>
+        <li><span class="onb-perk-icon"><i class="lucide-users"></i></span>Follow other explorers — share tips, ask questions</li>
+        <li><span class="onb-perk-icon"><i class="lucide-award"></i></span>Earn XP, badges, and credits as you go</li>
       </ul>
-      <div class="onb-actions">
-        <button class="btn btn-primary btn-lg" id="onb-next">Let's go <i class="lucide-arrow-right"></i></button>
-        <button class="btn btn-ghost" id="onb-skip">Skip for now</button>
+      <div class="onb-actions onb-actions-center">
+        <button type="button" class="btn btn-primary btn-lg onb-cta-primary" id="onb-next">
+          Let's go <i class="lucide-arrow-right"></i>
+        </button>
+        <button type="button" class="btn btn-ghost" id="onb-skip">Skip for now</button>
       </div>
     </section>
   `;
@@ -201,10 +222,16 @@ function stepInterests(): string {
 
       <div class="onb-interest-grid">
         ${INTERESTS.map(i => `
-          <button class="onb-interest ${state.interests.has(i.id) ? 'selected' : ''}" data-interest="${i.id}">
-            <span class="onb-interest-emoji" aria-hidden="true">${i.emoji}</span>
+          <button
+            type="button"
+            class="onb-interest${state.interests.has(i.id) ? ' is-selected' : ''}"
+            data-interest="${i.id}"
+            style="--int-tint: ${i.tint}"
+            aria-pressed="${state.interests.has(i.id) ? 'true' : 'false'}"
+          >
+            <span class="onb-interest-icon" aria-hidden="true"><i class="lucide-${i.icon}"></i></span>
             <span class="onb-interest-label">${i.label}</span>
-            <i class="lucide-check onb-interest-check"></i>
+            <span class="onb-interest-check" aria-hidden="true"><i class="lucide-check"></i></span>
           </button>
         `).join('')}
       </div>
@@ -230,7 +257,10 @@ function stepConnect(): string {
 
       <div class="onb-people-grid">
         ${candidates.length === 0
-          ? `<div class="onb-empty"><p>No suggestions yet — we'll set you up with a discovery feed.</p></div>`
+          ? `<div class="onb-empty">
+               <div class="onb-empty-icon" aria-hidden="true"><i class="lucide-users"></i></div>
+               <p>No suggestions yet — we'll set you up with a discovery feed.</p>
+             </div>`
           : candidates.map(u => {
               const seed = encodeURIComponent(u.fullName || u.id);
               const avatar = u.avatar && (String(u.avatar).startsWith('http') || String(u.avatar).startsWith('data:'))
@@ -238,13 +268,20 @@ function stepConnect(): string {
                 : `https://api.dicebear.com/9.x/thumbs/svg?seed=${seed}`;
               const followed = state.followed.has(u.id);
               return `
-                <article class="onb-person ${followed ? 'is-followed' : ''}" data-user="${u.id}">
-                  <img src="${avatar}" alt="" />
+                <article class="onb-person${followed ? ' is-followed' : ''}" data-user="${u.id}">
+                  <span class="onb-person-avatar-wrap"
+                        data-user-id="${escapeAttr(u.id)}"
+                        data-user-name="${escapeAttr(u.fullName || '')}"
+                        data-user-avatar="${escapeAttr(avatar)}"
+                        data-user-handle="${escapeAttr(u.handle || '')}"
+                        data-user-plan="${escapeAttr(u.plan || '')}">
+                    <img src="${avatar}" alt="" loading="lazy" />
+                  </span>
                   <div class="onb-person-info">
                     <strong>${escapeHtml(u.fullName)}</strong>
-                    <span class="text-xs text-muted">${escapeHtml(u.bio || u.country || `Level ${u.level || 1} Explorer`)}</span>
+                    <span class="onb-person-sub">${escapeHtml(u.bio || u.country || `Level ${u.level || 1} Explorer`)}</span>
                   </div>
-                  <button class="btn ${followed ? 'btn-outline' : 'btn-primary'} btn-sm onb-follow-btn" data-user="${u.id}">
+                  <button type="button" class="onb-follow-btn${followed ? ' is-followed' : ''}" data-user="${u.id}" aria-pressed="${followed ? 'true' : 'false'}">
                     <i class="lucide-${followed ? 'user-check' : 'user-plus'}"></i>
                     <span>${followed ? 'Following' : 'Follow'}</span>
                   </button>
@@ -265,12 +302,20 @@ function stepConnect(): string {
 function stepDone(): string {
   return `
     <section class="onb-card onb-done">
-      <div class="onb-illustration">
-        <span class="onb-confetti" aria-hidden="true">🎉</span>
+      <div class="onb-illustration onb-illustration-done" aria-hidden="true">
+        <div class="onb-illustration-orbs">
+          <span class="onb-illustration-orb"></span>
+          <span class="onb-illustration-orb"></span>
+        </div>
+        <div class="onb-illustration-icon onb-illustration-icon-done">
+          <i class="lucide-party-popper"></i>
+        </div>
       </div>
       <h2>You're all set!</h2>
       <p class="onb-sub">Your feed is ready. Add your first post any time from the home page.</p>
-      <a class="btn btn-primary btn-lg" href="#/">Open my feed <i class="lucide-arrow-right"></i></a>
+      <div class="onb-actions onb-actions-center">
+        <a class="btn btn-primary btn-lg onb-cta-primary" href="#/">Open my feed <i class="lucide-arrow-right"></i></a>
+      </div>
     </section>
   `;
 }
@@ -333,12 +378,11 @@ function wire(shell: HTMLElement) {
           if (wasFollowed) await api.unfollowUser(userId);
           else await api.followUser(userId);
           if (wasFollowed) state.followed.delete(userId); else state.followed.add(userId);
-          // Refresh button state
-          btn.classList.toggle('btn-primary', !state.followed.has(userId));
-          btn.classList.toggle('btn-outline', state.followed.has(userId));
+          const now = state.followed.has(userId);
+          btn.classList.toggle('is-followed', now);
+          btn.setAttribute('aria-pressed', now ? 'true' : 'false');
           const icon = btn.querySelector('i');
           const label = btn.querySelector('span');
-          const now = state.followed.has(userId);
           if (icon) icon.className = now ? 'lucide-user-check' : 'lucide-user-plus';
           if (label) label.textContent = now ? 'Following' : 'Follow';
           replaceIcons(btn);

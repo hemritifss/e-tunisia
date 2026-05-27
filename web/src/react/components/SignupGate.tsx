@@ -101,10 +101,10 @@ export function SignupGate({ open, onClose, initialHandle, onSuccess }: Props) {
                             onChange={(e) => setHandle(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, 30))}
                             placeholder="e.g. amine_t"
                         />
-                        <div className="signup-gate-handle-status">
+                        <div className="signup-gate-handle-status" data-status={hStatus}>
                             {hStatus === 'checking' && <Loader2 size={16} className="spin" />}
-                            {hStatus === 'ok' && <Check size={16} color="#0ea34c" />}
-                            {hStatus === 'bad' && <X size={16} color="#d33" />}
+                            {hStatus === 'ok' && <Check size={16} />}
+                            {hStatus === 'bad' && <X size={16} />}
                         </div>
                     </div>
                     {hStatus === 'bad' && (

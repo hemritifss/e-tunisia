@@ -15,10 +15,7 @@ export function renderTagPage(tag: string): string {
         <i class="lucide-arrow-left"></i> Back
       </a>
       <header class="tag-header" style="display:flex; align-items:center; gap: var(--space-3); margin-bottom: var(--space-4);">
-        <div class="tag-icon" style="
-          width:56px; height:56px; border-radius:16px;
-          background: linear-gradient(135deg, var(--brand), var(--coral, #ff6b6b));
-          color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:1.6rem;">
+        <div class="tag-icon" style="display:flex; align-items:center; justify-content:center; font-weight:800;">
           #
         </div>
         <div style="flex:1; min-width:0;">

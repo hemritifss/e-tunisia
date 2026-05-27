@@ -2,6 +2,7 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api, getImageUrl } from '../../shared/api';
 import { Flame, MapPin, Star, Compass, Award } from 'lucide-react';
+import { ActiveConversationsRail } from './ActiveConversations';
 
 interface Person {
     id: string;
@@ -17,7 +18,15 @@ interface Person {
 function PersonRow({ user, sub }: { user: Person; sub?: React.ReactNode }) {
     const href = user.handle ? `#/u/${user.handle}` : '#';
     return (
-        <a className="rail-row" href={href}>
+        <a
+            className="rail-row"
+            href={href}
+            data-user-id={user.id}
+            data-user-name={user.fullName}
+            data-user-avatar={user.avatar || undefined}
+            data-user-handle={user.handle || undefined}
+            data-user-plan={(user as any).plan || undefined}
+        >
             {user.avatar
                 ? <img src={getImageUrl(user.avatar)} alt="" loading="lazy" />
                 : <span className="rail-row-fallback">{(user.fullName || '?').slice(0, 1).toUpperCase()}</span>}
@@ -137,6 +146,7 @@ export function FeedRightRail() {
     return (
         <aside className="feed-rail">
             {isAnon && <PassportCTAWidget />}
+            {!isAnon && <ActiveConversationsRail />}
             <TopExplorersWidget />
             <GlobalActivityTicker />
         </aside>

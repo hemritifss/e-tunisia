@@ -1,16 +1,65 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api, getImageUrl } from '../../shared/api';
-import { Star, Compass, Award, UserPlus, MapPin, Globe2, Users } from 'lucide-react';
+import {
+    Star,
+    Compass,
+    Award,
+    UserPlus,
+    MapPin,
+    Globe2,
+    Users,
+    Landmark,
+    Sparkles,
+    Waves,
+    UtensilsCrossed,
+    Camera,
+    Moon,
+    PiggyBank,
+    Crown,
+    ScrollText,
+    ShoppingBag,
+    Gem,
+    Mountain,
+    BellOff,
+    type LucideIcon,
+} from 'lucide-react';
 import { TOPIC_BY_ID } from '../components/endorsement-topics';
 
-interface Actor { id: string; handle: string | null; fullName: string; avatar: string | null; }
+interface Actor {
+    id: string;
+    handle: string | null;
+    fullName: string;
+    avatar: string | null;
+    plan?: string | null;
+}
 
 interface Entry {
     type: 'review' | 'trip' | 'endorse' | 'follow';
     createdAt: string;
     actor: Actor;
     target?: any;
+}
+
+const TOPIC_ICONS: Record<string, LucideIcon> = {
+    landmark: Landmark,
+    sparkles: Sparkles,
+    waves: Waves,
+    'utensils-crossed': UtensilsCrossed,
+    camera: Camera,
+    moon: Moon,
+    users: Users,
+    'piggy-bank': PiggyBank,
+    crown: Crown,
+    'scroll-text': ScrollText,
+    'shopping-bag': ShoppingBag,
+    gem: Gem,
+    mountain: Mountain,
+};
+
+function topicIcon(iconName: string | undefined): LucideIcon {
+    if (!iconName) return Award;
+    return TOPIC_ICONS[iconName] || Award;
 }
 
 function timeAgo(iso: string): string {
@@ -23,41 +72,83 @@ function timeAgo(iso: string): string {
     return new Date(iso).toLocaleDateString();
 }
 
-function ActorLink({ actor, children }: { actor: Actor; children?: React.ReactNode }) {
-    const href = actor.handle ? `#/u/${actor.handle}` : '#';
-    return <a className="activity-actor-link" href={href}>{children ?? actor.fullName}</a>;
+function actorHref(actor: Actor): string {
+    return actor.handle ? `#/u/${actor.handle}` : '#';
 }
 
-function Avatar({ actor }: { actor: Actor }) {
-    return actor.avatar ? (
-        <img className="activity-avatar" src={getImageUrl(actor.avatar)} alt="" loading="lazy" />
-    ) : (
-        <span className="activity-avatar activity-avatar-fallback">{(actor.fullName || '?').slice(0, 1).toUpperCase()}</span>
+function ActorLink({ actor, children }: { actor: Actor; children?: React.ReactNode }) {
+    return (
+        <a
+            className="activity-actor-link"
+            href={actorHref(actor)}
+            data-user-id={actor.id || undefined}
+            data-user-name={actor.fullName || undefined}
+            data-user-avatar={actor.avatar ? getImageUrl(actor.avatar) : undefined}
+            data-user-handle={actor.handle || undefined}
+            data-user-plan={actor.plan || undefined}
+        >
+            {children ?? actor.fullName}
+        </a>
+    );
+}
+
+function ActorAvatar({ actor }: { actor: Actor }) {
+    return (
+        <span
+            className="activity-avatar-wrap"
+            data-user-id={actor.id || undefined}
+            data-user-name={actor.fullName || undefined}
+            data-user-avatar={actor.avatar ? getImageUrl(actor.avatar) : undefined}
+            data-user-handle={actor.handle || undefined}
+            data-user-plan={actor.plan || undefined}
+        >
+            {actor.avatar ? (
+                <img className="activity-avatar" src={getImageUrl(actor.avatar)} alt="" loading="lazy" />
+            ) : (
+                <span className="activity-avatar activity-avatar-fallback">
+                    {(actor.fullName || '?').slice(0, 1).toUpperCase()}
+                </span>
+            )}
+        </span>
+    );
+}
+
+function StarRow({ rating }: { rating: number }) {
+    const r = Math.max(0, Math.min(5, Math.round(rating)));
+    return (
+        <span className="activity-rating" aria-label={`${r} out of 5 stars`}>
+            {Array.from({ length: 5 }).map((_, i) => (
+                <Star
+                    key={i}
+                    size={11}
+                    strokeWidth={2}
+                    className={i < r ? 'is-filled' : ''}
+                />
+            ))}
+        </span>
     );
 }
 
 function EntryRow({ entry }: { entry: Entry }) {
     const t = entry.target || {};
-    let icon: React.ReactNode;
-    let body: React.ReactNode;
+    let iconEl: React.ReactNode = null;
+    let body: React.ReactNode = null;
 
     switch (entry.type) {
         case 'review':
-            icon = <Star size={14} />;
+            iconEl = <Star size={14} />;
             body = (
                 <>
                     <ActorLink actor={entry.actor} /> reviewed{' '}
                     {t.placeId ? <a href={`#/place/${t.placeId}`}>{t.placeName || 'a place'}</a> : t.placeName || 'a place'}
-                    {typeof t.rating === 'number' && (
-                        <span className="activity-rating">{'★'.repeat(t.rating)}</span>
-                    )}
+                    {typeof t.rating === 'number' && <StarRow rating={t.rating} />}
                     {t.placeCity && <span className="activity-meta"><MapPin size={12} /> {t.placeCity}</span>}
                     {t.snippet && <p className="activity-snippet">"{t.snippet}"</p>}
                 </>
             );
             break;
         case 'trip':
-            icon = <Compass size={14} />;
+            iconEl = <Compass size={14} />;
             body = (
                 <>
                     <ActorLink actor={entry.actor} /> planned{' '}
@@ -71,14 +162,15 @@ function EntryRow({ entry }: { entry: Entry }) {
             break;
         case 'endorse': {
             const topic = TOPIC_BY_ID[t.topic];
-            icon = <Award size={14} />;
+            const TopicIcon = topicIcon(topic?.icon);
+            iconEl = <Award size={14} />;
             body = (
                 <>
                     <ActorLink actor={entry.actor} /> endorsed{' '}
                     {t.user ? <ActorLink actor={t.user} /> : 'someone'}
                     {topic && (
                         <span className="activity-topic-chip">
-                            {topic.emoji} {topic.label}
+                            <TopicIcon size={12} /> {topic.label}
                         </span>
                     )}
                 </>
@@ -86,7 +178,7 @@ function EntryRow({ entry }: { entry: Entry }) {
             break;
         }
         case 'follow':
-            icon = <UserPlus size={14} />;
+            iconEl = <UserPlus size={14} />;
             body = (
                 <>
                     <ActorLink actor={entry.actor} /> started following{' '}
@@ -98,11 +190,11 @@ function EntryRow({ entry }: { entry: Entry }) {
 
     return (
         <li className={`activity-entry activity-entry-${entry.type}`}>
-            <div className="activity-entry-icon">{icon}</div>
-            <Avatar actor={entry.actor} />
+            <span className="activity-entry-icon" aria-hidden="true">{iconEl}</span>
+            <ActorAvatar actor={entry.actor} />
             <div className="activity-entry-body">
-                <div>{body}</div>
-                <time className="activity-time">{timeAgo(entry.createdAt)}</time>
+                <div className="activity-entry-text">{body}</div>
+                <time className="activity-time" dateTime={entry.createdAt}>{timeAgo(entry.createdAt)}</time>
             </div>
         </li>
     );
@@ -124,7 +216,6 @@ export default function ActivityFeedPage() {
     const [mode, setMode] = useState<FeedMode>(readMode());
     const setModePersist = (m: FeedMode) => {
         if (m === 'following' && anon) {
-            // Anonymous viewer trying to peek at the following tab — bump to signup.
             window.location.hash = '#/login';
             return;
         }
@@ -145,55 +236,70 @@ export default function ActivityFeedPage() {
     return (
         <main className="activity-page">
             <header className="activity-page-head">
+                <span className="activity-eyebrow">
+                    <Sparkles size={12} /> {effectiveMode === 'following' ? 'Your circle' : 'Community pulse'}
+                </span>
                 <h1>{effectiveMode === 'following' ? 'Following' : 'Discover'}</h1>
                 <p>
                     {effectiveMode === 'following'
                         ? 'What people you follow are doing across Tunisia.'
                         : 'Fresh activity from travelers exploring Tunisia right now.'}
                 </p>
-                <div className="activity-tabs" role="tablist">
+                <div className="activity-tabs" role="tablist" aria-label="Activity feed mode">
                     <button
+                        type="button"
                         role="tab"
                         aria-selected={effectiveMode === 'following'}
-                        className={effectiveMode === 'following' ? 'active' : ''}
+                        className={`activity-tab${effectiveMode === 'following' ? ' is-active' : ''}`}
                         onClick={() => setModePersist('following')}
                     >
-                        <Users size={14} /> {anon ? 'Following (sign in)' : 'Following'}
+                        <Users size={14} />
+                        <span>{anon ? 'Following — sign in' : 'Following'}</span>
                     </button>
                     <button
+                        type="button"
                         role="tab"
                         aria-selected={effectiveMode === 'global'}
-                        className={effectiveMode === 'global' ? 'active' : ''}
+                        className={`activity-tab${effectiveMode === 'global' ? ' is-active' : ''}`}
                         onClick={() => setModePersist('global')}
                     >
-                        <Globe2 size={14} /> Discover
+                        <Globe2 size={14} />
+                        <span>Discover</span>
                     </button>
                 </div>
             </header>
 
             {isLoading && (
-                <div className="activity-skel">
+                <div className="activity-skel" role="status" aria-label="Loading activity">
                     {Array.from({ length: 6 }).map((_, i) => <div key={i} className="activity-skel-row" />)}
                 </div>
             )}
 
             {!isLoading && error && (
-                <div className="passport-empty">Couldn't load the feed.</div>
+                <div className="activity-empty">
+                    <div className="activity-empty-icon"><BellOff size={28} /></div>
+                    <h3>Couldn't load the feed</h3>
+                    <p>Check your connection and try again — your tab choice is preserved.</p>
+                </div>
             )}
 
             {!isLoading && !error && entries.length === 0 && (
                 <div className="activity-empty">
-                    <div className="activity-empty-emoji">🌍</div>
-                    <h3>{effectiveMode === 'following' ? 'Your feed is quiet.' : 'No recent activity yet.'}</h3>
+                    <div className="activity-empty-icon"><Globe2 size={28} /></div>
+                    <h3>{effectiveMode === 'following' ? 'Your feed is quiet' : 'No recent activity yet'}</h3>
                     <p>
                         {effectiveMode === 'following'
                             ? 'Follow a few travelers and their reviews, trips, and endorsements will land here.'
                             : "Be the first to add to the story — review a place, plan a trip, endorse a local."}
                     </p>
                     {effectiveMode === 'following' ? (
-                        <button className="btn primary" onClick={() => setModePersist('global')}>See what's happening now →</button>
+                        <button type="button" className="btn primary" onClick={() => setModePersist('global')}>
+                            See what's happening now <Compass size={14} />
+                        </button>
                     ) : (
-                        <a className="btn primary" href="#/explore">Explore Tunisia →</a>
+                        <a className="btn primary" href="#/explore">
+                            Explore Tunisia <Compass size={14} />
+                        </a>
                     )}
                 </div>
             )}

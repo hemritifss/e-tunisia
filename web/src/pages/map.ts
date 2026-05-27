@@ -242,14 +242,19 @@ const mapPlaces: MapPlace[] = [
   },
 ];
 
-// Category color map
+/**
+ * Category palette — OKLCH literals matching `tokens.css` brand tokens.
+ * Inline values are required so Leaflet can stamp them onto SVG markers
+ * (CSS variables don't resolve inside Leaflet's injected DOM).
+ * If you change a token in `tokens.css`, mirror the OKLCH triple here.
+ */
 const categoryColors: Record<string, string> = {
-  'Culture': '#9b59b6',
-  'Historical': '#c8a04a',
-  'Beaches': '#2e86c1',
-  'Adventure': '#d4a537',
-  'Nature': '#27ae60',
-  'Food & Drink': '#c0392b',
+  'Culture':     'oklch(58% 0.2 290)',   // --violet
+  'Historical':  'oklch(80% 0.1 75)',    // --sand
+  'Beaches':     'oklch(72% 0.18 200)',  // --cyan
+  'Adventure':   'oklch(55% 0.16 30)',   // --terracotta
+  'Nature':      'oklch(57% 0.13 145)',  // --olive
+  'Food & Drink':'oklch(67% 0.19 25)',   // --coral
 };
 
 const categoryIcons: Record<string, string> = {
@@ -261,15 +266,22 @@ const categoryIcons: Record<string, string> = {
   'Food & Drink': 'utensils',
 };
 
-// Filter categories for the map
-const mapCategories = [
-  { id: 'all', name: 'All', icon: 'layers' },
-  { id: 'Historical', name: 'Historical', icon: 'landmark' },
-  { id: 'Culture', name: 'Culture', icon: 'palette' },
-  { id: 'Beaches', name: 'Beaches', icon: 'waves' },
-  { id: 'Adventure', name: 'Adventure', icon: 'mountain' },
-  { id: 'Nature', name: 'Nature', icon: 'leaf' },
-  { id: 'Food & Drink', name: 'Food', icon: 'utensils' },
+interface MapCategory {
+  id: string;
+  name: string;
+  icon: string;
+  /** CSS-token expression for filter-chip tint. */
+  tint: string;
+}
+
+const mapCategories: MapCategory[] = [
+  { id: 'all',          name: 'All',        icon: 'layers',   tint: 'var(--text-secondary)' },
+  { id: 'Historical',   name: 'Historical', icon: 'landmark', tint: 'var(--sand)' },
+  { id: 'Culture',      name: 'Culture',    icon: 'palette',  tint: 'var(--violet)' },
+  { id: 'Beaches',      name: 'Beaches',    icon: 'waves',    tint: 'var(--cyan)' },
+  { id: 'Adventure',    name: 'Adventure',  icon: 'mountain', tint: 'var(--terracotta)' },
+  { id: 'Nature',       name: 'Nature',     icon: 'leaf',     tint: 'var(--olive)' },
+  { id: 'Food & Drink', name: 'Food',       icon: 'utensils', tint: 'var(--coral)' },
 ];
 
 // ---- Star rating HTML ----
@@ -291,7 +303,7 @@ function renderStars(rating: number): string {
 
 // ---- Popup HTML ----
 function createPopupContent(place: MapPlace): string {
-  const color = categoryColors[place.category] || '#c0392b';
+  const color = categoryColors[place.category] || 'oklch(67% 0.19 25)';
   return `
     <div class="map-popup-content">
       <div class="map-popup-image" style="background-image: url('${place.image}')">
@@ -327,7 +339,7 @@ function createPopupContent(place: MapPlace): string {
 
 // ---- Create custom marker icon ----
 function createMarkerIcon(place: MapPlace): L.DivIcon {
-  const color = categoryColors[place.category] || '#c0392b';
+  const color = categoryColors[place.category] || 'oklch(67% 0.19 25)';
   const iconName = categoryIcons[place.category] || 'map-pin';
 
   // SVG icons for each category
@@ -369,10 +381,18 @@ export function renderMapPage(): string {
           <input type="text" class="map-search-input" id="map-search" placeholder="Search places..." autocomplete="off" />
           <div class="map-search-results" id="map-search-results"></div>
         </div>
-        <div class="map-filter-chips" id="map-filter-chips">
+        <div class="map-filter-chips" id="map-filter-chips" role="tablist" aria-label="Place category filter">
           ${mapCategories.map(c => `
-            <button class="map-chip ${c.id === 'all' ? 'active' : ''}" data-cat="${c.id}">
-              ${c.name}
+            <button
+              type="button"
+              role="tab"
+              class="map-chip ${c.id === 'all' ? 'active' : ''}"
+              data-cat="${c.id}"
+              style="--cat-tint: ${c.tint}"
+              aria-selected="${c.id === 'all' ? 'true' : 'false'}"
+            >
+              <span class="map-chip-dot" aria-hidden="true"></span>
+              <span class="map-chip-label">${c.name}</span>
             </button>
           `).join('')}
         </div>
@@ -390,7 +410,7 @@ export function renderMapPage(): string {
 
 // ---- Info panel content ----
 function renderInfoPanel(place: MapPlace): string {
-  const color = categoryColors[place.category] || '#c0392b';
+  const color = categoryColors[place.category] || 'oklch(67% 0.19 25)';
   return `
     <div class="map-info-image" style="background-image: url('${place.image}')">
       <span class="map-popup-badge" style="background: ${color}">${place.category}</span>
@@ -499,12 +519,16 @@ export function initMapPage() {
   });
 
   // ---- Category filter ----
-  const chips = document.querySelectorAll('.map-chip');
-  chips.forEach(chip => {
+  const chips = document.querySelectorAll<HTMLButtonElement>('.map-chip');
+  chips.forEach((chip) => {
     chip.addEventListener('click', () => {
-      chips.forEach(c => c.classList.remove('active'));
+      chips.forEach((c) => {
+        c.classList.remove('active');
+        c.setAttribute('aria-selected', 'false');
+      });
       chip.classList.add('active');
-      const cat = (chip as HTMLElement).dataset.cat || 'all';
+      chip.setAttribute('aria-selected', 'true');
+      const cat = chip.dataset.cat || 'all';
       filterMarkers(cat);
     });
   });
@@ -528,7 +552,7 @@ export function initMapPage() {
 
     if (matches.length > 0 && searchResults) {
       searchResults.innerHTML = matches.map(p => {
-        const color = categoryColors[p.category] || '#c0392b';
+        const color = categoryColors[p.category] || 'oklch(67% 0.19 25)';
         return `
           <div class="map-search-item" data-place-id="${p.id}">
             <div class="map-search-item-dot" style="background: ${color}"></div>

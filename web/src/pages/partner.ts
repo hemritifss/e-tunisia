@@ -130,7 +130,9 @@ export function renderPartnerPage(): string {
       <section class="partner2-section">
         <div class="hero2-container">
           <div class="hero2-proof-card hero2-proof-featured" style="max-width: 700px; margin: 0 auto;">
-            <div class="hero2-proof-stars">★★★★★</div>
+            <div class="hero2-proof-stars" aria-label="5 out of 5 stars">
+              <i class="lucide-star"></i><i class="lucide-star"></i><i class="lucide-star"></i><i class="lucide-star"></i><i class="lucide-star"></i>
+            </div>
             <p class="hero2-proof-text" style="font-size: 1.125rem;">"Before e-Tunisia, we relied on walk-ins and word of mouth. Now 60% of our bookings come through the platform. We've hired 3 more staff and expanded our kitchen. This changed our business."</p>
             <div class="hero2-proof-author">
               <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop&crop=face" alt="Hassan" />

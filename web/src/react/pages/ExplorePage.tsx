@@ -1,16 +1,23 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
+import type { LucideIcon } from 'lucide-react';
 import {
   MapPin,
-  Star,
   Heart,
   Search,
   SlidersHorizontal,
   Grid3X3,
   List,
-  ChevronDown,
   X,
+  Compass,
+  Globe,
+  Waves,
+  Landmark,
+  UtensilsCrossed,
+  Trees,
+  Library,
+  Mountain,
 } from 'lucide-react';
 import { api, getImageUrl } from '../../shared/api';
 import { requireAuth } from '../../ui-utils';
@@ -25,14 +32,22 @@ import { useUIStore } from '../stores/ui-store';
 
 type ViewMode = 'grid' | 'list';
 
-const CATEGORIES = [
-  { id: 'all', name: 'All', icon: '🌍' },
-  { id: 'beaches', name: 'Beaches', icon: '🏖️' },
-  { id: 'historical', name: 'Historical', icon: '🏛️' },
-  { id: 'food', name: 'Food', icon: '🍽️' },
-  { id: 'nature', name: 'Nature', icon: '🌿' },
-  { id: 'culture', name: 'Culture', icon: '🎭' },
-  { id: 'adventure', name: 'Adventure', icon: '🏔️' },
+interface CategoryDef {
+  id: string;
+  name: string;
+  Icon: LucideIcon;
+  /** CSS variable expression used as `--cat-tint`. Closes the loop with mood palette. */
+  tint: string;
+}
+
+const CATEGORIES: CategoryDef[] = [
+  { id: 'all',        name: 'All',        Icon: Globe,            tint: 'var(--text-secondary)' },
+  { id: 'beaches',    name: 'Beaches',    Icon: Waves,            tint: 'var(--cyan)' },
+  { id: 'historical', name: 'Historical', Icon: Landmark,         tint: 'var(--sand)' },
+  { id: 'food',       name: 'Food',       Icon: UtensilsCrossed,  tint: 'var(--gold)' },
+  { id: 'nature',     name: 'Nature',     Icon: Trees,            tint: 'var(--olive)' },
+  { id: 'culture',    name: 'Culture',    Icon: Library,          tint: 'var(--violet)' },
+  { id: 'adventure',  name: 'Adventure',  Icon: Mountain,         tint: 'var(--terracotta)' },
 ];
 
 function PlaceCard({
@@ -297,56 +312,98 @@ export default function ExplorePage() {
 
   const allPlaces = data?.pages.flatMap((page) => page.data) || [];
 
-  return (
-    <div className="space-y-6 animate-fade-in">
-      {/* Hero */}
-      <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-brand via-brand-dark to-mediterranean p-8 text-white">
-        <div className="relative z-10">
-          <h1 className="text-3xl md:text-4xl font-bold mb-2">
-            Discover Hidden Tunisia
-          </h1>
-          <p className="text-white/80 max-w-lg">
-            Explore authentic places, from ancient ruins to secret beaches, curated by locals and travelers like you.
-          </p>
-        </div>
-        <div className="absolute inset-0 bg-black/20" />
-      </div>
+  const activeCat = CATEGORIES.find((c) => c.id === activeCategory) || CATEGORIES[0];
+  const clearAll = () => {
+    setActiveCategory('all');
+    setSearchQuery('');
+    setMinRating(0);
+  };
+  const hasFilter = activeCategory !== 'all' || searchQuery.trim() !== '' || minRating > 0;
 
-      {/* Search & Controls */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
-          <input
-            type="text"
-            placeholder="Search places, cities, tags..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-black/10 dark:border-white/10 bg-surface focus:outline-none focus:ring-2 focus:ring-brand/30 transition-all"
-          />
+  return (
+    <div className="explore-page animate-fade-in" style={{ '--cat-tint': activeCat.tint } as React.CSSProperties}>
+      {/* Hero — atmospheric mesh, search baked in */}
+      <header className="explore-hero">
+        <div className="explore-hero-bg" aria-hidden="true" />
+        <div className="explore-hero-orbs" aria-hidden="true">
+          <span className="explore-hero-orb" />
+          <span className="explore-hero-orb" />
         </div>
-        <div className="flex gap-2">
-          <Button
-            variant={showFilters ? 'primary' : 'ghost'}
-            size="md"
-            leftIcon={<SlidersHorizontal size={16} />}
-            onClick={() => setShowFilters(!showFilters)}
+        <div className="explore-hero-content">
+          <span className="explore-hero-eyebrow">
+            <Compass size={12} /> Discover
+          </span>
+          <h1>Find your next <span className="explore-hero-grad">Tunisia</span></h1>
+          <p>Authentic places curated by locals and travelers — from ancient ruins to secret beaches.</p>
+          <form
+            className="explore-search-form"
+            role="search"
+            onSubmit={(e) => e.preventDefault()}
           >
-            Filters
-          </Button>
-          <div className="flex bg-surface rounded-xl p-1 border border-black/10 dark:border-white/10">
-            <button
-              onClick={() => setViewMode('grid')}
-              className={`p-2 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-brand text-white' : 'text-muted-foreground hover:text-foreground'}`}
-            >
-              <Grid3X3 size={18} />
-            </button>
-            <button
-              onClick={() => setViewMode('list')}
-              className={`p-2 rounded-lg transition-all ${viewMode === 'list' ? 'bg-brand text-white' : 'text-muted-foreground hover:text-foreground'}`}
-            >
-              <List size={18} />
-            </button>
-          </div>
+            <Search className="explore-search-icon" size={18} aria-hidden="true" />
+            <input
+              type="search"
+              placeholder="Search places, cities, tags…"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="explore-search-input"
+              aria-label="Search places"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                className="explore-search-clear"
+                onClick={() => setSearchQuery('')}
+                aria-label="Clear search"
+              >
+                <X size={14} />
+              </button>
+            )}
+          </form>
+        </div>
+      </header>
+
+      {/* Controls — filters + view-mode toggle */}
+      <div className="explore-controls">
+        <button
+          type="button"
+          className={`explore-controls-btn${showFilters ? ' is-active' : ''}`}
+          onClick={() => setShowFilters(!showFilters)}
+          aria-expanded={showFilters}
+        >
+          <SlidersHorizontal size={16} /> Filters
+          {minRating > 0 && <span className="explore-controls-dot" aria-hidden="true" />}
+        </button>
+        {hasFilter && (
+          <button
+            type="button"
+            className="explore-controls-clear"
+            onClick={clearAll}
+          >
+            Clear all
+          </button>
+        )}
+        <div className="explore-view-toggle" role="tablist" aria-label="View mode">
+          <button
+            role="tab"
+            aria-selected={viewMode === 'grid'}
+            onClick={() => setViewMode('grid')}
+            className={`explore-view-btn${viewMode === 'grid' ? ' is-active' : ''}`}
+            title="Grid view"
+            aria-label="Grid view"
+          >
+            <Grid3X3 size={16} />
+          </button>
+          <button
+            role="tab"
+            aria-selected={viewMode === 'list'}
+            onClick={() => setViewMode('list')}
+            className={`explore-view-btn${viewMode === 'list' ? ' is-active' : ''}`}
+            title="List view"
+            aria-label="List view"
+          >
+            <List size={16} />
+          </button>
         </div>
       </div>
 
@@ -358,69 +415,74 @@ export default function ExplorePage() {
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="overflow-hidden"
+            className="explore-filters-wrap"
           >
-            <div className="p-4 bg-surface rounded-xl border border-black/10 dark:border-white/10 space-y-4">
-              <div>
-                <label className="text-sm font-medium mb-2 block">Minimum Rating</label>
-                <div className="flex gap-2">
+            <div className="explore-filters">
+              <fieldset className="explore-filter-group">
+                <legend>Minimum rating</legend>
+                <div className="explore-filter-pills">
                   {[0, 3, 4, 4.5].map((rating) => (
                     <button
                       key={rating}
+                      type="button"
                       onClick={() => setMinRating(rating)}
-                      className={`px-3 py-1.5 rounded-lg text-sm transition-all ${
-                        minRating === rating
-                          ? 'bg-brand text-white'
-                          : 'bg-black/5 dark:bg-white/5 hover:bg-black/10'
-                      }`}
+                      className={`explore-filter-pill${minRating === rating ? ' is-active' : ''}`}
                     >
-                      {rating === 0 ? 'Any' : `${rating}+`}
+                      {rating === 0 ? 'Any' : `${rating}+ stars`}
                     </button>
                   ))}
                 </div>
-              </div>
+              </fieldset>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Category filters */}
-      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-        {CATEGORIES.map((cat) => (
-          <button
-            key={cat.id}
-            onClick={() => setActiveCategory(cat.id)}
-            className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
-              activeCategory === cat.id
-                ? 'bg-brand text-white shadow-sm'
-                : 'bg-surface border border-black/10 dark:border-white/10 text-muted-foreground hover:text-foreground'
-            }`}
-          >
-            <span>{cat.icon}</span>
-            {cat.name}
-          </button>
-        ))}
-      </div>
+      {/* Category strip — Lucide icons, tinted on active */}
+      <nav className="explore-cats" aria-label="Category filter">
+        {CATEGORIES.map((cat) => {
+          const I = cat.Icon;
+          const isActive = activeCategory === cat.id;
+          return (
+            <button
+              key={cat.id}
+              type="button"
+              onClick={() => setActiveCategory(cat.id)}
+              className={`explore-cat${isActive ? ' is-active' : ''}`}
+              style={{ '--cat-tint': cat.tint } as React.CSSProperties}
+              aria-pressed={isActive}
+            >
+              <span className="explore-cat-icon"><I size={16} strokeWidth={1.75} /></span>
+              <span>{cat.name}</span>
+            </button>
+          );
+        })}
+      </nav>
 
-      {/* Places grid/list */}
+      {/* Results */}
       {isLoading ? (
-        <div className={viewMode === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4' : 'space-y-4'}>
+        <div className={viewMode === 'grid' ? 'explore-grid' : 'explore-list'}>
           {Array.from({ length: 6 }).map((_, i) => (
-            <PlaceCardSkeleton key={i} />
+            <div key={i} className="explore-skel" />
           ))}
         </div>
       ) : isError ? (
-        <div className="text-center py-12">
-          <p className="text-muted-foreground">Failed to load places</p>
+        <div className="explore-empty">
+          <div className="explore-empty-icon"><X size={28} /></div>
+          <h3>Couldn't load places</h3>
+          <p>Check your connection and try again — your filters are preserved.</p>
+        </div>
+      ) : allPlaces.length === 0 ? (
+        <div className="explore-empty">
+          <div className="explore-empty-icon"><Compass size={28} /></div>
+          <h3>No places match your filters</h3>
+          <p>Try broadening the category, dropping the rating filter, or searching a city name.</p>
+          {hasFilter && (
+            <Button variant="primary" onClick={clearAll}>Clear all filters</Button>
+          )}
         </div>
       ) : (
-        <div
-          className={
-            viewMode === 'grid'
-              ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'
-              : 'space-y-4'
-          }
-        >
+        <div className={viewMode === 'grid' ? 'explore-grid' : 'explore-list'}>
           <AnimatePresence mode="popLayout">
             {allPlaces.map((place) => (
               <PlaceCard key={place.id} place={place} viewMode={viewMode} />
@@ -429,16 +491,18 @@ export default function ExplorePage() {
         </div>
       )}
 
-      {/* Load more */}
-      <div ref={loadMoreRef} className="py-4 text-center">
+      {/* Load more sentinel */}
+      <div ref={loadMoreRef} className="explore-loadmore">
         {isFetchingNextPage && (
-          <div className={viewMode === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4' : 'space-y-4'}>
-            <PlaceCardSkeleton />
-            <PlaceCardSkeleton />
+          <div className={viewMode === 'grid' ? 'explore-grid' : 'explore-list'}>
+            <div className="explore-skel" />
+            <div className="explore-skel" />
           </div>
         )}
         {!hasNextPage && allPlaces.length > 0 && (
-          <p className="text-sm text-muted-foreground">No more places to show</p>
+          <div className="explore-end">
+            <span className="explore-end-mark">You've seen every place</span>
+          </div>
         )}
       </div>
     </div>

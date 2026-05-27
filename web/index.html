@@ -22,6 +22,34 @@
   <link rel="stylesheet" href="/src/styles/components.css" />
   <link rel="stylesheet" href="/src/styles/pages.css" />
   <link rel="stylesheet" href="/src/styles/animations.css" />
+  <link rel="stylesheet" href="/src/styles/messenger.css" />
+  <link rel="stylesheet" href="/src/styles/landing.css" />
+  <link rel="stylesheet" href="/src/styles/feed.css" />
+  <link rel="stylesheet" href="/src/styles/mood.css" />
+  <link rel="stylesheet" href="/src/styles/explore.css" />
+  <link rel="stylesheet" href="/src/styles/nav.css" />
+  <link rel="stylesheet" href="/src/styles/profile.css" />
+  <link rel="stylesheet" href="/src/styles/user-profile.css" />
+  <link rel="stylesheet" href="/src/styles/events.css" />
+  <link rel="stylesheet" href="/src/styles/tips.css" />
+  <link rel="stylesheet" href="/src/styles/passport.css" />
+  <link rel="stylesheet" href="/src/styles/place-detail.css" />
+  <link rel="stylesheet" href="/src/styles/leaderboard.css" />
+  <link rel="stylesheet" href="/src/styles/badges.css" />
+  <link rel="stylesheet" href="/src/styles/map.css" />
+  <link rel="stylesheet" href="/src/styles/itineraries.css" />
+  <link rel="stylesheet" href="/src/styles/collections.css" />
+  <link rel="stylesheet" href="/src/styles/discover-trips.css" />
+  <link rel="stylesheet" href="/src/styles/settings.css" />
+  <link rel="stylesheet" href="/src/styles/profile-edit.css" />
+  <link rel="stylesheet" href="/src/styles/premium.css" />
+  <link rel="stylesheet" href="/src/styles/auth.css" />
+  <link rel="stylesheet" href="/src/styles/activity.css" />
+  <link rel="stylesheet" href="/src/styles/notifications.css" />
+  <link rel="stylesheet" href="/src/styles/onboarding.css" />
+  <link rel="stylesheet" href="/src/styles/utility-pages.css" />
+  <link rel="stylesheet" href="/src/styles/sub-components.css" />
+  <link rel="stylesheet" href="/src/styles/messages-search.css" />
   <link rel="stylesheet" href="/src/styles/tailwind.css" />
 </head>
 <body>
@@ -66,20 +94,28 @@
                 <strong data-user-name>Guest</strong>
                 <span class="text-muted" data-user-level>Welcome</span>
               </div>
-              <div class="dropdown-divider"></div>
+
+              <div class="dropdown-section">Profile</div>
               <a href="#/profile" class="dropdown-item"><i class="lucide-user"></i> Profile</a>
               <a href="#/u/me" class="dropdown-item" data-passport-link><i class="lucide-id-card"></i> My Passport</a>
               <a href="#/activity" class="dropdown-item"><i class="lucide-rss"></i> Following Activity</a>
               <a href="#/messages" class="dropdown-item"><i class="lucide-message-circle"></i> Messages</a>
-              <a href="#/credits" class="dropdown-item"><i class="lucide-coins"></i> Credits &amp; Donations</a>
+
+              <div class="dropdown-section">Library</div>
               <a href="#/favorites" class="dropdown-item"><i class="lucide-heart"></i> Saved Places</a>
               <a href="#/saved" class="dropdown-item"><i class="lucide-bookmark"></i> Saved Posts</a>
               <a href="#/trip" class="dropdown-item"><i class="lucide-luggage"></i> My Trip</a>
               <a href="#/discover-trips" class="dropdown-item"><i class="lucide-compass"></i> Discover Trips</a>
-              <a href="#/inquiries" class="dropdown-item"><i class="lucide-send"></i> My Inquiries</a>
-              <a href="#/owner" class="dropdown-item"><i class="lucide-briefcase"></i> Owner Dashboard</a>
+
+              <div class="dropdown-section">Achievements</div>
               <a href="#/badges" class="dropdown-item"><i class="lucide-award"></i> Badges</a>
               <a href="#/leaderboard" class="dropdown-item"><i class="lucide-trophy"></i> Leaderboard</a>
+              <a href="#/credits" class="dropdown-item"><i class="lucide-coins"></i> Credits &amp; Donations</a>
+
+              <div class="dropdown-section">Business</div>
+              <a href="#/inquiries" class="dropdown-item"><i class="lucide-send"></i> My Inquiries</a>
+              <a href="#/owner" class="dropdown-item"><i class="lucide-briefcase"></i> Owner Dashboard</a>
+
               <div class="dropdown-divider"></div>
               <a href="#/settings" class="dropdown-item"><i class="lucide-settings"></i> Settings</a>
               <button class="dropdown-item text-danger" id="logout-btn"><i class="lucide-log-out"></i> Log out</button>

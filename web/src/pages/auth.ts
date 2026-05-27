@@ -1,15 +1,18 @@
 // ============================================
-// AUTH PAGES — Tunisian cinematic aesthetic
+// AUTH PAGES — Login / Register
+// Cinematic background + token-driven card chrome.
+// Per design-system/pages/auth.md.
 // ============================================
 
 import * as api from '../api';
+import { replaceIcons } from '../icons';
 
 export function renderLoginPage(): string {
   return renderAuthPage({
     mode: 'login',
-    title: 'Ahlan wa Sahlan',
+    title: 'Ahlan wa sahlan',
     subtitle: 'Welcome back. Your Tunisia adventure continues.',
-    ctaText: 'Sign In',
+    ctaText: 'Sign in',
     altText: "Don't have an account?",
     altLink: '#/register',
     altLabel: 'Create one',
@@ -19,9 +22,9 @@ export function renderLoginPage(): string {
 export function renderRegisterPage(): string {
   return renderAuthPage({
     mode: 'register',
-    title: 'Join the Community',
+    title: 'Join the community',
     subtitle: 'Discover hidden Tunisia with locals who know every secret corner.',
-    ctaText: 'Create Account',
+    ctaText: 'Create account',
     altText: 'Already a member?',
     altLink: '#/login',
     altLabel: 'Sign in',
@@ -38,123 +41,266 @@ interface AuthConfig {
   altLabel: string;
 }
 
-function renderAuthPage(cfg: AuthConfig): string {
-  const isRegister = cfg.mode === 'register';
-
+function field(opts: {
+  id: string;
+  label: string;
+  icon: string;
+  type: string;
+  placeholder?: string;
+  required?: boolean;
+  autocomplete?: string;
+  helper?: string;
+  passwordToggle?: boolean;
+}): string {
   return `
-    <div class="tn-auth-page page-enter">
-      <div class="tn-auth-bg">
-        <img src="/img/hero2.png" alt="Tunisia" class="tn-auth-bg-img" />
-        <div class="tn-auth-bg-overlay"></div>
+    <div class="auth-field">
+      <label for="${opts.id}" class="auth-field-label">${opts.label}</label>
+      <div class="auth-input-wrap">
+        <span class="auth-input-icon" aria-hidden="true"><i class="lucide-${opts.icon}"></i></span>
+        <input
+          type="${opts.type}"
+          id="${opts.id}"
+          class="auth-input"
+          placeholder="${opts.placeholder || ''}"
+          ${opts.required ? 'required' : ''}
+          ${opts.autocomplete ? `autocomplete="${opts.autocomplete}"` : ''}
+        />
+        ${opts.passwordToggle ? `
+          <button type="button" class="auth-input-toggle" data-toggle="${opts.id}" aria-label="Show password" aria-pressed="false">
+            <i class="lucide-eye"></i>
+          </button>
+        ` : ''}
       </div>
-
-      <div class="tn-auth-content">
-        <a href="#/" class="tn-auth-logo">
-          <img src="/icon.png" alt="e-Tunisia" />
-          <span>e-Tunisia</span>
-        </a>
-
-        <div class="tn-auth-card">
-          <div class="tn-auth-head">
-            <h1>${cfg.title}</h1>
-            <p>${cfg.subtitle}</p>
-          </div>
-
-          <div class="tn-auth-error" id="auth-error" style="display:none;"></div>
-
-          <form class="tn-auth-form" id="${cfg.mode}-form">
-            ${isRegister ? `
-              <div class="tn-auth-field">
-                <label for="fullname">Full Name</label>
-                <input type="text" id="fullname" class="tn-auth-input" placeholder="Your name" required />
-              </div>
-            ` : ''}
-
-            <div class="tn-auth-field">
-              <label for="${isRegister ? 'reg-email' : 'email'}">Email</label>
-              <input type="email" id="${isRegister ? 'reg-email' : 'email'}" class="tn-auth-input" placeholder="you@example.com" required />
-            </div>
-
-            ${isRegister ? `
-              <div class="tn-auth-field">
-                <label for="country">Country</label>
-                <input type="text" id="country" class="tn-auth-input" placeholder="Where are you from?" />
-              </div>
-            ` : ''}
-
-            <div class="tn-auth-field">
-              <label for="${isRegister ? 'reg-password' : 'password'}">Password</label>
-              <input type="password" id="${isRegister ? 'reg-password' : 'password'}" class="tn-auth-input" placeholder="${isRegister ? 'Create a password' : 'Your password'}" required />
-            </div>
-
-            ${!isRegister ? `
-              <div class="tn-auth-row">
-                <label class="tn-auth-check">
-                  <input type="checkbox" />
-                  <span>Remember me</span>
-                </label>
-                <a href="mailto:support@etunisia.com?subject=Password%20reset" class="tn-auth-link">Forgot password?</a>
-              </div>
-            ` : ''}
-
-            <button type="submit" class="tn-auth-btn" id="${cfg.mode}-btn">
-              ${cfg.ctaText}
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </button>
-          </form>
-
-          <div class="tn-auth-alt">
-            ${cfg.altText} <a href="${cfg.altLink}" class="tn-auth-link-bold">${cfg.altLabel}</a>
-          </div>
-        </div>
-
-        <p class="tn-auth-footer">
-          By continuing, you agree to our Terms and support Tunisian local businesses.
-        </p>
-      </div>
+      ${opts.helper ? `<span class="auth-input-helper">${opts.helper}</span>` : ''}
     </div>
   `;
 }
 
+function renderAuthPage(cfg: AuthConfig): string {
+  const isRegister = cfg.mode === 'register';
+
+  return `
+    <div class="auth-page page-enter" data-mode="${cfg.mode}">
+      <div class="auth-bg" aria-hidden="true">
+        <img src="/img/hero2.png" alt="" class="auth-bg-img" />
+        <div class="auth-bg-overlay"></div>
+        <div class="auth-bg-orbs">
+          <span class="auth-bg-orb"></span>
+          <span class="auth-bg-orb"></span>
+        </div>
+      </div>
+
+      <main class="auth-content">
+        <a href="#/" class="auth-logo">
+          <img src="/icon.png" alt="" />
+          <span>e-Tunisia</span>
+        </a>
+
+        <section class="auth-card">
+          <header class="auth-head">
+            <span class="auth-eyebrow">
+              <i class="lucide-${isRegister ? 'user-plus' : 'log-in'}"></i>
+              ${isRegister ? 'Create account' : 'Welcome back'}
+            </span>
+            <h1>${cfg.title}</h1>
+            <p>${cfg.subtitle}</p>
+          </header>
+
+          <div class="auth-error" id="auth-error" role="alert" hidden>
+            <span class="auth-error-icon" aria-hidden="true"><i class="lucide-alert-circle"></i></span>
+            <span class="auth-error-text" id="auth-error-text"></span>
+          </div>
+
+          <form class="auth-form" id="${cfg.mode}-form" novalidate>
+            ${isRegister ? field({
+              id: 'fullname',
+              label: 'Full name',
+              icon: 'user',
+              type: 'text',
+              placeholder: 'Your name',
+              required: true,
+              autocomplete: 'name',
+            }) : ''}
+
+            ${field({
+              id: isRegister ? 'reg-email' : 'email',
+              label: 'Email',
+              icon: 'mail',
+              type: 'email',
+              placeholder: 'you@example.com',
+              required: true,
+              autocomplete: isRegister ? 'email' : 'username',
+            })}
+
+            ${isRegister ? field({
+              id: 'country',
+              label: 'Country',
+              icon: 'globe-2',
+              type: 'text',
+              placeholder: 'Where are you from?',
+              autocomplete: 'country-name',
+            }) : ''}
+
+            ${field({
+              id: isRegister ? 'reg-password' : 'password',
+              label: 'Password',
+              icon: 'lock',
+              type: 'password',
+              placeholder: isRegister ? 'Create a password' : 'Your password',
+              required: true,
+              autocomplete: isRegister ? 'new-password' : 'current-password',
+              passwordToggle: true,
+              helper: isRegister ? 'At least 6 characters.' : undefined,
+            })}
+
+            ${isRegister ? `
+              <div class="auth-strength" id="auth-strength" data-tier="empty">
+                <div class="auth-strength-bar"><span class="auth-strength-fill"></span></div>
+                <span class="auth-strength-label">Password strength</span>
+              </div>
+            ` : ''}
+
+            ${!isRegister ? `
+              <div class="auth-row">
+                <label class="auth-check">
+                  <input type="checkbox" />
+                  <span class="auth-check-box" aria-hidden="true"><i class="lucide-check"></i></span>
+                  <span>Remember me</span>
+                </label>
+                <a href="mailto:support@etunisia.com?subject=Password%20reset" class="auth-link">Forgot password?</a>
+              </div>
+            ` : ''}
+
+            <button type="submit" class="auth-submit" id="${cfg.mode}-btn">
+              <span class="auth-submit-label">${cfg.ctaText}</span>
+              <i class="lucide-arrow-right auth-submit-icon"></i>
+            </button>
+          </form>
+
+          <div class="auth-alt">
+            ${cfg.altText}
+            <a href="${cfg.altLink}" class="auth-link-bold">${cfg.altLabel}</a>
+          </div>
+        </section>
+
+        <p class="auth-footer">
+          By continuing, you agree to our <a href="#/about" class="auth-link">terms</a> and support Tunisian local businesses.
+        </p>
+      </main>
+    </div>
+  `;
+}
+
+function setupPasswordToggle(root: ParentNode) {
+  root.querySelectorAll<HTMLButtonElement>('.auth-input-toggle').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const targetId = btn.dataset.toggle || '';
+      const input = document.getElementById(targetId) as HTMLInputElement | null;
+      if (!input) return;
+      const showing = input.type === 'text';
+      input.type = showing ? 'password' : 'text';
+      btn.setAttribute('aria-pressed', String(!showing));
+      btn.setAttribute('aria-label', showing ? 'Show password' : 'Hide password');
+      btn.innerHTML = `<i class="lucide-${showing ? 'eye' : 'eye-off'}"></i>`;
+      replaceIcons(btn);
+    });
+  });
+}
+
+function passwordStrengthTier(pw: string): 'empty' | 'weak' | 'fair' | 'good' | 'strong' {
+  if (!pw) return 'empty';
+  let score = 0;
+  if (pw.length >= 6) score++;
+  if (pw.length >= 10) score++;
+  if (/[a-z]/.test(pw) && /[A-Z]/.test(pw)) score++;
+  if (/\d/.test(pw)) score++;
+  if (/[^a-zA-Z0-9]/.test(pw)) score++;
+  if (score >= 4) return 'strong';
+  if (score === 3) return 'good';
+  if (score === 2) return 'fair';
+  return 'weak';
+}
+
+const STRENGTH_LABEL: Record<string, string> = {
+  empty:  'Password strength',
+  weak:   'Weak',
+  fair:   'Fair',
+  good:   'Good',
+  strong: 'Strong',
+};
+
+function wireStrengthMeter() {
+  const meter = document.getElementById('auth-strength');
+  const input = document.getElementById('reg-password') as HTMLInputElement | null;
+  if (!meter || !input) return;
+  const label = meter.querySelector<HTMLSpanElement>('.auth-strength-label');
+  input.addEventListener('input', () => {
+    const tier = passwordStrengthTier(input.value);
+    meter.dataset.tier = tier;
+    if (label) label.textContent = STRENGTH_LABEL[tier];
+  });
+}
+
 export function initAuthPage() {
-  const loginForm = document.getElementById('login-form') as HTMLFormElement;
-  const registerForm = document.getElementById('register-form') as HTMLFormElement;
+  const root = document.getElementById('page-content') || document;
+  replaceIcons(root as HTMLElement);
+  setupPasswordToggle(root);
+  wireStrengthMeter();
+
+  const loginForm = document.getElementById('login-form') as HTMLFormElement | null;
+  const registerForm = document.getElementById('register-form') as HTMLFormElement | null;
   const errorEl = document.getElementById('auth-error');
+  const errorTextEl = document.getElementById('auth-error-text');
 
   function showError(msg: string) {
-    if (errorEl) {
-      errorEl.textContent = msg;
-      errorEl.style.display = 'block';
-    }
+    if (!errorEl || !errorTextEl) return;
+    errorTextEl.textContent = msg;
+    errorEl.hidden = false;
+  }
+  function clearError() {
+    if (!errorEl) return;
+    errorEl.hidden = true;
+  }
+
+  function setBusy(btn: HTMLButtonElement, busyLabel: string) {
+    btn.disabled = true;
+    btn.classList.add('is-busy');
+    const label = btn.querySelector<HTMLSpanElement>('.auth-submit-label');
+    if (label) label.textContent = busyLabel;
+  }
+  function setIdle(btn: HTMLButtonElement, idleLabel: string) {
+    btn.disabled = false;
+    btn.classList.remove('is-busy');
+    const label = btn.querySelector<HTMLSpanElement>('.auth-submit-label');
+    if (label) label.textContent = idleLabel;
   }
 
   loginForm?.addEventListener('submit', async (e) => {
     e.preventDefault();
+    clearError();
     const btn = document.getElementById('login-btn') as HTMLButtonElement;
-    btn.disabled = true;
-    btn.innerHTML = 'Signing in...';
+    setBusy(btn, 'Signing in…');
 
     const email = (document.getElementById('email') as HTMLInputElement).value.trim();
     const password = (document.getElementById('password') as HTMLInputElement).value;
 
     try {
       const res = await api.login(email, password);
-      if (res.accessToken) {
-        localStorage.setItem('token', res.accessToken);
+      if ((res as any).accessToken) {
+        localStorage.setItem('token', (res as any).accessToken);
         location.hash = '#/';
       }
     } catch (err: any) {
-      showError(err.message || 'Invalid email or password');
-      btn.disabled = false;
-      btn.innerHTML = `Sign In <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>`;
+      showError(err?.message || 'Invalid email or password.');
+      setIdle(btn, 'Sign in');
     }
   });
 
   registerForm?.addEventListener('submit', async (e) => {
     e.preventDefault();
+    clearError();
     const btn = document.getElementById('register-btn') as HTMLButtonElement;
-    btn.disabled = true;
-    btn.innerHTML = 'Creating account...';
+    setBusy(btn, 'Creating account…');
 
     const name = (document.getElementById('fullname') as HTMLInputElement).value.trim();
     const email = (document.getElementById('reg-email') as HTMLInputElement).value.trim();
@@ -162,23 +308,21 @@ export function initAuthPage() {
     const country = (document.getElementById('country') as HTMLInputElement).value.trim();
 
     if (password.length < 6) {
-      showError('Password must be at least 6 characters');
-      btn.disabled = false;
-      btn.innerHTML = `Create Account <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>`;
+      showError('Password must be at least 6 characters.');
+      setIdle(btn, 'Create account');
+      (document.getElementById('reg-password') as HTMLInputElement | null)?.focus();
       return;
     }
 
     try {
       const res = await api.register({ name, email, password, country });
-      if (res.accessToken) {
-        localStorage.setItem('token', res.accessToken);
-        // Fresh signups always start in the onboarding wizard.
+      if ((res as any).accessToken) {
+        localStorage.setItem('token', (res as any).accessToken);
         location.hash = '#/onboarding';
       }
     } catch (err: any) {
-      showError(err.message || 'Registration failed. Please try again.');
-      btn.disabled = false;
-      btn.innerHTML = `Create Account <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>`;
+      showError(err?.message || 'Registration failed. Please try again.');
+      setIdle(btn, 'Create account');
     }
   });
 }

@@ -10,7 +10,7 @@ import { SignupGate } from '../components/SignupGate';
 import { PassportOnboarding } from '../components/PassportOnboarding';
 import { FollowList } from '../components/FollowList';
 import { EndorseModal, TopEndorsementsStrip } from '../components/EndorseModal';
-import { Award, Trophy, Sparkles, X } from 'lucide-react';
+import { Award, Trophy, Sparkles, X, Check, MapPin } from 'lucide-react';
 import { TierBadge } from '../components/TierBadge';
 import { Pencil, UserPlus, UserCheck } from 'lucide-react';
 
@@ -100,25 +100,45 @@ export default function PassportPage() {
     }
 
     const p: any = data;
+    const isPro = p.plan === 'premium' || p.plan === 'business' || p.plan === 'admin';
 
     return (
         <main className="passport-page">
-            <section className="passport-hero">
-                <div className="passport-hero-bg" />
+            <section className={`passport-hero${isPro ? ' is-pro' : ''}`}>
+                <div className="passport-hero-bg" aria-hidden="true" />
+                <div className="passport-hero-mesh" aria-hidden="true" />
+                <div className="passport-hero-orbs" aria-hidden="true">
+                    <span className="passport-hero-orb" />
+                    <span className="passport-hero-orb" />
+                </div>
                 <div className="passport-hero-content">
                     <div className="passport-hero-left">
-                        {p.avatar
-                            ? <img className="passport-avatar" src={getImageUrl(p.avatar)} alt="" />
-                            : <div className="passport-avatar passport-avatar-fallback">{(p.fullName || '?').slice(0, 1).toUpperCase()}</div>}
+                        <span
+                            className={`passport-avatar-wrap${isPro ? ' is-pro' : ''}`}
+                            data-user-id={p.id || undefined}
+                            data-user-name={p.fullName}
+                            data-user-avatar={p.avatar ? getImageUrl(p.avatar) : undefined}
+                            data-user-handle={p.handle}
+                            data-user-plan={p.plan || undefined}
+                        >
+                            {p.avatar
+                                ? <img className="passport-avatar" src={getImageUrl(p.avatar)} alt="" />
+                                : <div className="passport-avatar passport-avatar-fallback">{(p.fullName || '?').slice(0, 1).toUpperCase()}</div>}
+                            {isPro && (
+                                <span className="passport-avatar-pro-mark" aria-label={p.plan === 'business' ? 'Verified Business' : 'Pro Traveler'}>
+                                    <Sparkles size={12} />
+                                </span>
+                            )}
+                        </span>
                         <div className="passport-hero-text">
                             <div className="passport-handle">@{p.handle}</div>
                             <h1>{p.fullName}</h1>
                             <div className="passport-meta">
-                                {p.country && <span>🇹🇳 {p.country}</span>}
+                                {p.country && <span className="passport-meta-chip"><MapPin size={11} /> {p.country}</span>}
                                 <span className={`passport-level passport-level-${p.passportLevel.toLowerCase()}`}>{p.passportLevel} Explorer</span>
                                 {p.plan === 'premium' && <span className="passport-pro-chip"><Sparkles size={11} /> Pro Traveler</span>}
-                                {p.plan === 'business' && <span className="passport-business-chip">✓ Verified Business</span>}
-                                {p.role === 'creator' && p.plan !== 'business' && <span className="passport-verified">✓ Local Guide</span>}
+                                {p.plan === 'business' && <span className="passport-business-chip"><Check size={11} /> Verified Business</span>}
+                                {p.role === 'creator' && p.plan !== 'business' && <span className="passport-verified"><Check size={11} /> Local Guide</span>}
                                 {p.topCityRank && (
                                     <span className="passport-cityrank" title={`Out of ${p.topCityRank.total} reviewers`}>
                                         <Trophy size={12} /> #{p.topCityRank.rank} in {p.topCityRank.city}
@@ -269,7 +289,9 @@ function ProfileCompletion({ passport }: { passport: any }) {
             <ul className="passport-completion-list">
                 {fields.map((f) => (
                     <li key={f.label} className={f.done ? 'done' : ''}>
-                        <span className="passport-completion-check">{f.done ? '✓' : ''}</span>
+                        <span className="passport-completion-check" aria-hidden="true">
+                            {f.done && <Check size={12} strokeWidth={3} />}
+                        </span>
                         <span className="passport-completion-label">{f.label}</span>
                         {!f.done && f.href && next === f && (
                             <a className="btn ghost sm passport-completion-cta" href={f.href}>{f.cta} →</a>
@@ -372,10 +394,20 @@ function AnonPill({ onClaim }: { onClaim: () => void }) {
     const [dismissed, setDismissed] = useState(() => sessionStorage.getItem('passport-pill-dismissed') === '1');
     if (dismissed) return null;
     return (
-        <div className="passport-anon-pill">
-            <span>🇹🇳 <strong>Get your own Tunisia Passport.</strong> Free, takes 30 seconds.</span>
-            <button className="btn primary sm" onClick={onClaim}>Sign up</button>
-            <button aria-label="Dismiss" className="passport-anon-pill-x" onClick={() => { sessionStorage.setItem('passport-pill-dismissed', '1'); setDismissed(true); }}>×</button>
+        <div className="passport-anon-pill" role="region" aria-label="Sign up CTA">
+            <span className="passport-anon-pill-icon" aria-hidden="true"><MapPin size={14} /></span>
+            <span className="passport-anon-pill-text">
+                <strong>Get your own Tunisia Passport.</strong> Free, takes 30 seconds.
+            </span>
+            <button type="button" className="btn primary sm" onClick={onClaim}>Sign up</button>
+            <button
+                type="button"
+                aria-label="Dismiss"
+                className="passport-anon-pill-x"
+                onClick={() => { sessionStorage.setItem('passport-pill-dismissed', '1'); setDismissed(true); }}
+            >
+                <X size={14} />
+            </button>
         </div>
     );
 }

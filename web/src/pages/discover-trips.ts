@@ -9,25 +9,42 @@ import { replaceIcons } from '../icons';
 export function renderDiscoverTripsPage(): string {
   return `
     <div class="discover-trips-page page-enter" id="discover-trips-root">
-      <header class="discover-trips-head">
-        <h1><i class="lucide-compass"></i> Discover trips</h1>
-        <p>Travel plans shared by the e-Tunisia community. Tap any trip to view the full plan or clone it as your own.</p>
+      <header class="discover-trips-hero">
+        <div class="discover-trips-hero-bg" aria-hidden="true"></div>
+        <div class="discover-trips-hero-mesh" aria-hidden="true"></div>
+        <div class="discover-trips-hero-orbs" aria-hidden="true">
+          <span class="discover-trips-hero-orb"></span>
+          <span class="discover-trips-hero-orb"></span>
+        </div>
+        <div class="discover-trips-hero-content">
+          <span class="discover-trips-eyebrow"><i class="lucide-compass"></i> Community plans</span>
+          <h1>Discover <span class="discover-trips-accent">trips</span></h1>
+          <p>Travel plans shared by the e-Tunisia community. Tap any trip to view the full plan or clone it as your own.</p>
+        </div>
       </header>
 
       <div class="discover-trips-filters" id="discover-trips-filters">
-        <div class="discover-trips-tabs" data-role="sort"></div>
-        <input type="text" class="discover-trips-city" placeholder="Filter by city (e.g. Djerba)" data-role="city" />
-        <select class="discover-trips-days" data-role="days">
-          <option value="">Any length</option>
-          <option value="1-3">1-3 days</option>
-          <option value="4-7">4-7 days</option>
-          <option value="8-14">8-14 days</option>
-          <option value="15-30">15+ days</option>
-        </select>
+        <div class="discover-trips-tabs" data-role="sort" role="tablist" aria-label="Sort trips"></div>
+        <div class="discover-trips-search-row">
+          <span class="discover-trips-search-wrap">
+            <i class="lucide-map-pin"></i>
+            <input type="text" class="discover-trips-city" placeholder="Filter by city (e.g. Djerba)" data-role="city" aria-label="Filter by city" />
+          </span>
+          <span class="discover-trips-select-wrap">
+            <i class="lucide-calendar-days"></i>
+            <select class="discover-trips-days" data-role="days" aria-label="Trip length">
+              <option value="">Any length</option>
+              <option value="1-3">1–3 days</option>
+              <option value="4-7">4–7 days</option>
+              <option value="8-14">8–14 days</option>
+              <option value="15-30">15+ days</option>
+            </select>
+          </span>
+        </div>
       </div>
 
       <div id="discover-trips-grid" class="discover-trips-grid">
-        <div class="favorites-loading"><div class="spinner"></div></div>
+        <div class="discover-trips-loading"><div class="spinner"></div><p>Loading trips…</p></div>
       </div>
     </div>
   `;

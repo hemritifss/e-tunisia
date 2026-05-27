@@ -9,12 +9,11 @@ import { replaceIcons } from './icons';
 import { showToast } from './ui-utils';
 
 let mounted = false;
+let cartUnsubscribe: (() => void) | null = null;
 
-export function mountTripCart() {
-  if (mounted) return;
-  mounted = true;
+function createFab() {
+  if (document.getElementById('trip-cart-fab')) return;
 
-  // Floating launcher pill (bottom-right)
   const fab = document.createElement('button');
   fab.id = 'trip-cart-fab';
   fab.className = 'trip-cart-fab';
@@ -38,9 +37,28 @@ export function mountTripCart() {
     countEl.style.display = n > 0 ? '' : 'none';
   };
   refreshFab();
-  cart.onCartChange(refreshFab);
+  cartUnsubscribe = cart.onCartChange(refreshFab);
   fab.addEventListener('click', openDrawer);
   replaceIcons(fab);
+}
+
+function destroyFab() {
+  document.getElementById('trip-cart-fab')?.remove();
+  document.getElementById('trip-cart-drawer')?.remove();
+  document.querySelector('.trip-cart-backdrop')?.remove();
+  if (cartUnsubscribe) { cartUnsubscribe(); cartUnsubscribe = null; }
+}
+
+export function mountTripCart() {
+  if (mounted) return;
+  mounted = true;
+  syncTripCartAuth();
+}
+
+// Called by router on every navigate so the FAB appears/disappears with login state.
+export function syncTripCartAuth() {
+  if (api.isLoggedIn()) createFab();
+  else destroyFab();
 }
 
 function iconEl(name: string): HTMLElement {

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { api, getImageUrl } from '../../shared/api';
-import { Calendar, Users, MapPin } from 'lucide-react';
+import { Calendar, Users, MapPin, Star } from 'lucide-react';
 
 interface Props { handle: string; }
 
@@ -90,7 +90,13 @@ function ReviewsList({ items }: { items: any[] }) {
                         {r.place?.name && (
                             <a href={`#/place/${r.place.id}`}><MapPin size={12} /> {r.place.name}</a>
                         )}
-                        <span>{'★'.repeat(r.rating || 0)}</span>
+                        {typeof r.rating === 'number' && r.rating > 0 && (
+                            <span className="passport-review-stars" aria-label={`${r.rating} out of 5 stars`}>
+                                {Array.from({ length: 5 }).map((_, i) => (
+                                    <Star key={i} size={11} className={i < r.rating ? 'is-filled' : ''} />
+                                ))}
+                            </span>
+                        )}
                     </div>
                     <p>{r.comment || r.body}</p>
                 </li>

@@ -4,6 +4,7 @@
 // ============================================
 
 import * as api from '../api';
+import { replaceIcons } from '../icons';
 
 const LOCAL_HERO_IMAGES = ['/img/hero1.png', '/img/hero2.png', '/img/hero3.png'];
 
@@ -44,17 +45,24 @@ export function renderHeroPage(): string {
         </div>
         <div class="tn-hero-overlay"></div>
         <div class="tn-hero-vignette"></div>
+        <div class="tn-mesh-orbs" aria-hidden="true">
+          <div class="tn-mesh-orb tn-mesh-orb-1"></div>
+          <div class="tn-mesh-orb tn-mesh-orb-2"></div>
+          <div class="tn-mesh-orb tn-mesh-orb-3"></div>
+        </div>
 
         <div class="tn-hero-content">
           <div class="tn-hero-badge">
             <span class="tn-pulse"></span>
             Made in Tunisia
           </div>
-          <h1 class="tn-hero-title">Tunisia is Calling</h1>
+          <h1 class="tn-hero-title">
+            <span class="tn-grad">Tunisia</span> is Calling
+          </h1>
           <p class="tn-hero-arabic">تونس تستدعيك</p>
           <p class="tn-hero-sub">
-            From the blue doors of Sidi Bou Said to the dunes of Douz. 
-            From the Roman stones of El Jem to the olive groves of Kairouan. 
+            From the blue doors of Sidi Bou Said to the dunes of Douz.
+            From the Roman stones of El Jem to the olive groves of Kairouan.
             This is the Tunisia locals live — not the one tour buses visit.
           </p>
           <div class="tn-hero-actions">
@@ -64,11 +72,49 @@ export function renderHeroPage(): string {
             </a>
             <a href="#/register" class="tn-btn-secondary">Join Free</a>
           </div>
+          <div class="tn-hero-meta">
+            <span class="tn-hero-meta-avatars" aria-hidden="true">
+              <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=yasmine" alt="" loading="lazy" />
+              <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=marco" alt="" loading="lazy" />
+              <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=amina" alt="" loading="lazy" />
+              <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=david" alt="" loading="lazy" />
+            </span>
+            <span>Join <strong>12,400+</strong> travelers already exploring</span>
+          </div>
         </div>
 
         <div class="tn-hero-scroll">
           <span>Scroll</span>
           <div class="tn-scroll-line"></div>
+        </div>
+      </section>
+
+      <!-- LIVE PULSE STRIP -->
+      <section class="tn-pulse-strip" aria-label="Community activity">
+        <div class="tn-pulse-online">
+          <span class="tn-pulse-online-dot" aria-hidden="true"></span>
+          <span><strong id="tn-pulse-online-count" data-target="342">0</strong> online now</span>
+        </div>
+        <div class="tn-pulse-stats">
+          <div class="tn-pulse-stat">
+            <strong data-pulse-count data-target="89">0</strong>
+            <span>Posts today</span>
+          </div>
+          <div class="tn-pulse-stat">
+            <strong data-pulse-count data-target="1240">0</strong>
+            <span>Reviews this week</span>
+          </div>
+          <div class="tn-pulse-stat">
+            <strong data-pulse-count data-target="312">0</strong>
+            <span>Trips planned</span>
+          </div>
+        </div>
+        <div class="tn-pulse-avatars" aria-hidden="true">
+          <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=emma" alt="" loading="lazy" />
+          <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=sarah" alt="" loading="lazy" />
+          <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=david" alt="" loading="lazy" />
+          <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=marco" alt="" loading="lazy" />
+          <span class="tn-pulse-more">+88</span>
         </div>
       </section>
 
@@ -142,6 +188,76 @@ export function renderHeroPage(): string {
         </div>
       </section>
 
+      <!-- MOOD BENTO -->
+      <section class="tn-section">
+        <div class="tn-container">
+          <div class="tn-section-head">
+            <span class="tn-eyebrow">Find Your Mood</span>
+            <h2>What kind of trip are you in for?</h2>
+            <p>Five moods. Twenty-four governorates. One country that fits all of them.</p>
+          </div>
+          <div class="tn-mood-bento">
+            <a class="tn-mood-tile" href="#/mood/adventure">
+              <img src="/img/hero3.png" alt="" loading="lazy" />
+              <span class="tn-mood-emoji" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 3 4 8 5-5 5 15H2L8 3z"/></svg>
+              </span>
+              <div class="tn-mood-body">
+                <h4>Adventure</h4>
+                <p>Sahara dunes, kitesurfing, canyoning, troglodyte caves.</p>
+              </div>
+            </a>
+            <a class="tn-mood-tile" href="#/mood/culture">
+              <img src="/img/hero2.png" alt="" loading="lazy" />
+              <span class="tn-mood-emoji" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 22V10l9-7 9 7v12"/><path d="M9 22V12h6v10"/></svg>
+              </span>
+              <div class="tn-mood-body">
+                <h4>Culture</h4>
+                <p>Roman ruins, medinas, mosques, Berber heritage.</p>
+              </div>
+            </a>
+            <a class="tn-mood-tile" href="#/mood/relax">
+              <img src="/img/hero1.png" alt="" loading="lazy" />
+              <span class="tn-mood-emoji" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h20"/><path d="M5 12V7a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v5"/><path d="M2 16h20"/></svg>
+              </span>
+              <div class="tn-mood-body">
+                <h4>Relax</h4>
+                <p>Hammams, blue doors, Djerba beaches, sunset terraces.</p>
+              </div>
+            </a>
+            <a class="tn-mood-tile" href="#/mood/foodie">
+              <img src="/img/hero3.png" alt="" loading="lazy" />
+              <span class="tn-mood-emoji" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11h18a2 2 0 0 1-2 2h-3l-2 5H8l-2-5H4a2 2 0 0 1-1-2z"/></svg>
+              </span>
+              <div class="tn-mood-body">
+                <h4>Foodie</h4>
+                <p>Brik, harissa, couscous royale, mint tea on rooftops.</p>
+              </div>
+            </a>
+            <a class="tn-mood-tile" href="#/mood/spiritual">
+              <img src="/img/hero2.png" alt="" loading="lazy" />
+              <span class="tn-mood-emoji" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"/><path d="M5 8a7 7 0 0 1 14 0"/><path d="M5 14a7 7 0 0 0 14 0"/></svg>
+              </span>
+              <div class="tn-mood-body">
+                <h4>Spiritual &amp; Slow</h4>
+                <p>Kairouan, Sufi gatherings, desert silence, monastery walls.</p>
+              </div>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <!-- GOVERNORATE MARQUEE -->
+      <section class="tn-marquee-section" aria-label="Governorates of Tunisia">
+        <div class="tn-marquee" id="tn-marquee">
+          <!-- filled at init time, doubled for seamless loop -->
+        </div>
+      </section>
+
       <!-- WHY -->
       <section class="tn-section tn-why">
         <div class="tn-container">
@@ -171,6 +287,78 @@ export function renderHeroPage(): string {
               <h3>For Tunisia</h3>
               <p>Every dinar spent through e-Tunisia stays in Tunisia. Supports a Tunisian family. Preserves a Tunisian tradition. This is not tourism extraction. This is tourism that gives back.</p>
             </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TESTIMONIALS -->
+      <section class="tn-section">
+        <div class="tn-container">
+          <div class="tn-section-head">
+            <span class="tn-eyebrow">From the Community</span>
+            <h2>Travelers and locals, in their own words.</h2>
+          </div>
+          <div class="tn-testimonials">
+            <article class="tn-testimonial is-pro">
+              <p class="tn-testimonial-quote">"I planned a 9-day trip end-to-end on e-Tunisia. Every place was where the locals said it would be — and half were missing from every guidebook I had."</p>
+              <div class="tn-testimonial-user">
+                <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=marco" alt="Marco Rossi" loading="lazy" />
+                <div>
+                  <strong>Marco Rossi</strong>
+                  <span>Pro traveler · Milan, Italy</span>
+                </div>
+              </div>
+            </article>
+            <article class="tn-testimonial">
+              <p class="tn-testimonial-quote">"My riad in Tozeur was empty in November. I listed it on e-Tunisia and four bookings came through in two weeks — no commission, no middlemen."</p>
+              <div class="tn-testimonial-user">
+                <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=amina" alt="Amina Trabelsi" loading="lazy" />
+                <div>
+                  <strong>Amina Trabelsi</strong>
+                  <span>Riad owner · Tozeur</span>
+                </div>
+              </div>
+            </article>
+            <article class="tn-testimonial">
+              <p class="tn-testimonial-quote">"The brik stand the app sent me to in La Goulette had a 20-person line. Now I get why. Best 4 dinars I've ever spent."</p>
+              <div class="tn-testimonial-user">
+                <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=sarah" alt="Sarah Chen" loading="lazy" />
+                <div>
+                  <strong>Sarah Chen</strong>
+                  <span>Solo traveler · Singapore</span>
+                </div>
+              </div>
+            </article>
+            <article class="tn-testimonial is-pro">
+              <p class="tn-testimonial-quote">"Took my family to the Star Wars filming locations using a community itinerary. The kids think I'm a wizard. The badges system kept them engaged the whole trip."</p>
+              <div class="tn-testimonial-user">
+                <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=david" alt="David Park" loading="lazy" />
+                <div>
+                  <strong>David Park</strong>
+                  <span>Pro traveler · Seoul, Korea</span>
+                </div>
+              </div>
+            </article>
+            <article class="tn-testimonial">
+              <p class="tn-testimonial-quote">"As a local guide, I now match travelers with exactly the kind of trip I love giving — desert, slow, no rush. The platform actually understands."</p>
+              <div class="tn-testimonial-user">
+                <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=yasmine" alt="Yasmine Khelil" loading="lazy" />
+                <div>
+                  <strong>Yasmine Khelil</strong>
+                  <span>Local guide · Douz</span>
+                </div>
+              </div>
+            </article>
+            <article class="tn-testimonial">
+              <p class="tn-testimonial-quote">"The blue-door route through Sidi Bou Said with the photographer who actually lives there? Worth every cent. This is what travel is supposed to be."</p>
+              <div class="tn-testimonial-user">
+                <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=emma" alt="Emma Laurent" loading="lazy" />
+                <div>
+                  <strong>Emma Laurent</strong>
+                  <span>Photographer · Paris</span>
+                </div>
+              </div>
+            </article>
           </div>
         </div>
       </section>
@@ -317,7 +505,7 @@ export function renderHeroPage(): string {
         <div class="tn-cta-bg"></div>
         <div class="tn-cta-content">
           <img src="/logo-chechia.svg" alt="" class="tn-cta-chechia" />
-          <h2>The real Tunisia is waiting.</h2>
+          <h2>The <span class="tn-grad">real Tunisia</span> is waiting.</h2>
           <p>No tour buses. No all-inclusive compounds. Just the Tunisia that Tunisians know and love.</p>
           <a href="#/register" class="tn-btn-primary tn-btn-large">
             Create Free Account
@@ -360,7 +548,11 @@ export function renderHeroPage(): string {
         </div>
         <div class="tn-footer-bottom">
           <span>2026 e-Tunisia</span>
-          <span>Made with ❤️ in Tunisia</span>
+          <span class="tn-footer-made">Made with
+            <i class="lucide-heart tn-footer-heart" aria-hidden="true"></i>
+            <span class="tn-footer-made-sr">love</span>
+            in Tunisia
+          </span>
         </div>
       </footer>
     </div>
@@ -442,7 +634,48 @@ export function initHeroPage() {
     });
   }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
 
-  document.querySelectorAll('.tn-why-card, .tn-place-card').forEach((el) => revealObserver.observe(el));
+  document.querySelectorAll('.tn-why-card, .tn-place-card, .tn-mood-tile, .tn-testimonial')
+    .forEach((el) => revealObserver.observe(el));
+
+  // Stagger mood tiles + testimonials so the reveal feels musical, not all-at-once.
+  document.querySelectorAll('.tn-mood-tile').forEach((el, i) => {
+    (el as HTMLElement).style.transitionDelay = `${i * 0.06}s`;
+  });
+  document.querySelectorAll('.tn-testimonial').forEach((el, i) => {
+    (el as HTMLElement).style.transitionDelay = `${i * 0.05}s`;
+  });
+
+  // ---- LIVE PULSE STRIP — count-up when in view ----
+  const pulseStrip = document.querySelector<HTMLElement>('.tn-pulse-strip');
+  if (pulseStrip) {
+    const pulseObs = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        entry.target.querySelectorAll<HTMLElement>('[data-target]').forEach((el) => {
+          const target = Number(el.dataset.target || '0');
+          if (target > 0) animateCounter(el, target);
+        });
+        pulseObs.unobserve(entry.target);
+      });
+    }, { threshold: 0.4 });
+    pulseObs.observe(pulseStrip);
+  }
+
+  // ---- GOVERNORATE MARQUEE — fill once with doubled list for seamless loop ----
+  const marquee = document.getElementById('tn-marquee');
+  if (marquee) {
+    const governorates = [
+      'Tunis', 'Sfax', 'Sousse', 'Kairouan', 'Bizerte', 'Gabès', 'Ariana', 'Gafsa',
+      'Monastir', 'Ben Arous', 'Kasserine', 'Médenine', 'Nabeul', 'Tataouine', 'Béja',
+      'Jendouba', 'Mahdia', 'Sidi Bouzid', 'Siliana', 'Tozeur', 'Kébili', 'Le Kef',
+      'Manouba', 'Zaghouan',
+    ];
+    const renderRow = governorates.map((g) =>
+      `<span class="tn-marquee-item">${g}</span><span class="tn-marquee-dot">✦</span>`
+    ).join('');
+    // Doubled — when the first half scrolls -50%, the second is already in position.
+    marquee.innerHTML = renderRow + renderRow;
+  }
 
   // Staggered reveal for logo cards
   document.querySelectorAll('.tn-logo-card').forEach((el, i) => {
@@ -505,8 +738,9 @@ async function loadRealPlaces() {
     animateCounter(statReviews, Math.max(totalReviews, 8500));
   }
 
-  // Render places
+  // Render places + hydrate Lucide icons (stars, map-pin)
   grid.innerHTML = places.map((p) => renderPlaceCard(p)).join('');
+  replaceIcons(grid);
 
   // Re-observe new cards
   document.querySelectorAll('.tn-place-card').forEach((el) => {
@@ -525,7 +759,11 @@ async function loadRealPlaces() {
 function renderPlaceCard(p: Place): string {
   const img = p.images?.[0] || p.image || '/img/hero1.png';
   const cat = p.category?.name || 'Place';
-  const stars = '★'.repeat(Math.floor(p.rating || 0)) + '☆'.repeat(5 - Math.floor(p.rating || 0));
+  // Lucide stars (5 icons, fill via .is-filled class). Replaces ★ / ☆ text glyphs.
+  const filled = Math.floor(p.rating || 0);
+  const starRow = Array.from({ length: 5 }).map((_, i) =>
+    `<i class="lucide-star tn-place-star${i < filled ? ' is-filled' : ''}"></i>`
+  ).join('');
 
   return `
     <a href="#/place/${p.id}" class="tn-place-card">
@@ -540,7 +778,7 @@ function renderPlaceCard(p: Place): string {
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
             ${p.city}
           </span>
-          <span class="tn-place-stars" title="${p.rating || 0}/5">${stars}</span>
+          <span class="tn-place-stars" title="${p.rating || 0}/5" aria-label="${Math.floor(p.rating || 0)} out of 5 stars">${starRow}</span>
         </div>
       </div>
     </a>

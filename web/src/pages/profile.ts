@@ -1,10 +1,26 @@
 // ============================================
-// PROFILE PAGE — Premium redesign with cover banner
-// Instagram-style cover, stats, quick links.
+// PROFILE PAGE — Own profile (logged-in user)
+// Cover banner + identity + XP + stats + quick links + Pro flair.
+// Per design-system/pages/profile.md.
 // ============================================
 
 import * as api from '../api';
 import { replaceIcons } from '../icons';
+
+/**
+ * Tier → Lucide icon name + label. Replaces the legacy emoji tier markers
+ * (🏆⭐🧭🌱) per MASTER.md §4 `no-emoji-icons`.
+ */
+function tierFor(level: number): { iconName: string; label: string } {
+  if (level >= 10) return { iconName: 'crown', label: 'Legend' };
+  if (level >= 7)  return { iconName: 'star',  label: 'Veteran' };
+  if (level >= 4)  return { iconName: 'compass', label: 'Explorer' };
+  return { iconName: 'sprout', label: 'Newcomer' };
+}
+
+function isProPlan(plan: string | null | undefined): boolean {
+  return plan === 'premium' || plan === 'business' || plan === 'admin';
+}
 
 export function renderProfilePage(): string {
   return `
@@ -68,26 +84,34 @@ export async function initProfilePage() {
   const nextLevelXp = xpForLevel(level);
   const progressPct = Math.min(100, Math.round(((points.total || 0) - currentLevelXp) / Math.max(1, nextLevelXp - currentLevelXp) * 100));
 
-  // Level tier label
-  const tierLabel = level >= 10 ? 'Legend' : level >= 7 ? 'Veteran' : level >= 4 ? 'Explorer' : 'Newcomer';
-  const tierEmoji = level >= 10 ? '🏆' : level >= 7 ? '⭐' : level >= 4 ? '🧭' : '🌱';
+  // Level tier (Lucide icons, never emoji)
+  const tier = tierFor(level);
+  const plan = user.plan || null;
+  const isPro = isProPlan(plan);
+  const userId = user.id || '';
 
   root.innerHTML = `
-    <!-- Cover banner with gradient -->
-    <header class="pp-cover">
+    <!-- Cover banner with mesh gradient + tier badge -->
+    <header class="pp-cover${isPro ? ' is-pro' : ''}">
       <div class="pp-cover-gradient" aria-hidden="true"></div>
       <div class="pp-cover-pattern" aria-hidden="true"></div>
-      <div class="pp-cover-level-badge">
-        <span class="pp-level-emoji">${tierEmoji}</span>
-        <span class="pp-level-text">Level ${level} ${tierLabel}</span>
+      <div class="pp-cover-orbs" aria-hidden="true">
+        <span class="pp-cover-orb"></span>
+        <span class="pp-cover-orb"></span>
+      </div>
+      <div class="pp-cover-level-badge" data-tier="${tier.iconName}">
+        <span class="pp-tier-icon" aria-hidden="true"><i class="lucide-${tier.iconName}"></i></span>
+        <span class="pp-level-text">Level ${level} ${tier.label}</span>
       </div>
     </header>
 
     <!-- Identity section -->
     <section class="pp-identity">
-      <div class="pp-avatar-wrap">
+      <div class="pp-avatar-wrap${isPro ? ' is-pro' : ''}"
+           ${userId ? `data-user-id="${esc(userId)}" data-user-name="${esc(name)}" data-user-avatar="${esc(avatar)}" data-user-handle="${esc(handle)}" data-user-plan="${esc(plan || '')}"` : ''}>
         <img src="${esc(avatar)}" alt="${esc(name)}" class="pp-avatar" />
         <span class="pp-avatar-ring" aria-hidden="true"></span>
+        ${isPro ? `<span class="pp-avatar-pro-mark" title="${plan === 'business' ? 'Verified Business' : 'Pro Traveler'}" aria-label="${plan === 'business' ? 'Verified Business' : 'Pro Traveler'}"><i class="lucide-sparkles"></i></span>` : ''}
       </div>
       <div class="pp-actions-row">
         <a href="#/profile-edit" class="btn btn-primary pp-edit-btn">
@@ -126,92 +150,106 @@ export async function initProfilePage() {
       </div>
     </section>
 
-    <!-- Stats grid -->
+    <!-- Stats grid (4 tiles, tabular-num counters) -->
     <section class="pp-stats">
       <div class="pp-stat">
-        <div class="pp-stat-icon"><i class="lucide-zap"></i></div>
+        <div class="pp-stat-icon pp-stat-icon-xp"><i class="lucide-zap"></i></div>
         <strong>${xp}</strong>
         <span>XP Points</span>
       </div>
       <div class="pp-stat">
-        <div class="pp-stat-icon"><i class="lucide-trophy"></i></div>
+        <div class="pp-stat-icon pp-stat-icon-rank"><i class="lucide-trophy"></i></div>
         <strong>#${rankNum}</strong>
         <span>Ranking</span>
       </div>
       <div class="pp-stat">
-        <div class="pp-stat-icon"><i class="lucide-flame"></i></div>
+        <div class="pp-stat-icon pp-stat-icon-level"><i class="lucide-flame"></i></div>
         <strong>${level}</strong>
         <span>Level</span>
       </div>
       <div class="pp-stat">
-        <div class="pp-stat-icon"><i class="lucide-award"></i></div>
-        <strong>${tierEmoji}</strong>
-        <span>${tierLabel}</span>
+        <div class="pp-stat-icon pp-stat-icon-tier"><i class="lucide-${tier.iconName}"></i></div>
+        <strong class="pp-stat-tier-label">${tier.label}</strong>
+        <span>Tier</span>
       </div>
     </section>
 
-    <!-- Quick links grid -->
+    ${isPro ? `
+    <!-- Pro flair card (visible only for premium/business/admin) -->
+    <section class="pp-pro-card${plan === 'business' ? ' is-business' : ''}">
+      <div class="pp-pro-icon" aria-hidden="true"><i class="lucide-sparkles"></i></div>
+      <div class="pp-pro-body">
+        <strong>${plan === 'business' ? 'Verified Business' : 'Pro Traveler'}</strong>
+        <p>Thanks for keeping e-Tunisia running. ${plan === 'business' ? 'Your dashboard is unlocked end-to-end.' : 'Every Pro feature is unlocked for you.'}</p>
+      </div>
+      <a href="#/premium" class="pp-pro-cta">Manage <i class="lucide-arrow-right"></i></a>
+    </section>
+    ` : ''}
+
+    <!-- Quick links grid (tinted with brand tokens, no HSL hue hacks) -->
     <section class="pp-quick-links">
       <h3 class="pp-section-title"><i class="lucide-compass"></i> Quick Access</h3>
       <div class="pp-links-grid">
-        <a href="#/favorites" class="pp-quick-link-card">
-          <div class="pp-ql-icon" style="--ql-hue: 350"><i class="lucide-heart"></i></div>
+        <a href="#/favorites" class="pp-quick-link-card" data-tint="rose">
+          <div class="pp-ql-icon"><i class="lucide-heart"></i></div>
           <div class="pp-ql-content">
             <strong>Saved Places</strong>
             <span>Your favorite spots</span>
           </div>
           <i class="lucide-chevron-right pp-ql-arrow"></i>
         </a>
-        <a href="#/badges" class="pp-quick-link-card">
-          <div class="pp-ql-icon" style="--ql-hue: 45"><i class="lucide-award"></i></div>
+        <a href="#/badges" class="pp-quick-link-card" data-tint="gold">
+          <div class="pp-ql-icon"><i class="lucide-award"></i></div>
           <div class="pp-ql-content">
             <strong>Badges</strong>
             <span>Achievements earned</span>
           </div>
           <i class="lucide-chevron-right pp-ql-arrow"></i>
         </a>
-        <a href="#/credits" class="pp-quick-link-card">
-          <div class="pp-ql-icon" style="--ql-hue: 160"><i class="lucide-coins"></i></div>
+        <a href="#/credits" class="pp-quick-link-card" data-tint="olive">
+          <div class="pp-ql-icon"><i class="lucide-coins"></i></div>
           <div class="pp-ql-content">
             <strong>Credits</strong>
-            <span>Wallet & donations</span>
+            <span>Wallet &amp; donations</span>
           </div>
           <i class="lucide-chevron-right pp-ql-arrow"></i>
         </a>
-        <a href="#/leaderboard" class="pp-quick-link-card">
-          <div class="pp-ql-icon" style="--ql-hue: 220"><i class="lucide-bar-chart-3"></i></div>
+        <a href="#/leaderboard" class="pp-quick-link-card" data-tint="mediterranean">
+          <div class="pp-ql-icon"><i class="lucide-bar-chart-3"></i></div>
           <div class="pp-ql-content">
             <strong>Leaderboard</strong>
             <span>Your ranking</span>
           </div>
           <i class="lucide-chevron-right pp-ql-arrow"></i>
         </a>
-        <a href="#/premium" class="pp-quick-link-card pp-ql-premium">
-          <div class="pp-ql-icon" style="--ql-hue: 30"><i class="lucide-crown"></i></div>
+        ${!isPro ? `
+        <a href="#/premium" class="pp-quick-link-card pp-ql-premium" data-tint="gold">
+          <div class="pp-ql-icon"><i class="lucide-crown"></i></div>
           <div class="pp-ql-content">
             <strong>Go Premium</strong>
             <span>Unlock exclusive features</span>
           </div>
           <i class="lucide-chevron-right pp-ql-arrow"></i>
         </a>
-        <a href="#/itineraries" class="pp-quick-link-card">
-          <div class="pp-ql-icon" style="--ql-hue: 190"><i class="lucide-map"></i></div>
+        ` : ''}
+        <a href="#/itineraries" class="pp-quick-link-card" data-tint="cyan">
+          <div class="pp-ql-icon"><i class="lucide-map"></i></div>
           <div class="pp-ql-content">
             <strong>Trip Plans</strong>
             <span>Curated itineraries</span>
           </div>
           <i class="lucide-chevron-right pp-ql-arrow"></i>
         </a>
-        <a href="#/collections" class="pp-quick-link-card">
-          <div class="pp-ql-icon" style="--ql-hue: 280"><i class="lucide-layers"></i></div>
+        <a href="#/collections" class="pp-quick-link-card" data-tint="violet">
+          <div class="pp-ql-icon"><i class="lucide-layers"></i></div>
           <div class="pp-ql-content">
             <strong>Collections</strong>
             <span>Themed place sets</span>
           </div>
           <i class="lucide-chevron-right pp-ql-arrow"></i>
         </a>
-        <a href="#/settings" class="pp-quick-link-card">
-          <div class="pp-ql-icon" style="--ql-hue: 0"><i class="lucide-settings"></i></div>
+        <a href="#/settings" class="pp-quick-link-card" data-tint="neutral">
+          <div class="pp-ql-icon"><i class="lucide-settings"></i></div>
           <div class="pp-ql-content">
             <strong>Settings</strong>
             <span>Account preferences</span>

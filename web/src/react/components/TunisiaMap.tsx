@@ -14,9 +14,12 @@ export function TunisiaMap({ visited, emptyCta }: Props) {
         <div className="passport-map">
             <svg viewBox="0 0 100 160" className="passport-map-svg" role="img" aria-label="Tunisia map">
                 <defs>
+                    {/* Terracotta glow — OKLCH literal matching `--terracotta` in tokens.css.
+                        Kept inline because SVG <stop> resolves at element creation, not via
+                        CSS variables. If --terracotta moves, mirror the values here. */}
                     <radialGradient id="passport-map-glow" cx="50%" cy="50%" r="60%">
-                        <stop offset="0%" stopColor="rgba(212, 98, 58, 0.35)" />
-                        <stop offset="100%" stopColor="rgba(212, 98, 58, 0)" />
+                        <stop offset="0%" stopColor="oklch(55% 0.16 30 / 0.35)" />
+                        <stop offset="100%" stopColor="oklch(55% 0.16 30 / 0)" />
                     </radialGradient>
                 </defs>
                 <path d={TUNISIA_OUTLINE_PATH} className="passport-map-outline" />

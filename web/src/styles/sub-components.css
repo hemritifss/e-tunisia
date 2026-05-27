@@ -1,0 +1,1488 @@
+/* ============================================
+   SUB-COMPONENTS POLISH
+   Passport sub-widgets + global modals/drawers/menus.
+   Loaded after pages.css so refinements win.
+   ============================================ */
+
+/* ============================================
+   PASSPORT STATS (.passport-stats)
+   4-tile grid on the passport page hero.
+   ============================================ */
+.passport-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-3);
+}
+@media (max-width: 540px) {
+    .passport-stats { grid-template-columns: repeat(2, 1fr); }
+}
+.passport-stat {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    background: var(--surface-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    transition: transform var(--duration-fast) var(--ease-spring),
+                box-shadow var(--duration-normal) var(--ease-out),
+                border-color var(--duration-normal) var(--ease-out);
+}
+.passport-stat:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--accent-light);
+}
+.passport-stat > svg {
+    width: 36px;
+    height: 36px;
+    padding: 8px;
+    background: var(--accent-light);
+    color: var(--accent);
+    border-radius: 50%;
+    flex: 0 0 auto;
+}
+/* Per-tile tint via :nth-child — Cities=cyan, Trips=mediterranean, Reviews=gold, Saves=olive */
+.passport-stat:nth-child(1) > svg { background: color-mix(in oklch, var(--cyan) 16%, transparent);          color: var(--cyan); }
+.passport-stat:nth-child(2) > svg { background: color-mix(in oklch, var(--mediterranean) 16%, transparent); color: var(--mediterranean); }
+.passport-stat:nth-child(3) > svg { background: color-mix(in oklch, var(--gold) 18%, transparent);          color: var(--gold); }
+.passport-stat:nth-child(4) > svg { background: color-mix(in oklch, var(--olive) 16%, transparent);         color: var(--olive); }
+@supports not (color: color-mix(in oklch, red, blue)) {
+    .passport-stat > svg { background: var(--bg-tertiary); }
+}
+.passport-stat > div {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+.passport-stat strong {
+    font-family: var(--font-display);
+    font-size: var(--text-xl);
+    font-weight: 800;
+    color: var(--text-primary);
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+}
+.passport-stat span {
+    font-size: var(--text-xs);
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wide);
+    font-weight: 600;
+}
+
+/* ============================================
+   TUNISIA MAP (.passport-map)
+   SVG map of Tunisia with visited city dots.
+   ============================================ */
+.passport-map {
+    position: relative;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-2xl);
+    padding: var(--space-5);
+    overflow: hidden;
+}
+.passport-map::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 30% 40%, oklch(55% 0.16 30 / 0.06), transparent 60%);
+    pointer-events: none;
+}
+.passport-map-svg {
+    display: block;
+    width: 100%;
+    max-width: 360px;
+    height: auto;
+    margin: 0 auto;
+    aspect-ratio: 100 / 160;
+}
+.passport-map-outline {
+    fill: var(--bg-tertiary);
+    stroke: var(--border);
+    stroke-width: 0.4;
+}
+.passport-city circle {
+    fill: var(--border);
+    transition: fill var(--duration-fast) var(--ease-out),
+                r var(--duration-fast) var(--ease-spring);
+}
+.passport-city text {
+    fill: var(--text-tertiary);
+    font-size: 2.4px;
+    font-weight: 500;
+    pointer-events: none;
+}
+.passport-city.visited circle {
+    fill: var(--terracotta);
+    filter: drop-shadow(0 0 1.5px oklch(55% 0.16 30 / 0.4));
+}
+.passport-city.visited text {
+    fill: var(--terracotta);
+    font-weight: 700;
+}
+.passport-map-empty {
+    position: absolute;
+    inset: auto var(--space-4) var(--space-4) auto;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px var(--space-3);
+    background: var(--surface-elevated);
+    border: 1px solid var(--accent-light);
+    border-radius: var(--radius-full);
+    color: var(--text-primary);
+    text-decoration: none;
+    font-size: var(--text-xs);
+    box-shadow: var(--shadow-md);
+    transition: transform var(--duration-fast) var(--ease-spring),
+                border-color var(--duration-fast) var(--ease-out);
+}
+.passport-map-empty:hover {
+    transform: translateY(-1px);
+    border-color: var(--accent);
+}
+.passport-map-empty span { color: var(--text-secondary); }
+.passport-map-empty strong { color: var(--accent); font-weight: 600; }
+
+/* ============================================
+   BADGE GRID (.passport-badges)
+   Renders BADGES via Lucide icons + per-badge tint.
+   ============================================ */
+.passport-badges {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: var(--space-3);
+}
+.passport-badge {
+    --badge-tint: var(--accent);
+    background: var(--surface-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    padding: var(--space-4) var(--space-2);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2);
+    text-align: center;
+    transition: transform var(--duration-fast) var(--ease-spring),
+                box-shadow var(--duration-normal) var(--ease-out),
+                border-color var(--duration-normal) var(--ease-out);
+}
+.passport-badge:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+.passport-badge.is-earned {
+    border-color: transparent;
+    background:
+        linear-gradient(var(--surface-elevated), var(--surface-elevated)) padding-box,
+        linear-gradient(135deg, var(--badge-tint), color-mix(in oklch, var(--badge-tint) 60%, transparent)) border-box;
+}
+@supports not (color: color-mix(in oklch, red, blue)) {
+    .passport-badge.is-earned {
+        background: var(--surface-elevated);
+        border: 1px solid var(--badge-tint);
+    }
+}
+.passport-badge.is-earned:hover {
+    box-shadow: var(--shadow-lg), 0 0 0 1px var(--badge-tint);
+}
+.passport-badge.is-locked {
+    opacity: 0.6;
+}
+.passport-badge.is-locked:hover {
+    opacity: 0.85;
+}
+.passport-badge-icon {
+    width: 56px;
+    height: 56px;
+    display: grid;
+    place-items: center;
+    background: var(--bg-secondary);
+    color: var(--text-tertiary);
+    border-radius: 50%;
+}
+.passport-badge.is-earned .passport-badge-icon {
+    background: color-mix(in oklch, var(--badge-tint) 16%, var(--surface-elevated));
+    color: var(--badge-tint);
+}
+@supports not (color: color-mix(in oklch, red, blue)) {
+    .passport-badge.is-earned .passport-badge-icon { background: var(--bg-tertiary); }
+}
+.passport-badge-label {
+    font-family: var(--font-display);
+    font-size: var(--text-sm);
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: var(--leading-snug);
+}
+.passport-badge.is-locked .passport-badge-label {
+    color: var(--text-tertiary);
+}
+
+/* ============================================
+   PASSPORT TABS (.passport-tabs)
+   Trips / Reviews / Saves tabbed list.
+   ============================================ */
+.passport-tabs-head {
+    display: flex;
+    gap: var(--space-2);
+    border-bottom: 1px solid var(--border);
+    margin-bottom: var(--space-4);
+    padding: 0 2px;
+}
+.passport-tabs-head button {
+    position: relative;
+    padding: var(--space-3) var(--space-4);
+    background: transparent;
+    border: none;
+    color: var(--text-tertiary);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    cursor: pointer;
+    transition: color var(--duration-fast) var(--ease-out);
+}
+.passport-tabs-head button::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: -1px;
+    width: 0;
+    height: 2px;
+    background: var(--accent);
+    border-radius: var(--radius-full);
+    transform: translateX(-50%);
+    transition: width var(--duration-normal) var(--ease-spring);
+}
+.passport-tabs-head button:hover {
+    color: var(--text-primary);
+}
+.passport-tabs-head button.active {
+    color: var(--accent);
+}
+.passport-tabs-head button.active::after {
+    width: calc(100% - var(--space-6));
+}
+.passport-tabs-head button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+    border-radius: var(--radius-sm);
+}
+@media (prefers-reduced-motion: reduce) {
+    .passport-tabs-head button::after { transition: none; }
+}
+
+.passport-tab-skel {
+    height: 200px;
+    background: linear-gradient(90deg, var(--surface-hover) 25%, var(--surface-active) 50%, var(--surface-hover) 75%);
+    background-size: 200% 100%;
+    animation: sub-shimmer 1.6s linear infinite;
+    border-radius: var(--radius-xl);
+}
+@keyframes sub-shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .passport-tab-skel { animation: none; }
+}
+
+.passport-trip-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: var(--space-3);
+}
+.passport-trip-card {
+    background: var(--surface-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    color: inherit;
+    text-decoration: none;
+    transition: transform var(--duration-fast) var(--ease-spring),
+                box-shadow var(--duration-normal) var(--ease-out),
+                border-color var(--duration-normal) var(--ease-out);
+}
+.passport-trip-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--cyan);
+}
+.passport-trip-cover {
+    display: flex;
+    height: 120px;
+    background: var(--bg-tertiary);
+    gap: 2px;
+}
+.passport-trip-cover img {
+    flex: 1 1 0;
+    height: 100%;
+    object-fit: cover;
+    min-width: 0;
+}
+.passport-trip-meta {
+    padding: var(--space-3) var(--space-4);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.passport-trip-meta strong {
+    font-family: var(--font-display);
+    font-size: var(--text-sm);
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: var(--leading-snug);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.passport-trip-meta > span {
+    font-size: var(--text-xs);
+    color: var(--text-tertiary);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.passport-review-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+.passport-review {
+    background: var(--surface-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    padding: var(--space-4);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+.passport-review-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+}
+.passport-review-head a {
+    color: var(--accent);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+.passport-review-head a:hover { text-decoration: underline; }
+.passport-review-stars {
+    display: inline-flex;
+    gap: 1px;
+}
+.passport-review-stars svg {
+    color: var(--border);
+}
+.passport-review-stars svg.is-filled {
+    color: var(--gold);
+    fill: var(--gold);
+}
+.passport-review p {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: var(--text-sm);
+    line-height: var(--leading-normal);
+    max-width: 60ch;
+}
+
+.passport-empty {
+    text-align: center;
+    padding: var(--space-8) var(--space-4);
+    color: var(--text-tertiary);
+    background: var(--surface);
+    border: 1px dashed var(--border);
+    border-radius: var(--radius-xl);
+}
+
+/* ============================================
+   ENDORSE MODAL (.endorse-modal)
+   Topic picker with Lucide icons.
+   ============================================ */
+.endorse-modal-head {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding-bottom: var(--space-3);
+    border-bottom: 1px solid var(--border-light);
+    margin-bottom: var(--space-4);
+}
+.endorse-modal-head img,
+.endorse-modal-head .follow-list-avatar-fallback {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex: 0 0 auto;
+}
+.follow-list-avatar-fallback {
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    display: grid;
+    place-items: center;
+    font-weight: 700;
+    font-family: var(--font-display);
+}
+.endorse-modal-head h4 {
+    font-family: var(--font-display);
+    font-size: var(--text-lg);
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+}
+.endorse-modal-head p {
+    color: var(--text-secondary);
+    font-size: var(--text-sm);
+    margin: 0;
+}
+.endorse-topic-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: var(--space-2);
+}
+.endorse-topic {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-3);
+    background: var(--surface-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    color: var(--text-primary);
+    font-size: var(--text-sm);
+    cursor: pointer;
+    text-align: left;
+    transition: background var(--duration-fast) var(--ease-out),
+                border-color var(--duration-fast) var(--ease-out),
+                transform var(--duration-instant) var(--ease-spring);
+}
+.endorse-topic:hover {
+    background: var(--surface-hover);
+    border-color: var(--accent-light);
+}
+.endorse-topic:active { transform: scale(0.98); }
+.endorse-topic:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+.endorse-topic.is-on {
+    background: color-mix(in oklch, var(--violet) 10%, var(--surface-elevated));
+    border-color: var(--violet);
+}
+@supports not (color: color-mix(in oklch, red, blue)) {
+    .endorse-topic.is-on { background: var(--bg-tertiary); }
+}
+.endorse-topic-icon {
+    width: 28px;
+    height: 28px;
+    display: grid;
+    place-items: center;
+    background: color-mix(in oklch, var(--violet) 14%, transparent);
+    color: var(--violet);
+    border-radius: 50%;
+    flex: 0 0 auto;
+}
+@supports not (color: color-mix(in oklch, red, blue)) {
+    .endorse-topic-icon { background: var(--bg-tertiary); }
+}
+.endorse-topic.is-on .endorse-topic-icon {
+    background: var(--violet);
+    color: var(--text-inverse);
+}
+.endorse-topic-label {
+    flex: 1 1 auto;
+    font-weight: 500;
+    line-height: var(--leading-snug);
+}
+.endorse-topic-state {
+    width: 18px;
+    height: 18px;
+    display: grid;
+    place-items: center;
+    color: var(--violet);
+    flex: 0 0 auto;
+}
+.endorse-topic-state .spin {
+    animation: sub-spin 0.9s linear infinite;
+}
+@keyframes sub-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+    .endorse-topic-state .spin { animation-duration: 2s; }
+}
+.endorse-modal-footer {
+    margin: var(--space-4) 0 0;
+    text-align: center;
+    color: var(--text-tertiary);
+    font-size: var(--text-sm);
+}
+
+/* ============================================
+   TOP ENDORSEMENTS STRIP (.passport-endorse-strip)
+   Compact chips below hero on passport page.
+   ============================================ */
+.passport-endorse-strip {
+    display: flex;
+    gap: var(--space-2);
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding: 2px;
+    margin: 0 calc(var(--page-padding) * -1);
+    padding-inline: var(--page-padding);
+}
+.passport-endorse-strip::-webkit-scrollbar { display: none; }
+.passport-endorse-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    background: var(--surface-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-full);
+    font-size: var(--text-xs);
+    font-weight: 600;
+    color: var(--text-primary);
+    flex: 0 0 auto;
+    white-space: nowrap;
+}
+.passport-endorse-chip svg {
+    color: var(--violet);
+    flex: 0 0 auto;
+}
+.passport-endorse-chip strong {
+    color: var(--violet);
+    font-weight: 700;
+    margin-left: 2px;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ============================================
+   FOLLOW LIST (.follow-list)
+   Followers/Following sheet.
+   ============================================ */
+.follow-list-sheet h4 {
+    font-family: var(--font-display);
+    font-size: var(--text-lg);
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 var(--space-3);
+}
+.follow-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    max-height: 60dvh;
+    overflow-y: auto;
+}
+.follow-list-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-lg);
+    color: inherit;
+    text-decoration: none;
+    transition: background var(--duration-fast) var(--ease-out);
+}
+.follow-list-row:hover {
+    background: var(--surface-hover);
+}
+.follow-list-row img,
+.follow-list-row .follow-list-avatar-fallback {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex: 0 0 auto;
+}
+.follow-list-meta {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    line-height: 1.2;
+}
+.follow-list-meta strong {
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--text-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.follow-list-meta span {
+    font-size: var(--text-xs);
+    color: var(--text-tertiary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ============================================
+   SIGNUP GATE (.signup-gate)
+   Modal that fronts the passport claim flow.
+   ============================================ */
+.signup-gate-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-modal);
+    background: oklch(0% 0 0 / 0.55);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-4);
+    animation: sub-scrim-in var(--duration-fast) var(--ease-out);
+}
+@keyframes sub-scrim-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .signup-gate-backdrop { animation: none; }
+}
+.signup-gate {
+    position: relative;
+    width: 100%;
+    max-width: 440px;
+    background: var(--surface-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-2xl);
+    box-shadow: var(--shadow-2xl);
+    padding: var(--space-6);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    animation: sub-modal-in var(--duration-normal) var(--ease-spring);
+}
+@keyframes sub-modal-in {
+    from { transform: translateY(12px) scale(0.96); opacity: 0; }
+    to   { transform: translateY(0) scale(1);    opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .signup-gate { animation: none; }
+}
+.signup-gate-close {
+    position: absolute;
+    top: var(--space-3);
+    right: var(--space-3);
+    width: 36px;
+    height: 36px;
+    display: grid;
+    place-items: center;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: background var(--duration-fast) var(--ease-out);
+}
+.signup-gate-close:hover {
+    background: var(--surface-hover);
+    color: var(--text-primary);
+}
+.signup-gate h2 {
+    font-family: var(--font-display);
+    font-size: var(--text-xl);
+    font-weight: 800;
+    color: var(--text-primary);
+    margin: 0;
+    line-height: 1.2;
+    padding-right: var(--space-8);
+}
+.signup-gate-sub {
+    color: var(--text-secondary);
+    font-size: var(--text-sm);
+    margin: 0 0 var(--space-2);
+}
+.signup-gate label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.signup-gate label > span:first-child {
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--text-primary);
+}
+.signup-gate input[type="text"],
+.signup-gate input[type="email"],
+.signup-gate input[type="password"],
+.signup-gate input:not([type]) {
+    width: 100%;
+    min-height: 44px;
+    padding: var(--space-2) var(--space-3);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    transition: border-color var(--duration-fast) var(--ease-out),
+                background var(--duration-fast) var(--ease-out);
+}
+.signup-gate input:focus {
+    outline: none;
+    border-color: var(--accent);
+    background: var(--surface-elevated);
+    box-shadow: 0 0 0 3px color-mix(in oklch, var(--accent) 18%, transparent);
+}
+@supports not (color: color-mix(in oklch, red, blue)) {
+    .signup-gate input:focus { box-shadow: 0 0 0 3px var(--accent-light); }
+}
+.signup-gate-handle-row {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding-left: var(--space-3);
+    transition: border-color var(--duration-fast) var(--ease-out);
+}
+.signup-gate-handle-row:focus-within {
+    border-color: var(--accent);
+    background: var(--surface-elevated);
+    box-shadow: 0 0 0 3px color-mix(in oklch, var(--accent) 18%, transparent);
+}
+@supports not (color: color-mix(in oklch, red, blue)) {
+    .signup-gate-handle-row:focus-within { box-shadow: 0 0 0 3px var(--accent-light); }
+}
+.signup-gate-handle-at {
+    color: var(--text-tertiary);
+    font-size: var(--text-base);
+    font-weight: 600;
+    pointer-events: none;
+}
+.signup-gate-handle-row input {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    flex: 1 1 auto;
+    min-height: 42px;
+    padding: 0 var(--space-2) !important;
+}
+.signup-gate-handle-status {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    color: var(--text-tertiary);
+    flex: 0 0 auto;
+}
+.signup-gate-handle-status[data-status="ok"]  { color: var(--success); }
+.signup-gate-handle-status[data-status="bad"] { color: var(--error); }
+.signup-gate-handle-status .spin {
+    animation: sub-spin 0.9s linear infinite;
+}
+.signup-gate-hint {
+    font-size: var(--text-xs);
+    color: var(--error);
+    margin-top: 4px;
+}
+.signup-gate-error {
+    padding: var(--space-3);
+    background: color-mix(in oklch, var(--error) 14%, transparent);
+    border: 1px solid color-mix(in oklch, var(--error) 30%, transparent);
+    border-radius: var(--radius-lg);
+    color: var(--error);
+    font-size: var(--text-sm);
+}
+@supports not (color: color-mix(in oklch, red, blue)) {
+    .signup-gate-error { background: var(--error-light); border-color: var(--error); }
+}
+.signup-gate .btn.primary.block {
+    width: 100%;
+    background: var(--gradient-cta);
+    color: var(--text-inverse);
+    border: none;
+    border-radius: var(--radius-full);
+    padding: var(--space-3) var(--space-5);
+    min-height: 48px;
+    font-size: var(--text-base);
+    font-weight: 700;
+    box-shadow: var(--shadow-glow);
+    cursor: pointer;
+    transition: transform var(--duration-fast) var(--ease-spring),
+                box-shadow var(--duration-normal) var(--ease-out);
+}
+.signup-gate .btn.primary.block:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-glow), 0 8px 24px oklch(55% 0.16 30 / 0.35);
+}
+.signup-gate .btn.primary.block:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+.signup-gate-tos {
+    text-align: center;
+    color: var(--text-tertiary);
+    font-size: var(--text-xs);
+}
+
+/* ============================================
+   PASSPORT ONBOARDING (.passport-onb)
+   Welcome-claim wizard rendered over the 404 hand-off.
+   ============================================ */
+.passport-onb {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-modal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-4);
+    background: oklch(0% 0 0 / 0.5);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+}
+.passport-onb-card {
+    width: 100%;
+    max-width: 480px;
+    background: var(--surface-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-2xl);
+    box-shadow: var(--shadow-2xl);
+    padding: var(--space-6);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    animation: sub-modal-in var(--duration-normal) var(--ease-spring);
+}
+.passport-onb-step {
+    align-self: flex-start;
+    padding: 4px var(--space-3);
+    background: var(--accent-light);
+    color: var(--accent);
+    border-radius: var(--radius-full);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: var(--tracking-widest);
+    text-transform: uppercase;
+}
+.passport-onb-card h2 {
+    font-family: var(--font-display);
+    font-size: var(--text-2xl);
+    font-weight: 800;
+    color: var(--text-primary);
+    margin: 0;
+}
+.passport-onb-welcome-h {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+.passport-onb-welcome-icon {
+    width: 36px;
+    height: 36px;
+    display: grid;
+    place-items: center;
+    background: var(--accent-light);
+    color: var(--accent);
+    border-radius: 50%;
+}
+.passport-onb-card p {
+    color: var(--text-secondary);
+    font-size: var(--text-sm);
+    margin: 0;
+}
+.passport-onb-input {
+    width: 100%;
+    min-height: 44px;
+    padding: var(--space-2) var(--space-3);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    transition: border-color var(--duration-fast) var(--ease-out);
+}
+.passport-onb-input:focus {
+    outline: none;
+    border-color: var(--accent);
+    background: var(--surface-elevated);
+    box-shadow: 0 0 0 3px color-mix(in oklch, var(--accent) 18%, transparent);
+}
+.passport-onb-chips {
+    display: flex;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+}
+.passport-chip {
+    padding: 6px var(--space-3);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-full);
+    color: var(--text-secondary);
+    font-size: var(--text-sm);
+    cursor: pointer;
+    transition: background var(--duration-fast) var(--ease-out),
+                color var(--duration-fast) var(--ease-out),
+                border-color var(--duration-fast) var(--ease-out);
+}
+.passport-chip:hover {
+    border-color: var(--accent-light);
+    color: var(--text-primary);
+}
+.passport-chip.on {
+    background: var(--accent);
+    color: var(--accent-text);
+    border-color: var(--accent);
+    font-weight: 600;
+}
+.passport-onb-card .btn.primary.block {
+    width: 100%;
+    background: var(--gradient-cta);
+    color: var(--text-inverse);
+    border: none;
+    border-radius: var(--radius-full);
+    padding: var(--space-3);
+    min-height: 48px;
+    font-weight: 700;
+    box-shadow: var(--shadow-glow);
+    cursor: pointer;
+}
+.passport-onb-celebrate {
+    text-align: center;
+    padding: var(--space-4) 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2);
+}
+.passport-onb-badge {
+    width: 80px;
+    height: 80px;
+    display: grid;
+    place-items: center;
+    background: var(--gradient-gold);
+    color: oklch(20% 0.05 80);
+    border-radius: 50%;
+    box-shadow: var(--shadow-xl), var(--shadow-glow-gold);
+    animation: sub-badge-pop var(--duration-normal) var(--ease-spring);
+}
+@keyframes sub-badge-pop {
+    from { transform: scale(0.6); opacity: 0; }
+    to   { transform: scale(1);   opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .passport-onb-badge { animation: none; }
+}
+
+/* Confetti — OKLCH brand-token palette set inline via React style prop */
+.confetti {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: calc(var(--z-modal) + 1);
+    overflow: hidden;
+}
+.confetti span {
+    position: absolute;
+    top: -10px;
+    width: 8px;
+    height: 14px;
+    border-radius: 1px;
+    animation-name: sub-confetti-fall;
+    animation-timing-function: linear;
+    animation-fill-mode: forwards;
+}
+@keyframes sub-confetti-fall {
+    0%   { transform: translateY(0)     rotate(0deg);   opacity: 1; }
+    100% { transform: translateY(120vh) rotate(540deg); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .confetti span { animation: none; opacity: 0; }
+}
+
+/* ============================================
+   DONATE MODAL (.donate-modal)
+   Tip / platform-support flow.
+   ============================================ */
+.donate-modal {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-modal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-4);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--duration-fast) var(--ease-out);
+}
+.donate-modal.open {
+    opacity: 1;
+    pointer-events: auto;
+}
+.donate-modal-overlay {
+    position: absolute;
+    inset: 0;
+    background: oklch(0% 0 0 / 0.55);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+}
+.donate-modal-card {
+    position: relative;
+    width: 100%;
+    max-width: 460px;
+    max-height: calc(100dvh - var(--space-8));
+    overflow-y: auto;
+    background: var(--surface-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-2xl);
+    box-shadow: var(--shadow-2xl);
+    padding: var(--space-6);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    transform: translateY(12px) scale(0.96);
+    transition: transform var(--duration-normal) var(--ease-spring);
+}
+.donate-modal.open .donate-modal-card {
+    transform: translateY(0) scale(1);
+}
+.donate-modal-close {
+    position: absolute;
+    top: var(--space-3);
+    right: var(--space-3);
+    width: 36px;
+    height: 36px;
+    display: grid;
+    place-items: center;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: background var(--duration-fast) var(--ease-out);
+}
+.donate-modal-close:hover {
+    background: var(--surface-hover);
+    color: var(--text-primary);
+}
+.donate-modal-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding-right: var(--space-8);
+}
+.donate-modal-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: var(--bg-tertiary);
+    flex: 0 0 auto;
+    border: 2px solid var(--gradient-gold);
+    background:
+        linear-gradient(var(--surface-elevated), var(--surface-elevated)) padding-box,
+        var(--gradient-gold) border-box;
+    padding: 2px;
+}
+.donate-modal-header h3 {
+    font-family: var(--font-display);
+    font-size: var(--text-lg);
+    font-weight: 700;
+    margin: 4px 0 0;
+    color: var(--text-primary);
+}
+.donate-modal-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+.donate-modal-label {
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--text-primary);
+}
+.donate-presets {
+    display: flex;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+}
+.donate-preset {
+    flex: 1 1 70px;
+    padding: var(--space-2);
+    min-height: 40px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    color: var(--text-primary);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    cursor: pointer;
+    transition: background var(--duration-fast) var(--ease-out),
+                border-color var(--duration-fast) var(--ease-out),
+                color var(--duration-fast) var(--ease-out);
+}
+.donate-preset:hover {
+    border-color: var(--gold);
+    color: var(--gold);
+}
+.donate-preset.is-active {
+    background: color-mix(in oklch, var(--gold) 16%, transparent);
+    border-color: var(--gold);
+    color: var(--gold);
+}
+@supports not (color: color-mix(in oklch, red, blue)) {
+    .donate-preset.is-active { background: var(--bg-tertiary); }
+}
+.donate-modal .input {
+    width: 100%;
+    min-height: 44px;
+    padding: var(--space-2) var(--space-3);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    transition: border-color var(--duration-fast) var(--ease-out);
+}
+.donate-modal .input:focus {
+    outline: none;
+    border-color: var(--gold);
+    background: var(--surface-elevated);
+    box-shadow: 0 0 0 3px color-mix(in oklch, var(--gold) 18%, transparent);
+}
+.donate-fee-note {
+    font-size: var(--text-xs);
+    color: var(--text-tertiary);
+    margin: 0;
+}
+.donate-anon {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    cursor: pointer;
+    user-select: none;
+}
+.donate-modal-footer {
+    display: flex;
+    gap: var(--space-2);
+    justify-content: flex-end;
+    padding-top: var(--space-2);
+    border-top: 1px solid var(--border-light);
+}
+.donate-modal-footer .btn.btn-primary {
+    background: var(--gradient-gold) !important;
+    color: oklch(20% 0.05 80) !important;
+    border: none !important;
+    border-radius: var(--radius-full) !important;
+    padding: var(--space-2) var(--space-4) !important;
+    font-weight: 700 !important;
+    box-shadow: var(--shadow-glow-gold);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+.donate-modal-footer .btn.btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ============================================
+   SAFETY MENU (.safety-menu)
+   Floating dropdown anchored to a "more" button.
+   ============================================ */
+.safety-menu {
+    position: absolute;
+    z-index: var(--z-tooltip);
+    width: 220px;
+    background: var(--surface-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-2xl);
+    padding: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    animation: sub-menu-in var(--duration-fast) var(--ease-spring);
+    transform-origin: top right;
+}
+@keyframes sub-menu-in {
+    from { transform: scale(0.96); opacity: 0; }
+    to   { transform: scale(1);    opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .safety-menu { animation: none; }
+}
+.safety-menu-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    cursor: pointer;
+    text-align: left;
+    transition: background var(--duration-fast) var(--ease-out);
+}
+.safety-menu-item:hover {
+    background: var(--surface-hover);
+}
+.safety-menu-item i {
+    color: var(--text-secondary);
+    font-size: 14px;
+    flex: 0 0 auto;
+}
+.safety-menu-item:hover i { color: var(--text-primary); }
+.safety-menu-item[data-action="report"] i,
+.safety-menu-item[data-action="block"] i {
+    color: var(--error);
+}
+.safety-menu-item.is-active i { color: var(--success); }
+
+/* ============================================
+   TRIP CART (.trip-cart-fab + .trip-cart-drawer)
+   Floating launcher + side drawer.
+   ============================================ */
+.trip-cart-fab {
+    position: fixed;
+    bottom: var(--space-4);
+    right: var(--space-4);
+    z-index: var(--z-sticky);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: var(--space-3) var(--space-4);
+    background: var(--surface-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-full);
+    color: var(--text-primary);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: var(--shadow-lg);
+    transition: transform var(--duration-fast) var(--ease-spring),
+                box-shadow var(--duration-normal) var(--ease-out);
+}
+.trip-cart-fab:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-xl);
+}
+.trip-cart-fab:active { transform: scale(0.97); }
+.trip-cart-fab:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+}
+.trip-cart-fab i {
+    color: var(--accent);
+    font-size: 16px;
+}
+.trip-cart-fab.is-empty .trip-cart-count {
+    display: none !important;
+}
+.trip-cart-count {
+    display: inline-grid;
+    place-items: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    background: var(--accent);
+    color: var(--accent-text);
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 20px;
+    font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 768px) {
+    .trip-cart-fab {
+        bottom: calc(var(--mobile-nav-height) + var(--space-3) + env(safe-area-inset-bottom, 0));
+    }
+}
+
+.trip-cart-backdrop {
+    position: fixed;
+    inset: 0;
+    background: oklch(0% 0 0 / 0.5);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    z-index: var(--z-modal);
+    animation: sub-scrim-in var(--duration-fast) var(--ease-out);
+}
+.trip-cart-drawer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: min(440px, 92vw);
+    z-index: calc(var(--z-modal) + 1);
+    background: var(--surface-elevated);
+    border-left: 1px solid var(--border);
+    box-shadow: var(--shadow-2xl);
+    display: flex;
+    flex-direction: column;
+    animation: sub-drawer-in var(--duration-normal) var(--ease-spring);
+}
+@keyframes sub-drawer-in {
+    from { transform: translateX(100%); }
+    to   { transform: translateX(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .trip-cart-drawer { animation: none; }
+}
+
+.trip-cart-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    padding: var(--space-4) var(--space-5);
+    border-bottom: 1px solid var(--border-light);
+}
+.trip-cart-title h2 {
+    font-family: var(--font-display);
+    font-size: var(--text-lg);
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+}
+.trip-cart-sub {
+    margin: 2px 0 0;
+    color: var(--text-tertiary);
+    font-size: var(--text-xs);
+}
+.trip-cart-close {
+    width: 36px;
+    height: 36px;
+    display: grid;
+    place-items: center;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    color: var(--text-secondary);
+    cursor: pointer;
+    flex: 0 0 auto;
+    transition: background var(--duration-fast) var(--ease-out);
+}
+.trip-cart-close:hover {
+    background: var(--surface-hover);
+    color: var(--text-primary);
+}
+
+.trip-cart-controls {
+    padding: var(--space-3) var(--space-5);
+    border-bottom: 1px solid var(--border-light);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+.trip-cart-title-input {
+    width: 100%;
+    min-height: 40px;
+    padding: var(--space-2) var(--space-3);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    color: var(--text-primary);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: var(--text-base);
+    transition: border-color var(--duration-fast) var(--ease-out);
+}
+.trip-cart-title-input:focus {
+    outline: none;
+    border-color: var(--accent);
+    background: var(--surface-elevated);
+}
+.trip-cart-stepper-row {
+    display: flex;
+    gap: var(--space-3);
+}
+
+.trip-cart-list {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    padding: var(--space-3) var(--space-5);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.trip-cart-foot {
+    padding: var(--space-3) var(--space-5) calc(var(--space-3) + env(safe-area-inset-bottom, 0));
+    border-top: 1px solid var(--border-light);
+    background: var(--surface);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+.trip-cart-total {
+    font-family: var(--font-display);
+    font-size: var(--text-lg);
+    font-weight: 700;
+    color: var(--text-primary);
+    font-variant-numeric: tabular-nums;
+}
+.trip-cart-actions {
+    display: flex;
+    gap: var(--space-2);
+    justify-content: space-between;
+}
+.trip-cart-actions .btn.btn-primary {
+    background: var(--gradient-cta) !important;
+    color: var(--text-inverse) !important;
+    border: none !important;
+    border-radius: var(--radius-full) !important;
+    padding: var(--space-2) var(--space-4) !important;
+    min-height: 40px;
+    font-weight: 700 !important;
+    box-shadow: var(--shadow-glow);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Mobile: sheet from bottom */
+@media (max-width: 540px) {
+    .trip-cart-drawer {
+        top: auto;
+        bottom: 0;
+        right: 0;
+        left: 0;
+        width: 100vw;
+        max-height: 80dvh;
+        border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
+        border-left: none;
+        border-top: 1px solid var(--border);
+        animation: sub-sheet-in var(--duration-normal) var(--ease-spring);
+    }
+    @keyframes sub-sheet-in {
+        from { transform: translateY(100%); }
+        to   { transform: translateY(0); }
+    }
+}

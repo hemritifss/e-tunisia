@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../../shared/api';
 import { readDraft, clearDraft } from '../../passport-draft';
+import { MapPin, Star } from 'lucide-react';
 
 interface Props { handle: string; fullName: string; onDone(): void; }
 
@@ -54,7 +55,10 @@ export function PassportOnboarding({ handle, fullName, onDone }: Props) {
                 {step === 1 && (
                     <>
                         <div className="passport-onb-step">Step 1 of 2</div>
-                        <h2>Welcome, {fullName.split(' ')[0] || 'traveler'} 🇹🇳</h2>
+                        <h2 className="passport-onb-welcome-h">
+                            <span className="passport-onb-welcome-icon" aria-hidden="true"><MapPin size={20} /></span>
+                            Welcome, {fullName.split(' ')[0] || 'traveler'}
+                        </h2>
                         <p>Where are you from? We'll show it on your passport.</p>
                         <input className="passport-onb-input" value={country} onChange={(e) => setCountry(e.target.value)} />
                         <button className="btn primary block" onClick={() => setStep(2)}>Next</button>
@@ -80,7 +84,9 @@ export function PassportOnboarding({ handle, fullName, onDone }: Props) {
                 )}
                 {step === 3 && (
                     <div className="passport-onb-celebrate">
-                        <div className="passport-onb-badge">🌟</div>
+                        <div className="passport-onb-badge" aria-hidden="true">
+                            <Star size={32} strokeWidth={1.75} fill="currentColor" />
+                        </div>
                         <h2>You earned <em>New Explorer</em></h2>
                         <p>Your passport is live. Taking you there…</p>
                     </div>
@@ -90,10 +96,20 @@ export function PassportOnboarding({ handle, fullName, onDone }: Props) {
     );
 }
 
-/** Lightweight CSS-only confetti. */
+/** Lightweight CSS-only confetti.
+ *  Colors are OKLCH literals matching the brand tokens (terracotta /
+ *  mediterranean / gold / cyan / violet). Inline because each piece sets
+ *  its background via the `style` attribute — CSS vars would resolve but
+ *  add an extra reflow per piece, so we keep them flat. */
 function Confetti() {
     const pieces = Array.from({ length: 60 });
-    const colors = ['#d4623a', '#1a3a73', '#f4c542', '#56cfe1', '#a371f7'];
+    const colors = [
+        'oklch(55% 0.16 30)',   // --terracotta
+        'oklch(52% 0.14 240)',  // --mediterranean
+        'oklch(78% 0.17 80)',   // --gold
+        'oklch(72% 0.18 200)',  // --cyan
+        'oklch(58% 0.2 290)',   // --violet
+    ];
     return (
         <div className="confetti" aria-hidden>
             {pieces.map((_, i) => {

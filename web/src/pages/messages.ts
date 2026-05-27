@@ -135,15 +135,29 @@ async function renderInbox() {
     const lm = room.lastMessage;
     const preview = lm?.content ? escapeHtml(lm.content) : 'New conversation';
     const mineLastMsg = lm?.senderId === myId;
+    const otherUserId = other?.id || '';
+    const otherHandle = other?.handle || '';
+    const otherPlan = other?.plan || '';
+    const otherOnline = otherUserId ? isUserOnline(otherUserId) : false;
     return `
-      <a class="dm-inbox-row ${currentRoom === room.id ? 'active' : ''}" href="#/messages/${room.id}" data-room="${room.id}">
-        <img src="${avatar}" alt="${escapeHtml(name)}" class="dm-inbox-avatar" />
+      <a class="dm-inbox-row ${currentRoom === room.id ? 'active' : ''}"
+         href="#/messages/${room.id}"
+         data-room="${room.id}"
+         data-user-id="${escapeHtml(otherUserId)}"
+         data-user-name="${escapeHtml(name)}"
+         data-user-avatar="${escapeHtml(avatar)}"
+         data-user-handle="${escapeHtml(otherHandle)}"
+         data-user-plan="${escapeHtml(otherPlan)}">
+        <span class="dm-inbox-avatar-wrap">
+          <img src="${avatar}" alt="" class="dm-inbox-avatar" loading="lazy" />
+          <span class="dm-inbox-presence-dot${otherOnline ? ' is-online' : ''}" data-presence-for="${escapeHtml(otherUserId)}" aria-hidden="true"></span>
+        </span>
         <div class="dm-inbox-info">
           <div class="dm-inbox-name-row">
             <strong>${escapeHtml(name)}</strong>
             <span class="dm-inbox-time">${timeAgo(lm?.timestamp || room.updatedAt)}</span>
           </div>
-          <div class="dm-inbox-preview">${mineLastMsg ? '<span class="text-muted">You: </span>' : ''}${preview}</div>
+          <div class="dm-inbox-preview">${mineLastMsg ? '<span class="dm-inbox-you">You: </span>' : ''}${preview}</div>
         </div>
       </a>
     `;
@@ -204,14 +218,20 @@ async function renderThread(roomId: string) {
   pane.innerHTML = `
     <header class="dm-thread-head">
       <a href="#/messages" class="dm-icon-btn dm-mobile-only" aria-label="Back to inbox"><i class="lucide-arrow-left"></i></a>
-      <a class="dm-thread-user" href="${otherId ? `#/user/${otherId}` : '#'}">
+      <a class="dm-thread-user"
+         href="${other?.handle ? `#/u/${escapeHtml(other.handle)}` : (otherId ? `#/user/${escapeHtml(otherId)}` : '#')}"
+         data-user-id="${escapeHtml(otherId || '')}"
+         data-user-name="${escapeHtml(name)}"
+         data-user-avatar="${escapeHtml(avatar)}"
+         data-user-handle="${escapeHtml(other?.handle || '')}"
+         data-user-plan="${escapeHtml(other?.plan || '')}">
         <span class="dm-avatar-wrap">
-          <img src="${avatar}" alt="" />
-          <span class="dm-presence-dot ${presenceOnline ? 'is-online' : ''}" data-presence-for="${otherId || ''}" title="${presenceOnline ? 'Online' : 'Offline'}"></span>
+          <img src="${avatar}" alt="" loading="lazy" />
+          <span class="dm-presence-dot ${presenceOnline ? 'is-online' : ''}" data-presence-for="${otherId || ''}" title="${presenceOnline ? 'Online' : 'Offline'}" aria-hidden="true"></span>
         </span>
-        <div>
+        <div class="dm-thread-user-meta">
           <strong>${escapeHtml(name)}</strong>
-          <span class="text-xs text-muted dm-thread-substatus" data-substatus-for="${otherId || ''}">
+          <span class="dm-thread-substatus" data-substatus-for="${otherId || ''}">
             ${presenceOnline ? 'Online now' : (other?.country ? escapeHtml(other.country) : 'Offline')}
           </span>
         </div>

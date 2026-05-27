@@ -9,9 +9,9 @@ import { requireAuth, showToast } from '../ui-utils';
 
 export function renderProfileEditPage(): string {
   return `
-    <div class="profile-edit-v2 page-enter" data-design="sleek" id="profile-edit-root">
-      <a href="#/profile" class="back-floating-btn"><i class="lucide-arrow-left"></i></a>
-      <div class="up-loading" style="padding-top: 120px;">
+    <div class="profile-edit-v2 page-enter" id="profile-edit-root">
+      <a href="#/profile" class="back-floating-btn" aria-label="Back to profile"><i class="lucide-arrow-left"></i></a>
+      <div class="pe-loading">
         <div class="spinner"></div>
         <p>Loading…</p>
       </div>
@@ -33,7 +33,13 @@ export async function initProfileEditPage() {
   if (!me) {
     root.innerHTML = `
       <a href="#/profile" class="back-floating-btn"><i class="lucide-arrow-left"></i></a>
-      <p class="text-danger" style="padding: var(--space-8); text-align:center;">Could not load your profile.</p>`;
+      <div class="pe-error">
+        <div class="pe-error-icon"><i class="lucide-user-x"></i></div>
+        <h3>Could not load your profile</h3>
+        <p>Try again in a moment, or return to your profile.</p>
+        <a href="#/profile" class="btn btn-primary"><i class="lucide-arrow-left"></i> Back to profile</a>
+      </div>`;
+    replaceIcons(root);
     return;
   }
 
@@ -44,11 +50,16 @@ export async function initProfileEditPage() {
 
   root.innerHTML = `
     <!-- Mirror the public profile layout so users see exactly how their changes will look -->
-    <header class="up-cover">
+    <header class="up-cover pe-cover">
       <div class="up-cover-gradient" aria-hidden="true"></div>
-      <a href="#/profile" class="back-floating-btn"><i class="lucide-arrow-left"></i></a>
-      <span class="up-cover-edit-btn" style="pointer-events:none; opacity:.85;">
-        <i class="lucide-edit-3"></i> Editing
+      <div class="up-cover-pattern" aria-hidden="true"></div>
+      <div class="up-cover-orbs" aria-hidden="true">
+        <span class="up-cover-orb"></span>
+        <span class="up-cover-orb"></span>
+      </div>
+      <a href="#/profile" class="back-floating-btn" aria-label="Back to profile"><i class="lucide-arrow-left"></i></a>
+      <span class="pe-editing-chip" aria-live="polite">
+        <i class="lucide-edit-3"></i> Editing profile
       </span>
     </header>
 
@@ -194,11 +205,16 @@ export async function initProfileEditPage() {
       else missing.push(c.label);
     }
     const tier = score >= 90 ? 'great' : score >= 60 ? 'good' : 'low';
+    const tierLabel = tier === 'great' ? 'All-star' : tier === 'good' ? 'Strong' : 'Just starting';
+    const tierIcon = tier === 'great' ? 'star' : tier === 'good' ? 'trending-up' : 'sprout';
     wrap.innerHTML = `
       <div class="pe-meter-row">
-        <div>
+        <div class="pe-meter-text">
           <span class="pe-meter-label">Profile strength</span>
-          <strong class="pe-meter-value">${score}% <small>(${tier === 'great' ? 'All-Star ⭐' : tier === 'good' ? 'Strong' : 'Just starting'})</small></strong>
+          <strong class="pe-meter-value">
+            <span class="pe-meter-pct">${score}%</span>
+            <span class="pe-meter-tier" data-tier="${tier}"><i class="lucide-${tierIcon}"></i> ${tierLabel}</span>
+          </strong>
         </div>
         ${missing.length > 0 ? `<span class="pe-meter-missing">Add: ${missing.slice(0, 3).join(' · ')}</span>` : ''}
       </div>
@@ -206,6 +222,7 @@ export async function initProfileEditPage() {
         <div class="pe-meter-fill" style="width:${score}%;"></div>
       </div>
     `;
+    replaceIcons(wrap);
   }
   refreshMeter();
   // Keep the meter in sync as the user types in any input

@@ -48,7 +48,8 @@ import { renderInquiriesPage, initInquiriesPage } from './pages/inquiries';
 import { renderOwnerPage, initOwnerPage } from './pages/owner';
 import { renderTripPage, initTripPage } from './pages/trip';
 import { renderDiscoverTripsPage, initDiscoverTripsPage } from './pages/discover-trips';
-import { mountTripCart } from './trip-cart-ui';
+import { mountTripCart, syncTripCartAuth } from './trip-cart-ui';
+import { mountMessengerGlobals } from './react/lib/mount-messenger';
 import { connectRealtime, disconnectRealtime } from './realtime';
 import { replaceIcons } from './icons';
 import { posts, addUserPost, generateId, type Post } from './data';
@@ -248,6 +249,16 @@ function navigate() {
     disconnectRealtime();
   }
 
+  // Show/hide login-gated floating UI (trip cart FAB + drawer) per nav.
+  syncTripCartAuth();
+
+  // Bulletproof JS-level toggle for the mobile bottom nav (don't trust CSS alone).
+  const mobileNavEl = document.getElementById('mobile-nav') as HTMLElement | null;
+  if (mobileNavEl) {
+    mobileNavEl.hidden = !apiService.isLoggedIn();
+    mobileNavEl.setAttribute('aria-hidden', String(!apiService.isLoggedIn()));
+  }
+
   const route = getRoute(location.hash);
 
   // Handle React island routes
@@ -277,17 +288,22 @@ function navigate() {
       }
     }
   } else {
-    // Vanilla route - use View Transitions API if available
-    if ('startViewTransition' in document) {
-      (document as any).startViewTransition(() => {
-        content.innerHTML = route.render();
-        route.init();
-        replaceIcons();
-      });
-    } else {
+    const paint = () => {
       content.innerHTML = route.render();
       route.init();
       replaceIcons();
+    };
+    // Vanilla route - use View Transitions API if available.
+    if ('startViewTransition' in document) {
+      // A rapid second nav aborts the in-flight transition, rejecting its
+      // .finished/.ready promises — swallow that expected abort so it doesn't
+      // surface as an unhandled rejection (and the DOM still updates).
+      const vt = (document as any).startViewTransition(paint);
+      vt?.finished?.catch?.(() => {});
+      vt?.ready?.catch?.(() => {});
+      vt?.updateCallbackDone?.catch?.(() => {});
+    } else {
+      paint();
     }
   }
 
@@ -1195,13 +1211,21 @@ function init() {
     document.querySelectorAll<HTMLImageElement>('img[data-user-avatar]').forEach(el => {
       el.src = 'https://api.dicebear.com/9.x/thumbs/svg?seed=Tunisia';
     });
-    location.hash = '#/hero';
+    const target = '#/hero';
+    if (location.hash === target) {
+      // Already on hero — hashchange won't fire; force navigate() so guest-mode applies.
+      navigate();
+    } else {
+      location.hash = target;
+    }
   };
   document.getElementById('logout-btn')?.addEventListener('click', handleLogout);
   document.getElementById('mobile-logout-btn')?.addEventListener('click', handleLogout);
 
   // Mount the floating trip-cart UI once on app boot
   mountTripCart();
+  // Mount the Messenger globals (chat popups + mobile conversations launcher)
+  mountMessengerGlobals();
 
   window.addEventListener('hashchange', navigate);
   navigate();

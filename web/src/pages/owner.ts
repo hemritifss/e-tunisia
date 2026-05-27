@@ -341,7 +341,8 @@ function buildPlaceCard(p: any): HTMLElement {
   meta.appendChild(city);
   const stats = document.createElement('div');
   stats.className = 'owner-place-stats';
-  stats.textContent = `${p.viewCount || 0} views - ${p.reviewCount || 0} reviews - ★ ${Number(p.rating || 0).toFixed(1)}`;
+  // Rating stars rendered as Lucide via icon class so the row stays MASTER-compliant.
+  stats.innerHTML = `${p.viewCount || 0} views · ${p.reviewCount || 0} reviews · <span class="owner-place-stat-rating"><i class="lucide-star"></i> ${Number(p.rating || 0).toFixed(1)}</span>`;
   meta.appendChild(stats);
 
   // Active-boost badge so owners see at-a-glance which listings are live
@@ -922,16 +923,23 @@ async function hydratePlanBanner() {
   const plan: 'free' | 'premium' | 'business' = info?.plan || 'free';
 
   if (plan === 'business') {
-    chip.textContent = '✓ Verified Business';
+    chip.innerHTML = '<i class="lucide-check"></i> Verified Business';
     chip.className = 'owner-tier-chip is-business';
     chip.removeAttribute('hidden');
+    replaceIcons(chip);
     return;
   }
 
   // Anyone else (Free or Pro) sees the upsell strip + chip
-  chip.textContent = plan === 'premium' ? '✦ Pro Traveler' : '';
-  chip.className = `owner-tier-chip ${plan === 'premium' ? 'is-pro' : ''}`;
-  if (plan === 'premium') chip.removeAttribute('hidden');
+  if (plan === 'premium') {
+    chip.innerHTML = '<i class="lucide-sparkles"></i> Pro Traveler';
+    chip.className = 'owner-tier-chip is-pro';
+    chip.removeAttribute('hidden');
+  } else {
+    chip.textContent = '';
+    chip.className = 'owner-tier-chip';
+  }
+  if (!chip.hidden) replaceIcons(chip);
 
   strip.innerHTML = `
     <a class="pro-gate-card is-business" href="#/pro">

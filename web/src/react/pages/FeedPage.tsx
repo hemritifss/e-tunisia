@@ -36,7 +36,7 @@ import { TunisiaPulse } from '../components/TunisiaPulse';
 import { MoodCompass } from '../components/MoodCompass';
 import { TierBadge } from '../components/TierBadge';
 import { TunisiaNowPanel } from '../components/TunisiaNowPanel';
-import { Plus, User as UserIcon, RefreshCcw, Users as UsersIcon } from 'lucide-react';
+import { Plus, User as UserIcon, RefreshCcw, Users as UsersIcon, Sparkles, Compass } from 'lucide-react';
 import { useAuthStore as _useAuthStoreFeed } from '../stores/auth-store';
 import { requireAuth } from '../../ui-utils';
 
@@ -133,11 +133,13 @@ function PostCard({ post }: { post: Post }) {
     ? `#/u/${authorHandle}`
     : (post.author?.id ? `#/user/${post.author.id}` : '#');
   const isCreator = (post.author as any)?.role === 'creator';
+  const authorPlan = (post.author as any)?.plan;
+  const isProAuthor = authorPlan === 'premium' || authorPlan === 'business' || authorPlan === 'admin';
   const images: string[] = Array.isArray(post.images) ? post.images.filter(Boolean) : [];
 
   return (
     <motion.article
-      className="post-card-v2"
+      className={`post-card-v2${isProAuthor ? ' is-pro' : ''}`}
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
@@ -147,6 +149,11 @@ function PostCard({ post }: { post: Post }) {
           className="post-card-v2-author"
           href={authorHref}
           onClick={(e) => { if (!post.author?.id) e.preventDefault(); }}
+          data-user-id={post.author?.id || undefined}
+          data-user-name={post.author?.fullName || undefined}
+          data-user-avatar={post.author?.avatar || undefined}
+          data-user-handle={authorHandle || undefined}
+          data-user-plan={authorPlan || undefined}
         >
           <Avatar
             src={post.author?.avatar}
@@ -234,6 +241,84 @@ function PostCard({ post }: { post: Post }) {
         )}
       </footer>
     </motion.article>
+  );
+}
+
+/**
+ * Segmented-pill sort bar that becomes elevated when the page scrolls past it.
+ * Replaces the old Tailwind-utility sort row with a token-driven, sticky control
+ * that matches the rest of the redesign.
+ */
+function FeedSortBar({
+  sort,
+  onSort,
+  isAuth,
+  onRefresh,
+  total,
+}: {
+  sort: SortType;
+  onSort: (s: SortType) => void;
+  isAuth: boolean;
+  onRefresh: () => void;
+  total: number;
+}) {
+  const railRef = useRef<HTMLDivElement | null>(null);
+  const refreshBtnRef = useRef<HTMLButtonElement | null>(null);
+
+  useEffect(() => {
+    const rail = railRef.current;
+    if (!rail) return;
+    // Sentinel a pixel above the rail tells us when it sticks.
+    const sentinel = document.createElement('div');
+    sentinel.style.cssText = 'position:absolute;top:-1px;height:1px;width:1px;';
+    rail.parentElement?.insertBefore(sentinel, rail);
+    const obs = new IntersectionObserver(([entry]) => {
+      rail.classList.toggle('is-scrolled', !entry.isIntersecting);
+    }, { threshold: [0] });
+    obs.observe(sentinel);
+    return () => { obs.disconnect(); sentinel.remove(); };
+  }, []);
+
+  const handleRefresh = () => {
+    const btn = refreshBtnRef.current;
+    if (btn) {
+      btn.classList.add('is-spinning');
+      setTimeout(() => btn.classList.remove('is-spinning'), 500);
+    }
+    onRefresh();
+  };
+
+  return (
+    <div ref={railRef} className="feed-sort-rail" role="tablist" aria-label="Feed sort">
+      {(Object.keys(sortLabels) as SortType[]).map((key) => {
+        if ((key === 'mine' || key === 'following') && !isAuth) return null;
+        const isActive = sort === key;
+        return (
+          <button
+            key={key}
+            role="tab"
+            aria-selected={isActive}
+            onClick={() => onSort(key)}
+            className={`feed-sort-pill${isActive ? ' is-active' : ''}`}
+          >
+            {sortLabels[key].icon}
+            {sortLabels[key].label}
+          </button>
+        );
+      })}
+      {total > 0 && (
+        <span className="feed-sort-meta" aria-live="polite">{total} posts</span>
+      )}
+      <button
+        ref={refreshBtnRef}
+        onClick={handleRefresh}
+        className="feed-sort-refresh"
+        title="Refresh feed"
+        aria-label="Refresh feed"
+      >
+        <RefreshCcw size={14} />
+      </button>
+    </div>
   );
 }
 
@@ -347,34 +432,14 @@ export default function FeedPage() {
             <SuggestedUsers />
           </div>
 
-      {/* Sort bar */}
-      <div className="flex items-center gap-2 p-1 bg-surface rounded-xl shadow-sm sticky top-20 z-10 overflow-x-auto scrollbar-hide">
-        {(Object.keys(sortLabels) as SortType[]).map((key) => {
-          if ((key === 'mine' || key === 'following') && !isAuth) return null;
-          return (
-            <button
-              key={key}
-              onClick={() => setSort(key)}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
-                sort === key
-                  ? 'bg-brand text-white shadow-sm'
-                  : 'text-muted-foreground hover:bg-black/5 dark:hover:bg-white/5'
-              }`}
-            >
-              {sortLabels[key].icon}
-              {sortLabels[key].label}
-            </button>
-          );
-        })}
-        <button
-          onClick={() => queryClient.invalidateQueries({ queryKey: ['feed'] })}
-          className="ml-auto p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5"
-          title="Refresh feed"
-          aria-label="Refresh feed"
-        >
-          <RefreshCcw size={14} />
-        </button>
-      </div>
+      {/* Sort bar — segmented pill control with sliding refresh affordance */}
+      <FeedSortBar
+        sort={sort}
+        onSort={setSort}
+        isAuth={isAuth}
+        onRefresh={() => queryClient.invalidateQueries({ queryKey: ['feed'] })}
+        total={allItems.length}
+      />
 
       {/* Posts + ads */}
       <div className="space-y-4">
@@ -382,24 +447,39 @@ export default function FeedPage() {
           {isLoading ? (
             Array.from({ length: 3 }).map((_, i) => <PostCardSkeleton key={i} />)
           ) : isError ? (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">Failed to load feed</p>
+            <div className="feed-empty">
+              <div className="feed-empty-icon"><RefreshCcw size={28} /></div>
+              <h3>Couldn't load the feed</h3>
+              <p>Check your connection and try again — your draft posts are safe.</p>
               <Button
                 variant="primary"
-                className="mt-4"
                 onClick={() => queryClient.invalidateQueries({ queryKey: ['feed'] })}
               >
                 Retry
               </Button>
             </div>
           ) : allItems.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground mb-3">
-                {sort === 'mine' ? "You haven't posted anything yet." : 'No posts yet.'}
+            <div className="feed-empty">
+              <div className="feed-empty-icon">
+                {sort === 'mine' ? <Sparkles size={28} /> : <Compass size={28} />}
+              </div>
+              <h3>
+                {sort === 'mine'
+                  ? 'Your story starts here'
+                  : sort === 'following'
+                    ? 'Follow people to see them here'
+                    : 'No posts yet — be first'}
+              </h3>
+              <p>
+                {sort === 'mine'
+                  ? 'Share a place, a tip, or a photo from your last trip. Other travelers will see it on Hot and Top.'
+                  : sort === 'following'
+                    ? 'Find local guides and travelers on the Explore tab, then come back here to see only what they share.'
+                    : 'The community is just warming up. Be the first to share a moment from Tunisia and start a thread.'}
               </p>
               {isAuth && (
                 <Button variant="primary" onClick={openComposer} leftIcon={<Plus size={16} />}>
-                  Create your first post
+                  {sort === 'mine' ? 'Create your first post' : 'Share something'}
                 </Button>
               )}
             </div>
@@ -422,7 +502,9 @@ export default function FeedPage() {
           </div>
         )}
         {!hasNextPage && allItems.length > 0 && (
-          <p className="text-sm text-muted-foreground">You've reached the end!</p>
+          <div className="feed-end">
+            <span className="feed-end-mark">You've reached the end</span>
+          </div>
         )}
       </div>
         </div>{/* /compass-feed */}
