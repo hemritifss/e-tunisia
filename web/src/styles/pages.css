@@ -14568,6 +14568,9 @@ section[class^="hero-"] {
 }
 .pro-plan-card footer .btn.primary:hover { transform: translateY(-1px); }
 .pro-plan-card footer .btn.ghost { background: transparent; color: var(--text-secondary); border-color: var(--border); }
+.pro-plan-current-actions { display: flex; flex-direction: column; gap: 8px; }
+/* Payment-method + cycle pills carry inline icons — keep label + glyph aligned. */
+.pro-page-cycle button { display: inline-flex; align-items: center; gap: 6px; }
 
 .pro-page-fineprint {
     margin-top: 32px;
@@ -16924,4 +16927,175 @@ section[class^="hero-"] {
     .passport-stats { grid-template-columns: repeat(2, 1fr); }
     .passport-badges { grid-template-columns: repeat(4, 1fr); }
     .passport-anon-pill { font-size: 13px; padding: 10px 14px; flex-wrap: wrap; }
+}
+
+/* ============================================
+   EXPLORE HERO v2 — centered, no empty void
+   The hero markup (eyebrow, gradient title, orbs, search form) shipped
+   without matching CSS, leaving content jammed left against an empty
+   gradient. This block centers everything and styles the missing parts.
+   Specificity matches the [data-design="sleek"] overrides and sits later
+   in the cascade, so it wins for both default + sleek.
+   ============================================ */
+.explore-hero,
+[data-design="sleek"] .explore-hero {
+  height: auto;
+  min-height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: clamp(2rem, 5vw, 3.5rem) clamp(1rem, 4vw, 2rem);
+  border-radius: var(--radius-2xl);
+}
+
+/* Rich Tunisia gradient + soft inner highlight, overrides the flat sleek surface. */
+.explore-hero-bg,
+[data-design="sleek"] .explore-hero-bg,
+[data-theme="dark"] [data-design="sleek"] .explore-hero-bg {
+  background:
+    radial-gradient(80% 120% at 12% 18%, var(--terracotta-glow), transparent 60%),
+    radial-gradient(70% 120% at 92% 90%, var(--mediterranean-glow), transparent 60%),
+    radial-gradient(50% 80% at 75% 12%, var(--gold-glow), transparent 70%),
+    linear-gradient(135deg, oklch(22% 0.06 30) 0%, oklch(18% 0.05 250) 60%, oklch(16% 0.04 280) 100%);
+}
+
+.explore-hero-content,
+[data-design="sleek"] .explore-hero-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  max-width: 620px;
+  margin: 0 auto;
+  padding: 0;
+  color: #fff;
+}
+
+.explore-hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  background: var(--glass-bg-light);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: var(--glass-blur);
+  font-family: var(--font-display);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: var(--tracking-widest);
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.explore-hero h1,
+[data-design="sleek"] .explore-hero h1 {
+  margin: 0;
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 5vw, 3.25rem);
+  font-weight: 800;
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tightest);
+  text-wrap: balance;
+}
+
+.explore-hero-grad {
+  background: linear-gradient(120deg, var(--gold) 0%, var(--terracotta-light) 55%, var(--coral) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+.explore-hero p,
+[data-design="sleek"] .explore-hero p {
+  margin: 0;
+  max-width: 460px;
+  color: rgba(255, 255, 255, 0.82);
+  opacity: 1;
+  font-size: var(--text-lg);
+  line-height: var(--leading-snug);
+}
+
+/* Search form — constrained pill, glass surface, centered. */
+.explore-search-form {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 520px;
+  margin-top: var(--space-3);
+}
+.explore-search-icon {
+  position: absolute;
+  left: 18px;
+  color: rgba(255, 255, 255, 0.7);
+  pointer-events: none;
+}
+.explore-search-input {
+  width: 100%;
+  padding: 14px 18px 14px 46px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--glass-border);
+  background: oklch(100% 0 0 / 0.12);
+  backdrop-filter: var(--glass-blur);
+  color: #fff;
+  font-size: var(--text-base);
+  font-family: var(--font-sans);
+  transition: all var(--duration-fast) var(--ease-out);
+}
+.explore-search-input::placeholder { color: rgba(255, 255, 255, 0.6); }
+.explore-search-input:focus {
+  outline: none;
+  background: oklch(100% 0 0 / 0.18);
+  border-color: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 0 0 4px oklch(100% 0 0 / 0.1);
+}
+.explore-search-clear {
+  position: absolute;
+  right: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 50%;
+  background: oklch(100% 0 0 / 0.18);
+  color: #fff;
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-out);
+}
+.explore-search-clear:hover { background: oklch(100% 0 0 / 0.3); }
+
+/* Floating ambient orbs */
+.explore-hero-orbs { position: absolute; inset: 0; z-index: 1; overflow: hidden; pointer-events: none; }
+.explore-hero-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(40px);
+  opacity: 0.5;
+  animation: explore-orb-float 14s ease-in-out infinite;
+}
+.explore-hero-orb:nth-child(1) {
+  width: 280px; height: 280px;
+  background: var(--terracotta);
+  top: -80px; left: -40px;
+}
+.explore-hero-orb:nth-child(2) {
+  width: 320px; height: 320px;
+  background: var(--mediterranean);
+  bottom: -120px; right: -60px;
+  animation-delay: -7s;
+}
+@keyframes explore-orb-float {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(20px, -16px) scale(1.08); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .explore-hero-orb { animation: none; }
 }
