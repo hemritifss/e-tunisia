@@ -98,6 +98,15 @@ export async function login(email: string, password: string) {
   return data;
 }
 
+export async function googleLogin(credential: string) {
+  const data = await api<{ accessToken: string; user: any }>('/auth/google', {
+    method: 'POST',
+    body: JSON.stringify({ credential }),
+  });
+  setToken(data.accessToken);
+  return data;
+}
+
 export function getImageUrl(path: string | null | undefined, context?: 'place' | 'post' | 'event' | 'itinerary' | 'avatar'): string {
   if (!path) {
     switch (context) {
@@ -118,10 +127,35 @@ export function getImageUrl(path: string | null | undefined, context?: 'place' |
   return `${hostUrl}/${cleanPath}`;
 }
 
-export async function register(body: { name: string; email: string; password: string; country?: string }) {
+export async function requestPasswordReset(email: string) {
+  const res = await fetch(`${API_BASE}/api/v1/auth/forgot-password`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data?.error?.message || 'Failed to send reset link');
+  return data;
+}
+
+export async function resetPassword(token: string, password: string) {
+  const res = await fetch(`${API_BASE}/api/v1/auth/reset-password`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token, password }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data?.error?.message || 'Failed to reset password');
+  return data;
+}
+
+export async function register(body: { name: string; email: string; password: string; country?: string; ref?: string }) {
   const data = await api<{ accessToken: string; user: any }>('/auth/register', {
     method: 'POST',
-    body: JSON.stringify({ fullName: body.name, email: body.email, password: body.password, country: body.country }),
+    body: JSON.stringify({
+      fullName: body.name, email: body.email, password: body.password, country: body.country,
+      ...(body.ref ? { ref: body.ref } : {}),
+    }),
   });
   setToken(data.accessToken);
   return data;
@@ -290,6 +324,14 @@ export async function getLeaderboard(limit = 20) {
   return api<any[]>(`/gamification/leaderboard?limit=${limit}`);
 }
 
+export async function getActiveTravelers(limit = 50) {
+  return api<any[]>('/users/active-travelers?limit=' + limit);
+}
+
+export async function searchUsers(q: string, limit = 12) {
+  return api<any[]>(`/users/search?q=${encodeURIComponent(q)}&limit=${limit}`);
+}
+
 // ── NOTIFICATIONS ────────────────────────────
 export async function getNotifications() {
   return api<any[]>('/notifications');
@@ -307,9 +349,14 @@ export async function markAllNotificationsRead() {
   return api<void>('/notifications/read-all', { method: 'PATCH' });
 }
 
-// ── SUBSCRIPTIONS ────────────────────────────
+// ── SUBSCRIPTIONS / BILLING ──────────────────
 export async function getMySubscription() {
   return api<any | null>('/subscriptions/my');
+}
+
+/** Effective plan + caps from the billing service. Used by the owner dashboard banner. */
+export async function getMyPlan() {
+  return api<any>('/billing/me');
 }
 
 export async function upgradePlan(plan: string, paymentMethod: string, reference?: string) {
@@ -402,6 +449,21 @@ export async function depositCredits(amount: number, note?: string) {
   return api<any>('/credits/deposit', {
     method: 'POST',
     body: JSON.stringify({ amount, note }),
+  });
+}
+
+export async function getReferralStats() {
+  return api<{ released: number; pending: number; rewardTnd: number }>('/credits/referral-stats');
+}
+
+export async function getGifts() {
+  return api<Array<{ id: string; label: string; emoji: string; price: number }>>('/credits/gifts');
+}
+
+export async function sendGift(toUserId: string, giftId: string, isAnonymous = false) {
+  return api<any>('/credits/gift', {
+    method: 'POST',
+    body: JSON.stringify({ toUserId, giftId, isAnonymous }),
   });
 }
 
@@ -788,10 +850,14 @@ export async function getPostReactors(postId: string, params: { type?: string; p
 
 // ── SEARCH (aggregated across places, posts, users) ──────
 export async function search(q: string) {
-  const places = await api<{ data: any[] }>(`/places?search=${encodeURIComponent(q)}&limit=10`)
-    .catch(() => ({ data: [] }));
+  const res = await api<{ places: any[]; posts: any[]; users: any[]; total: number }>(
+    `/search?q=${encodeURIComponent(q)}&limit=12`,
+  ).catch(() => ({ places: [], posts: [], users: [], total: 0 }));
   return {
     query: q,
-    places: places?.data || [],
+    places: res?.places || [],
+    posts: res?.posts || [],
+    users: res?.users || [],
+    total: res?.total || 0,
   };
 }

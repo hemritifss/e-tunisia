@@ -2,13 +2,17 @@ import { Inject, Injectable, NotFoundException, forwardRef } from '@nestjs/commo
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { User } from './user.entity';
 import * as bcrypt from 'bcrypt';
 import { Review } from '../reviews/review.entity';
 import { Place } from '../places/place.entity';
 import { TripPlan } from '../itineraries/trip-plan.entity';
 import { SavedPost } from '../posts/saved-post.entity';
+import { PassportView } from './passport-view.entity';
+import { PlaceVisit } from './place-visit.entity';
+import { NotificationsService } from '../notifications/notifications.service';
+import { NotificationType } from '../notifications/notification.entity';
 import { PassportDto, deriveLevel } from './dto/passport.dto';
 import { BadgesService } from '../badges/badges.service';
 import { EndorsementsService } from './endorsements.service';
@@ -22,8 +26,11 @@ export class UsersService {
         @InjectRepository(Place) private placesRepo: Repository<Place>,
         @InjectRepository(TripPlan) private tripsRepo: Repository<TripPlan>,
         @InjectRepository(SavedPost) private savesRepo: Repository<SavedPost>,
+        @InjectRepository(PassportView) private passportViewsRepo: Repository<PassportView>,
+        @InjectRepository(PlaceVisit) private placeVisitsRepo: Repository<PlaceVisit>,
         @Inject(CACHE_MANAGER) private cache: Cache,
         private badges: BadgesService,
+        private notifications: NotificationsService,
         @Inject(forwardRef(() => EndorsementsService)) private endorsements: EndorsementsService,
     ) { }
 
@@ -34,6 +41,10 @@ export class UsersService {
     async findByHandle(handle: string): Promise<User | null> {
         if (!handle) return null;
         return this.usersRepository.findOne({ where: { handle: handle.toLowerCase() } });
+    }
+
+    async findByResetToken(token: string): Promise<User | null> {
+        return this.usersRepository.findOne({ where: { passwordResetToken: token } });
     }
 
     /**
@@ -100,6 +111,97 @@ export class UsersService {
         return this.findById(id);
     }
 
+    /** Record a passport view by a logged-in, non-owner viewer (deduped per 12h). Fire-and-forget. */
+    async recordPassportView(ownerHandle: string, viewerId: string): Promise<void> {
+        try {
+            const owner = await this.usersRepository.findOne({ where: { handle: ownerHandle.toLowerCase() }, select: ['id'] });
+            if (!owner || owner.id === viewerId) return;
+            const since = new Date(Date.now() - 12 * 3600 * 1000);
+            const recent = await this.passportViewsRepo
+                .createQueryBuilder('v')
+                .where('v.ownerId = :o AND v.viewerId = :vw AND v.createdAt > :since', { o: owner.id, vw: viewerId, since })
+                .getCount();
+            if (recent > 0) return;
+            await this.passportViewsRepo.save(this.passportViewsRepo.create({ ownerId: owner.id, viewerId }));
+            await this.maybeNotifyPassportViews(owner.id);
+        } catch { /* never block the view */ }
+    }
+
+    /**
+     * Smart-batched "someone viewed your passport" ping — at most once per 24h per owner,
+     * with a deduped count ("3 people viewed your passport"). Throttled via the cache so
+     * a burst of views produces one digest, not a notification storm.
+     */
+    private async maybeNotifyPassportViews(ownerId: string): Promise<void> {
+        const throttleKey = `pv-notif:${ownerId}`;
+        try {
+            if (await this.cache.get(throttleKey)) return;
+            const since = new Date(Date.now() - 24 * 3600 * 1000);
+            const row = await this.passportViewsRepo.createQueryBuilder('v')
+                .select('COUNT(DISTINCT v.viewerId)', 'c')
+                .where('v.ownerId = :o AND v.createdAt > :since', { o: ownerId, since })
+                .getRawOne();
+            const n = Number(row?.c || 0);
+            if (n < 1) return;
+            await this.notifications.create(
+                ownerId,
+                n === 1 ? 'Someone viewed your passport' : `${n} people viewed your passport`,
+                n === 1
+                    ? 'A traveler checked out your Tunisia journey.'
+                    : `${n} travelers checked out your Tunisia journey recently.`,
+                NotificationType.PASSPORT_VIEW,
+                { count: n },
+            );
+            await this.cache.set(throttleKey, '1', 24 * 3600 * 1000); // 24h cooldown
+        } catch { /* notifications are best-effort */ }
+    }
+
+    /** Pro analytics: who viewed your passport. */
+    async getPassportAnalytics(ownerId: string) {
+        const weekAgo = new Date(Date.now() - 7 * 24 * 3600 * 1000);
+        const [totalViews, viewsThisWeek, uniqueRow, recentRows] = await Promise.all([
+            this.passportViewsRepo.count({ where: { ownerId } }),
+            this.passportViewsRepo.createQueryBuilder('v')
+                .where('v.ownerId = :o AND v.createdAt > :w', { o: ownerId, w: weekAgo }).getCount(),
+            this.passportViewsRepo.createQueryBuilder('v')
+                .select('COUNT(DISTINCT v.viewerId)', 'c').where('v.ownerId = :o', { o: ownerId }).getRawOne(),
+            this.passportViewsRepo.createQueryBuilder('v')
+                .where('v.ownerId = :o', { o: ownerId }).orderBy('v.createdAt', 'DESC').limit(10).getMany(),
+        ]);
+
+        const viewerIds = [...new Set(recentRows.map((r) => r.viewerId))];
+        const viewers = viewerIds.length
+            ? await this.usersRepository.find({
+                where: { id: In(viewerIds) },
+                select: ['id', 'handle', 'fullName', 'avatar', 'country', 'plan', 'subscriptionExpiresAt', 'role'] as any,
+            })
+            : [];
+        const byId = new Map(viewers.map((u) => [u.id, u]));
+        const recentViewers = recentRows
+            .map((r) => {
+                const u = byId.get(r.viewerId);
+                return u ? { handle: u.handle, fullName: u.fullName, avatar: u.avatar || null, plan: effectivePlan(u), role: u.role, viewedAt: r.createdAt } : null;
+            })
+            .filter(Boolean);
+
+        const countryRows = await this.passportViewsRepo.createQueryBuilder('v')
+            // viewerId is stored as varchar; users.id is uuid — cast to compare (Postgres has no implicit cast).
+            .innerJoin(User, 'u', 'u.id::text = v.viewerId')
+            .select('u.country', 'country')
+            .addSelect('COUNT(DISTINCT v.viewerId)', 'count')
+            .where('v.ownerId = :o AND u.country IS NOT NULL', { o: ownerId })
+            .groupBy('u.country').orderBy('count', 'DESC').limit(3).getRawMany();
+        const topCountries = countryRows.map((r) => ({ country: r.country, count: Number(r.count) }));
+
+        return {
+            totalViews,
+            viewsThisWeek,
+            uniqueViewers: Number(uniqueRow?.c || 0),
+            recentViewers,
+            topCountries,
+        };
+    }
+
     async toggleFavorite(userId: string, placeId: string): Promise<string[]> {
         const user = await this.findById(userId);
         const favorites = user.favoriteIds || [];
@@ -138,11 +240,67 @@ export class UsersService {
         await this.usersRepository.save(user);
         await this.invalidatePassportCache(userId);
 
-        if (wasAdded && this.badges) {
+        // Dual-write the normalized place_visits row (powers rarity + analytics).
+        if (wasAdded) {
             const place = await this.placesRepo.findOne({ where: { id: placeId }, select: ['city'] }).catch(() => null);
-            await this.badges.awardIfEligible(userId, 'place.visited', { city: place?.city });
+            try {
+                await this.placeVisitsRepo.save(this.placeVisitsRepo.create({ userId, placeId, city: place?.city || null }));
+            } catch { /* unique (userId, placeId) — already recorded */ }
+            if (this.badges) await this.badges.awardIfEligible(userId, 'place.visited', { city: place?.city });
+        } else {
+            try { await this.placeVisitsRepo.delete({ userId, placeId }); } catch { /* ignore */ }
         }
         return visited;
+    }
+
+    /** Active travelers on the map — recent place visits with coordinates. */
+    async activeTravelers(limit = 50) {
+        const rows = await this.placeVisitsRepo.createQueryBuilder('v')
+            .select([
+                'v.userId as userId',
+                'v.placeId as placeId',
+                'v.city as city',
+                'p.latitude as lat',
+                'p.longitude as lng',
+                'p.name as placeName',
+                'u.fullName as fullName',
+                'u.handle as handle',
+                'u.avatar as avatar',
+            ])
+            .innerJoin('places', 'p', 'p.id = v.placeId')
+            .innerJoin('users', 'u', 'u.id = v.userId')
+            .where('u.isActive = :a', { a: true })
+            .andWhere('p.latitude IS NOT NULL')
+            .andWhere('p.longitude IS NOT NULL')
+            .orderBy('v.createdAt', 'DESC')
+            .limit(limit)
+            .getRawMany();
+        return rows.map((r: any) => ({
+            userId: r.userId,
+            fullName: r.fullName,
+            handle: r.handle,
+            avatar: r.avatar,
+            placeId: r.placeId,
+            placeName: r.placeName,
+            city: r.city,
+            lat: Number(r.lat),
+            lng: Number(r.lng),
+        }));
+    }
+
+    /** Distinct-visitor counts per city — honest "N explorers" rarity for passport stamps. */
+    async cityVisitorCounts(cities: string[]): Promise<Record<string, number>> {
+        const list = (cities || []).filter(Boolean);
+        if (list.length === 0) return {};
+        const rows = await this.placeVisitsRepo.createQueryBuilder('v')
+            .select('v.city', 'city')
+            .addSelect('COUNT(DISTINCT v.userId)', 'count')
+            .where('v.city IN (:...cities)', { cities: list })
+            .groupBy('v.city')
+            .getRawMany();
+        const map: Record<string, number> = {};
+        for (const r of rows) map[r.city] = Number(r.count);
+        return map;
     }
 
     async getVisitedIds(userId: string): Promise<string[]> {
@@ -201,6 +359,9 @@ export class UsersService {
                 : Promise.resolve([] as string[]),
         ]);
 
+        // Honest stamp rarity: how many explorers have visited each of the owner's cities.
+        const stampRarity = await this.cityVisitorCounts(visitedCities);
+
         const passport: PassportDto = {
             handle: user.handle as string,
             fullName: user.fullName,
@@ -226,6 +387,8 @@ export class UsersService {
             topEndorsements: await this.endorsements.topForUser(user.id, 3).catch(() => []),
             topCityRank: await this.topCityRankForUser(user.id).catch(() => null),
             plan: this.resolveEffectivePlan(user),
+            passportTheme: (user as any).passportTheme || null,
+            stampRarity,
         };
 
         await this.cache.set(key, passport, 300_000);

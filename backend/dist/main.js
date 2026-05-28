@@ -11,6 +11,7 @@ const transform_interceptor_1 = require("./common/interceptors/transform.interce
 const logging_interceptor_1 = require("./common/interceptors/logging.interceptor");
 async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule);
+    app.use('/api/v1/billing/webhook', express.raw({ type: '*/*' }));
     app.use(express.json({ limit: '12mb' }));
     app.use(express.urlencoded({ limit: '12mb', extended: true }));
     app.enableVersioning({
@@ -121,6 +122,17 @@ async function bootstrap() {
     }
     catch (e) {
         console.warn('[backfill] handle backfill skipped:', e.message);
+    }
+    try {
+        const { DataSource } = await Promise.resolve().then(() => require('typeorm'));
+        const ds = app.get(DataSource);
+        const { backfillPlaceVisits } = await Promise.resolve().then(() => require('./users/backfill-place-visits'));
+        const n = await backfillPlaceVisits(ds);
+        if (n > 0)
+            console.log(`[backfill] seeded ${n} place_visits from legacy visited lists`);
+    }
+    catch (e) {
+        console.warn('[backfill] place_visits backfill skipped:', e.message);
     }
 }
 bootstrap();

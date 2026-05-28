@@ -15,4 +15,6 @@ export class QueryPlacesDto {
     @ApiPropertyOptional() @IsOptional() @IsString() sortBy?: string = 'createdAt';
     @ApiPropertyOptional() @IsOptional() @IsString() order?: 'ASC' | 'DESC' = 'DESC';
     @ApiPropertyOptional() @IsOptional() @IsString() featured?: string;
+    /** "true" → only places owned by a Verified Business (effective Business plan). */
+    @ApiPropertyOptional() @IsOptional() @IsString() verified?: string;
 }

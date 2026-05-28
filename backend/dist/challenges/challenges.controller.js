@@ -52,6 +52,9 @@ let ChallengesController = class ChallengesController {
     async recordActivity(userId, action) {
         return this.challengesService.recordActivity(userId, action);
     }
+    async checkIn(userId) {
+        return this.challengesService.checkIn(userId);
+    }
     async getLeaderboard(period = 'weekly', limit = 50) {
         return this.challengesService.getLeaderboard(period, limit);
     }
@@ -104,6 +107,15 @@ __decorate([
     __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", Promise)
 ], ChallengesController.prototype, "recordActivity", null);
+__decorate([
+    (0, common_1.Post)('check-in'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiOperation)({ summary: 'Daily check-in — advances streak + awards Travel Dust (idempotent per day)' }),
+    __param(0, (0, current_user_decorator_1.CurrentUser)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], ChallengesController.prototype, "checkIn", null);
 __decorate([
     (0, common_1.Get)('leaderboard'),
     (0, swagger_1.ApiOperation)({ summary: 'Get challenge leaderboard' }),

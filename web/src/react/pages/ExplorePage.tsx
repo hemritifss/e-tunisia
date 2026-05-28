@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useInfiniteQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { LucideIcon } from 'lucide-react';
 import {
@@ -29,6 +29,7 @@ import { Skeleton, PlaceCardSkeleton } from '../components/Skeleton';
 import { formatNumber } from '../lib/utils';
 import { useAuthStore } from '../stores/auth-store';
 import { useUIStore } from '../stores/ui-store';
+import { PullToRefresh } from '../components/PullToRefresh';
 
 type ViewMode = 'grid' | 'list';
 
@@ -209,6 +210,8 @@ export default function ExplorePage() {
   const [showFilters, setShowFilters] = useState(false);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000]);
   const [minRating, setMinRating] = useState(0);
+  const [verifiedOnly, setVerifiedOnly] = useState(false);
+  const queryClient = useQueryClient();
   const observerRef = useRef<IntersectionObserver | null>(null);
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
@@ -220,7 +223,7 @@ export default function ExplorePage() {
     isLoading,
     isError,
   } = useInfiniteQuery({
-    queryKey: ['places', activeCategory, searchQuery, priceRange, minRating],
+    queryKey: ['places', activeCategory, searchQuery, priceRange, minRating, verifiedOnly],
     queryFn: async ({ pageParam = 1 }) => {
       const params: Record<string, string> = {
         page: String(pageParam),
@@ -229,6 +232,7 @@ export default function ExplorePage() {
       if (activeCategory !== 'all') params.category = activeCategory;
       if (searchQuery) params.search = searchQuery;
       if (minRating > 0) params.minRating = String(minRating);
+      if (verifiedOnly) params.verified = 'true';
 
       try {
         const response = await api.getPlaces(params);
@@ -317,8 +321,9 @@ export default function ExplorePage() {
     setActiveCategory('all');
     setSearchQuery('');
     setMinRating(0);
+    setVerifiedOnly(false);
   };
-  const hasFilter = activeCategory !== 'all' || searchQuery.trim() !== '' || minRating > 0;
+  const hasFilter = activeCategory !== 'all' || searchQuery.trim() !== '' || minRating > 0 || verifiedOnly;
 
   return (
     <div className="explore-page animate-fade-in" style={{ '--cat-tint': activeCat.tint } as React.CSSProperties}>
@@ -457,9 +462,23 @@ export default function ExplorePage() {
             </button>
           );
         })}
+        <button
+          type="button"
+          onClick={() => setVerifiedOnly((v) => !v)}
+          className={`explore-cat explore-cat-verified${verifiedOnly ? ' is-active' : ''}`}
+          aria-pressed={verifiedOnly}
+          title="Show only listings from Verified Businesses"
+        >
+          <span className="explore-cat-icon" aria-hidden="true">✓</span>
+          <span>Verified</span>
+        </button>
       </nav>
 
       {/* Results */}
+      <PullToRefresh onRefresh={async () => {
+        await queryClient.invalidateQueries({ queryKey: ['explore'] });
+        await queryClient.refetchQueries({ queryKey: ['explore'] });
+      }}>
       {isLoading ? (
         <div className={viewMode === 'grid' ? 'explore-grid' : 'explore-list'}>
           {Array.from({ length: 6 }).map((_, i) => (
@@ -490,6 +509,7 @@ export default function ExplorePage() {
           </AnimatePresence>
         </div>
       )}
+      </PullToRefresh>
 
       {/* Load more sentinel */}
       <div ref={loadMoreRef} className="explore-loadmore">

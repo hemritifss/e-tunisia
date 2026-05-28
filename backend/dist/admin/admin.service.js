@@ -22,14 +22,17 @@ const review_entity_1 = require("../reviews/review.entity");
 const subscription_entity_1 = require("../subscriptions/subscription.entity");
 const event_entity_1 = require("../events/event.entity");
 const tip_entity_1 = require("../tips/tip.entity");
+const audit_log_entity_1 = require("./audit-log.entity");
+const plan_catalog_1 = require("../billing/plan-catalog");
 let AdminService = class AdminService {
-    constructor(usersRepo, placesRepo, reviewsRepo, subsRepo, eventsRepo, tipsRepo) {
+    constructor(usersRepo, placesRepo, reviewsRepo, subsRepo, eventsRepo, tipsRepo, auditRepo) {
         this.usersRepo = usersRepo;
         this.placesRepo = placesRepo;
         this.reviewsRepo = reviewsRepo;
         this.subsRepo = subsRepo;
         this.eventsRepo = eventsRepo;
         this.tipsRepo = tipsRepo;
+        this.auditRepo = auditRepo;
     }
     async getStats() {
         const [totalUsers, totalPlaces, totalReviews, totalEvents, totalTips] = await Promise.all([
@@ -63,6 +66,8 @@ let AdminService = class AdminService {
         };
     }
     async getUsers(page = 1, limit = 20) {
+        page = Math.max(1, Number(page) || 1);
+        limit = Math.min(100, Math.max(1, Number(limit) || 20));
         const [data, total] = await this.usersRepo.findAndCount({
             order: { createdAt: 'DESC' },
             skip: (page - 1) * limit,
@@ -71,8 +76,26 @@ let AdminService = class AdminService {
         return { data, meta: { total, page, limit, totalPages: Math.ceil(total / limit) } };
     }
     async updateUser(id, updates) {
-        await this.usersRepo.update(id, updates);
+        const { role, password, ...safe } = updates;
+        await this.usersRepo.update(id, safe);
         return this.usersRepo.findOne({ where: { id } });
+    }
+    async setUserRole(id, role) {
+        const allowed = Object.values(user_entity_1.UserRole);
+        if (!allowed.includes(role))
+            throw new common_1.BadRequestException('Invalid role');
+        await this.usersRepo.update(id, { role: role });
+        return this.usersRepo.findOne({ where: { id } });
+    }
+    async getAudit(page = 1, limit = 30) {
+        page = Math.max(1, Number(page) || 1);
+        limit = Math.min(100, Math.max(1, Number(limit) || 30));
+        const [data, total] = await this.auditRepo.findAndCount({
+            order: { createdAt: 'DESC' },
+            skip: (page - 1) * limit,
+            take: limit,
+        });
+        return { data, meta: { total, page, limit, totalPages: Math.ceil(total / limit) } };
     }
     async banUser(id) {
         await this.usersRepo.update(id, { isActive: false });
@@ -83,6 +106,8 @@ let AdminService = class AdminService {
         return { message: 'User unbanned' };
     }
     async getPlaces(page = 1, limit = 20, pendingOnly = false) {
+        page = Math.max(1, Number(page) || 1);
+        limit = Math.min(100, Math.max(1, Number(limit) || 20));
         const where = {};
         if (pendingOnly)
             where.isApproved = false;
@@ -108,8 +133,77 @@ let AdminService = class AdminService {
         await this.placesRepo.delete(id);
         return { message: 'Place deleted' };
     }
+    async getReviews(page = 1, limit = 20) {
+        page = Math.max(1, Number(page) || 1);
+        limit = Math.min(100, Math.max(1, Number(limit) || 20));
+        const [data, total] = await this.reviewsRepo.findAndCount({
+            order: { createdAt: 'DESC' },
+            relations: ['place'],
+            skip: (page - 1) * limit,
+            take: limit,
+        });
+        return { data, meta: { total, page, limit, totalPages: Math.ceil(total / limit) } };
+    }
+    async deleteReview(id) {
+        await this.reviewsRepo.delete(id);
+        return { message: 'Review deleted' };
+    }
     async getSubscriptions() {
         return this.subsRepo.find({ order: { createdAt: 'DESC' }, relations: ['user'] });
+    }
+    async confirmSubscription(id) {
+        const sub = await this.subsRepo.findOne({ where: { id } });
+        if (!sub)
+            throw new common_1.NotFoundException('Subscription not found');
+        const entry = (0, plan_catalog_1.getPlan)(sub.plan);
+        const isYearly = entry ? Math.abs(Number(sub.amount) - entry.yearly) < 0.01 : false;
+        const now = new Date();
+        const expiresAt = isYearly
+            ? new Date(now.getFullYear() + 1, now.getMonth(), now.getDate())
+            : new Date(now.getFullYear(), now.getMonth() + 1, now.getDate());
+        await this.subsRepo.update({ userId: sub.userId, status: subscription_entity_1.SubStatus.ACTIVE }, { status: subscription_entity_1.SubStatus.CANCELLED });
+        sub.status = subscription_entity_1.SubStatus.ACTIVE;
+        sub.startsAt = now;
+        sub.expiresAt = expiresAt;
+        await this.subsRepo.save(sub);
+        await this.usersRepo.update(sub.userId, {
+            plan: entry?.userPlan ?? user_entity_1.UserPlan.FREE,
+            subscriptionExpiresAt: expiresAt,
+        });
+        return { message: 'Subscription confirmed', plan: sub.plan };
+    }
+    async rejectSubscription(id) {
+        await this.subsRepo.update(id, { status: subscription_entity_1.SubStatus.CANCELLED });
+        return { message: 'Subscription rejected' };
+    }
+    async getAnalytics() {
+        const active = await this.subsRepo.find({ where: { status: subscription_entity_1.SubStatus.ACTIVE } });
+        const pendingSubscriptions = await this.subsRepo.count({ where: { status: subscription_entity_1.SubStatus.PENDING } });
+        let mrr = 0;
+        const byPlan = {};
+        for (const s of active) {
+            const entry = (0, plan_catalog_1.getPlan)(s.plan);
+            const amt = Number(s.amount) || 0;
+            const isYearly = entry ? Math.abs(amt - entry.yearly) < 0.01 : false;
+            mrr += isYearly ? amt / 12 : amt;
+            byPlan[s.plan] = byPlan[s.plan] || { count: 0, revenue: 0 };
+            byPlan[s.plan].count += 1;
+            byPlan[s.plan].revenue += amt;
+        }
+        const totalUsers = await this.usersRepo.count();
+        const paidUsers = await this.usersRepo.count({
+            where: [{ plan: 'premium' }, { plan: 'business' }],
+        });
+        return {
+            mrr: Math.round(mrr * 100) / 100,
+            arr: Math.round(mrr * 12 * 100) / 100,
+            activeSubscriptions: active.length,
+            pendingSubscriptions,
+            byPlan,
+            totalUsers,
+            paidUsers,
+            conversionRate: totalUsers ? Math.round((paidUsers / totalUsers) * 1000) / 10 : 0,
+        };
     }
     async getEvents() {
         return this.eventsRepo.find({ order: { createdAt: 'DESC' }, relations: ['place', 'organizer'] });
@@ -137,7 +231,9 @@ exports.AdminService = AdminService = __decorate([
     __param(3, (0, typeorm_1.InjectRepository)(subscription_entity_1.Subscription)),
     __param(4, (0, typeorm_1.InjectRepository)(event_entity_1.Event)),
     __param(5, (0, typeorm_1.InjectRepository)(tip_entity_1.Tip)),
+    __param(6, (0, typeorm_1.InjectRepository)(audit_log_entity_1.AuditLog)),
     __metadata("design:paramtypes", [typeorm_2.Repository,
+        typeorm_2.Repository,
         typeorm_2.Repository,
         typeorm_2.Repository,
         typeorm_2.Repository,

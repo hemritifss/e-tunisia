@@ -5,6 +5,9 @@ import { Review } from '../reviews/review.entity';
 import { Place } from '../places/place.entity';
 import { TripPlan } from '../itineraries/trip-plan.entity';
 import { SavedPost } from '../posts/saved-post.entity';
+import { PassportView } from './passport-view.entity';
+import { PlaceVisit } from './place-visit.entity';
+import { NotificationsService } from '../notifications/notifications.service';
 import { PassportDto } from './dto/passport.dto';
 import { BadgesService } from '../badges/badges.service';
 import { EndorsementsService } from './endorsements.service';
@@ -14,10 +17,13 @@ export declare class UsersService {
     private placesRepo;
     private tripsRepo;
     private savesRepo;
+    private passportViewsRepo;
+    private placeVisitsRepo;
     private cache;
     private badges;
+    private notifications;
     private endorsements;
-    constructor(usersRepository: Repository<User>, reviewsRepo: Repository<Review>, placesRepo: Repository<Place>, tripsRepo: Repository<TripPlan>, savesRepo: Repository<SavedPost>, cache: Cache, badges: BadgesService, endorsements: EndorsementsService);
+    constructor(usersRepository: Repository<User>, reviewsRepo: Repository<Review>, placesRepo: Repository<Place>, tripsRepo: Repository<TripPlan>, savesRepo: Repository<SavedPost>, passportViewsRepo: Repository<PassportView>, placeVisitsRepo: Repository<PlaceVisit>, cache: Cache, badges: BadgesService, notifications: NotificationsService, endorsements: EndorsementsService);
     findByEmail(email: string): Promise<User | null>;
     findByHandle(handle: string): Promise<User | null>;
     generateAvailableHandle(fullName: string): Promise<string>;
@@ -25,9 +31,29 @@ export declare class UsersService {
     findById(id: string): Promise<User>;
     create(data: Partial<User>): Promise<User>;
     update(id: string, data: Partial<User>): Promise<User>;
+    recordPassportView(ownerHandle: string, viewerId: string): Promise<void>;
+    private maybeNotifyPassportViews;
+    getPassportAnalytics(ownerId: string): Promise<{
+        totalViews: number;
+        viewsThisWeek: number;
+        uniqueViewers: number;
+        recentViewers: {
+            handle: string;
+            fullName: string;
+            avatar: string;
+            plan: "free" | "premium" | "business";
+            role: import("./user.entity").UserRole;
+            viewedAt: Date;
+        }[];
+        topCountries: {
+            country: any;
+            count: number;
+        }[];
+    }>;
     toggleFavorite(userId: string, placeId: string): Promise<string[]>;
     getFavoriteIds(userId: string): Promise<string[]>;
     toggleVisited(userId: string, placeId: string): Promise<string[]>;
+    cityVisitorCounts(cities: string[]): Promise<Record<string, number>>;
     getVisitedIds(userId: string): Promise<string[]>;
     suggestedUsers(limit?: number): Promise<{
         id: any;
@@ -85,7 +111,7 @@ export declare class UsersService {
         progress?: undefined;
     } | {
         ok: boolean;
-        role: import("./user.entity").UserRole.USER;
+        role: import("./user.entity").UserRole.USER | import("./user.entity").UserRole.SUPERADMIN;
         reason: string;
         progress: {
             points: number;

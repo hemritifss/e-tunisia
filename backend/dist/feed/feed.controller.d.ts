@@ -5,7 +5,7 @@ export declare class FeedController {
     private jwt;
     constructor(feed: FeedService, jwt: JwtService);
     private tryGetUserId;
-    public(req: any, page?: string, limit?: string, sort?: 'new' | 'top' | 'hot', category?: string, hashtag?: string): Promise<{
+    public(req: any, page?: string, limit?: string, sort?: 'new' | 'top' | 'hot' | 'foryou', category?: string, hashtag?: string): Promise<{
         data: any[];
         meta: {
             page: number;

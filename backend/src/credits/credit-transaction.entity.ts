@@ -12,6 +12,7 @@ export enum CreditTxKind {
     PLATFORM_FEE = 'platform_fee', // commission going to platform account
     REFUND = 'refund',
     BOOST = 'boost',               // paid to promote a place listing
+    REFERRAL = 'referral',         // give-10-get-10 referral reward
 }
 
 @Entity('credit_transactions')

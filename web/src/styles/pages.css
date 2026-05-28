@@ -13479,6 +13479,21 @@ section[class^="hero-"] {
 }
 .credits-actions .btn { flex: 1; min-width: 180px; justify-content: center; }
 
+.credits-referral {
+  margin-bottom: var(--space-6);
+  padding: var(--space-4);
+  border: 1px solid color-mix(in oklch, var(--gold) 22%, var(--border));
+  border-radius: var(--radius-xl);
+  background: color-mix(in oklch, var(--gold) 7%, var(--surface));
+}
+.credits-referral-head h2 { display: flex; align-items: center; gap: 8px; font-size: var(--text-lg); font-weight: 700; margin: 0 0 4px; }
+.credits-referral-head p { margin: 0 0 var(--space-3); color: var(--text-secondary); font-size: var(--text-sm); }
+.credits-referral-row { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+.credits-referral-row .input { flex: 1; min-width: 200px; font-family: var(--font-mono, ui-monospace, monospace); font-size: var(--text-sm); }
+.credits-referral-row .btn { flex: 0 0 auto; }
+.credits-referral-stats { margin: var(--space-2) 0 0; font-size: var(--text-sm); color: var(--text-secondary); }
+.credits-referral-stats:empty { display: none; }
+
 .credits-history h2 {
   font-size: var(--text-lg);
   margin-bottom: var(--space-3);
@@ -13577,6 +13592,19 @@ section[class^="hero-"] {
   color: var(--accent-text);
 }
 .donate-fee-note { font-size: var(--text-xs); color: var(--text-muted); margin: 0; }
+.donate-gifts { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+.donate-gift {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  min-width: 60px; padding: var(--space-2);
+  border: 1px solid var(--border); border-radius: var(--radius-md);
+  background: var(--surface); cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+.donate-gift:hover:not(:disabled) { border-color: var(--accent); transform: translateY(-1px); }
+.donate-gift:disabled { opacity: 0.55; cursor: default; }
+.donate-gift.selected { border-color: var(--accent); background: var(--accent-light, color-mix(in oklch, var(--accent) 12%, var(--surface))); }
+.donate-gift-emoji { font-size: 22px; line-height: 1; }
+.donate-gift-price { font-size: var(--text-xs); font-weight: 600; color: var(--text-secondary); }
 .donate-anon {
   display: flex; align-items: center; gap: var(--space-2);
   font-size: var(--text-sm); color: var(--text-secondary);
@@ -14293,6 +14321,83 @@ section[class^="hero-"] {
     .admin-stat strong, .admin-queue-body strong, .admin-header h1, .admin-locked-card h1, .admin-section header h2 { color: oklch(96% 0 0); }
     .admin-stat-skel { background: linear-gradient(90deg, oklch(22% 0.012 260) 25%, oklch(26% 0.012 260) 50%, oklch(22% 0.012 260) 75%); background-size: 200% 100%; }
     .admin-fineprint { background: color-mix(in oklch, var(--violet) 14%, oklch(20% 0.012 260)); }
+}
+
+/* ---- Admin sub-nav, tables, pills, row actions (Phase 2 supervision) ---- */
+.admin-subnav { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 16px; }
+.admin-subnav a {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 13px; border-radius: var(--radius-full);
+    border: 1px solid var(--border); background: var(--surface);
+    color: var(--text-secondary); text-decoration: none;
+    font-size: var(--text-sm); font-weight: 600;
+    transition: all var(--duration-fast) var(--ease-out);
+}
+.admin-subnav a:hover { color: var(--text-primary); border-color: color-mix(in oklch, var(--violet) 35%, var(--border)); }
+.admin-subnav a.active { background: linear-gradient(135deg, var(--violet), var(--mediterranean)); color: #fff; border-color: transparent; }
+
+.admin-filterbar { display: flex; gap: 6px; margin-bottom: 14px; }
+.admin-filterbar button {
+    padding: 6px 14px; border-radius: var(--radius-full);
+    border: 1px solid var(--border); background: var(--surface);
+    color: var(--text-secondary); font-size: var(--text-sm); font-weight: 600; cursor: pointer;
+}
+.admin-filterbar button.active { background: var(--text-primary); color: var(--surface); border-color: transparent; }
+
+.admin-table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius-xl); background: var(--surface); box-shadow: var(--shadow-sm); }
+.admin-table { width: 100%; border-collapse: collapse; font-size: var(--text-sm); }
+.admin-table thead th {
+    text-align: left; padding: 11px 14px; white-space: nowrap;
+    font-family: var(--font-display); font-size: var(--text-xs); font-weight: 700;
+    text-transform: uppercase; letter-spacing: var(--tracking-wide);
+    color: var(--text-tertiary); border-bottom: 1px solid var(--border);
+}
+.admin-table tbody td { padding: 11px 14px; border-bottom: 1px solid color-mix(in oklch, var(--border) 60%, transparent); color: var(--text-secondary); vertical-align: middle; }
+.admin-table tbody tr:last-child td { border-bottom: 0; }
+.admin-table tbody tr:hover td { background: color-mix(in oklch, var(--violet) 4%, transparent); }
+.admin-table strong { color: var(--text-primary); font-weight: 600; }
+.admin-cell-stack { display: flex; flex-direction: column; }
+.admin-cell-stack span { font-size: var(--text-xs); color: var(--text-tertiary); }
+.admin-rating { display: inline-flex; align-items: center; gap: 4px; color: var(--gold); font-weight: 600; }
+.admin-code { font-family: var(--font-mono, ui-monospace, monospace); font-size: var(--text-xs); background: color-mix(in oklch, var(--text-tertiary) 12%, transparent); padding: 2px 6px; border-radius: var(--radius-sm); color: var(--text-secondary); }
+
+.admin-pill {
+    display: inline-block; padding: 2px 9px; border-radius: var(--radius-full);
+    font-size: var(--text-xs); font-weight: 700; text-transform: capitalize;
+    background: color-mix(in oklch, var(--text-tertiary) 16%, transparent); color: var(--text-secondary);
+}
+.admin-pill.green { background: color-mix(in oklch, var(--olive) 18%, transparent); color: var(--olive); }
+.admin-pill.amber, .admin-pill.gold { background: color-mix(in oklch, var(--gold) 20%, transparent); color: color-mix(in oklch, var(--gold) 70%, black); }
+.admin-pill.violet { background: color-mix(in oklch, var(--violet) 18%, transparent); color: var(--violet); }
+.admin-pill.sky { background: color-mix(in oklch, var(--mediterranean) 18%, transparent); color: var(--mediterranean); }
+.admin-pill.muted { background: color-mix(in oklch, var(--text-tertiary) 16%, transparent); color: var(--text-tertiary); }
+
+.admin-actions-cell { white-space: nowrap; text-align: right; }
+.admin-act {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 5px 10px; margin-left: 6px; border-radius: var(--radius-md);
+    border: 1px solid var(--border); background: var(--surface);
+    color: var(--text-secondary); font-size: var(--text-xs); font-weight: 600; cursor: pointer;
+    transition: all var(--duration-fast) var(--ease-out);
+}
+.admin-act:hover:not(:disabled) { color: var(--text-primary); border-color: var(--text-tertiary); }
+.admin-act:disabled { opacity: .6; cursor: default; }
+.admin-act.primary { background: var(--mediterranean); border-color: transparent; color: #fff; }
+.admin-act.danger { color: var(--brand); border-color: color-mix(in oklch, var(--brand) 30%, var(--border)); }
+.admin-act.danger:hover:not(:disabled) { background: color-mix(in oklch, var(--brand) 10%, var(--surface)); }
+
+.admin-pager { display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 16px; color: var(--text-secondary); font-size: var(--text-sm); }
+.admin-pager button { display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--surface); color: var(--text-secondary); cursor: pointer; }
+.admin-pager button:disabled { opacity: .45; cursor: default; }
+.admin-empty { padding: 48px 20px; text-align: center; color: var(--text-tertiary); border: 1px dashed var(--border); border-radius: var(--radius-xl); }
+.admin-table-skel { display: flex; flex-direction: column; gap: 8px; }
+.admin-row-skel { height: 46px; border-radius: var(--radius-md); background: linear-gradient(90deg, oklch(95% 0.005 80) 25%, oklch(97% 0.005 80) 50%, oklch(95% 0.005 80) 75%); background-size: 200% 100%; animation: passport-shimmer 1.4s infinite; }
+.admin-queue-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 5px; margin-left: 8px; border-radius: var(--radius-full); background: var(--brand); color: #fff; font-size: 11px; font-weight: 700; }
+
+@media (prefers-color-scheme: dark) {
+    .admin-subnav a, .admin-filterbar button, .admin-table-wrap, .admin-act, .admin-pager button { background: oklch(20% 0.012 260); border-color: oklch(28% 0.012 260); }
+    .admin-table thead th, .admin-table strong { color: oklch(92% 0 0); }
+    .admin-row-skel { background: linear-gradient(90deg, oklch(22% 0.012 260) 25%, oklch(26% 0.012 260) 50%, oklch(22% 0.012 260) 75%); background-size: 200% 100%; }
 }
 
 /* ============================================
@@ -16727,6 +16832,117 @@ section[class^="hero-"] {
 }
 
 .passport-section-tight { margin: 0 0 16px; }
+.passport-pro-upsell { display: flex; flex-direction: column; gap: 10px; }
+
+/* ---- Passport stamps (14 iconic destinations, collectible) ---- */
+.passport-stamps-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+.passport-stamps-progress { font-size: var(--text-sm); font-weight: 700; color: var(--terracotta); }
+.passport-stamps-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+.passport-stamp {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 7px 14px 7px 8px;
+    border: 1.5px dashed color-mix(in oklch, var(--text-tertiary) 40%, transparent);
+    border-radius: var(--radius-full);
+    color: var(--text-tertiary);
+    opacity: 0.7;
+    transition: all var(--duration-fast) var(--ease-out);
+}
+.passport-stamp-ink { width: 26px; height: 26px; display: grid; place-items: center; border-radius: 50%; border: 1.5px solid currentColor; }
+.passport-stamp-name { font-size: var(--text-sm); font-weight: 600; }
+.passport-stamp-rarity { font-size: var(--text-xs); font-weight: 600; opacity: 0.75; padding-left: 6px; border-left: 1px solid color-mix(in oklch, currentColor 30%, transparent); }
+.passport-stamp.is-earned {
+    border-style: solid;
+    border-color: color-mix(in oklch, var(--terracotta) 55%, transparent);
+    color: var(--terracotta);
+    opacity: 1;
+    transform: rotate(-2deg);
+    background: color-mix(in oklch, var(--terracotta) 8%, transparent);
+}
+.passport-stamp.is-earned .passport-stamp-ink { background: color-mix(in oklch, var(--terracotta) 14%, transparent); }
+.passport-stamps-cta { display: inline-block; margin-top: 14px; color: var(--terracotta); font-weight: 600; font-size: var(--text-sm); text-decoration: none; }
+.passport-stamps-cta:hover { text-decoration: underline; }
+
+/* ---- Passport highlights ("My Tunisia Journey") ---- */
+.passport-highlights { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 6px; }
+.passport-highlight {
+    flex: 0 0 auto; width: 84px; cursor: pointer; background: none; border: 0; padding: 0;
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+}
+.passport-highlight img {
+    width: 72px; height: 72px; border-radius: 50%; object-fit: cover;
+    border: 2.5px solid var(--gold); padding: 2px; background: var(--surface);
+}
+.passport-highlight-cap { font-size: var(--text-xs); color: var(--text-secondary); max-width: 84px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.passport-highlight-overlay { position: fixed; inset: 0; z-index: 400; background: oklch(0% 0 0 / 0.9); display: flex; align-items: center; justify-content: center; padding: 20px; }
+.passport-highlight-overlay-inner { position: relative; max-width: 420px; width: 100%; }
+.passport-highlight-overlay-inner img { width: 100%; border-radius: var(--radius-2xl); }
+.passport-highlight-overlay-cap { color: #fff; text-align: center; margin-top: 12px; font-size: var(--text-sm); }
+.passport-highlight-close { position: absolute; top: 10px; right: 10px; padding: 8px; border-radius: 50%; border: 0; background: oklch(100% 0 0 / 0.15); color: #fff; cursor: pointer; }
+
+/* ---- Story composer (caption step before posting) ---- */
+.story-composer { position: fixed; inset: 0; z-index: 410; background: oklch(0% 0 0 / 0.9); display: flex; align-items: center; justify-content: center; padding: 20px; }
+.story-composer-card { position: relative; width: 100%; max-width: 380px; background: var(--surface); border-radius: var(--radius-2xl); overflow: hidden; box-shadow: var(--shadow-2xl); }
+.story-composer-close { position: absolute; top: 10px; right: 10px; z-index: 2; padding: 7px; border-radius: 50%; border: 0; background: oklch(0% 0 0 / 0.45); color: #fff; cursor: pointer; }
+.story-composer-preview { width: 100%; max-height: 50vh; object-fit: cover; display: block; }
+.story-composer-caption { width: 100%; border: 0; border-top: 1px solid var(--border); padding: 14px 16px; font-size: var(--text-sm); background: var(--surface); color: var(--text-primary); resize: none; min-height: 72px; font-family: inherit; }
+.story-composer-caption:focus { outline: none; }
+.story-composer-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; border-top: 1px solid var(--border); }
+.story-composer-count { font-size: var(--text-xs); color: var(--text-tertiary); }
+.story-composer-share { padding: 8px 18px; border-radius: var(--radius-full); border: 0; background: var(--gradient-cta, var(--terracotta)); color: #fff; font-weight: 600; font-size: var(--text-sm); cursor: pointer; }
+.story-composer-share:disabled { opacity: 0.6; cursor: default; }
+
+/* ---- Pro passport themes (hero gradient overrides — higher specificity wins) ---- */
+.passport-hero.passport-theme-sahara .passport-hero-bg {
+    background:
+        radial-gradient(120% 80% at 0% 0%, rgba(224, 168, 74, 0.5), transparent 60%),
+        radial-gradient(100% 80% at 100% 100%, rgba(196, 92, 46, 0.55), transparent 60%),
+        linear-gradient(135deg, #5a2c12 0%, #b4571f 55%, #e0a84a 100%);
+}
+.passport-hero.passport-theme-mediterranean .passport-hero-bg {
+    background:
+        radial-gradient(120% 80% at 0% 0%, rgba(64, 182, 210, 0.45), transparent 60%),
+        radial-gradient(100% 80% at 100% 100%, rgba(20, 52, 110, 0.65), transparent 60%),
+        linear-gradient(135deg, #07203f 0%, #0e4a6e 50%, #2bb1c9 100%);
+}
+.passport-hero.passport-theme-medina .passport-hero-bg {
+    background:
+        radial-gradient(120% 80% at 0% 0%, rgba(240, 228, 200, 0.5), transparent 60%),
+        radial-gradient(100% 80% at 100% 100%, rgba(40, 86, 150, 0.6), transparent 60%),
+        linear-gradient(135deg, #16335e 0%, #3a6ea5 55%, #ecdfc4 100%);
+}
+
+/* ---- Theme picker (Pro owners) ---- */
+.passport-theme-picker { padding: 14px 16px; border: 1px solid var(--border); border-radius: var(--radius-xl); background: var(--surface); }
+.passport-theme-picker-head { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; color: var(--text-secondary); font-size: var(--text-sm); }
+.passport-theme-picker-head strong { color: var(--text-primary); font-family: var(--font-display); }
+.passport-theme-swatches { display: flex; flex-wrap: wrap; gap: 8px; }
+.passport-theme-swatch { display: inline-flex; align-items: center; gap: 7px; padding: 6px 12px; border-radius: var(--radius-full); border: 1px solid var(--border); background: var(--surface); color: var(--text-secondary); font-size: var(--text-sm); font-weight: 600; cursor: pointer; transition: all var(--duration-fast) var(--ease-out); }
+.passport-theme-swatch:hover:not(:disabled) { border-color: var(--text-tertiary); color: var(--text-primary); }
+.passport-theme-swatch.active { border-color: var(--gold); color: var(--text-primary); box-shadow: 0 0 0 1px var(--gold); }
+.passport-theme-swatch:disabled { opacity: .6; cursor: default; }
+.passport-theme-swatch-dot { width: 14px; height: 14px; border-radius: 50%; background: var(--text-tertiary); }
+.passport-theme-swatch.theme-default .passport-theme-swatch-dot { background: linear-gradient(135deg, #0b1e3f, #d4623a); }
+.passport-theme-swatch.theme-sahara .passport-theme-swatch-dot { background: linear-gradient(135deg, #b4571f, #e0a84a); }
+.passport-theme-swatch.theme-mediterranean .passport-theme-swatch-dot { background: linear-gradient(135deg, #0e4a6e, #2bb1c9); }
+.passport-theme-swatch.theme-medina .passport-theme-swatch-dot { background: linear-gradient(135deg, #3a6ea5, #ecdfc4); }
+
+/* ---- Passport analytics (Pro: who viewed your passport) ---- */
+.passport-analytics { padding: 14px 16px; border: 1px solid var(--border); border-radius: var(--radius-xl); background: var(--surface); }
+.passport-analytics-head { display: flex; align-items: center; gap: 6px; margin-bottom: 12px; color: var(--text-secondary); font-size: var(--text-sm); }
+.passport-analytics-head strong { color: var(--text-primary); font-family: var(--font-display); }
+.passport-analytics-tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
+.passport-analytics-tile { text-align: center; padding: 10px 8px; border-radius: var(--radius-lg); background: color-mix(in oklch, var(--gold) 8%, var(--surface)); border: 1px solid color-mix(in oklch, var(--gold) 18%, var(--border)); }
+.passport-analytics-tile strong { display: block; font-family: var(--font-display); font-weight: 800; font-size: var(--text-xl); color: var(--text-primary); }
+.passport-analytics-tile span { font-size: var(--text-xs); color: var(--text-tertiary); }
+.passport-analytics-viewers { display: flex; flex-direction: column; gap: 6px; }
+.passport-analytics-viewer { display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: var(--radius-md); text-decoration: none; color: var(--text-primary); }
+.passport-analytics-viewer:hover { background: color-mix(in oklch, var(--text-tertiary) 8%, transparent); }
+.passport-analytics-viewer img, .passport-analytics-viewer-fallback { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+.passport-analytics-viewer-fallback { display: inline-flex; align-items: center; justify-content: center; background: var(--mediterranean); color: #fff; font-weight: 700; font-size: var(--text-sm); }
+.passport-analytics-viewer-name { display: inline-flex; align-items: center; gap: 6px; font-size: var(--text-sm); font-weight: 600; }
+.passport-analytics-empty { color: var(--text-tertiary); font-size: var(--text-sm); margin: 4px 0 0; }
+.passport-analytics-countries { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.passport-analytics-country { display: inline-flex; align-items: center; gap: 4px; font-size: var(--text-xs); color: var(--text-secondary); padding: 3px 9px; border-radius: var(--radius-full); background: color-mix(in oklch, var(--text-tertiary) 12%, transparent); }
 
 .passport-completion {
     position: relative;
@@ -17099,3 +17315,20 @@ section[class^="hero-"] {
 @media (prefers-reduced-motion: reduce) {
   .explore-hero-orb { animation: none; }
 }
+
+/* Search post results */
+.search-post-list { display: flex; flex-direction: column; gap: 0.75rem; }
+.search-post-card {
+  display: block;
+  padding: 1rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-light);
+  background: var(--surface);
+  text-decoration: none;
+  color: inherit;
+  transition: border-color var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out);
+}
+.search-post-card:hover { border-color: var(--accent); box-shadow: var(--shadow-sm); }
+.search-post-card strong { display: block; font-size: var(--text-base); margin-bottom: 0.25rem; }
+.search-post-card p { margin: 0; font-size: var(--text-sm); color: var(--text-muted); line-height: 1.4; }
+.search-post-meta { display: block; margin-top: 0.5rem; font-size: var(--text-xs); color: var(--text-muted); }

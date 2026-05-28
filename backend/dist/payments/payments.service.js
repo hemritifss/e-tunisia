@@ -30,6 +30,48 @@ let PaymentsService = PaymentsService_1 = class PaymentsService {
             this.logger.warn('Stripe not configured - running in mock mode');
         }
     }
+    get stripeEnabled() {
+        return !!this.stripe;
+    }
+    async getOrCreateCustomer(params) {
+        if (!this.stripe)
+            return `cus_mock_${params.userId}`;
+        const existing = await this.stripe.customers.list({ email: params.email, limit: 1 });
+        if (existing.data.length > 0)
+            return existing.data[0].id;
+        const customer = await this.stripe.customers.create({
+            email: params.email,
+            name: params.name,
+            metadata: { userId: params.userId },
+        });
+        return customer.id;
+    }
+    async createSubscriptionCheckout(params) {
+        if (!this.stripe)
+            throw new Error('Stripe not configured');
+        const successUrl = params.successUrl + (params.successUrl.includes('?') ? '&' : '?') + 'session_id={CHECKOUT_SESSION_ID}';
+        const session = await this.stripe.checkout.sessions.create({
+            mode: 'subscription',
+            customer: params.customerId,
+            line_items: [{ price: params.priceId, quantity: 1 }],
+            success_url: successUrl,
+            cancel_url: params.cancelUrl,
+            client_reference_id: params.metadata.userId,
+            metadata: params.metadata,
+            subscription_data: { metadata: params.metadata },
+            allow_promotion_codes: true,
+        });
+        return { id: session.id, url: session.url };
+    }
+    async createBillingPortalSession(customerId, returnUrl) {
+        if (!this.stripe)
+            throw new Error('Stripe not configured');
+        const session = await this.stripe.billingPortal.sessions.create({
+            customer: customerId,
+            return_url: returnUrl,
+        });
+        return { url: session.url };
+    }
     async createPaymentIntent(amount, currency = 'usd', metadata = {}) {
         if (!this.stripe) {
             this.logger.log(`Mock payment intent created: ${amount} ${currency}`);
@@ -88,11 +130,11 @@ let PaymentsService = PaymentsService_1 = class PaymentsService {
         this.logger.log(`Creating payout for host ${payout.hostId}`);
         return { success: true, payoutId: `po_${Date.now()}` };
     }
-    async constructWebhookEvent(payload, signature) {
+    async constructWebhookEvent(payload, signature, secret) {
         if (!this.stripe) {
             throw new Error('Stripe not configured');
         }
-        const webhookSecret = this.configService.get('STRIPE_WEBHOOK_SECRET');
+        const webhookSecret = secret || this.configService.get('STRIPE_WEBHOOK_SECRET');
         if (!webhookSecret) {
             throw new Error('Webhook secret not configured');
         }

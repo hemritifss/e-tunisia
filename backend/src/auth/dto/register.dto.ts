@@ -36,4 +36,10 @@ export class RegisterDto {
     @IsOptional()
     @IsString()
     phone?: string;
+
+    @ApiProperty({ example: 'ahmed_t', required: false, description: "Referrer's handle (give-10-get-10)." })
+    @IsOptional()
+    @IsString()
+    @MaxLength(30)
+    ref?: string;
 }

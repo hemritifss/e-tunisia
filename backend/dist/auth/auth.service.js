@@ -14,12 +14,14 @@ const common_1 = require("@nestjs/common");
 const jwt_1 = require("@nestjs/jwt");
 const users_service_1 = require("../users/users.service");
 const badges_service_1 = require("../badges/badges.service");
+const credits_service_1 = require("../credits/credits.service");
 const bcrypt = require("bcrypt");
 let AuthService = class AuthService {
-    constructor(usersService, jwtService, badgesService) {
+    constructor(usersService, jwtService, badgesService, creditsService) {
         this.usersService = usersService;
         this.jwtService = jwtService;
         this.badgesService = badgesService;
+        this.creditsService = creditsService;
     }
     async register(dto) {
         const existingEmail = await this.usersService.findByEmail(dto.email);
@@ -37,8 +39,19 @@ let AuthService = class AuthService {
         else {
             handleLower = await this.usersService.generateAvailableHandle(dto.fullName);
         }
-        const user = await this.usersService.create({ ...dto, handle: handleLower });
+        const { ref, ...rest } = dto;
+        const user = await this.usersService.create({ ...rest, handle: handleLower });
         await this.badgesService.awardIfEligible(user.id, 'user.created', {});
+        if (ref && ref.trim()) {
+            try {
+                const referrer = await this.usersService.findByHandle(ref.trim().toLowerCase());
+                if (referrer && referrer.id !== user.id) {
+                    await this.usersService.update(user.id, { referredBy: referrer.id });
+                    await this.creditsService.createPendingReferral(user.id, referrer.id);
+                }
+            }
+            catch { }
+        }
         const token = this.generateToken(user);
         return {
             user: {
@@ -86,6 +99,7 @@ exports.AuthService = AuthService = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [users_service_1.UsersService,
         jwt_1.JwtService,
-        badges_service_1.BadgesService])
+        badges_service_1.BadgesService,
+        credits_service_1.CreditsService])
 ], AuthService);
 //# sourceMappingURL=auth.service.js.map

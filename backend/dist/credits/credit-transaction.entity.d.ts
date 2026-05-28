@@ -6,7 +6,8 @@ export declare enum CreditTxKind {
     DONATION_IN = "donation_in",
     PLATFORM_FEE = "platform_fee",
     REFUND = "refund",
-    BOOST = "boost"
+    BOOST = "boost",
+    REFERRAL = "referral"
 }
 export declare class CreditTransaction {
     id: string;

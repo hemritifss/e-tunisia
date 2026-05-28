@@ -16,6 +16,8 @@ const review_entity_1 = require("../reviews/review.entity");
 const place_entity_1 = require("../places/place.entity");
 const trip_plan_entity_1 = require("../itineraries/trip-plan.entity");
 const saved_post_entity_1 = require("../posts/saved-post.entity");
+const passport_view_entity_1 = require("./passport-view.entity");
+const place_visit_entity_1 = require("./place-visit.entity");
 const users_service_1 = require("./users.service");
 const follows_service_1 = require("./follows.service");
 const endorsements_service_1 = require("./endorsements.service");
@@ -29,7 +31,7 @@ let UsersModule = class UsersModule {
 exports.UsersModule = UsersModule;
 exports.UsersModule = UsersModule = __decorate([
     (0, common_1.Module)({
-        imports: [typeorm_1.TypeOrmModule.forFeature([user_entity_1.User, follow_entity_1.Follow, endorsement_entity_1.Endorsement, review_entity_1.Review, place_entity_1.Place, trip_plan_entity_1.TripPlan, saved_post_entity_1.SavedPost]), badges_module_1.BadgesModule, og_module_1.OgModule, notifications_module_1.NotificationsModule],
+        imports: [typeorm_1.TypeOrmModule.forFeature([user_entity_1.User, follow_entity_1.Follow, endorsement_entity_1.Endorsement, review_entity_1.Review, place_entity_1.Place, trip_plan_entity_1.TripPlan, saved_post_entity_1.SavedPost, passport_view_entity_1.PassportView, place_visit_entity_1.PlaceVisit]), badges_module_1.BadgesModule, og_module_1.OgModule, notifications_module_1.NotificationsModule],
         providers: [users_service_1.UsersService, follows_service_1.FollowsService, endorsements_service_1.EndorsementsService, activity_service_1.ActivityService],
         controllers: [users_controller_1.UsersController],
         exports: [users_service_1.UsersService, follows_service_1.FollowsService, endorsements_service_1.EndorsementsService, activity_service_1.ActivityService],

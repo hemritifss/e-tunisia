@@ -17,6 +17,25 @@ export declare class PaymentsService {
     private readonly logger;
     private stripe;
     constructor(configService: ConfigService);
+    get stripeEnabled(): boolean;
+    getOrCreateCustomer(params: {
+        email: string;
+        name?: string;
+        userId: string;
+    }): Promise<string>;
+    createSubscriptionCheckout(params: {
+        customerId: string;
+        priceId: string;
+        successUrl: string;
+        cancelUrl: string;
+        metadata: Record<string, string>;
+    }): Promise<{
+        id: string;
+        url: string;
+    }>;
+    createBillingPortalSession(customerId: string, returnUrl: string): Promise<{
+        url: string;
+    }>;
     createPaymentIntent(amount: number, currency?: string, metadata?: Record<string, string>): Promise<PaymentIntent>;
     confirmPaymentIntent(paymentIntentId: string): Promise<boolean>;
     refundPayment(paymentIntentId: string, amount?: number): Promise<{
@@ -27,7 +46,7 @@ export declare class PaymentsService {
         success: boolean;
         payoutId?: string;
     }>;
-    constructWebhookEvent(payload: string | Buffer, signature: string): Promise<any>;
+    constructWebhookEvent(payload: string | Buffer, signature: string, secret?: string): Promise<any>;
     getBalance(): Promise<{
         available: number;
         pending: number;

@@ -10,6 +10,7 @@ import {
     Post,
     Header,
     Res,
+    ForbiddenException,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import type { Response } from 'express';
@@ -21,6 +22,8 @@ import { EndorsementsService } from './endorsements.service';
 import { ActivityService } from './activity.service';
 import { ENDORSEMENT_TOPICS } from './endorsement-topics';
 import { OgService } from '../og/og.service';
+import { capsFor } from '../billing/plan-catalog';
+import { effectivePlan } from './effective-plan';
 
 @ApiTags('users')
 @Controller('users')
@@ -38,6 +41,18 @@ export class UsersController {
     @Get('me')
     getProfile(@Request() req) {
         return this.usersService.findById(req.user.id);
+    }
+
+    /** Pro: who viewed your passport (gated by the passportAnalytics cap). */
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    @Get('me/passport-analytics')
+    async passportAnalytics(@Request() req) {
+        const me = await this.usersService.findById(req.user.id);
+        if (!capsFor(effectivePlan(me) as any).passportAnalytics) {
+            throw new ForbiddenException({ message: 'Passport analytics requires Pro Traveler.', code: 'pro_required' });
+        }
+        return this.usersService.getPassportAnalytics(req.user.id);
     }
 
     /** Public: search users by handle prefix or fullName substring. */
@@ -74,6 +89,7 @@ export class UsersController {
                 isOwner ? Promise.resolve(false) : this.followsService.isFollowing(viewerId, handle),
                 isOwner ? Promise.resolve([] as string[]) : this.endorsementsService.myEndorsementsFor(viewerId, handle),
             ]);
+            if (!isOwner) void this.usersService.recordPassportView(handle, viewerId);
             return { ...passport, isOwner, viewerIsFollowing, viewerEndorsedTopics };
         }
         return passport;
@@ -189,11 +205,32 @@ export class UsersController {
         return this.activityService.globalFeed(limit ? Number(limit) : 20);
     }
 
+    /** Active travelers on the map — recent place visits with coordinates. */
+    @Get('active-travelers')
+    activeTravelers(@Query('limit') limit?: string) {
+        return this.usersService.activeTravelers(limit ? Number(limit) : 50);
+    }
+
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()
     @Put('me')
-    updateProfile(@Request() req, @Body() body: Partial<any>) {
-        return this.usersService.update(req.user.id, body);
+    async updateProfile(@Request() req, @Body() body: Partial<any>) {
+        // Whitelist self-editable fields. Without this, a user could PUT
+        // { plan: 'business', role: 'admin' } and escalate — these are NOT settable here.
+        const ALLOWED = [
+            'fullName', 'handle', 'avatar', 'phone', 'country', 'bio', 'website',
+            'interests', 'onboardingComplete', 'favoriteIds', 'visitedPlaceIds', 'passportTheme',
+        ];
+        const safe: Record<string, any> = {};
+        for (const k of ALLOWED) if (k in body) safe[k] = body[k];
+
+        // Custom passport theme is a Pro/Business perk — drop it for Free users.
+        if ('passportTheme' in safe) {
+            const me = await this.usersService.findById(req.user.id);
+            if (!capsFor(effectivePlan(me) as any).customThemes) delete safe.passportTheme;
+        }
+
+        return this.usersService.update(req.user.id, safe);
     }
 
     @UseGuards(JwtAuthGuard)

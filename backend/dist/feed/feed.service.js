@@ -22,19 +22,25 @@ const ads_service_1 = require("../ads/ads.service");
 const places_service_1 = require("../places/places.service");
 const follow_entity_1 = require("../social/follow.entity");
 const safety_service_1 = require("../safety/safety.service");
+const user_entity_1 = require("../users/user.entity");
+const place_visit_entity_1 = require("../users/place-visit.entity");
+const effective_plan_1 = require("../users/effective-plan");
 let FeedService = class FeedService {
-    constructor(posts, reviews, ads, places, follows, safety) {
+    constructor(posts, reviews, ads, places, follows, users, placeVisits, safety) {
         this.posts = posts;
         this.reviews = reviews;
         this.ads = ads;
         this.places = places;
         this.follows = follows;
+        this.users = users;
+        this.placeVisits = placeVisits;
         this.safety = safety;
     }
     async unified(opts = {}) {
         const page = Math.max(1, Number(opts.page) || 1);
         const limit = Math.min(50, Math.max(1, Number(opts.limit) || 10));
         const sort = opts.sort || 'hot';
+        const baseSort = sort === 'foryou' ? 'hot' : sort;
         if (opts.mine && opts.userId) {
             return this.posts.list({ page, limit, sort: 'new', authorId: opts.userId });
         }
@@ -47,7 +53,7 @@ let FeedService = class FeedService {
             if (ids.length === 0) {
                 return { data: [], meta: { page, limit, total: 0, totalPages: 0 } };
             }
-            const wide = await this.posts.list({ page: 1, limit: page * limit + 50, sort });
+            const wide = await this.posts.list({ page: 1, limit: page * limit + 50, sort: baseSort });
             const filtered = (wide.data || []).filter((p) => ids.includes(p.authorId));
             const offset = (page - 1) * limit;
             return {
@@ -62,8 +68,8 @@ let FeedService = class FeedService {
         const need = page * limit + limit;
         const fetchN = Math.max(need, 30);
         const [postsRes, reviewsRes] = await Promise.all([
-            this.posts.list({ page: 1, limit: fetchN, sort, category: opts.category }),
-            this.reviews.findFeed({ page: 1, limit: fetchN, sort }),
+            this.posts.list({ page: 1, limit: fetchN, sort: baseSort, category: opts.category }),
+            this.reviews.findFeed({ page: 1, limit: fetchN, sort: baseSort }),
         ]);
         const reviewsTagged = reviewsRes.data.map((r) => ({ ...r, type: 'review' }));
         let merged = [...postsRes.data, ...reviewsTagged];
@@ -93,7 +99,57 @@ let FeedService = class FeedService {
             + 0.6 * (a.savesCount || a.saveCount || 0)
             + 0.4 * (a.reactionsCount || a.reactionCount || 0);
         const hotScore = (a) => engagement(a) * decay(a.createdAt);
-        if (sort === 'hot') {
+        const viewerInterests = new Set();
+        const viewerCities = new Set();
+        if (sort === 'foryou' && opts.userId) {
+            const u = await this.users.findOne({ where: { id: opts.userId }, select: ['interests'] });
+            for (const it of (u?.interests || []))
+                viewerInterests.add(String(it).toLowerCase());
+            const visitRows = await this.placeVisits.createQueryBuilder('v')
+                .select('DISTINCT v.city', 'city')
+                .where('v.userId = :id AND v.city IS NOT NULL', { id: opts.userId })
+                .getRawMany();
+            for (const r of visitRows)
+                viewerCities.add(String(r.city).toLowerCase());
+        }
+        const tierBoost = (a) => {
+            const author = a.author || a.user;
+            const plan = author ? (0, effective_plan_1.effectivePlan)(author) : 'free';
+            return plan === 'business' ? 1.5 : plan === 'premium' ? 1.2 : 1;
+        };
+        const interestBoost = (a) => {
+            if (viewerInterests.size === 0 && viewerCities.size === 0)
+                return 1;
+            let matches = 0;
+            if (viewerInterests.size) {
+                const tags = [
+                    ...(Array.isArray(a.tags) ? a.tags : []),
+                    a.category,
+                    a.place?.category?.name,
+                ].filter(Boolean).map((s) => String(s).toLowerCase());
+                for (const t of tags)
+                    if (viewerInterests.has(t))
+                        matches++;
+            }
+            if (viewerCities.size) {
+                const cities = [a.city, a.location, a.place?.city]
+                    .filter(Boolean).map((s) => String(s).toLowerCase());
+                if (cities.some((c) => viewerCities.has(c)))
+                    matches++;
+            }
+            return 1 + 0.25 * Math.min(matches, 2);
+        };
+        const forYouScore = (a) => (hotScore(a) + 0.5) * tierBoost(a) * interestBoost(a);
+        if (sort === 'foryou') {
+            merged.sort((a, b) => {
+                const sb = forYouScore(b);
+                const sa = forYouScore(a);
+                if (sb !== sa)
+                    return sb - sa;
+                return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+            });
+        }
+        else if (sort === 'hot') {
             merged.sort((a, b) => {
                 const sb = hotScore(b);
                 const sa = hotScore(a);
@@ -212,10 +268,14 @@ exports.FeedService = FeedService;
 exports.FeedService = FeedService = __decorate([
     (0, common_1.Injectable)(),
     __param(4, (0, typeorm_1.InjectRepository)(follow_entity_1.Follow)),
+    __param(5, (0, typeorm_1.InjectRepository)(user_entity_1.User)),
+    __param(6, (0, typeorm_1.InjectRepository)(place_visit_entity_1.PlaceVisit)),
     __metadata("design:paramtypes", [posts_service_1.PostsService,
         reviews_service_1.ReviewsService,
         ads_service_1.AdsService,
         places_service_1.PlacesService,
+        typeorm_2.Repository,
+        typeorm_2.Repository,
         typeorm_2.Repository,
         safety_service_1.SafetyService])
 ], FeedService);

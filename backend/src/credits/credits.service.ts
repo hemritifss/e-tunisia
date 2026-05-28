@@ -6,6 +6,7 @@ import { Repository, DataSource, IsNull, Not } from 'typeorm';
 import { CreditBalance } from './credit-balance.entity';
 import { CreditTransaction, CreditTxKind } from './credit-transaction.entity';
 import { Donation, DonationTarget } from './donation.entity';
+import { ReferralReward } from './referral-reward.entity';
 import { User } from '../users/user.entity';
 import { NotificationsService } from '../notifications/notifications.service';
 import { NotificationType } from '../notifications/notification.entity';
@@ -13,12 +14,22 @@ import { NotificationType } from '../notifications/notification.entity';
 const PLATFORM_FEE_PERCENT = Number(process.env.PLATFORM_FEE_PERCENT || 10); // 10 % commission
 const PLATFORM_USER_EMAIL = process.env.PLATFORM_USER_EMAIL || 'platform@etunisia.tn';
 
+/** Virtual gifts — Tunisian-themed tips. Prices in TND; sending one is a donation. */
+export const GIFT_CATALOG: Array<{ id: string; label: string; emoji: string; price: number }> = [
+    { id: 'jasmine', label: 'Jasmine', emoji: '🌼', price: 1 },
+    { id: 'mint_tea', label: 'Mint Tea', emoji: '🍵', price: 3 },
+    { id: 'dates', label: 'Box of Dates', emoji: '🌴', price: 5 },
+    { id: 'carpet', label: 'Kairouan Carpet', emoji: '🧶', price: 15 },
+    { id: 'camel', label: 'Camel', emoji: '🐪', price: 50 },
+];
+
 @Injectable()
 export class CreditsService {
     constructor(
         @InjectRepository(CreditBalance) private balances: Repository<CreditBalance>,
         @InjectRepository(CreditTransaction) private txs: Repository<CreditTransaction>,
         @InjectRepository(Donation) private donations: Repository<Donation>,
+        @InjectRepository(ReferralReward) private referrals: Repository<ReferralReward>,
         @InjectRepository(User) private users: Repository<User>,
         private dataSource: DataSource,
         private notifications: NotificationsService,
@@ -64,11 +75,88 @@ export class CreditsService {
         };
     }
 
+    /** Credit a user inside an existing transaction (balance + audit tx). */
+    private async creditInTx(
+        mgr: any, userId: string, amount: number, kind: CreditTxKind, note: string, counterpartyId?: string,
+    ) {
+        const bal = await mgr.findOne(CreditBalance, { where: { userId } })
+            ?? mgr.create(CreditBalance, { userId, balance: 0 });
+        const after = Number(bal.balance) + amount;
+        bal.balance = after;
+        bal.lifetimeIn = Number(bal.lifetimeIn) + amount;
+        await mgr.save(bal);
+        await mgr.save(mgr.create(CreditTransaction, { userId, kind, amount, counterpartyId, note, balanceAfter: after }));
+    }
+
+    /**
+     * Give-10-get-10. Credits the referee's welcome bonus IMMEDIATELY (it's
+     * non-extractable — no cash-out — so farming it is pointless) and records the
+     * referrer's reward as PENDING. The referrer is paid only once the referee shows
+     * real intent (first top-up — see deposit()). `refereeId` is unique, so a user
+     * can only ever be referred once.
+     */
+    async createPendingReferral(refereeId: string, referrerId: string) {
+        const reward = Number(process.env.REFERRAL_REWARD_TND || 10);
+        if (reward <= 0 || refereeId === referrerId) return;
+        // Pending referrer reward (unique refereeId guards against double-referral).
+        try {
+            await this.referrals.save(this.referrals.create({ refereeId, referrerId, status: 'pending', amount: reward }));
+        } catch {
+            return; // already referred — don't also re-credit the welcome bonus
+        }
+        await this.dataSource.transaction(async (mgr) => {
+            await this.creditInTx(mgr, refereeId, reward, CreditTxKind.REFERRAL, 'Welcome bonus — joined via a referral', referrerId);
+        });
+    }
+
+    /**
+     * Release the pending referrer reward for a referee who just showed real intent.
+     * Idempotent (only acts on a `pending` row). Respects REFERRAL_MAX_REWARDS per referrer.
+     */
+    async releasePendingReferralForReferee(refereeId: string) {
+        const maxRewards = Number(process.env.REFERRAL_MAX_REWARDS || 100);
+        let releasedTo: { referrerId: string; amount: number } | null = null;
+        await this.dataSource.transaction(async (mgr) => {
+            const reward = await mgr.findOne(ReferralReward, { where: { refereeId, status: 'pending' } });
+            if (!reward) return;
+            const alreadyReleased = await mgr.count(ReferralReward, { where: { referrerId: reward.referrerId, status: 'released' } });
+            reward.status = 'released';
+            reward.releasedAt = new Date();
+            if (alreadyReleased >= maxRewards) {
+                reward.amount = 0; // cap hit — close it out without paying
+            } else {
+                await this.creditInTx(mgr, reward.referrerId, Number(reward.amount), CreditTxKind.REFERRAL, 'Referral reward — your friend got started', refereeId);
+                releasedTo = { referrerId: reward.referrerId, amount: Number(reward.amount) };
+            }
+            await mgr.save(reward);
+        });
+        if (releasedTo) {
+            try {
+                await this.notifications.create(
+                    releasedTo.referrerId,
+                    'Referral reward unlocked',
+                    `${releasedTo.amount} TND credit added — your friend got started.`,
+                    NotificationType.DONATION,
+                    { amount: releasedTo.amount },
+                );
+            } catch { /* never block on a notification */ }
+        }
+    }
+
+    /** Referral summary for the credits page: how many joined + how many rewards are still pending. */
+    async referralStats(userId: string) {
+        const [released, pending] = await Promise.all([
+            this.referrals.count({ where: { referrerId: userId, status: 'released' } }),
+            this.referrals.count({ where: { referrerId: userId, status: 'pending' } }),
+        ]);
+        return { released, pending, rewardTnd: Number(process.env.REFERRAL_REWARD_TND || 10) };
+    }
+
     /** Mock top-up — no real payment gateway yet, just adds the amount. */
     async deposit(userId: string, amount: number, note?: string) {
         if (amount <= 0) throw new BadRequestException('Amount must be > 0');
         if (amount > 5000) throw new BadRequestException('Single top-up capped at 5000 TND');
-        return this.dataSource.transaction(async (mgr) => {
+        const tx = await this.dataSource.transaction(async (mgr) => {
             const bal = await mgr.findOne(CreditBalance, { where: { userId } })
                 ?? mgr.create(CreditBalance, { userId, balance: 0 });
             const newBalance = Number(bal.balance) + amount;
@@ -76,15 +164,20 @@ export class CreditsService {
             bal.lifetimeIn = Number(bal.lifetimeIn) + amount;
             await mgr.save(bal);
 
-            const tx = mgr.create(CreditTransaction, {
+            const txRow = mgr.create(CreditTransaction, {
                 userId,
                 kind: CreditTxKind.DEPOSIT,
                 amount,
                 note: note || `Top-up of ${amount} TND`,
                 balanceAfter: newBalance,
             });
-            return mgr.save(tx);
+            return mgr.save(txRow);
         });
+
+        // A real top-up is the "real intent" signal that releases a pending referral reward.
+        try { await this.releasePendingReferralForReferee(userId); } catch { /* best-effort */ }
+
+        return tx;
     }
 
     /**
@@ -146,6 +239,7 @@ export class CreditsService {
             amount: number;
             message?: string;
             isAnonymous?: boolean;
+            giftType?: string;
         },
     ) {
         const amount = Number(opts.amount);
@@ -210,6 +304,7 @@ export class CreditsService {
                 netAmount: net,
                 message: opts.message,
                 isAnonymous: !!opts.isAnonymous,
+                giftType: opts.giftType || null,
             }));
 
             // 5. Transactions for audit
@@ -268,6 +363,26 @@ export class CreditsService {
                 } catch {}
             }
             return result;
+        });
+    }
+
+    /** The virtual-gift catalog (public). */
+    listGifts() {
+        return GIFT_CATALOG;
+    }
+
+    /** Send a virtual gift to a user — a donation priced from the catalog (server-authoritative). */
+    async sendGift(fromUserId: string, giftId: string, toUserId: string, isAnonymous = false) {
+        const gift = GIFT_CATALOG.find((g) => g.id === giftId);
+        if (!gift) throw new BadRequestException('Unknown gift');
+        if (!toUserId) throw new BadRequestException('toUserId required');
+        return this.donate(fromUserId, {
+            target: DonationTarget.USER,
+            toUserId,
+            amount: gift.price,
+            message: `${gift.emoji} ${gift.label}`,
+            isAnonymous,
+            giftType: gift.id,
         });
     }
 

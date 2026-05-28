@@ -69,6 +69,10 @@ __decorate([
     __metadata("design:type", Boolean)
 ], Donation.prototype, "isAnonymous", void 0);
 __decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], Donation.prototype, "giftType", void 0);
+__decorate([
     (0, typeorm_1.CreateDateColumn)(),
     __metadata("design:type", Date)
 ], Donation.prototype, "createdAt", void 0);

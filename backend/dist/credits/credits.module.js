@@ -12,6 +12,7 @@ const typeorm_1 = require("@nestjs/typeorm");
 const credit_balance_entity_1 = require("./credit-balance.entity");
 const credit_transaction_entity_1 = require("./credit-transaction.entity");
 const donation_entity_1 = require("./donation.entity");
+const referral_reward_entity_1 = require("./referral-reward.entity");
 const user_entity_1 = require("../users/user.entity");
 const credits_controller_1 = require("./credits.controller");
 const credits_service_1 = require("./credits.service");
@@ -22,7 +23,7 @@ exports.CreditsModule = CreditsModule;
 exports.CreditsModule = CreditsModule = __decorate([
     (0, common_1.Module)({
         imports: [
-            typeorm_1.TypeOrmModule.forFeature([credit_balance_entity_1.CreditBalance, credit_transaction_entity_1.CreditTransaction, donation_entity_1.Donation, user_entity_1.User]),
+            typeorm_1.TypeOrmModule.forFeature([credit_balance_entity_1.CreditBalance, credit_transaction_entity_1.CreditTransaction, donation_entity_1.Donation, referral_reward_entity_1.ReferralReward, user_entity_1.User]),
             notifications_module_1.NotificationsModule,
         ],
         controllers: [credits_controller_1.CreditsController],

@@ -16,16 +16,21 @@ export class Post {
     body: string;
 
     @Column({ nullable: true })
+    @Index()
     category: string;
 
     @Column({ nullable: true })
     location: string;
 
     @Column({ nullable: true })
+    @Index()
     placeId: string;
 
     @Column('simple-array', { nullable: true })
     images: string[];
+
+    @Column({ nullable: true })
+    videoUrl: string | null;
 
     @Column('simple-array', { nullable: true })
     tags: string[];
@@ -49,6 +54,9 @@ export class Post {
 
     @Column({ default: 0 })
     viewCount: number;
+
+    @Column({ default: 0 })
+    repostCount: number;
 
     @Column({ default: false })
     isPinned: boolean;

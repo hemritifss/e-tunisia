@@ -21,6 +21,7 @@ var CreditTxKind;
     CreditTxKind["PLATFORM_FEE"] = "platform_fee";
     CreditTxKind["REFUND"] = "refund";
     CreditTxKind["BOOST"] = "boost";
+    CreditTxKind["REFERRAL"] = "referral";
 })(CreditTxKind || (exports.CreditTxKind = CreditTxKind = {}));
 let CreditTransaction = class CreditTransaction {
 };

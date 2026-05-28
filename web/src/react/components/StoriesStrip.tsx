@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, X, ChevronLeft, ChevronRight, Image as ImageIcon } from 'lucide-react';
+import { Plus, X, ChevronLeft, ChevronRight, Image as ImageIcon, Bookmark, BookmarkCheck } from 'lucide-react';
+import StoryComposer from './StoryComposer';
 import { api } from '../../shared/api';
 import { useAuthStore } from '../stores/auth-store';
 
@@ -11,6 +12,16 @@ interface StoryItem {
   caption: string | null;
   createdAt: string;
   expiresAt: string;
+  isHighlight?: boolean;
+}
+
+function currentUserId(): string | null {
+  try {
+    const raw = localStorage.getItem('etunisia_user') || localStorage.getItem('auth_user');
+    if (!raw) return null;
+    const u = JSON.parse(raw);
+    return u?.id || null;
+  } catch { return null; }
 }
 interface StoryAuthor {
   authorId: string;
@@ -34,6 +45,7 @@ export function StoriesStrip() {
   const isAuth = useAuthStore((s) => !!s.token || !!localStorage.getItem('etunisia_token'));
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [viewer, setViewer] = useState<{ authorIdx: number; itemIdx: number } | null>(null);
+  const [composer, setComposer] = useState<string | null>(null); // selected image data URL
 
   const { data, isLoading } = useQuery({
     queryKey: ['stories'],
@@ -43,15 +55,6 @@ export function StoriesStrip() {
   });
 
   const groups = useMemo(() => (Array.isArray(data) ? data : []), [data]);
-
-  const createMutation = useMutation({
-    mutationFn: async (payload: { imageUrl: string; caption?: string }) => {
-      // Upload the data URL to MinIO first so we don't bloat the DB with base64.
-      const hosted = await uploadDataUrlOnClient(payload.imageUrl, 'stories');
-      return api.createStory({ ...payload, imageUrl: hosted });
-    },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['stories'] }),
-  });
 
   async function uploadDataUrlOnClient(dataUrl: string, folder = 'uploads'): Promise<string> {
     if (!dataUrl || !dataUrl.startsWith('data:')) return dataUrl;
@@ -84,7 +87,8 @@ export function StoriesStrip() {
     const reader = new FileReader();
     reader.onload = (ev) => {
       const dataUrl = (ev.target?.result as string) || '';
-      if (dataUrl) createMutation.mutate({ imageUrl: dataUrl });
+      // Open the composer so the user can add a caption before posting.
+      if (dataUrl) { setComposer(dataUrl); }
     };
     reader.readAsDataURL(file);
   };
@@ -128,11 +132,11 @@ export function StoriesStrip() {
           >
             <div className="stories-v2-ring stories-v2-ring-self">
               <div className="stories-v2-add-inner">
-                {createMutation.isPending ? <span className="animate-spin">⟳</span> : <Plus size={22} />}
+                <Plus size={22} />
               </div>
             </div>
             <span className="stories-v2-label">
-              {createMutation.isPending ? 'Posting…' : 'Your story'}
+              Your story
             </span>
           </button>
 
@@ -176,6 +180,13 @@ export function StoriesStrip() {
           />
         )}
       </AnimatePresence>
+
+      {composer && (
+        <StoryComposer
+          imageUrl={composer}
+          onClose={() => setComposer(null)}
+        />
+      )}
     </>
   );
 }
@@ -195,6 +206,24 @@ function StoryViewer({
   const group = groups[authorIdx];
   const item = group.items[itemIdx];
   const totalInGroup = group.items.length;
+  const queryClient = useQueryClient();
+  const isMine = !!currentUserId() && group.author?.id === currentUserId();
+  const [highlighted, setHighlighted] = useState(!!item?.isHighlight);
+
+  useEffect(() => { setHighlighted(!!item?.isHighlight); }, [item?.id, item?.isHighlight]);
+
+  const toggleHighlight = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      const res: any = await api.toggleStoryHighlight(item.id);
+      const on = !!res?.isHighlight;
+      setHighlighted(on);
+      queryClient.invalidateQueries({ queryKey: ['stories'] });
+      (window as any).showToast?.({ message: on ? 'Pinned to your highlights' : 'Removed from highlights', type: 'success' });
+    } catch {
+      (window as any).showToast?.({ message: 'Could not update highlight', type: 'error' });
+    }
+  };
 
   // Record a view (fire-and-forget) when story changes.
   useEffect(() => {
@@ -286,6 +315,16 @@ function StoryViewer({
           <img src={avatar} alt={name} className="w-8 h-8 rounded-full border-2 border-white object-cover" />
           <div className="text-white text-sm font-medium">{name}</div>
           <div className="text-white/70 text-xs">{timeAgo(item.createdAt)}</div>
+          {isMine && (
+            <button
+              onClick={toggleHighlight}
+              className="ml-auto mr-9 p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white"
+              title={highlighted ? 'Remove from highlights' : 'Pin to your profile highlights'}
+              aria-label={highlighted ? 'Remove from highlights' : 'Add to highlights'}
+            >
+              {highlighted ? <BookmarkCheck size={16} /> : <Bookmark size={16} />}
+            </button>
+          )}
         </div>
 
         <img

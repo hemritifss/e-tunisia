@@ -37,6 +37,10 @@ export interface PassportDto {
     topCityRank: { city: string; rank: number; total: number } | null;
     /** Effective subscription plan (resolves expired Pro/Biz back to Free). */
     plan: 'free' | 'premium' | 'business';
+    /** Pro perk: chosen hero theme (sahara | mediterranean | medina), or null. */
+    passportTheme?: string | null;
+    /** Honest stamp rarity: visited-city → distinct explorer count. */
+    stampRarity?: Record<string, number>;
 }
 
 export function deriveLevel(points: number): PassportLevel {

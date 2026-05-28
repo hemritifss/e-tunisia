@@ -43,6 +43,18 @@ __decorate([
     __metadata("design:type", Number)
 ], UserStreak.prototype, "totalDaysActive", void 0);
 __decorate([
+    (0, typeorm_1.Column)({ default: 0 }),
+    __metadata("design:type", Number)
+], UserStreak.prototype, "freezesRemaining", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], UserStreak.prototype, "freezeMonth", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'date', nullable: true }),
+    __metadata("design:type", Date)
+], UserStreak.prototype, "lastCheckInDate", void 0);
+__decorate([
     (0, typeorm_1.CreateDateColumn)(),
     __metadata("design:type", Date)
 ], UserStreak.prototype, "createdAt", void 0);

@@ -322,7 +322,7 @@
         <!-- Photo upload area -->
         <div class="post-modal-section">
           <div class="post-modal-photo-area" id="post-modal-photo-area">
-            <input type="file" id="post-modal-file-input" accept="image/*" multiple style="display:none" />
+            <input type="file" id="post-modal-file-input" accept="image/*,video/*" multiple style="display:none" />
             <button class="post-modal-photo-btn" id="post-modal-photo-btn">
               <i class="lucide-camera"></i>
               <span>Add Photos</span>
@@ -410,19 +410,18 @@
     <nav class="mobile-nav" id="mobile-nav">
       <a href="#/" class="mobile-nav-item active" data-page="feed">
         <i class="lucide-home"></i>
-        <span>Feed</span>
+        <span>Home</span>
       </a>
       <a href="#/explore" class="mobile-nav-item" data-page="explore">
         <i class="lucide-compass"></i>
         <span>Explore</span>
       </a>
-      <a href="#/events" class="mobile-nav-item" data-page="events">
-        <i class="lucide-calendar"></i>
-        <span>Events</span>
-      </a>
-      <a href="#/favorites" class="mobile-nav-item" data-page="favorites">
-        <i class="lucide-heart"></i>
-        <span>Saved</span>
+      <button type="button" class="mobile-nav-create" id="mobile-nav-create" aria-label="Create post">
+        <i class="lucide-plus"></i>
+      </button>
+      <a href="#/reels" class="mobile-nav-item" data-page="reels">
+        <i class="lucide-clapperboard"></i>
+        <span>Reels</span>
       </a>
       <a href="#/profile" class="mobile-nav-item" data-page="profile">
         <i class="lucide-user"></i>

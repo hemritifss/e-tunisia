@@ -44,6 +44,12 @@ let StoriesController = class StoriesController {
     view(id) {
         return this.stories.recordView(id);
     }
+    highlights(handle) {
+        return this.stories.listHighlights(handle);
+    }
+    highlight(req, id) {
+        return this.stories.toggleHighlight(id, req.user.id);
+    }
     remove(req, id) {
         return this.stories.remove(id, req.user.id);
     }
@@ -75,6 +81,25 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], StoriesController.prototype, "view", null);
+__decorate([
+    (0, common_1.Get)('highlights/:handle'),
+    (0, swagger_1.ApiOperation)({ summary: 'A user\'s highlighted stories (persist past 24h)' }),
+    __param(0, (0, common_1.Param)('handle')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], StoriesController.prototype, "highlights", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.Post)(':id/highlight'),
+    (0, swagger_1.ApiOperation)({ summary: 'Toggle pinning a story to your profile highlights' }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", void 0)
+], StoriesController.prototype, "highlight", null);
 __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, swagger_1.ApiBearerAuth)(),

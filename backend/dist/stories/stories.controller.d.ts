@@ -11,6 +11,16 @@ export declare class StoriesController {
     view(id: string): Promise<{
         ok: boolean;
     }>;
+    highlights(handle: string): Promise<{
+        id: string;
+        imageUrl: string;
+        caption: string;
+        createdAt: Date;
+    }[]>;
+    highlight(req: any, id: string): Promise<{
+        ok: boolean;
+        isHighlight: boolean;
+    }>;
     remove(req: any, id: string): Promise<{
         deleted: boolean;
     }>;

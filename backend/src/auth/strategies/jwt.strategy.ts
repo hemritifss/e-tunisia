@@ -18,6 +18,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         if (!user || !user.isActive) {
             throw new UnauthorizedException();
         }
+        // Validate token version — invalidates all tokens on password change
+        if (payload.tv !== undefined && payload.tv !== user.tokenVersion) {
+            throw new UnauthorizedException('Token has been invalidated. Please log in again.');
+        }
         return { id: payload.sub, email: payload.email, role: payload.role };
     }
 }

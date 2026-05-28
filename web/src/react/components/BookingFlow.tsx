@@ -71,9 +71,13 @@ export default function BookingFlow({
 
   const bookingMutation = useMutation({
     mutationFn: async () => {
-      return api.createBooking?.(placeId, {
+      return api.createBooking({
+        placeId,
+        // TODO: integrate with inventory system to select specific item
+        itemId: placeId,
+        type: 'experience',
         checkIn,
-        checkOut,
+        checkOut: checkOut || undefined,
         guests,
         addons: selectedAddons.map((id) => {
           const addon = addons.find((a) => a.id === id)!;

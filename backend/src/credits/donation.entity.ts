@@ -49,6 +49,10 @@ export class Donation {
     @Column({ default: false })
     isAnonymous: boolean;
 
+    /** Set when this donation was sent as a virtual gift (catalog id, e.g. "rose"). */
+    @Column({ nullable: true })
+    giftType: string;
+
     @CreateDateColumn()
     createdAt: Date;
 }

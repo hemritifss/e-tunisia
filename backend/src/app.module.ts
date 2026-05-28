@@ -1,7 +1,9 @@
-import { Module } from '@nestjs/common';
+import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { CustomThrottlerGuard } from './common/guards/throttler.guard';
 import { CacheModule } from '@nestjs/cache-manager';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
@@ -28,6 +30,8 @@ import { AdsModule } from './ads/ads.module';
 import { GamificationModule } from './gamification/gamification.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { ContactModule } from './contact/contact.module';
+import { PushModule } from './push/push.module';
+import { SearchModule } from './search/search.module';
 import { RedisModule } from './redis/redis.module';
 import { StorageModule } from './storage/storage.module';
 import { HealthModule } from './health/health.module';
@@ -42,6 +46,7 @@ import { MessagesModule } from './messages/messages.module';
 import { MarketplaceModule } from './marketplace/marketplace.module';
 import { QueuesModule } from './queues/queues.module';
 import { AnalyticsModule } from './analytics/analytics.module';
+import { EmailModule } from './email/email.module';
 import { getDatabaseConfig } from './database/database.config';
 
 @Module({
@@ -92,6 +97,8 @@ import { getDatabaseConfig } from './database/database.config';
     GamificationModule,
     NotificationsModule,
     ContactModule,
+    PushModule,
+    SearchModule,
     BookingsModule,
     InventoryModule,
     PaymentsModule,
@@ -103,6 +110,13 @@ import { getDatabaseConfig } from './database/database.config';
     MarketplaceModule,
     QueuesModule,
     AnalyticsModule,
+    EmailModule,
+  ],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: CustomThrottlerGuard,
+    },
   ],
 })
 export class AppModule {}

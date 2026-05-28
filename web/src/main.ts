@@ -3,16 +3,31 @@
 // Router + global interactions + React Islands
 // ============================================
 
+import React from 'react';
 import { mountIsland, unmountAllIslands } from './react/lib/islands';
+import { showToast } from './ui-utils';
+
+function esc(v: unknown): string {
+  const s = String(v ?? '');
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
 import FeedPage from './react/pages/FeedPage';
 import ExplorePage from './react/pages/ExplorePage';
-import AITravelPlanner from './react/pages/AITravelPlanner';
 import ChallengesPage from './react/pages/ChallengesPage';
 import PassportPage from './react/pages/PassportPage';
 import ActivityFeedPage from './react/pages/ActivityFeedPage';
 import MoodPage from './react/pages/MoodPage';
 import ProUpgradePage from './react/pages/ProUpgradePage';
-import AdminPage from './react/pages/AdminPage';
+
+// Lazy-load heavy / rarely-visited pages to reduce initial bundle size
+const ReelsPage = React.lazy(() => import('./react/pages/ReelsPage'));
+const AITravelPlanner = React.lazy(() => import('./react/pages/AITravelPlanner'));
+const AdminPage = React.lazy(() => import('./react/pages/AdminPage'));
 
 // Vanilla pages
 import { renderFeedPage, initFeedPage } from './pages/feed';
@@ -48,6 +63,7 @@ import { renderInquiriesPage, initInquiriesPage } from './pages/inquiries';
 import { renderOwnerPage, initOwnerPage } from './pages/owner';
 import { renderTripPage, initTripPage } from './pages/trip';
 import { renderDiscoverTripsPage, initDiscoverTripsPage } from './pages/discover-trips';
+import { renderPasswordResetPage, renderNewPasswordPage, initPasswordResetPage } from './pages/password-reset';
 import { mountTripCart, syncTripCartAuth } from './trip-cart-ui';
 import { mountMessengerGlobals } from './react/lib/mount-messenger';
 import { connectRealtime, disconnectRealtime } from './realtime';
@@ -76,7 +92,7 @@ function getRoute(hash: string): Route {
   const authRequiredPrefixes = ['/profile', '/favorites', '/saved', '/inquiries', '/owner', '/settings', '/badges', '/leaderboard', '/credits', '/messages'];
   const authOnlyHome = path === '/';
   const requiresAuth = authOnlyHome || authRequiredPrefixes.some(p => path === p || path.startsWith(p + '/'));
-  const heroOnlyRoutes = ['/login', '/register'];
+  const heroOnlyRoutes = ['/login', '/register', '/forgot-password'];
   const isHeroOnly = heroOnlyRoutes.includes(path) || path === '/hero';
   const isLoggedIn = apiService.isLoggedIn();
 
@@ -124,6 +140,17 @@ function getRoute(hash: string): Route {
     };
   }
 
+  // Password reset with token
+  const resetMatch = path.match(/^\/reset-password\/([a-zA-Z0-9]+)/);
+  if (resetMatch) {
+    const token = resetMatch[1];
+    return {
+      render: () => renderNewPasswordPage(token),
+      init: initPasswordResetPage,
+      page: '',
+    };
+  }
+
   // Public passport (handle): /u/<handle> — React island
   const passportMatch = path.match(/^\/u\/([a-z0-9_]{3,30})/i);
   if (passportMatch) {
@@ -141,9 +168,15 @@ function getRoute(hash: string): Route {
     return { render: () => '', init: () => {}, page: 'explore', isReact: true };
   }
 
-  // Pro / Business upgrade page — public, anon visitors get a sign-in CTA inline
-  if (path === '/pro' || path === '/premium' || path === '/upgrade') {
+  // Pro / Business upgrade page — public, anon visitors get a sign-in CTA inline.
+  // Also catches /premium/welcome (post-checkout celebration).
+  if (path === '/pro' || path === '/upgrade' || path === '/premium' || path.startsWith('/premium/')) {
     return { render: () => '', init: () => {}, page: 'premium', isReact: true };
+  }
+
+  // Reels / Short video feed
+  if (path === '/reels') {
+    return { render: () => '', init: () => {}, page: 'reels', isReact: true };
   }
 
   // Admin moderation hub — guard renders forbidden state if backend rejects
@@ -217,6 +250,7 @@ function getRoute(hash: string): Route {
     '/inquiries':    { render: renderInquiriesPage,   init: () => initInquiriesPage(),   page: 'profile' },
     '/owner':        { render: renderOwnerPage,       init: () => initOwnerPage(),       page: 'profile' },
     '/discover-trips': { render: renderDiscoverTripsPage, init: () => initDiscoverTripsPage(), page: 'itineraries' },
+    '/forgot-password': { render: renderPasswordResetPage, init: initPasswordResetPage, page: '' },
   };
 
   return routes[path] || routes['/'];
@@ -252,11 +286,23 @@ function navigate() {
   // Show/hide login-gated floating UI (trip cart FAB + drawer) per nav.
   syncTripCartAuth();
 
-  // Bulletproof JS-level toggle for the mobile bottom nav (don't trust CSS alone).
+  // Bulletproof JS-level toggle for the mobile bottom nav (show for everyone).
   const mobileNavEl = document.getElementById('mobile-nav') as HTMLElement | null;
   if (mobileNavEl) {
-    mobileNavEl.hidden = !apiService.isLoggedIn();
-    mobileNavEl.setAttribute('aria-hidden', String(!apiService.isLoggedIn()));
+    mobileNavEl.hidden = false;
+    mobileNavEl.setAttribute('aria-hidden', 'false');
+  }
+
+  // Mobile nav create button → open post modal
+  const mobileCreateBtn = document.getElementById('mobile-nav-create') as HTMLButtonElement | null;
+  if (mobileCreateBtn) {
+    mobileCreateBtn.onclick = () => {
+      if (!apiService.isLoggedIn()) {
+        location.hash = '#/login';
+        return;
+      }
+      document.dispatchEvent(new CustomEvent('etunisia:open-post-modal'));
+    };
   }
 
   const route = getRoute(location.hash);
@@ -281,10 +327,12 @@ function navigate() {
         currentUnmount = mountIsland(ActivityFeedPage, islandRoot);
       } else if (/^\/mood\//i.test(path)) {
         currentUnmount = mountIsland(MoodPage, islandRoot);
-      } else if (path === '/pro' || path === '/premium' || path === '/upgrade') {
+      } else if (path === '/pro' || path === '/upgrade' || path === '/premium' || path.startsWith('/premium/')) {
         currentUnmount = mountIsland(ProUpgradePage, islandRoot);
       } else if (path === '/admin' || path.startsWith('/admin/')) {
         currentUnmount = mountIsland(AdminPage, islandRoot);
+      } else if (path === '/reels') {
+        currentUnmount = mountIsland(ReelsPage, islandRoot);
       }
     }
   } else {
@@ -312,7 +360,21 @@ function navigate() {
     link.classList.toggle('active', (link as HTMLElement).dataset.page === route.page);
   });
   document.querySelectorAll('.mobile-nav-item').forEach(link => {
-    link.classList.toggle('active', (link as HTMLElement).dataset.page === route.page);
+    const page = (link as HTMLElement).dataset.page;
+    const el = link as HTMLElement;
+    const href = el.getAttribute('href')?.replace('#', '') || '';
+    // For guest users, auth-gated mobile nav items redirect to login
+    const authGated = ['/messages', '/profile', '/favorites', '/saved', '/settings'];
+    const isProtected = authGated.some(p => href === p || href.startsWith(p + '/'));
+    if (isProtected && !apiService.isLoggedIn()) {
+      el.onclick = (e) => {
+        e.preventDefault();
+        location.hash = '#/login';
+      };
+    } else {
+      el.onclick = null;
+    }
+    link.classList.toggle('active', page === route.page);
   });
 
   // Scroll to top on navigation
@@ -761,7 +823,7 @@ function initNotifications() {
     // 3. Lightweight toast so the user knows something happened even if the panel isn't open
     const title = n.title || 'New activity';
     const body = n.body ? ` — ${n.body}` : '';
-    import('./ui-utils').then(({ showToast }) => showToast(`${title}${body}`.slice(0, 140), { type: 'info' }));
+    showToast(`${title}${body}`.slice(0, 140), { type: 'info' });
   });
 }
 
@@ -972,27 +1034,38 @@ function initPostModal() {
     photoPreview.innerHTML = '';
 
     Array.from(fileInput.files).forEach(file => {
+      const isVideo = file.type.startsWith('video/');
       const reader = new FileReader();
       reader.onload = (ev) => {
         const dataUrl = (ev.target?.result as string) || '';
         if (!dataUrl) return;
         // Track the actual data URL so submitPost can upload + include it in the post.
-        selectedFiles.push(dataUrl);
+        selectedFiles.push({ dataUrl, isVideo, file });
 
         const wrapper = document.createElement('div');
         wrapper.className = 'post-modal-photo-thumb';
-        wrapper.innerHTML = `
-          <img src="${dataUrl}" alt="${file.name}" />
-          <button class="post-modal-photo-remove" aria-label="Remove photo">
-            <i class="lucide-x"></i>
-          </button>
-        `;
+        if (isVideo) {
+          wrapper.innerHTML = `
+            <video src="${dataUrl}" muted playsinline class="post-modal-video-thumb"></video>
+            <span class="post-modal-video-badge">VIDEO</span>
+            <button class="post-modal-photo-remove" aria-label="Remove video">
+              <i class="lucide-x"></i>
+            </button>
+          `;
+        } else {
+          wrapper.innerHTML = `
+            <img src="${dataUrl}" alt="${esc(file.name)}" />
+            <button class="post-modal-photo-remove" aria-label="Remove photo">
+              <i class="lucide-x"></i>
+            </button>
+          `;
+        }
         photoPreview.appendChild(wrapper);
         replaceIcons(wrapper);
 
         wrapper.querySelector('.post-modal-photo-remove')?.addEventListener('click', () => {
           wrapper.remove();
-          selectedFiles = selectedFiles.filter(d => d !== dataUrl);
+          selectedFiles = selectedFiles.filter((d: any) => d.dataUrl !== dataUrl);
         });
       };
       reader.readAsDataURL(file);
@@ -1001,9 +1074,67 @@ function initPostModal() {
     photoBtn?.classList.add('has-photos');
   });
 
+  // Dynamic @mention search
+  let mentionQuery = '';
+  let mentionDebounce: any;
+
+  async function searchMentionUsers(query: string) {
+    if (!mentionDropdown) return;
+    if (!query.trim()) {
+      mentionDropdown.innerHTML = '<div class="post-modal-mention-empty">Type to search users…</div>';
+      return;
+    }
+    mentionDropdown.innerHTML = '<div class="post-modal-mention-loading">Searching…</div>';
+    try {
+      const users = await apiService.searchUsers(query, 8);
+      if (!users || users.length === 0) {
+        mentionDropdown.innerHTML = '<div class="post-modal-mention-empty">No users found</div>';
+        return;
+      }
+      mentionDropdown.innerHTML = users.map((u: any) => `
+        <div class="post-modal-mention-item" data-handle="${esc(u.handle || '')}" data-name="${esc(u.fullName || '')}">
+          <img class="post-modal-mention-avatar" src="${apiService.getImageUrl(u.avatar, 'avatar')}" alt="" />
+          <div class="post-modal-mention-info">
+            <div class="post-modal-mention-name">${esc(u.fullName || u.handle)}</div>
+            <div class="post-modal-mention-handle">@${esc(u.handle)}</div>
+          </div>
+        </div>
+      `).join('');
+      mentionDropdown.querySelectorAll('.post-modal-mention-item').forEach(item => {
+        item.addEventListener('click', () => {
+          const handle = (item as HTMLElement).dataset.handle || '';
+          insertMention(handle);
+          mentionDropdown?.classList.remove('open');
+        });
+      });
+    } catch {
+      mentionDropdown.innerHTML = '<div class="post-modal-mention-empty">Search failed</div>';
+    }
+  }
+
+  function insertMention(handle: string) {
+    if (!bodyInput || !handle) return;
+    const start = bodyInput.selectionStart || 0;
+    const end = bodyInput.selectionEnd || 0;
+    const text = bodyInput.value;
+    const before = text.slice(0, start);
+    const after = text.slice(end);
+    // Find if there's an unfinished @query at cursor
+    const atMatch = before.match(/@([a-zA-Z0-9_]*)$/);
+    const newBefore = atMatch ? before.slice(0, -atMatch[0].length) : before;
+    const insert = `@${handle} `;
+    bodyInput.value = newBefore + insert + after;
+    const newCursor = newBefore.length + insert.length;
+    bodyInput.setSelectionRange(newCursor, newCursor);
+    bodyInput.focus();
+  }
+
   mentionBtn?.addEventListener('click', (e) => {
     e.stopPropagation();
     mentionDropdown?.classList.toggle('open');
+    if (mentionDropdown?.classList.contains('open')) {
+      searchMentionUsers('');
+    }
   });
 
   document.addEventListener('click', (e) => {
@@ -1013,42 +1144,21 @@ function initPostModal() {
     }
   });
 
-  mentionDropdown?.querySelectorAll('.post-modal-mention-item').forEach(item => {
-    item.addEventListener('click', () => {
-      const userName = (item as HTMLElement).dataset.user || '';
-      if (taggedUsers.includes(userName)) return;
-      taggedUsers.push(userName);
-      renderTaggedUsers();
+  // Type @ in body to trigger mention search
+  bodyInput?.addEventListener('input', (e) => {
+    const target = e.target as HTMLTextAreaElement;
+    const cursor = target.selectionStart || 0;
+    const text = target.value.slice(0, cursor);
+    const match = text.match(/@([a-zA-Z0-9_]*)$/);
+    if (match) {
+      mentionDropdown?.classList.add('open');
+      mentionQuery = match[1];
+      clearTimeout(mentionDebounce);
+      mentionDebounce = setTimeout(() => searchMentionUsers(mentionQuery), 200);
+    } else if (!target.closest('.post-modal-mention-wrapper')) {
       mentionDropdown?.classList.remove('open');
-    });
-  });
-
-  function renderTaggedUsers() {
-    if (!taggedUsersContainer) return;
-    if (taggedUsers.length === 0) {
-      taggedUsersContainer.innerHTML = '';
-      return;
     }
-    taggedUsersContainer.innerHTML = taggedUsers.map(user => `
-      <span class="post-modal-tagged-chip">
-        <i class="lucide-user"></i>
-        ${user}
-        <button class="post-modal-tagged-remove" data-user="${user}" aria-label="Remove ${user}">
-          <i class="lucide-x"></i>
-        </button>
-      </span>
-    `).join('');
-    replaceIcons(taggedUsersContainer);
-
-    taggedUsersContainer.querySelectorAll('.post-modal-tagged-remove').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const user = (btn as HTMLElement).dataset.user || '';
-        taggedUsers = taggedUsers.filter(u => u !== user);
-        renderTaggedUsers();
-      });
-    });
-  }
+  });
 
   function updateSubmitState() {
     const canSubmit = (titleInput?.value.trim().length > 0) && !!selectedCategory;
@@ -1090,20 +1200,26 @@ function initPostModal() {
   async function submitPost() {
     if (!titleInput?.value.trim() || !selectedCategory) return;
 
-    const tagSuffix = taggedUsers.length > 0 ? ` -- with ${taggedUsers.join(', ')}` : '';
-    const bodyText = (bodyInput?.value.trim() || titleInput.value.trim()) + tagSuffix;
+    const bodyText = bodyInput?.value.trim() || titleInput.value.trim();
 
     // Try backend first (real persistence). Fall back to in-memory if offline / not logged in.
     let savedToBackend = false;
     if (apiService.isLoggedIn()) {
       try {
         if (submitBtn) submitBtn.disabled = true;
-        // Push any attached photos to MinIO and use the returned URLs.
+        // Push any attached photos/videos to MinIO and use the returned URLs.
         let imageUrls: string[] = [];
+        let videoUrl: string | undefined;
         if (selectedFiles.length > 0) {
-          imageUrls = await Promise.all(
-            selectedFiles.map(d => apiService.uploadDataUrl(d, 'posts')),
+          const uploads = await Promise.all(
+            selectedFiles.map(async (d: any) => {
+              const url = await apiService.uploadDataUrl(d.dataUrl || d, 'posts');
+              return { url, isVideo: d.isVideo };
+            }),
           );
+          imageUrls = uploads.filter((u) => !u.isVideo).map((u) => u.url);
+          const firstVideo = uploads.find((u) => u.isVideo);
+          if (firstVideo) videoUrl = firstVideo.url;
         }
         await apiService.createPost({
           title: titleInput.value.trim(),
@@ -1111,6 +1227,7 @@ function initPostModal() {
           category: selectedCatName,
           location: selectedLocation || undefined,
           images: imageUrls.length > 0 ? imageUrls : undefined,
+          videoUrl,
         });
         savedToBackend = true;
       } catch (err) {

@@ -10,6 +10,7 @@ import {
   TrendingUp,
   Flame,
   Coins,
+  Repeat,
 } from 'lucide-react';
 import { openDonateModal } from '../../donate-modal';
 import { api } from '../../shared/api';
@@ -35,14 +36,16 @@ import { WelcomeStrip } from '../components/WelcomeStrip';
 import { TunisiaPulse } from '../components/TunisiaPulse';
 import { MoodCompass } from '../components/MoodCompass';
 import { TierBadge } from '../components/TierBadge';
+import { PullToRefresh } from '../components/PullToRefresh';
 import { TunisiaNowPanel } from '../components/TunisiaNowPanel';
 import { Plus, User as UserIcon, RefreshCcw, Users as UsersIcon, Sparkles, Compass } from 'lucide-react';
 import { useAuthStore as _useAuthStoreFeed } from '../stores/auth-store';
 import { requireAuth } from '../../ui-utils';
 
-type SortType = 'hot' | 'new' | 'top' | 'following' | 'mine';
+type SortType = 'foryou' | 'hot' | 'new' | 'top' | 'following' | 'mine';
 
 const sortLabels: Record<SortType, { label: string; icon: React.ReactNode }> = {
+  foryou:    { label: 'For You',   icon: <Sparkles size={14} /> },
   hot:       { label: 'Hot',       icon: <Flame size={14} /> },
   new:       { label: 'New',       icon: <Clock size={14} /> },
   top:       { label: 'Top',       icon: <TrendingUp size={14} /> },
@@ -84,6 +87,16 @@ function PostCard({ post }: { post: Post }) {
       showToast('Link copied to clipboard', 'success');
     } catch {
       showToast('Could not share link', 'error');
+    }
+  };
+
+  const handleRepost = async () => {
+    if (!requireAuth('repost')) return;
+    try {
+      await api.repostPost(post.id);
+      showToast('Reposted to your profile', 'success');
+    } catch (err: any) {
+      showToast(err?.message || 'Repost failed', 'error');
     }
   };
 
@@ -180,7 +193,21 @@ function PostCard({ post }: { post: Post }) {
         {post.body && <p className="post-card-v2-body">{post.body}</p>}
       </a>
 
-      {images.length > 0 && (
+      {(post as any).videoUrl && (
+        <a className="post-card-v2-media post-card-v2-media-1" href={detailHash} aria-label="Open post">
+          <video
+            src={(post as any).videoUrl}
+            muted
+            playsInline
+            preload="metadata"
+            className="w-full h-full object-cover rounded-xl"
+          />
+          <span className="absolute bottom-2 right-2 px-2 py-0.5 rounded-md bg-black/50 text-white text-xs font-medium">
+            VIDEO
+          </span>
+        </a>
+      )}
+      {images.length > 0 && !(post as any).videoUrl && (
         <a className={`post-card-v2-media post-card-v2-media-${Math.min(images.length, 4)}`} href={detailHash} aria-label="Open post">
           {images.slice(0, 4).map((src, i) => (
             <img key={i} src={src} alt="" loading="lazy" />
@@ -211,6 +238,10 @@ function PostCard({ post }: { post: Post }) {
         <button className="post-card-v2-action" onClick={handleComment} aria-label="Comments">
           <MessageCircle size={15} />
           <span>{formatNumber(post.commentCount)}</span>
+        </button>
+        <button className="post-card-v2-action" onClick={handleRepost} aria-label="Repost">
+          <Repeat size={15} />
+          <span>{formatNumber((post as any).repostCount || 0)}</span>
         </button>
         <button className="post-card-v2-action" onClick={handleShare} aria-label="Share">
           <Share2 size={15} />
@@ -323,7 +354,7 @@ function FeedSortBar({
 }
 
 export default function FeedPage() {
-  const [sort, setSort] = useState<SortType>('hot');
+  const [sort, setSort] = useState<SortType>('foryou');
   const queryClient = useQueryClient();
   const showToast = useUIStore((s) => s.showToast);
   const observerRef = useRef<IntersectionObserver | null>(null);
@@ -442,6 +473,10 @@ export default function FeedPage() {
       />
 
       {/* Posts + ads */}
+      <PullToRefresh onRefresh={async () => {
+        await queryClient.invalidateQueries({ queryKey: ['feed'] });
+        await queryClient.refetchQueries({ queryKey: ['feed'] });
+      }}>
       <div className="space-y-4">
         <AnimatePresence mode="popLayout">
           {isLoading ? (
@@ -492,6 +527,7 @@ export default function FeedPage() {
           )}
         </AnimatePresence>
       </div>
+      </PullToRefresh>
 
       {/* Load more trigger */}
       <div ref={loadMoreRef} className="py-4 text-center">

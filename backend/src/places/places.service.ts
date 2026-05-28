@@ -83,7 +83,7 @@ export class PlacesService {
         const {
             search, categoryId, category, city, governorate,
             minRating, page = 1, limit = 20, sortBy = 'createdAt',
-            order = 'DESC', featured,
+            order = 'DESC', featured, verified,
         } = query;
 
         const qb = this.placesRepo
@@ -121,6 +121,14 @@ export class PlacesService {
 
         if (featured === 'true') {
             qb.andWhere('place.isFeatured = :featured', { featured: true });
+        }
+
+        // Verified Business filter: owner (submittedBy) is on an effective Business plan.
+        if (verified === 'true') {
+            qb.andWhere(
+                `place.submittedBy IN (SELECT u.id FROM users u WHERE u.plan = 'business' AND (u."subscriptionExpiresAt" IS NULL OR u."subscriptionExpiresAt" > :nowVerified))`,
+                { nowVerified: new Date() },
+            );
         }
 
         qb.orderBy(`place.${sortBy}`, order as 'ASC' | 'DESC');

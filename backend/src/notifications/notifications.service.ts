@@ -3,12 +3,14 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Notification, NotificationType } from './notification.entity';
 import { EventsGateway } from '../websocket/websocket.gateway';
+import { QueuesService } from '../queues/queues.service';
 
 @Injectable()
 export class NotificationsService {
     constructor(
         @InjectRepository(Notification)
         private notifRepo: Repository<Notification>,
+        private queuesService: QueuesService,
         @Optional()
         @Inject(forwardRef(() => EventsGateway))
         private gateway?: EventsGateway,
@@ -55,6 +57,26 @@ export class NotificationsService {
             userId, title, body, type, data,
         }));
         return this.notifRepo.save(notifications);
+    }
+
+    /**
+     * Queue a notification to be processed asynchronously.
+     * Use for non-urgent notifications where immediate delivery is not critical.
+     */
+    async queueNotification(userId: string, title: string, body: string, type: NotificationType, data?: any, push = true) {
+        return this.queuesService.addNotificationJob('send', {
+            userId, title, body, type, data, push,
+        });
+    }
+
+    /**
+     * Queue bulk notifications to be processed asynchronously.
+     * Use for promo/system notifications sent to many users.
+     */
+    async queueBulkNotification(userIds: string[], title: string, body: string, type: NotificationType, data?: any) {
+        return this.queuesService.addNotificationJob('send_bulk', {
+            userIds, title, body, type, data,
+        });
     }
 
     async remove(id: string, userId: string) {

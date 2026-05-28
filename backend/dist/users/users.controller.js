@@ -23,6 +23,8 @@ const endorsements_service_1 = require("./endorsements.service");
 const activity_service_1 = require("./activity.service");
 const endorsement_topics_1 = require("./endorsement-topics");
 const og_service_1 = require("../og/og.service");
+const plan_catalog_1 = require("../billing/plan-catalog");
+const effective_plan_1 = require("./effective-plan");
 let UsersController = class UsersController {
     constructor(usersService, followsService, endorsementsService, activityService, ogService) {
         this.usersService = usersService;
@@ -33,6 +35,13 @@ let UsersController = class UsersController {
     }
     getProfile(req) {
         return this.usersService.findById(req.user.id);
+    }
+    async passportAnalytics(req) {
+        const me = await this.usersService.findById(req.user.id);
+        if (!(0, plan_catalog_1.capsFor)((0, effective_plan_1.effectivePlan)(me)).passportAnalytics) {
+            throw new common_1.ForbiddenException({ message: 'Passport analytics requires Pro Traveler.', code: 'pro_required' });
+        }
+        return this.usersService.getPassportAnalytics(req.user.id);
     }
     searchUsers(q, limit) {
         return this.usersService.searchUsers(q || '', limit ? Number(limit) : 12);
@@ -63,6 +72,8 @@ let UsersController = class UsersController {
                 isOwner ? Promise.resolve(false) : this.followsService.isFollowing(viewerId, handle),
                 isOwner ? Promise.resolve([]) : this.endorsementsService.myEndorsementsFor(viewerId, handle),
             ]);
+            if (!isOwner)
+                void this.usersService.recordPassportView(handle, viewerId);
             return { ...passport, isOwner, viewerIsFollowing, viewerEndorsedTopics };
         }
         return passport;
@@ -121,8 +132,21 @@ let UsersController = class UsersController {
     globalActivityFeed(limit) {
         return this.activityService.globalFeed(limit ? Number(limit) : 20);
     }
-    updateProfile(req, body) {
-        return this.usersService.update(req.user.id, body);
+    async updateProfile(req, body) {
+        const ALLOWED = [
+            'fullName', 'handle', 'avatar', 'phone', 'country', 'bio', 'website',
+            'interests', 'onboardingComplete', 'favoriteIds', 'visitedPlaceIds', 'passportTheme',
+        ];
+        const safe = {};
+        for (const k of ALLOWED)
+            if (k in body)
+                safe[k] = body[k];
+        if ('passportTheme' in safe) {
+            const me = await this.usersService.findById(req.user.id);
+            if (!(0, plan_catalog_1.capsFor)((0, effective_plan_1.effectivePlan)(me)).customThemes)
+                delete safe.passportTheme;
+        }
+        return this.usersService.update(req.user.id, safe);
     }
     toggleFavorite(req, placeId) {
         return this.usersService.toggleFavorite(req.user.id, placeId);
@@ -175,6 +199,15 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "getProfile", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.Get)('me/passport-analytics'),
+    __param(0, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], UsersController.prototype, "passportAnalytics", null);
 __decorate([
     (0, common_1.Get)('search'),
     __param(0, (0, common_1.Query)('q')),
@@ -339,7 +372,7 @@ __decorate([
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object, Object]),
-    __metadata("design:returntype", void 0)
+    __metadata("design:returntype", Promise)
 ], UsersController.prototype, "updateProfile", null);
 __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),

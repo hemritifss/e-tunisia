@@ -39,6 +39,20 @@ export class StoriesController {
         return this.stories.recordView(id);
     }
 
+    @Get('highlights/:handle')
+    @ApiOperation({ summary: 'A user\'s highlighted stories (persist past 24h)' })
+    highlights(@Param('handle') handle: string) {
+        return this.stories.listHighlights(handle);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    @Post(':id/highlight')
+    @ApiOperation({ summary: 'Toggle pinning a story to your profile highlights' })
+    highlight(@Request() req, @Param('id') id: string) {
+        return this.stories.toggleHighlight(id, req.user.id);
+    }
+
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()
     @Delete(':id')

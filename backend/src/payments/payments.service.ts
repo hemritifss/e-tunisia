@@ -37,6 +37,61 @@ export class PaymentsService {
     }
   }
 
+  /** Whether a real Stripe client is configured (vs mock mode). */
+  get stripeEnabled(): boolean {
+    return !!this.stripe;
+  }
+
+  // ─── Subscriptions (plans / billing) ─────────────────────────────────────────
+
+  /** Find-or-create a Stripe Customer for a user. Returns a mock id when unconfigured. */
+  async getOrCreateCustomer(params: { email: string; name?: string; userId: string }): Promise<string> {
+    if (!this.stripe) return `cus_mock_${params.userId}`;
+    const existing = await this.stripe.customers.list({ email: params.email, limit: 1 });
+    if (existing.data.length > 0) return existing.data[0].id;
+    const customer = await this.stripe.customers.create({
+      email: params.email,
+      name: params.name,
+      metadata: { userId: params.userId },
+    });
+    return customer.id;
+  }
+
+  /** Create a hosted Checkout Session in subscription mode. */
+  async createSubscriptionCheckout(params: {
+    customerId: string;
+    priceId: string;
+    successUrl: string;
+    cancelUrl: string;
+    metadata: Record<string, string>;
+  }): Promise<{ id: string; url: string }> {
+    if (!this.stripe) throw new Error('Stripe not configured');
+    const successUrl =
+      params.successUrl + (params.successUrl.includes('?') ? '&' : '?') + 'session_id={CHECKOUT_SESSION_ID}';
+    const session = await this.stripe.checkout.sessions.create({
+      mode: 'subscription',
+      customer: params.customerId,
+      line_items: [{ price: params.priceId, quantity: 1 }],
+      success_url: successUrl,
+      cancel_url: params.cancelUrl,
+      client_reference_id: params.metadata.userId,
+      metadata: params.metadata,
+      subscription_data: { metadata: params.metadata },
+      allow_promotion_codes: true,
+    });
+    return { id: session.id, url: session.url };
+  }
+
+  /** Create a Stripe Billing Portal session (manage card / cancel / invoices). */
+  async createBillingPortalSession(customerId: string, returnUrl: string): Promise<{ url: string }> {
+    if (!this.stripe) throw new Error('Stripe not configured');
+    const session = await this.stripe.billingPortal.sessions.create({
+      customer: customerId,
+      return_url: returnUrl,
+    });
+    return { url: session.url };
+  }
+
   async createPaymentIntent(
     amount: number,
     currency: string = 'usd',
@@ -113,12 +168,13 @@ export class PaymentsService {
   async constructWebhookEvent(
     payload: string | Buffer,
     signature: string,
+    secret?: string,
   ): Promise<any> {
     if (!this.stripe) {
       throw new Error('Stripe not configured');
     }
 
-    const webhookSecret = this.configService.get<string>('STRIPE_WEBHOOK_SECRET');
+    const webhookSecret = secret || this.configService.get<string>('STRIPE_WEBHOOK_SECRET');
     if (!webhookSecret) {
       throw new Error('Webhook secret not configured');
     }

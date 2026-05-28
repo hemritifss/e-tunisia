@@ -5,6 +5,7 @@ import { Review } from '../reviews/review.entity';
 import { Subscription } from '../subscriptions/subscription.entity';
 import { Event } from '../events/event.entity';
 import { Tip } from '../tips/tip.entity';
+import { AuditLog } from './audit-log.entity';
 export declare class AdminService {
     private usersRepo;
     private placesRepo;
@@ -12,7 +13,8 @@ export declare class AdminService {
     private subsRepo;
     private eventsRepo;
     private tipsRepo;
-    constructor(usersRepo: Repository<User>, placesRepo: Repository<Place>, reviewsRepo: Repository<Review>, subsRepo: Repository<Subscription>, eventsRepo: Repository<Event>, tipsRepo: Repository<Tip>);
+    private auditRepo;
+    constructor(usersRepo: Repository<User>, placesRepo: Repository<Place>, reviewsRepo: Repository<Review>, subsRepo: Repository<Subscription>, eventsRepo: Repository<Event>, tipsRepo: Repository<Tip>, auditRepo: Repository<AuditLog>);
     getStats(): Promise<{
         totalUsers: number;
         totalPlaces: number;
@@ -34,6 +36,16 @@ export declare class AdminService {
         };
     }>;
     updateUser(id: string, updates: Partial<User>): Promise<User>;
+    setUserRole(id: string, role: string): Promise<User>;
+    getAudit(page?: number, limit?: number): Promise<{
+        data: AuditLog[];
+        meta: {
+            total: number;
+            page: number;
+            limit: number;
+            totalPages: number;
+        };
+    }>;
     banUser(id: string): Promise<{
         message: string;
     }>;
@@ -58,7 +70,39 @@ export declare class AdminService {
     deletePlace(id: string): Promise<{
         message: string;
     }>;
+    getReviews(page?: number, limit?: number): Promise<{
+        data: Review[];
+        meta: {
+            total: number;
+            page: number;
+            limit: number;
+            totalPages: number;
+        };
+    }>;
+    deleteReview(id: string): Promise<{
+        message: string;
+    }>;
     getSubscriptions(): Promise<Subscription[]>;
+    confirmSubscription(id: string): Promise<{
+        message: string;
+        plan: string;
+    }>;
+    rejectSubscription(id: string): Promise<{
+        message: string;
+    }>;
+    getAnalytics(): Promise<{
+        mrr: number;
+        arr: number;
+        activeSubscriptions: number;
+        pendingSubscriptions: number;
+        byPlan: Record<string, {
+            count: number;
+            revenue: number;
+        }>;
+        totalUsers: number;
+        paidUsers: number;
+        conversionRate: number;
+    }>;
     getEvents(): Promise<Event[]>;
     toggleEventActive(id: string): Promise<Event>;
     getTips(): Promise<Tip[]>;

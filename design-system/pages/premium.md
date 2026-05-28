@@ -1,6 +1,16 @@
-# Premium page (`#/premium`)
+# Premium page (`#/premium`, `#/pro`, `#/upgrade`)
 
 > Page-level overrides to `design-system/MASTER.md` for subscription plans. Inherits everything not listed here.
+
+## Live surface & source of truth (read this first)
+
+The live page is the **React island `web/src/react/pages/ProUpgradePage.tsx`** (the vanilla
+`web/src/pages/premium.ts` is dead code — the router early-returns the React route for `/premium*`).
+
+**Prices are NOT defined on the page.** The single source of truth is the backend
+`backend/src/billing/plan-catalog.ts`, served via `GET /billing/plans`. The page fetches it
+(with a baked-in fallback that mirrors the catalog) and renders cards from it. Change a price
+once in `plan-catalog.ts` and it propagates to the page, checkout, and subscription records.
 
 ## Style direction
 
@@ -23,18 +33,19 @@ Per MASTER §4 `no-emoji-icons`, this page previously used emoji as structural i
 
 ## Plan catalog
 
-The page renders from a `PLANS` array — 4 plans declaratively defined:
+**3 tiles + a monthly/yearly toggle** (the old separate "Annual" tile is folded into the toggle).
+Rendered from `GET /billing/plans` (source: `plan-catalog.ts`):
 
-| ID | Name | Price | Tint | Featured |
-|----|------|-------|------|----------|
-| free | Free | 0 TND forever | `--text-secondary` | no (marked as `isCurrent`) |
-| premium | Premium | 10 TND/mo | `--gold` | **yes** |
-| annual | Premium Annual | 100 TND/yr | `--olive` | no |
-| business | Business | 49 TND/mo | `--violet` | no |
+| ID | Name | Monthly | Yearly | Tint | Featured |
+|----|------|---------|--------|------|----------|
+| free | Free | 0 TND | — | `--text-secondary` | no (renders as `is-current`) |
+| premium | Pro Traveler | 14.90 TND | 149 TND | `--gold` | **yes** |
+| business | Verified Business | 74.90 TND | 749 TND | `--violet` | no |
 
-Each plan card carries `--plan-tint` inline. The tint drives the plan name color, feature-check chip background, and CTA button color.
+Each card carries `--plan-accent` inline (from the catalog `tint`). The accent drives the plan
+name color, feature-check icon color, and CTA button gradient.
 
-**Don't hard-code prices in the JSX.** Update the `PLANS` constant — the modal title and price label are derived from it.
+**Don't hard-code prices anywhere.** Edit `backend/src/billing/plan-catalog.ts` only.
 
 ## Featured card
 
@@ -57,16 +68,25 @@ A self-contained card grid with 4 revenue items:
 
 The eyebrow is "TRANSPARENT" in `--accent-light` chip — signals the page is explicit about monetization.
 
-## Payment modal
+## Checkout flow (no modal)
 
-- **Scrim**: `oklch(0% 0 0 / 0.55)` with `backdrop-filter: blur(4px)`.
-- **Card**: centered via `transform: translate(-50%, -50%)`, opens with spring + opacity transition.
-- **Header**: title + close button.
-- **Price** in display-font 28px, `--accent` color, tabular-nums.
-- **Payment methods**: real `<fieldset>` + `<legend>` with 3 `<label>` rows. Each label holds a hidden `<input type="radio">` for accessibility + an icon chip + label + check icon. Active state tints background to `--accent-light` + border + icon chip flips to filled `--accent`.
-- **Confirm button**: full-width `--gradient-cta` with `--shadow-glow` + `ShieldCheck` icon. Disabled state during async.
+The React page uses **inline segmented controls in the hero**, not a modal:
+- **Cycle toggle** — Monthly / Yearly (reuses `.pro-page-cycle`).
+- **Payment method** — Card / Bank transfer / Cash (a second `.pro-page-cycle` row, `role="radiogroup"`).
 
-ESC closes the modal. Scrim click closes the modal. `aria-modal="true"` + `aria-labelledby`.
+CTA behavior depends on the selected method:
+- **Card → Stripe Checkout.** `POST /billing/checkout` returns `{ url, mock }`. If `mock` (no Stripe
+  keys), the backend already flipped the plan and the page navigates to `#/premium/welcome`. Otherwise
+  it redirects to Stripe's hosted checkout (`window.location.href = url`).
+- **Bank transfer / Cash → manual pending.** `POST /billing/upgrade` writes a `PENDING` subscription;
+  the plan does **not** activate until an admin confirms. The CTA shows a "we'll confirm payment" toast.
+
+A current paid plan shows **Manage billing** (`POST /billing/portal` → Stripe portal) + **Cancel**.
+
+### Post-checkout welcome (`#/premium/welcome`)
+
+A celebration view inside the same island: gold hero, "Welcome to {plan}", refetches `/billing/me`,
+fires an `achievement` toast, and offers "Back to feed" + "Manage billing".
 
 ## Hero
 
@@ -94,5 +114,9 @@ The previous version used `alert(...)` for upgrade success/failure. The new vers
 
 ## Files
 
-- Page: [web/src/pages/premium.ts](../../web/src/pages/premium.ts)
-- Styles: [web/src/styles/premium.css](../../web/src/styles/premium.css)
+- Live page: [web/src/react/pages/ProUpgradePage.tsx](../../web/src/react/pages/ProUpgradePage.tsx)
+- Price book (source of truth): [backend/src/billing/plan-catalog.ts](../../backend/src/billing/plan-catalog.ts)
+- Billing API: [backend/src/billing/billing.controller.ts](../../backend/src/billing/billing.controller.ts) · [billing.service.ts](../../backend/src/billing/billing.service.ts)
+- Styles: `.pro-page*` / `.pro-plan*` in [web/src/styles/pages.css](../../web/src/styles/pages.css)
+- Stripe price setup: [backend/scripts/stripe-setup.ts](../../backend/scripts/stripe-setup.ts)
+- Legacy/dead: `web/src/pages/premium.ts` (vanilla, not routed)

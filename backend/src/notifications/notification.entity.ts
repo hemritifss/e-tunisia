@@ -1,6 +1,6 @@
 import {
     Entity, PrimaryGeneratedColumn, Column,
-    CreateDateColumn, ManyToOne, JoinColumn,
+    CreateDateColumn, ManyToOne, JoinColumn, Index,
 } from 'typeorm';
 import { User } from '../users/user.entity';
 
@@ -8,9 +8,11 @@ export enum NotificationType {
     EVENT = 'event', TIP = 'tip', BADGE = 'badge',
     SPONSOR = 'sponsor', SYSTEM = 'system', PROMO = 'promo',
     FOLLOW = 'follow', COMMENT = 'comment', DONATION = 'donation', MENTION = 'mention',
+    PASSPORT_VIEW = 'passport_view',
 }
 
 @Entity('notifications')
+@Index(['userId', 'isRead', 'createdAt'])
 export class Notification {
     @PrimaryGeneratedColumn('uuid')
     id: string;
@@ -20,6 +22,7 @@ export class Notification {
     user: User;
 
     @Column()
+    @Index()
     userId: string;
 
     @Column()

@@ -14,12 +14,13 @@ const challenges_service_1 = require("./challenges.service");
 const challenge_entity_1 = require("./challenge.entity");
 const user_challenge_entity_1 = require("./user-challenge.entity");
 const streak_entity_1 = require("./streak.entity");
+const user_entity_1 = require("../users/user.entity");
 let ChallengesModule = class ChallengesModule {
 };
 exports.ChallengesModule = ChallengesModule;
 exports.ChallengesModule = ChallengesModule = __decorate([
     (0, common_1.Module)({
-        imports: [typeorm_1.TypeOrmModule.forFeature([challenge_entity_1.Challenge, user_challenge_entity_1.UserChallenge, streak_entity_1.UserStreak])],
+        imports: [typeorm_1.TypeOrmModule.forFeature([challenge_entity_1.Challenge, user_challenge_entity_1.UserChallenge, streak_entity_1.UserStreak, user_entity_1.User])],
         controllers: [challenges_controller_1.ChallengesController],
         providers: [challenges_service_1.ChallengesService],
         exports: [challenges_service_1.ChallengesService],

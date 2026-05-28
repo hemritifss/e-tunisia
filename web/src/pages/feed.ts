@@ -3,6 +3,16 @@ import { replaceIcons } from '../icons';
 import * as api from '../api';
 import { shareUrl, toggleSaved, isSaved, showToast } from '../ui-utils';
 
+function esc(v: unknown): string {
+  const s = String(v ?? '');
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 function parseTimeAgo(timeStr: string): number {
   const match = timeStr.match(/(\d+)(m|h|d|w)/);
   if (!match) return 0; // "just now" = 0
@@ -27,17 +37,17 @@ function renderPostCard(post: Post): string {
         </div>
         <div class="post-content">
           <div class="post-meta">
-            <span class="post-category ${post.categoryClass}">${post.category}</span>
-            <span class="post-meta-author">${post.author.name}</span>
+            <span class="post-category ${post.categoryClass}">${esc(post.category)}</span>
+            <span class="post-meta-author">${esc(post.author.name)}</span>
             <span>Lv.${post.author.level}</span>
-            <span>${post.timeAgo}</span>
-            ${post.location ? `<span><i class="lucide-map-pin" style="font-size: 0.75rem"></i> ${post.location}</span>` : ''}
+            <span>${esc(post.timeAgo)}</span>
+            ${post.location ? `<span><i class="lucide-map-pin" style="font-size: 0.75rem"></i> ${esc(post.location)}</span>` : ''}
           </div>
           <h3 class="post-title">
-            <a href="#/post/${post.id}">${post.title}</a>
+            <a href="#/post/${post.id}">${esc(post.title)}</a>
           </h3>
-          ${(post.image || post.coverImage || (post.images && post.images[0])) ? `<img src="${api.getImageUrl(post.coverImage || post.image || (post.images && post.images[0]) || '')}" alt="${post.title}" class="post-image" loading="lazy" onerror="this.style.display='none'" />` : ''}
-          <p class="post-excerpt">${post.excerpt}</p>
+          ${(post.image || post.coverImage || (post.images && post.images[0])) ? `<img src="${api.getImageUrl(post.coverImage || post.image || (post.images && post.images[0]) || '')}" alt="${esc(post.title)}" class="post-image" loading="lazy" onerror="this.style.display='none'" />` : ''}
+          <p class="post-excerpt">${esc(post.excerpt)}</p>
           <div class="post-actions">
             <div class="post-mobile-votes">
               <button class="vote-btn ${post.userVote === 1 ? 'active' : ''}" data-vote="up" data-post="${post.id}">
@@ -424,12 +434,12 @@ async function loadSponsors() {
     const sponsors = await api.getSponsors();
     if (sponsors?.length) {
       container.innerHTML = sponsors.slice(0, 3).map((s: any) => `
-        <a href="${s.website || '#'}" target="_blank" rel="noopener" class="sponsor-card" data-sponsor="${s.id}"
+        <a href="${esc(s.website || '#')}" target="_blank" rel="noopener" class="sponsor-card" data-sponsor="${esc(s.id)}"
            onclick="event.stopPropagation();">
-          ${s.logoUrl ? `<img src="${s.logoUrl}" alt="${s.name}" class="sponsor-logo" />` : ''}
+          ${s.logoUrl ? `<img src="${esc(s.logoUrl)}" alt="${esc(s.name)}" class="sponsor-logo" />` : ''}
           <div class="sponsor-info">
-            <strong>${s.name}</strong>
-            <span class="text-xs text-muted">${s.tagline || 'Official Partner'}</span>
+            <strong>${esc(s.name)}</strong>
+            <span class="text-xs text-muted">${esc(s.tagline || 'Official Partner')}</span>
           </div>
         </a>
       `).join('');

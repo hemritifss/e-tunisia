@@ -5,4 +5,5 @@ export declare class RegisterDto {
     handle?: string;
     country?: string;
     phone?: string;
+    ref?: string;
 }

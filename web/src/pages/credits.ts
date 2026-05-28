@@ -35,6 +35,18 @@ export function renderCreditsPage(): string {
         </button>
       </section>
 
+      <section class="credits-referral" id="credits-referral" hidden>
+        <div class="credits-referral-head">
+          <h2><i class="lucide-gift"></i> Refer &amp; earn</h2>
+          <p>Give 10 TND, get 10 TND. Share your link — when a friend joins, you both get credit.</p>
+        </div>
+        <div class="credits-referral-row">
+          <input id="credits-referral-link" class="input" type="text" readonly aria-label="Your referral link" />
+          <button class="btn btn-primary" id="credits-referral-copy" type="button"><i class="lucide-copy"></i> Copy</button>
+        </div>
+        <p class="credits-referral-stats" id="credits-referral-stats"></p>
+      </section>
+
       <section class="credits-history">
         <h2>Recent activity</h2>
         <ul class="credits-tx-list" id="credits-tx-list">
@@ -52,6 +64,8 @@ const TX_LABEL: Record<string, string> = {
   donation_in: 'Donation received',
   platform_fee: 'Platform commission',
   refund: 'Refund',
+  referral: 'Referral reward',
+  boost: 'Listing boost',
 };
 
 const TX_ICON: Record<string, string> = {
@@ -61,6 +75,8 @@ const TX_ICON: Record<string, string> = {
   donation_in: 'lucide-gift',
   platform_fee: 'lucide-percent',
   refund: 'lucide-rotate-ccw',
+  referral: 'lucide-user-plus',
+  boost: 'lucide-sparkles',
 };
 
 function fmt(n: number): string {
@@ -155,4 +171,39 @@ export async function initCreditsPage() {
       onSuccess: () => initCreditsPage(),
     });
   });
+
+  // Refer & earn — build the share link from the user's handle.
+  try {
+    const profile = await api.getMyProfile();
+    const refSection = document.getElementById('credits-referral');
+    const refInput = document.getElementById('credits-referral-link') as HTMLInputElement | null;
+    if (profile?.handle && refSection && refInput) {
+      const link = `${location.origin}/#/register?ref=${encodeURIComponent(profile.handle)}`;
+      refInput.value = link;
+      refSection.hidden = false;
+      replaceIcons(refSection);
+
+      // Show how the program is going (released + pending). Best-effort.
+      try {
+        const stats = await api.getReferralStats();
+        const statsEl = document.getElementById('credits-referral-stats');
+        if (statsEl && (stats.released || stats.pending)) {
+          const parts: string[] = [];
+          if (stats.released) parts.push(`${stats.released} reward${stats.released === 1 ? '' : 's'} earned`);
+          if (stats.pending) parts.push(`${stats.pending} pending (paid when they top up)`);
+          statsEl.textContent = parts.join(' · ');
+        }
+      } catch { /* stats are best-effort */ }
+
+      document.getElementById('credits-referral-copy')?.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(link);
+        } catch {
+          refInput.select();
+          document.execCommand('copy');
+        }
+        showToast('Referral link copied — share it!');
+      });
+    }
+  } catch { /* referral card is best-effort */ }
 }

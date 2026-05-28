@@ -1,112 +1,130 @@
-import React, { useState } from 'react';
-import { Sparkles, Check, Crown, Briefcase, Loader2 } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { Sparkles, Check, Crown, Briefcase, Loader2, CreditCard, Landmark, Banknote, PartyPopper, Settings, Wallet } from 'lucide-react';
 import { useUserPlan } from '../hooks/useUserPlan';
 import { api } from '../../shared/api';
 
 type Tier = 'free' | 'premium' | 'business';
-type Cycle = 'monthly' | 'yearly' | 'lifetime';
+type Cycle = 'monthly' | 'yearly';
+type PayMethod = 'card' | 'flouci' | 'bank' | 'cash';
 
 const showToast = (opts: any) => (window as any).showToast?.(opts);
 
-interface PlanCard {
+const ICONS: Record<string, React.ReactNode> = {
+    free: <Sparkles size={20} />,
+    premium: <Crown size={20} />,
+    business: <Briefcase size={20} />,
+};
+
+interface CatalogPlan {
     id: Tier;
-    label: string;
+    name: string;
     tagline: string;
-    accent: string;          // CSS var for the accent color
-    icon: React.ReactNode;
-    monthly: string;
-    yearly: string;
-    lifetime?: string;
+    tint: string;
+    monthly: number;
+    yearly: number;
     features: string[];
-    hint?: string;
+    ctaLabel: string;
+    featured?: boolean;
+}
+interface Catalog { currency: string; plans: CatalogPlan[]; }
+
+// Mirrors backend plan-catalog.ts so the page still renders if /billing/plans is unreachable.
+const FALLBACK: Catalog = {
+    currency: 'TND',
+    plans: [
+        {
+            id: 'free', name: 'Free', tagline: 'Everything you need to start exploring', tint: 'var(--text-secondary)',
+            monthly: 0, yearly: 0, ctaLabel: 'Current plan',
+            features: ['Browse every place & hidden gem', 'Read & write reviews', 'Up to 3 saved trip plans', 'Up to 20 saved places', 'Mood discovery, leaderboards & activity feed'],
+        },
+        {
+            id: 'premium', name: 'Pro Traveler', tagline: 'For active explorers & creators', tint: 'var(--gold)',
+            monthly: 14.9, yearly: 149, ctaLabel: 'Upgrade to Pro', featured: true,
+            features: ['Everything in Free', 'Unlimited trip plans & saves', 'Gold Pro badge across the app', 'Custom passport themes', 'Passport analytics — who viewed you', 'Priority in suggestion feeds', 'Ad-free experience & early event access'],
+        },
+        {
+            id: 'business', name: 'Verified Business', tagline: 'For riads, restaurants, tours & agencies', tint: 'var(--violet)',
+            monthly: 74.9, yearly: 749, ctaLabel: 'Go Business',
+            features: ['Everything in Pro', 'Verified business badge', 'Owner dashboard & inquiry analytics', 'Boost listings into featured slots', 'Multi-language listings (FR / AR / EN)', 'Reply to reviews as the business', 'Priority partner support'],
+        },
+    ],
+};
+
+function fmtPrice(n: number, currency: string): string {
+    if (!n) return 'Free';
+    const hasFraction = Math.round(n * 100) % 100 !== 0;
+    return `${n.toLocaleString(undefined, { minimumFractionDigits: hasFraction ? 2 : 0, maximumFractionDigits: 2 })} ${currency}`;
 }
 
-const PLANS: PlanCard[] = [
-    {
-        id: 'free',
-        label: 'Free',
-        tagline: 'Everything you need to start exploring.',
-        accent: 'var(--text-tertiary)',
-        icon: <Sparkles size={20} />,
-        monthly: '0 TND',
-        yearly: '0 TND',
-        features: [
-            'Public Tunisia Passport at /u/your-handle',
-            'Plan up to 3 trips',
-            'Save up to 20 places',
-            'Follow other travelers',
-            'Endorse + be endorsed',
-        ],
-    },
-    {
-        id: 'premium',
-        label: 'Pro Traveler',
-        tagline: 'For people who actually want to go.',
-        accent: 'var(--gold)',
-        icon: <Crown size={20} />,
-        monthly: '9 TND / mo',
-        yearly: '79 TND / yr',
-        lifetime: '299 TND once',
-        features: [
-            'Everything in Free',
-            'Unlimited trip plans',
-            'Unlimited saved places',
-            'Custom passport themes',
-            'Passport analytics — who viewed you',
-            '✦ Pro badge on every surface',
-            'Priority in suggestion feeds',
-        ],
-        hint: 'Most popular',
-    },
-    {
-        id: 'business',
-        label: 'Business',
-        tagline: 'For Tunisian hosts, hotels, and tour operators.',
-        accent: 'var(--mediterranean)',
-        icon: <Briefcase size={20} />,
-        monthly: '49 TND / mo',
-        yearly: '459 TND / yr',
-        features: [
-            'Everything in Pro',
-            'Verified business badge ✓',
-            'Owner dashboard with analytics',
-            'Boost listings to the top of Explore',
-            'Multi-language listings',
-            'Response-time reputation metric',
-            'Priority inquiry routing',
-        ],
-    },
+const METHODS: { id: PayMethod; label: string; icon: React.ReactNode }[] = [
+    { id: 'card', label: 'Card', icon: <CreditCard size={14} /> },
+    { id: 'flouci', label: 'Flouci', icon: <Wallet size={14} /> },
+    { id: 'bank', label: 'Bank transfer', icon: <Landmark size={14} /> },
+    { id: 'cash', label: 'Cash (office)', icon: <Banknote size={14} /> },
 ];
 
 export default function ProUpgradePage() {
     const { plan, offline, refetch } = useUserPlan() as any;
     const [cycle, setCycle] = useState<Cycle>('yearly');
-    const [busy, setBusy] = useState<Tier | null>(null);
+    const [method, setMethod] = useState<PayMethod>('card');
+    const [busy, setBusy] = useState<Tier | 'manage' | null>(null);
 
     const isAnon = typeof window !== 'undefined' && !localStorage.getItem('etunisia_token');
+    const isWelcome = typeof window !== 'undefined' && (location.hash || '').includes('/premium/welcome');
+
+    const { data: catalog } = useQuery<Catalog>({
+        queryKey: ['plan-catalog'],
+        queryFn: async () => {
+            try { return (await api.getPlans()) as Catalog; } catch { return FALLBACK; }
+        },
+        staleTime: 30 * 60_000,
+        initialData: FALLBACK,
+    });
+    const currency = catalog?.currency || 'TND';
+    const plans = catalog?.plans || FALLBACK.plans;
+
+    // On the welcome screen, make sure the plan badge reflects the just-completed purchase.
+    useEffect(() => {
+        if (isWelcome) {
+            refetch();
+            showToast({ title: 'Welcome aboard', message: 'Your plan is active. Enjoy the upgrades.', type: 'achievement' });
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isWelcome]);
 
     const activate = async (tier: Tier) => {
         if (tier === 'free' || busy || isAnon) return;
         if (offline) {
-            showToast({
-                title: 'Billing offline',
-                message: 'The billing service isn\'t running. Restart the backend (cd backend && npm run start:dev) and try again.',
-                type: 'error',
-                duration: 7000,
-            });
+            showToast({ title: 'Billing offline', message: "The billing service isn't running. Restart the backend (cd backend && npm run start:dev) and try again.", type: 'error', duration: 7000 });
             return;
         }
         setBusy(tier);
         try {
-            await (api as any).upgradePlanTo(tier, cycle);
-            showToast({
-                title: tier === 'premium' ? 'Pro unlocked' : 'Business activated',
-                message: tier === 'premium'
-                    ? 'Your passport gets the ✦ Pro badge. Caps lifted. Enjoy.'
-                    : 'Your business surfaces will start showing the ✓ Verified chip.',
-                type: 'achievement',
-            });
-            refetch();
+            if (method === 'card' || method === 'flouci') {
+                const res: any = method === 'card'
+                    ? await api.startCheckout(tier, cycle)
+                    : await api.startFlouciCheckout(tier, cycle);
+                if (res?.mock) {
+                    // No keys configured — backend already flipped the plan. Celebrate + go to welcome.
+                    refetch();
+                    window.location.hash = `#/premium/welcome?plan=${tier}`;
+                } else if (res?.url) {
+                    window.location.href = res.url; // Stripe / Flouci hosted checkout
+                } else {
+                    throw new Error('Checkout did not return a URL.');
+                }
+            } else {
+                await api.manualUpgrade(tier, cycle, method as 'bank' | 'cash');
+                showToast({
+                    title: 'Payment instructions sent',
+                    message: method === 'bank'
+                        ? "We've logged your bank-transfer request — your plan activates once we confirm the transfer."
+                        : "We've logged your cash request — pay at the office and your plan activates on confirmation.",
+                    type: 'info',
+                    duration: 7000,
+                });
+            }
         } catch (err: any) {
             const status = err?.status;
             const msg = status === 404
@@ -121,7 +139,7 @@ export default function ProUpgradePage() {
     const cancel = async () => {
         setBusy('free');
         try {
-            await (api as any).cancelPlan();
+            await api.cancelPlan();
             showToast({ message: "Subscription cancelled. You're back on Free.", type: 'info' });
             refetch();
         } catch (err: any) {
@@ -130,6 +148,41 @@ export default function ProUpgradePage() {
             setBusy(null);
         }
     };
+
+    const manageBilling = async () => {
+        setBusy('manage');
+        try {
+            const res: any = await api.openBillingPortal();
+            if (res?.url) window.location.href = res.url;
+        } catch (err: any) {
+            showToast({ message: err?.message || 'Billing portal is unavailable in mock mode.', type: 'info' });
+        } finally {
+            setBusy(null);
+        }
+    };
+
+    // ─── Post-checkout celebration ───────────────────────────────────────────────
+    if (isWelcome) {
+        const current = plans.find((p) => p.id === plan) || plans.find((p) => p.id === 'premium')!;
+        return (
+            <main className="pro-page">
+                <section className="pro-page-hero">
+                    <div className="pro-page-hero-bg" />
+                    <span className="pro-page-kicker"><PartyPopper size={12} /> You're in</span>
+                    <h1>Welcome to {current.name}.</h1>
+                    <p>Your plan is active. Your new perks are live across the app — the badge, the lifted caps, all of it.</p>
+                    <div className="pro-page-cycle" style={{ marginTop: 'var(--space-4)' }}>
+                        <a className="btn primary" href="#/">Back to feed</a>
+                        {plan !== 'free' && (
+                            <button onClick={manageBilling} disabled={busy === 'manage'}>
+                                {busy === 'manage' ? <><Loader2 size={14} className="spin" /> Opening…</> : <><Settings size={14} /> Manage billing</>}
+                            </button>
+                        )}
+                    </div>
+                </section>
+            </main>
+        );
+    }
 
     return (
         <main className="pro-page">
@@ -150,7 +203,7 @@ export default function ProUpgradePage() {
                 <h1>Travel deeper. Build louder.</h1>
                 <p>One subscription. Two tiers. Both unlock more of Tunisia than free ever will.</p>
                 <div className="pro-page-cycle" role="tablist" aria-label="Billing cycle">
-                    {(['monthly', 'yearly', 'lifetime'] as Cycle[]).map((c) => (
+                    {(['monthly', 'yearly'] as Cycle[]).map((c) => (
                         <button
                             key={c}
                             role="tab"
@@ -158,33 +211,44 @@ export default function ProUpgradePage() {
                             className={cycle === c ? 'active' : ''}
                             onClick={() => setCycle(c)}
                         >
-                            {c === 'monthly' ? 'Monthly' : c === 'yearly' ? 'Yearly · save 30%' : 'Lifetime'}
+                            {c === 'monthly' ? 'Monthly' : 'Yearly · save ~17%'}
+                        </button>
+                    ))}
+                </div>
+                <div className="pro-page-cycle" role="radiogroup" aria-label="Payment method" style={{ marginTop: 'var(--space-2)' }}>
+                    {METHODS.map((m) => (
+                        <button
+                            key={m.id}
+                            role="radio"
+                            aria-checked={method === m.id}
+                            className={method === m.id ? 'active' : ''}
+                            onClick={() => setMethod(m.id)}
+                        >
+                            {m.icon} {m.label}
                         </button>
                     ))}
                 </div>
             </section>
 
             <section className="pro-page-grid">
-                {PLANS.map((p) => {
+                {plans.map((p) => {
                     const isCurrent = plan === p.id;
-                    const price = cycle === 'lifetime'
-                        ? (p.lifetime || p.yearly)
-                        : cycle === 'yearly' ? p.yearly : p.monthly;
+                    const amount = cycle === 'yearly' ? p.yearly : p.monthly;
+                    const priceLabel = p.id === 'free' ? 'Free' : `${fmtPrice(amount, currency)} / ${cycle === 'yearly' ? 'yr' : 'mo'}`;
                     return (
                         <article
                             key={p.id}
                             className={`pro-plan-card pro-plan-${p.id} ${isCurrent ? 'is-current' : ''}`}
-                            style={{ '--plan-accent': p.accent } as React.CSSProperties}
+                            style={{ '--plan-accent': p.tint } as React.CSSProperties}
                         >
-                            {p.hint && <span className="pro-plan-hint">{p.hint}</span>}
+                            {p.featured && <span className="pro-plan-hint">Most popular</span>}
                             <header>
-                                <span className="pro-plan-icon">{p.icon}</span>
-                                <strong>{p.label}</strong>
+                                <span className="pro-plan-icon">{ICONS[p.id]}</span>
+                                <strong>{p.name}</strong>
                             </header>
                             <p className="pro-plan-tagline">{p.tagline}</p>
                             <div className="pro-plan-price">
-                                <span>{price}</span>
-                                {cycle === 'lifetime' && p.id !== 'free' && <em>one-time payment</em>}
+                                <span>{priceLabel}</span>
                             </div>
                             <ul className="pro-plan-features">
                                 {p.features.map((f) => (
@@ -196,9 +260,14 @@ export default function ProUpgradePage() {
                                     p.id === 'free' ? (
                                         <button className="btn ghost block" disabled>Current plan</button>
                                     ) : (
-                                        <button className="btn ghost block" onClick={cancel} disabled={busy === 'free'}>
-                                            {busy === 'free' ? <><Loader2 size={14} className="spin" /> Cancelling…</> : 'Cancel subscription'}
-                                        </button>
+                                        <div className="pro-plan-current-actions">
+                                            <button className="btn ghost block" onClick={manageBilling} disabled={busy === 'manage'}>
+                                                {busy === 'manage' ? <><Loader2 size={14} className="spin" /> Opening…</> : <><Settings size={14} /> Manage billing</>}
+                                            </button>
+                                            <button className="btn ghost block" onClick={cancel} disabled={busy === 'free'}>
+                                                {busy === 'free' ? <><Loader2 size={14} className="spin" /> Cancelling…</> : 'Cancel subscription'}
+                                            </button>
+                                        </div>
                                     )
                                 ) : p.id === 'free' ? (
                                     <button className="btn ghost block" disabled>Default</button>
@@ -210,7 +279,9 @@ export default function ProUpgradePage() {
                                         onClick={() => activate(p.id)}
                                         disabled={busy === p.id}
                                     >
-                                        {busy === p.id ? <><Loader2 size={14} className="spin" /> Activating…</> : `Get ${p.label}`}
+                                        {busy === p.id
+                                            ? <><Loader2 size={14} className="spin" /> {method === 'card' || method === 'flouci' ? 'Redirecting…' : 'Submitting…'}</>
+                                            : method === 'card' || method === 'flouci' ? `${p.ctaLabel} →` : `${p.ctaLabel} · pay by ${method}`}
                                     </button>
                                 )}
                             </footer>
@@ -221,8 +292,10 @@ export default function ProUpgradePage() {
 
             <section className="pro-page-fineprint">
                 <p>
-                    Pricing is in TND. Cancel anytime — your subscription stays active until the
-                    end of the period. No refunds for partial months, sorry.
+                    Prices shown in {currency}. Card payments are processed securely by Stripe.
+                    Bank transfer & cash are confirmed manually by our team — your plan activates
+                    once payment clears. Cancel anytime; your subscription stays active until the
+                    end of the period.
                 </p>
             </section>
         </main>

@@ -45,6 +45,7 @@ export class StoriesService {
                 caption: s.caption,
                 createdAt: s.createdAt,
                 expiresAt: s.expiresAt,
+                isHighlight: s.isHighlight,
             });
         }
         return Array.from(byAuthor.values())
@@ -63,5 +64,31 @@ export class StoriesService {
         s.isActive = false;
         await this.repo.save(s);
         return { deleted: true };
+    }
+
+    /** Owner-only: pin/unpin a story to the profile's Highlights ("My Tunisia Journey"). */
+    async toggleHighlight(id: string, requesterId: string) {
+        const s = await this.repo.findOne({ where: { id } });
+        if (!s || s.authorId !== requesterId) return { ok: false, isHighlight: false };
+        s.isHighlight = !s.isHighlight;
+        await this.repo.save(s);
+        return { ok: true, isHighlight: s.isHighlight };
+    }
+
+    /** Public: a user's highlighted stories (persist past 24h). */
+    async listHighlights(handle: string) {
+        const h = (handle || '').toLowerCase();
+        if (!h) return [];
+        const rows = await this.repo.createQueryBuilder('s')
+            .innerJoin('s.author', 'a')
+            .where('LOWER(a.handle) = :h AND s.isHighlight = true AND s.isActive = true', { h })
+            .orderBy('s.createdAt', 'DESC')
+            .getMany();
+        return rows.map((s) => ({
+            id: s.id,
+            imageUrl: s.imageUrl,
+            caption: s.caption,
+            createdAt: s.createdAt,
+        }));
     }
 }

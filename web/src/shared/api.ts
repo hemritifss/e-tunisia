@@ -148,6 +148,9 @@ export const api = {
     }),
 
   me: () => fetchWithAuth('/api/v1/users/me'),
+  updateProfile: (data: Record<string, any>) =>
+    fetchWithAuth('/api/v1/users/me', { method: 'PUT', body: JSON.stringify(data) }),
+  getPassportAnalytics: () => fetchWithAuth('/api/v1/users/me/passport-analytics'),
 
   // Places
   getPlaces: (params?: Record<string, string>) => {
@@ -212,6 +215,10 @@ export const api = {
     fetchWithAuth(`/api/v1/stories`, { method: 'POST', body: JSON.stringify(data) }),
   viewStory: (id: string) =>
     fetchWithAuth(`/api/v1/stories/${id}/view`, { method: 'POST' }),
+  toggleStoryHighlight: (id: string) =>
+    fetchWithAuth(`/api/v1/stories/${id}/highlight`, { method: 'POST' }),
+  getStoryHighlights: (handle: string) =>
+    fetchWithAuth(`/api/v1/stories/highlights/${encodeURIComponent(handle)}`),
 
   // Credits & donations
   getMyCredits: () => fetchWithAuth('/api/v1/credits/me'),
@@ -227,6 +234,7 @@ export const api = {
   createPost: (data: {
     title: string; body: string; category?: string;
     location?: string; placeId?: string; images?: string[]; tags?: string[];
+    videoUrl?: string;
   }) =>
     fetchWithAuth('/api/v1/posts', { method: 'POST', body: JSON.stringify(data) }),
   votePost: (postId: string, direction: 'up' | 'down' | 'clear') =>
@@ -297,8 +305,18 @@ export const api = {
     fetchWithAuth(`/api/v1/users/search?q=${encodeURIComponent(q)}&limit=${limit}`),
   // Billing / Pro Traveler tier
   getMyPlan: () => fetchWithAuth('/api/v1/billing/me'),
-  upgradePlanTo: (plan: 'premium' | 'business', cycle: 'monthly' | 'yearly' | 'lifetime' = 'monthly') =>
-    fetchWithAuth('/api/v1/billing/upgrade', { method: 'POST', body: JSON.stringify({ plan, cycle }) }),
+  getPlans: () => fetchWithAuth('/api/v1/billing/plans'),
+  /** Card checkout → returns { url, mock }. Redirect to url (Stripe hosted or mock success). */
+  startCheckout: (plan: 'premium' | 'business', cycle: 'monthly' | 'yearly' = 'monthly') =>
+    fetchWithAuth('/api/v1/billing/checkout', { method: 'POST', body: JSON.stringify({ plan, cycle }) }),
+  /** Flouci (local TND) checkout → returns { url, mock }. Redirect to url. */
+  startFlouciCheckout: (plan: 'premium' | 'business', cycle: 'monthly' | 'yearly' = 'monthly') =>
+    fetchWithAuth('/api/v1/billing/flouci/checkout', { method: 'POST', body: JSON.stringify({ plan, cycle }) }),
+  /** Manual bank/cash → pending subscription an admin confirms later. */
+  manualUpgrade: (plan: 'premium' | 'business', cycle: 'monthly' | 'yearly', method: 'bank' | 'cash') =>
+    fetchWithAuth('/api/v1/billing/upgrade', { method: 'POST', body: JSON.stringify({ plan, cycle, method }) }),
+  /** Open the Stripe billing portal → returns { url }. */
+  openBillingPortal: () => fetchWithAuth('/api/v1/billing/portal', { method: 'POST' }),
   cancelPlan: () => fetchWithAuth('/api/v1/billing/cancel', { method: 'POST' }),
 
   // Public trip discovery
@@ -365,6 +383,42 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ plan, paymentMethod }),
     }),
+
+  // Bookings
+  createBooking: (data: {
+    placeId: string;
+    itemId: string;
+    type: 'hotel' | 'tour' | 'experience' | 'event' | 'restaurant';
+    checkIn: string;
+    checkOut?: string;
+    guests: number;
+    addons?: { name: string; price: number; quantity: number }[];
+    specialRequests?: string;
+  }) => fetchWithAuth('/api/v1/bookings', { method: 'POST', body: JSON.stringify(data) }),
+
+  getMyBookings: () => fetchWithAuth('/api/v1/bookings/my'),
+
+  // Password reset
+  requestPasswordReset: (email: string) =>
+    fetchWithAuth('/api/v1/auth/forgot-password', { method: 'POST', body: JSON.stringify({ email }) }),
+  resetPassword: (token: string, password: string) =>
+    fetchWithAuth('/api/v1/auth/reset-password', { method: 'POST', body: JSON.stringify({ token, password }) }),
+
+  // Reposts
+  repostPost: (postId: string, comment?: string) =>
+    fetchWithAuth(`/api/v1/posts/${postId}/repost`, { method: 'POST', body: JSON.stringify({ comment }) }),
+  undoRepost: (postId: string) =>
+    fetchWithAuth(`/api/v1/posts/${postId}/repost`, { method: 'DELETE' }),
+
+  // Search
+  search: (q: string, limit?: number) =>
+    fetchWithAuth(`/api/v1/search?q=${encodeURIComponent(q)}&limit=${limit || 20}`),
+
+  // Push notifications
+  subscribePush: (subscription: { endpoint: string; keys: { p256dh: string; auth: string } }) =>
+    fetchWithAuth('/api/v1/push/subscribe', { method: 'POST', body: JSON.stringify({ subscription }) }),
+  unsubscribePush: (endpoint: string) =>
+    fetchWithAuth('/api/v1/push/unsubscribe', { method: 'POST', body: JSON.stringify({ endpoint }) }),
 
   // Contact
   sendContact: (data: Record<string, string>) =>

@@ -6,6 +6,7 @@ import { User } from '../users/user.entity';
 import { Place } from '../places/place.entity';
 import { Booking } from '../bookings/booking.entity';
 import { Review } from '../reviews/review.entity';
+import { QueuesService } from '../queues/queues.service';
 
 interface TimeRange {
   start: Date;
@@ -26,6 +27,7 @@ export class AnalyticsService {
     @InjectRepository(Review)
     private reviewRepo: Repository<Review>,
     private redisService: RedisService,
+    private queuesService: QueuesService,
   ) {}
 
   async getDashboardStats(): Promise<{
@@ -193,6 +195,25 @@ export class AnalyticsService {
   }
 
   async trackEvent(
+    eventType: string,
+    userId?: string,
+    metadata?: Record<string, unknown>,
+  ): Promise<void> {
+    // Queue the event tracking for background processing
+    try {
+      await this.queuesService.addAnalyticsJob('track_event', {
+        eventType,
+        userId,
+        metadata,
+      });
+    } catch (error: any) {
+      this.logger.warn(`Failed to queue analytics event: ${error.message}`);
+      // Fallback: process synchronously if queue fails
+      await this.trackEventSync(eventType, userId, metadata);
+    }
+  }
+
+  private async trackEventSync(
     eventType: string,
     userId?: string,
     metadata?: Record<string, unknown>,

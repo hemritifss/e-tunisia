@@ -379,6 +379,14 @@
     color: var(--cat-tint);
     flex: 0 0 auto;
 }
+/* Verified-business toggle — its own cyan tint + a legible text checkmark. */
+.explore-cat-verified { --cat-tint: var(--mediterranean); }
+.explore-cat-verified .explore-cat-icon { font-size: 14px; font-weight: 800; line-height: 1; }
+.explore-cat-verified.is-active {
+    background: color-mix(in oklch, var(--mediterranean) 16%, var(--surface-elevated));
+    border-color: var(--mediterranean);
+    color: var(--mediterranean);
+}
 
 /* ── Results grid / list ──────────────────── */
 .explore-grid {

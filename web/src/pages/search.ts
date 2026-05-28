@@ -124,25 +124,21 @@ async function doSearch(q: string, container: HTMLElement) {
     </div>
   `;
 
-  const [placesRes, peopleRes] = await Promise.all([
-    api.search(query).catch(() => ({ places: [] as any[] })),
-    fetch(`/api/v1/users/search?q=${encodeURIComponent(query)}&limit=12`)
-      .then((r) => r.json())
-      .then((r) => (Array.isArray(r) ? r : r?.data ?? []))
-      .catch(() => [] as any[]),
-  ]);
-  const places = placesRes?.places || [];
-  const people: any[] = peopleRes || [];
+  const res = await api.search(query).catch(() => ({ places: [] as any[], posts: [] as any[], users: [] as any[] }));
+  const places = res?.places || [];
+  const posts = res?.posts || [];
+  const users = res?.users || [];
 
   container.textContent = '';
 
-  if (!places.length && !people.length) {
+  if (!places.length && !users.length && !posts.length) {
     renderNoMatch(container, query);
     return;
   }
 
-  if (people.length) container.appendChild(buildPeopleSection(people));
+  if (users.length) container.appendChild(buildPeopleSection(users));
   if (places.length) container.appendChild(buildPlacesSection(places));
+  if (posts.length) container.appendChild(buildPostsSection(posts));
   replaceIcons(container);
 }
 
@@ -266,4 +262,24 @@ function buildPlacesSection(places: any[]): HTMLElement {
     grid.appendChild(tile);
   });
   return buildSection('Places', places.length, grid);
+}
+
+
+function buildPostsSection(posts: any[]): HTMLElement {
+  const list = document.createElement('div');
+  list.className = 'search-post-list';
+  posts.forEach((p) => {
+    const card = document.createElement('a');
+    card.href = `#/post/${p.id}`;
+    card.className = 'search-post-card';
+    card.innerHTML = `
+      <div class="search-post-content">
+        <strong>${esc(p.title)}</strong>
+        <p>${esc(p.body?.slice(0, 120))}${p.body?.length > 120 ? '…' : ''}</p>
+        <span class="search-post-meta">${esc(p.category || 'Post')} · ${esc(p.location || '')}</span>
+      </div>
+    `;
+    list.appendChild(card);
+  });
+  return buildSection('Posts', posts.length, list);
 }

@@ -15,5 +15,6 @@ export declare class Donation {
     netAmount: number;
     message: string;
     isAnonymous: boolean;
+    giftType: string;
     createdAt: Date;
 }

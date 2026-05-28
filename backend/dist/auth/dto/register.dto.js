@@ -56,4 +56,11 @@ __decorate([
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], RegisterDto.prototype, "phone", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 'ahmed_t', required: false, description: "Referrer's handle (give-10-get-10)." }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.MaxLength)(30),
+    __metadata("design:type", String)
+], RegisterDto.prototype, "ref", void 0);
 //# sourceMappingURL=register.dto.js.map

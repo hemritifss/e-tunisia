@@ -10,14 +10,16 @@ exports.BillingModule = void 0;
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const user_entity_1 = require("../users/user.entity");
+const subscription_entity_1 = require("../subscriptions/subscription.entity");
 const billing_service_1 = require("./billing.service");
 const billing_controller_1 = require("./billing.controller");
+const payments_module_1 = require("../payments/payments.module");
 let BillingModule = class BillingModule {
 };
 exports.BillingModule = BillingModule;
 exports.BillingModule = BillingModule = __decorate([
     (0, common_1.Module)({
-        imports: [typeorm_1.TypeOrmModule.forFeature([user_entity_1.User])],
+        imports: [typeorm_1.TypeOrmModule.forFeature([user_entity_1.User, subscription_entity_1.Subscription]), payments_module_1.PaymentsModule],
         providers: [billing_service_1.BillingService],
         controllers: [billing_controller_1.BillingController],
         exports: [billing_service_1.BillingService],

@@ -36,6 +36,17 @@ class DonateDto {
     isAnonymous?: boolean;
 }
 
+class GiftDto {
+    @IsString() @MaxLength(40)
+    giftId: string;
+
+    @IsString()
+    toUserId: string;
+
+    @IsOptional()
+    isAnonymous?: boolean;
+}
+
 @ApiTags('credits')
 @Controller('credits')
 export class CreditsController {
@@ -89,5 +100,27 @@ export class CreditsController {
     @ApiOperation({ summary: 'Top platform supporters + top tipped community members' })
     leaderboard(@Query('limit') limit?: string) {
         return this.credits.leaderboard(limit ? Number(limit) : 10);
+    }
+
+    @Get('gifts')
+    @ApiOperation({ summary: 'Virtual gift catalog' })
+    gifts() {
+        return this.credits.listGifts();
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    @Post('gift')
+    @ApiOperation({ summary: 'Send a virtual gift to a user (a catalog-priced donation)' })
+    sendGift(@Request() req, @Body() body: GiftDto) {
+        return this.credits.sendGift(req.user.id, body.giftId, body.toUserId, !!body.isAnonymous);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    @Get('referral-stats')
+    @ApiOperation({ summary: 'My referral counts (released + pending)' })
+    referralStats(@Request() req) {
+        return this.credits.referralStats(req.user.id);
     }
 }

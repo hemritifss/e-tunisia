@@ -12,6 +12,23 @@ export declare class UsersController {
     private ogService;
     constructor(usersService: UsersService, followsService: FollowsService, endorsementsService: EndorsementsService, activityService: ActivityService, ogService: OgService);
     getProfile(req: any): Promise<import("./user.entity").User>;
+    passportAnalytics(req: any): Promise<{
+        totalViews: number;
+        viewsThisWeek: number;
+        uniqueViewers: number;
+        recentViewers: {
+            handle: string;
+            fullName: string;
+            avatar: string;
+            plan: "free" | "premium" | "business";
+            role: import("./user.entity").UserRole;
+            viewedAt: Date;
+        }[];
+        topCountries: {
+            country: any;
+            count: number;
+        }[];
+    }>;
     searchUsers(q: string, limit?: string): Promise<{
         id: any;
         handle: any;
@@ -100,7 +117,7 @@ export declare class UsersController {
         progress?: undefined;
     } | {
         ok: boolean;
-        role: import("./user.entity").UserRole.USER;
+        role: import("./user.entity").UserRole.USER | import("./user.entity").UserRole.SUPERADMIN;
         reason: string;
         progress: {
             points: number;

@@ -15,10 +15,11 @@ export class LoggingInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const request = context.switchToHttp().getRequest();
     const method = request.method;
-    const url = request.url;
+    const url = this.sanitizeUrl(request.url);
     const userAgent = request.get('user-agent') || 'unknown';
     const ip = request.ip;
     const userId = request.user?.id || 'anonymous';
+    const requestId = request.id || 'no-id';
 
     const now = Date.now();
 
@@ -30,7 +31,7 @@ export class LoggingInterceptor implements NestInterceptor {
           const duration = Date.now() - now;
 
           this.logger.log(
-            `${method} ${url} ${statusCode} — ${duration}ms — user:${userId} — ${ip} — ${userAgent}`,
+            `[${requestId}] ${method} ${url} ${statusCode} — ${duration}ms — user:${userId} — ${ip} — ${userAgent}`,
           );
         },
         error: (error) => {
@@ -38,10 +39,31 @@ export class LoggingInterceptor implements NestInterceptor {
           const statusCode = error.status || 500;
 
           this.logger.error(
-            `${method} ${url} ${statusCode} — ${duration}ms — user:${userId} — ${ip} — ${error.message}`,
+            `[${requestId}] ${method} ${url} ${statusCode} — ${duration}ms — user:${userId} — ${ip} — ${error.message}`,
           );
         },
       }),
     );
+  }
+
+  private sanitizeUrl(url: string): string {
+    try {
+      // Remove query parameters that might contain sensitive data
+      const sensitiveParams = ['token', 'password', 'resetToken', 'api_key', 'secret', 'credential'];
+      const [path, query] = url.split('?');
+      if (!query) return url;
+
+      const params = new URLSearchParams(query);
+      let sanitized = false;
+      for (const param of sensitiveParams) {
+        if (params.has(param)) {
+          params.set(param, '[REDACTED]');
+          sanitized = true;
+        }
+      }
+      return sanitized ? `${path}?${params.toString()}` : url;
+    } catch {
+      return url;
+    }
   }
 }

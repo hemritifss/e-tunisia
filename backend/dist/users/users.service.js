@@ -23,19 +23,26 @@ const review_entity_1 = require("../reviews/review.entity");
 const place_entity_1 = require("../places/place.entity");
 const trip_plan_entity_1 = require("../itineraries/trip-plan.entity");
 const saved_post_entity_1 = require("../posts/saved-post.entity");
+const passport_view_entity_1 = require("./passport-view.entity");
+const place_visit_entity_1 = require("./place-visit.entity");
+const notifications_service_1 = require("../notifications/notifications.service");
+const notification_entity_1 = require("../notifications/notification.entity");
 const passport_dto_1 = require("./dto/passport.dto");
 const badges_service_1 = require("../badges/badges.service");
 const endorsements_service_1 = require("./endorsements.service");
 const effective_plan_1 = require("./effective-plan");
 let UsersService = class UsersService {
-    constructor(usersRepository, reviewsRepo, placesRepo, tripsRepo, savesRepo, cache, badges, endorsements) {
+    constructor(usersRepository, reviewsRepo, placesRepo, tripsRepo, savesRepo, passportViewsRepo, placeVisitsRepo, cache, badges, notifications, endorsements) {
         this.usersRepository = usersRepository;
         this.reviewsRepo = reviewsRepo;
         this.placesRepo = placesRepo;
         this.tripsRepo = tripsRepo;
         this.savesRepo = savesRepo;
+        this.passportViewsRepo = passportViewsRepo;
+        this.placeVisitsRepo = placeVisitsRepo;
         this.cache = cache;
         this.badges = badges;
+        this.notifications = notifications;
         this.endorsements = endorsements;
     }
     async findByEmail(email) {
@@ -104,6 +111,83 @@ let UsersService = class UsersService {
         await this.invalidatePassportCache(id);
         return this.findById(id);
     }
+    async recordPassportView(ownerHandle, viewerId) {
+        try {
+            const owner = await this.usersRepository.findOne({ where: { handle: ownerHandle.toLowerCase() }, select: ['id'] });
+            if (!owner || owner.id === viewerId)
+                return;
+            const since = new Date(Date.now() - 12 * 3600 * 1000);
+            const recent = await this.passportViewsRepo
+                .createQueryBuilder('v')
+                .where('v.ownerId = :o AND v.viewerId = :vw AND v.createdAt > :since', { o: owner.id, vw: viewerId, since })
+                .getCount();
+            if (recent > 0)
+                return;
+            await this.passportViewsRepo.save(this.passportViewsRepo.create({ ownerId: owner.id, viewerId }));
+            await this.maybeNotifyPassportViews(owner.id);
+        }
+        catch { }
+    }
+    async maybeNotifyPassportViews(ownerId) {
+        const throttleKey = `pv-notif:${ownerId}`;
+        try {
+            if (await this.cache.get(throttleKey))
+                return;
+            const since = new Date(Date.now() - 24 * 3600 * 1000);
+            const row = await this.passportViewsRepo.createQueryBuilder('v')
+                .select('COUNT(DISTINCT v.viewerId)', 'c')
+                .where('v.ownerId = :o AND v.createdAt > :since', { o: ownerId, since })
+                .getRawOne();
+            const n = Number(row?.c || 0);
+            if (n < 1)
+                return;
+            await this.notifications.create(ownerId, n === 1 ? 'Someone viewed your passport' : `${n} people viewed your passport`, n === 1
+                ? 'A traveler checked out your Tunisia journey.'
+                : `${n} travelers checked out your Tunisia journey recently.`, notification_entity_1.NotificationType.PASSPORT_VIEW, { count: n });
+            await this.cache.set(throttleKey, '1', 24 * 3600 * 1000);
+        }
+        catch { }
+    }
+    async getPassportAnalytics(ownerId) {
+        const weekAgo = new Date(Date.now() - 7 * 24 * 3600 * 1000);
+        const [totalViews, viewsThisWeek, uniqueRow, recentRows] = await Promise.all([
+            this.passportViewsRepo.count({ where: { ownerId } }),
+            this.passportViewsRepo.createQueryBuilder('v')
+                .where('v.ownerId = :o AND v.createdAt > :w', { o: ownerId, w: weekAgo }).getCount(),
+            this.passportViewsRepo.createQueryBuilder('v')
+                .select('COUNT(DISTINCT v.viewerId)', 'c').where('v.ownerId = :o', { o: ownerId }).getRawOne(),
+            this.passportViewsRepo.createQueryBuilder('v')
+                .where('v.ownerId = :o', { o: ownerId }).orderBy('v.createdAt', 'DESC').limit(10).getMany(),
+        ]);
+        const viewerIds = [...new Set(recentRows.map((r) => r.viewerId))];
+        const viewers = viewerIds.length
+            ? await this.usersRepository.find({
+                where: { id: (0, typeorm_2.In)(viewerIds) },
+                select: ['id', 'handle', 'fullName', 'avatar', 'country', 'plan', 'subscriptionExpiresAt', 'role'],
+            })
+            : [];
+        const byId = new Map(viewers.map((u) => [u.id, u]));
+        const recentViewers = recentRows
+            .map((r) => {
+            const u = byId.get(r.viewerId);
+            return u ? { handle: u.handle, fullName: u.fullName, avatar: u.avatar || null, plan: (0, effective_plan_1.effectivePlan)(u), role: u.role, viewedAt: r.createdAt } : null;
+        })
+            .filter(Boolean);
+        const countryRows = await this.passportViewsRepo.createQueryBuilder('v')
+            .innerJoin(user_entity_1.User, 'u', 'u.id::text = v.viewerId')
+            .select('u.country', 'country')
+            .addSelect('COUNT(DISTINCT v.viewerId)', 'count')
+            .where('v.ownerId = :o AND u.country IS NOT NULL', { o: ownerId })
+            .groupBy('u.country').orderBy('count', 'DESC').limit(3).getRawMany();
+        const topCountries = countryRows.map((r) => ({ country: r.country, count: Number(r.count) }));
+        return {
+            totalViews,
+            viewsThisWeek,
+            uniqueViewers: Number(uniqueRow?.c || 0),
+            recentViewers,
+            topCountries,
+        };
+    }
     async toggleFavorite(userId, placeId) {
         const user = await this.findById(userId);
         const favorites = user.favoriteIds || [];
@@ -137,11 +221,37 @@ let UsersService = class UsersService {
         user.visitedPlaceIds = visited;
         await this.usersRepository.save(user);
         await this.invalidatePassportCache(userId);
-        if (wasAdded && this.badges) {
+        if (wasAdded) {
             const place = await this.placesRepo.findOne({ where: { id: placeId }, select: ['city'] }).catch(() => null);
-            await this.badges.awardIfEligible(userId, 'place.visited', { city: place?.city });
+            try {
+                await this.placeVisitsRepo.save(this.placeVisitsRepo.create({ userId, placeId, city: place?.city || null }));
+            }
+            catch { }
+            if (this.badges)
+                await this.badges.awardIfEligible(userId, 'place.visited', { city: place?.city });
+        }
+        else {
+            try {
+                await this.placeVisitsRepo.delete({ userId, placeId });
+            }
+            catch { }
         }
         return visited;
+    }
+    async cityVisitorCounts(cities) {
+        const list = (cities || []).filter(Boolean);
+        if (list.length === 0)
+            return {};
+        const rows = await this.placeVisitsRepo.createQueryBuilder('v')
+            .select('v.city', 'city')
+            .addSelect('COUNT(DISTINCT v.userId)', 'count')
+            .where('v.city IN (:...cities)', { cities: list })
+            .groupBy('v.city')
+            .getRawMany();
+        const map = {};
+        for (const r of rows)
+            map[r.city] = Number(r.count);
+        return map;
     }
     async getVisitedIds(userId) {
         const user = await this.findById(userId);
@@ -193,6 +303,7 @@ let UsersService = class UsersService {
                     .catch(() => [])
                 : Promise.resolve([]),
         ]);
+        const stampRarity = await this.cityVisitorCounts(visitedCities);
         const passport = {
             handle: user.handle,
             fullName: user.fullName,
@@ -218,6 +329,8 @@ let UsersService = class UsersService {
             topEndorsements: await this.endorsements.topForUser(user.id, 3).catch(() => []),
             topCityRank: await this.topCityRankForUser(user.id).catch(() => null),
             plan: this.resolveEffectivePlan(user),
+            passportTheme: user.passportTheme || null,
+            stampRarity,
         };
         await this.cache.set(key, passport, 300_000);
         return passport;
@@ -428,13 +541,18 @@ exports.UsersService = UsersService = __decorate([
     __param(2, (0, typeorm_1.InjectRepository)(place_entity_1.Place)),
     __param(3, (0, typeorm_1.InjectRepository)(trip_plan_entity_1.TripPlan)),
     __param(4, (0, typeorm_1.InjectRepository)(saved_post_entity_1.SavedPost)),
-    __param(5, (0, common_1.Inject)(cache_manager_1.CACHE_MANAGER)),
-    __param(7, (0, common_1.Inject)((0, common_1.forwardRef)(() => endorsements_service_1.EndorsementsService))),
+    __param(5, (0, typeorm_1.InjectRepository)(passport_view_entity_1.PassportView)),
+    __param(6, (0, typeorm_1.InjectRepository)(place_visit_entity_1.PlaceVisit)),
+    __param(7, (0, common_1.Inject)(cache_manager_1.CACHE_MANAGER)),
+    __param(10, (0, common_1.Inject)((0, common_1.forwardRef)(() => endorsements_service_1.EndorsementsService))),
     __metadata("design:paramtypes", [typeorm_2.Repository,
         typeorm_2.Repository,
         typeorm_2.Repository,
         typeorm_2.Repository,
+        typeorm_2.Repository,
+        typeorm_2.Repository,
         typeorm_2.Repository, Object, badges_service_1.BadgesService,
+        notifications_service_1.NotificationsService,
         endorsements_service_1.EndorsementsService])
 ], UsersService);
 //# sourceMappingURL=users.service.js.map

@@ -40,5 +40,12 @@ export declare class ChallengesController {
     }>;
     getStreak(userId: string): Promise<import("./streak.entity").UserStreak>;
     recordActivity(userId: string, action: string): Promise<import("./streak.entity").UserStreak>;
+    checkIn(userId: string): Promise<{
+        alreadyCheckedIn: boolean;
+        pointsEarned: number;
+        multiplier: number;
+        freezeUsed: boolean;
+        streak: import("./streak.entity").UserStreak;
+    }>;
     getLeaderboard(period?: 'daily' | 'weekly' | 'all-time', limit?: number): Promise<import("./challenges.service").LeaderboardEntry[]>;
 }

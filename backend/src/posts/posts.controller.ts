@@ -223,4 +223,26 @@ export class PostsController {
     addComment(@Request() req, @Param('id') id: string, @Body() body: { body: string; parentId?: string }) {
         return this.posts.addComment(id, req.user.id, body?.body || '', body?.parentId || null);
     }
+
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    @Post(':id/repost')
+    @ApiOperation({ summary: 'Repost a post with optional comment' })
+    repost(@Request() req, @Param('id') id: string, @Body() body: { comment?: string }) {
+        return this.posts.repost(id, req.user.id, body?.comment);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    @Delete(':id/repost')
+    @ApiOperation({ summary: 'Undo repost' })
+    undoRepost(@Request() req, @Param('id') id: string) {
+        return this.posts.undoRepost(id, req.user.id);
+    }
+
+    @Get(':id/reposts')
+    @ApiOperation({ summary: 'List reposts of a post' })
+    listReposts(@Param('id') id: string) {
+        return this.posts.listReposts(id);
+    }
 }

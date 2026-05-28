@@ -7,6 +7,8 @@ import { ReviewsModule } from '../reviews/reviews.module';
 import { AdsModule } from '../ads/ads.module';
 import { PlacesModule } from '../places/places.module';
 import { Follow } from '../social/follow.entity';
+import { User } from '../users/user.entity';
+import { PlaceVisit } from '../users/place-visit.entity';
 import { SafetyModule } from '../safety/safety.module';
 import { FeedController } from './feed.controller';
 import { FeedService } from './feed.service';
@@ -14,7 +16,7 @@ import { FeedService } from './feed.service';
 @Module({
     imports: [
         PostsModule, ReviewsModule, AdsModule, PlacesModule, SafetyModule,
-        TypeOrmModule.forFeature([Follow]),
+        TypeOrmModule.forFeature([Follow, User, PlaceVisit]),
         // Soft-auth: decode JWT if present so the public feed can filter blocked content for logged-in viewers.
         JwtModule.registerAsync({
             imports: [ConfigModule],

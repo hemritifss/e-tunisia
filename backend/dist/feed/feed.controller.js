@@ -79,7 +79,7 @@ __decorate([
     (0, swagger_1.ApiOperation)({ summary: 'Unified social feed (posts + reviews + ads)' }),
     (0, swagger_1.ApiQuery)({ name: 'page', required: false }),
     (0, swagger_1.ApiQuery)({ name: 'limit', required: false }),
-    (0, swagger_1.ApiQuery)({ name: 'sort', required: false, enum: ['new', 'top', 'hot'] }),
+    (0, swagger_1.ApiQuery)({ name: 'sort', required: false, enum: ['new', 'top', 'hot', 'foryou'] }),
     (0, swagger_1.ApiQuery)({ name: 'category', required: false }),
     (0, swagger_1.ApiQuery)({ name: 'hashtag', required: false }),
     __param(0, (0, common_1.Request)()),

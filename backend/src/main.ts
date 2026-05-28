@@ -4,12 +4,27 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import * as express from 'express';
 import { join } from 'path';
+import helmet from 'helmet';
+import * as compression from 'compression';
 import { GlobalExceptionFilter } from './common/filters/http-exception.filter';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
+import { validateEnv } from './common/validation/env.validation';
 
 async function bootstrap() {
+  // Validate environment variables before starting (fail fast)
+  const envCheck = validateEnv();
+  if (!envCheck.valid && process.env.NODE_ENV === 'production') {
+    console.error('Environment validation failed. Server will not start in production.');
+    process.exit(1);
+  }
+
   const app = await NestFactory.create(AppModule);
+
+  // Stripe webhooks need the RAW request body to verify the signature — mount a raw
+  // parser on the billing webhook path BEFORE the global JSON parser below, or the
+  // body is consumed/reshaped and signature verification fails.
+  app.use('/api/v1/billing/webhook', express.raw({ type: '*/*' }));
 
   // Story images are data URLs (base64). Bump body parser to 12MB so we don't 413.
   app.use(express.json({ limit: '12mb' }));
@@ -56,6 +71,31 @@ async function bootstrap() {
     preflightContinue: false,
     optionsSuccessStatus: 204,
   });
+
+  // Response compression for JSON/API responses
+  app.use(compression());
+
+  // Security headers (Helmet) — must be after CORS, before routes
+  app.use(helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+        fontSrc: ["'self'", "https://fonts.gstatic.com"],
+        imgSrc: ["'self'", "data:", "blob:", "https:"],
+        mediaSrc: ["'self'", "https:", "blob:"],
+        scriptSrc: ["'self'", "'unsafe-inline'", "https://accounts.google.com"],
+        connectSrc: ["'self'", "https:", "wss:"],
+        frameSrc: ["'self'", "https://accounts.google.com"],
+      },
+    },
+    crossOriginEmbedderPolicy: false, // Allow embedded images/videos from S3
+    hsts: {
+      maxAge: 31536000,
+      includeSubDomains: true,
+      preload: true,
+    },
+  }));
 
   // Global pipes
   app.useGlobalPipes(
@@ -129,30 +169,88 @@ async function bootstrap() {
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/docs', app, document, {
-    swaggerOptions: {
-      persistAuthorization: true,
-      tagsSorter: 'alpha',
-      operationsSorter: 'alpha',
-    },
-  });
+  const swaggerPath = 'api/docs';
+
+  // In production, protect Swagger docs with a simple query key or disable entirely
+  const isProd = process.env.NODE_ENV === 'production';
+  const swaggerEnabled = !isProd || process.env.SWAGGER_ENABLED === 'true';
+
+  if (swaggerEnabled) {
+    if (isProd && process.env.SWAGGER_SECRET) {
+      // Production: require secret query parameter
+      app.use(`/${swaggerPath}`, (req: any, res: any, next: any) => {
+        if (req.query.secret !== process.env.SWAGGER_SECRET) {
+          return res.status(403).send('Swagger docs are protected in production');
+        }
+        next();
+      });
+    }
+    SwaggerModule.setup(swaggerPath, app, document, {
+      swaggerOptions: {
+        persistAuthorization: true,
+        tagsSorter: 'alpha',
+        operationsSorter: 'alpha',
+      },
+    });
+  }
+
+  // Enable graceful shutdown hooks for SIGTERM/SIGINT
+  app.enableShutdownHooks();
 
   const port = process.env.PORT || 3000;
-  await app.listen(port);
+  const server = await app.listen(port);
+
+  // Set server timeout to prevent hanging connections
+  server.timeout = 30000; // 30 seconds
+  server.keepAliveTimeout = 65000; // Slightly higher than ALB default (60s)
   console.log(`🇹🇳 e-Tunisia API running on http://localhost:${port}`);
   console.log(`📚 Swagger docs: http://localhost:${port}/api/docs`);
   console.log(`❤️ Health check: http://localhost:${port}/health`);
+  console.log(`❤️ Queue health: http://localhost:${port}/health/queues`);
+  console.log(`❤️ Redis health: http://localhost:${port}/health/redis`);
 
-  // One-shot handle backfill (idempotent — safe to leave in place; runs <50ms on empty result).
-  try {
-    const { DataSource } = await import('typeorm');
-    const ds = app.get(DataSource);
-    const { backfillHandles } = await import('./users/backfill-handles');
-    const { User } = await import('./users/user.entity');
-    const n = await backfillHandles(ds.getRepository(User));
-    if (n > 0) console.log(`[backfill] assigned handle to ${n} legacy users`);
-  } catch (e) {
-    console.warn('[backfill] handle backfill skipped:', (e as Error).message);
+  // Graceful shutdown handler
+  const gracefulShutdown = async (signal: string) => {
+    console.log(`\n${signal} received. Starting graceful shutdown...`);
+    // Stop accepting new connections
+    server.close(() => {
+      console.log('HTTP server closed.');
+    });
+    // Give existing requests 10s to finish, then force close
+    setTimeout(() => {
+      console.error('Forced shutdown: timeout exceeded');
+      process.exit(1);
+    }, 10000);
+  };
+
+  process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+  process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+
+  // One-shot backfills — only run in dev or when explicitly enabled
+  const runBackfills = process.env.NODE_ENV === 'development' || process.env.RUN_BACKFILLS === 'true';
+  if (runBackfills) {
+    // Handle backfill (idempotent — safe to leave in place; runs <50ms on empty result).
+    try {
+      const { DataSource } = await import('typeorm');
+      const ds = app.get(DataSource);
+      const { backfillHandles } = await import('./users/backfill-handles');
+      const { User } = await import('./users/user.entity');
+      const n = await backfillHandles(ds.getRepository(User));
+      if (n > 0) console.log(`[backfill] assigned handle to ${n} legacy users`);
+    } catch (e) {
+      console.warn('[backfill] handle backfill skipped:', (e as Error).message);
+    }
+
+    // Place visits backfill from legacy visitedPlaceIds (idempotent; no-op once populated).
+    try {
+      const { DataSource } = await import('typeorm');
+      const ds = app.get(DataSource);
+      const { backfillPlaceVisits } = await import('./users/backfill-place-visits');
+      const n = await backfillPlaceVisits(ds);
+      if (n > 0) console.log(`[backfill] seeded ${n} place_visits from legacy visited lists`);
+    } catch (e) {
+      console.warn('[backfill] place_visits backfill skipped:', (e as Error).message);
+    }
   }
 }
 bootstrap();

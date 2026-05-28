@@ -1,8 +1,19 @@
 import { Repository } from 'typeorm';
+import { ConfigService } from '@nestjs/config';
 import { User, UserPlan } from '../users/user.entity';
+import { Subscription } from '../subscriptions/subscription.entity';
+import { PaymentsService } from '../payments/payments.service';
+import { FlouciService } from '../payments/flouci.service';
+import { BillingCycle, FeatureCaps, PlanId } from './plan-catalog';
+export { FeatureCaps } from './plan-catalog';
 export declare class BillingService {
     private usersRepo;
-    constructor(usersRepo: Repository<User>);
+    private subsRepo;
+    private payments;
+    private flouci;
+    private config;
+    private readonly logger;
+    constructor(usersRepo: Repository<User>, subsRepo: Repository<Subscription>, payments: PaymentsService, flouci: FlouciService, config: ConfigService);
     effectivePlan(userId: string): Promise<UserPlan>;
     caps(plan: UserPlan): FeatureCaps;
     assertFeature(userId: string, feature: keyof FeatureCaps | 'pro' | 'business'): Promise<void>;
@@ -11,21 +22,55 @@ export declare class BillingService {
         cap: number;
         plan: UserPlan;
     }>;
+    getCatalog(): {
+        currency: string;
+        plans: {
+            id: PlanId;
+            name: string;
+            tagline: string;
+            tint: string;
+            monthly: number;
+            yearly: number;
+            features: string[];
+            ctaLabel: string;
+            featured: boolean;
+            caps: {
+                maxTrips: number;
+                maxSaves: number;
+                customThemes: boolean;
+                passportAnalytics: boolean;
+                multiLangListings: boolean;
+                canBoost: boolean;
+                ownerDashboard: boolean;
+            };
+        }[];
+    };
+    createCheckout(userId: string, planId: string, cycle: BillingCycle): Promise<{
+        url: string;
+        mock: boolean;
+    }>;
+    createFlouciCheckout(userId: string, planId: string, cycle: BillingCycle): Promise<{
+        url: string;
+        mock: boolean;
+    }>;
+    handleFlouciReturn(paymentId: string): Promise<string>;
+    manualUpgrade(userId: string, planId: string, cycle: BillingCycle, method: 'bank' | 'cash'): Promise<{
+        status: 'pending';
+        plan: string;
+    }>;
+    createPortal(userId: string): Promise<{
+        url: string;
+    }>;
+    cancel(userId: string): Promise<{
+        plan: UserPlan;
+    }>;
+    applyStripeEvent(event: any): Promise<void>;
+    private applyPlan;
+    private syncFromStripeSubscription;
+    private findUserByCustomer;
+    private ensureCustomer;
+    private successUrl;
+    private cancelUrl;
+    private apiBaseUrl;
 }
-export interface FeatureCaps {
-    maxTrips: number;
-    maxSaves: number;
-    suggestionWeight: number;
-    customThemes: boolean;
-    passportAnalytics: boolean;
-    multiLangListings: boolean;
-    canBoost: boolean;
-    ownerDashboard: boolean;
-}
-export declare const FREE_CAPS: FeatureCaps;
-export declare const PRO_CAPS: FeatureCaps;
-export declare const BUSINESS_CAPS: FeatureCaps;
-export declare function effectivePlanFor(u: {
-    plan?: UserPlan;
-    subscriptionExpiresAt?: Date | null;
-}): UserPlan;
+export { effectivePlanFor } from './plan-catalog';

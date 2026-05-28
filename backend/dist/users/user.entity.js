@@ -18,6 +18,7 @@ var UserRole;
     UserRole["USER"] = "user";
     UserRole["CREATOR"] = "creator";
     UserRole["ADMIN"] = "admin";
+    UserRole["SUPERADMIN"] = "superadmin";
 })(UserRole || (exports.UserRole = UserRole = {}));
 var UserPlan;
 (function (UserPlan) {
@@ -101,6 +102,18 @@ __decorate([
     (0, typeorm_1.Column)({ nullable: true }),
     __metadata("design:type", Date)
 ], User.prototype, "subscriptionExpiresAt", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], User.prototype, "stripeCustomerId", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], User.prototype, "passportTheme", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], User.prototype, "referredBy", void 0);
 __decorate([
     (0, typeorm_1.Column)('simple-array', { nullable: true }),
     __metadata("design:type", Array)

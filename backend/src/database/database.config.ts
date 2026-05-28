@@ -5,6 +5,7 @@ export const getDatabaseConfig = (
   configService: ConfigService,
 ): TypeOrmModuleOptions => {
   const dbType = configService.get<string>('DB_TYPE') || 'sqlite';
+  const isDev = configService.get<string>('NODE_ENV') === 'development';
 
   switch (dbType) {
     case 'postgres':
@@ -16,12 +17,21 @@ export const getDatabaseConfig = (
         password: configService.get<string>('DB_PASSWORD') || 'etunisia_secret',
         database: configService.get<string>('DB_NAME') || 'etunisia',
         entities: [__dirname + '/../**/*.entity{.ts,.js}'],
-        synchronize: configService.get<string>('NODE_ENV') !== 'production',
-        logging: configService.get<string>('NODE_ENV') === 'development',
+        synchronize: isDev, // Never auto-sync in production/staging
+        logging: isDev,
         ssl:
           configService.get<string>('DB_SSL') === 'true'
             ? { rejectUnauthorized: false }
             : false,
+        migrations: [__dirname + '/migrations/**/*{.ts,.js}'],
+        migrationsRun: false, // Run migrations explicitly via CLI
+        extra: {
+          // Connection pool settings for production
+          max: parseInt(configService.get<string>('DB_POOL_MAX') || '20', 10),
+          min: parseInt(configService.get<string>('DB_POOL_MIN') || '5', 10),
+          acquireTimeoutMillis: 30000,
+          idleTimeoutMillis: 10000,
+        },
       };
 
     case 'mysql':
@@ -33,8 +43,16 @@ export const getDatabaseConfig = (
         password: configService.get<string>('DB_PASSWORD') || 'etunisia_secret',
         database: configService.get<string>('DB_NAME') || 'etunisia',
         entities: [__dirname + '/../**/*.entity{.ts,.js}'],
-        synchronize: configService.get<string>('NODE_ENV') !== 'production',
-        logging: configService.get<string>('NODE_ENV') === 'development',
+        synchronize: isDev,
+        logging: isDev,
+        migrations: [__dirname + '/migrations/**/*{.ts,.js}'],
+        migrationsRun: false,
+        extra: {
+          max: parseInt(configService.get<string>('DB_POOL_MAX') || '20', 10),
+          min: parseInt(configService.get<string>('DB_POOL_MIN') || '5', 10),
+          acquireTimeoutMillis: 30000,
+          idleTimeoutMillis: 10000,
+        },
       };
 
     case 'sqlite':

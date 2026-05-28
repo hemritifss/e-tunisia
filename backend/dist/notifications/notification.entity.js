@@ -24,6 +24,7 @@ var NotificationType;
     NotificationType["COMMENT"] = "comment";
     NotificationType["DONATION"] = "donation";
     NotificationType["MENTION"] = "mention";
+    NotificationType["PASSPORT_VIEW"] = "passport_view";
 })(NotificationType || (exports.NotificationType = NotificationType = {}));
 let Notification = class Notification {
 };

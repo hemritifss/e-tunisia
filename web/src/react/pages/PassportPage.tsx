@@ -12,7 +12,10 @@ import { FollowList } from '../components/FollowList';
 import { EndorseModal, TopEndorsementsStrip } from '../components/EndorseModal';
 import { Award, Trophy, Sparkles, X, Check, MapPin } from 'lucide-react';
 import { TierBadge } from '../components/TierBadge';
-import { Pencil, UserPlus, UserCheck } from 'lucide-react';
+import { Skeleton } from '../components/Skeleton';
+import { ProGate } from '../components/ProGate';
+import { TUNISIA_CITIES } from '../components/tunisia-cities';
+import { Pencil, UserPlus, UserCheck, Stamp } from 'lucide-react';
 
 function handleFromHash(): string {
     const m = (window.location.hash || '').match(/^#\/u\/([^/?]+)/);
@@ -26,6 +29,156 @@ function currentUser(): { id: string; handle: string | null; fullName: string } 
         const u = JSON.parse(raw);
         return u && u.id ? { id: u.id, handle: u.handle ?? null, fullName: u.fullName || u.name || u.email || 'You' } : null;
     } catch { return null; }
+}
+
+const THEMES: { id: string; label: string }[] = [
+    { id: '', label: 'Default' },
+    { id: 'sahara', label: 'Sahara' },
+    { id: 'mediterranean', label: 'Mediterranean' },
+    { id: 'medina', label: 'Medina' },
+];
+
+/** Pro-only hero theme picker (rendered inside <ProGate feature="passport-themes">). */
+function PassportThemePicker({ current, onChange }: { current: string | null; onChange: () => void }) {
+    const [busy, setBusy] = useState<string | null>(null);
+    const pick = async (id: string) => {
+        setBusy(id || 'default');
+        try {
+            await api.updateProfile({ passportTheme: id || null });
+            (window as any).showToast?.({ message: id ? `Theme set to ${id}` : 'Theme reset', type: 'success' });
+            onChange();
+        } catch (e: any) {
+            (window as any).showToast?.({ message: e?.message || 'Could not save theme', type: 'error' });
+        } finally { setBusy(null); }
+    };
+    return (
+        <div className="passport-theme-picker">
+            <div className="passport-theme-picker-head"><Sparkles size={14} /> <strong>Passport theme</strong></div>
+            <div className="passport-theme-swatches">
+                {THEMES.map((t) => (
+                    <button
+                        key={t.id || 'default'}
+                        type="button"
+                        className={`passport-theme-swatch theme-${t.id || 'default'}${(current || '') === t.id ? ' active' : ''}`}
+                        onClick={() => pick(t.id)}
+                        disabled={busy !== null}
+                        title={t.label}
+                    >
+                        <span className="passport-theme-swatch-dot" aria-hidden="true" />
+                        {t.label}
+                    </button>
+                ))}
+            </div>
+        </div>
+    );
+}
+
+/** Pro-only "who viewed your passport" panel (rendered inside <ProGate feature="passport-analytics">). */
+function PassportAnalytics() {
+    const { data, isLoading } = useQuery({
+        queryKey: ['passport-analytics'],
+        queryFn: () => api.getPassportAnalytics(),
+        staleTime: 5 * 60_000,
+    });
+    const a: any = data || {};
+    const viewers: any[] = a.recentViewers || [];
+    const countries: any[] = a.topCountries || [];
+    return (
+        <div className="passport-analytics">
+            <div className="passport-analytics-head"><Sparkles size={14} /> <strong>Who viewed your passport</strong></div>
+            <div className="passport-analytics-tiles">
+                <div className="passport-analytics-tile"><strong>{isLoading ? '—' : (a.viewsThisWeek ?? 0)}</strong><span>this week</span></div>
+                <div className="passport-analytics-tile"><strong>{isLoading ? '—' : (a.totalViews ?? 0)}</strong><span>total views</span></div>
+                <div className="passport-analytics-tile"><strong>{isLoading ? '—' : (a.uniqueViewers ?? 0)}</strong><span>unique viewers</span></div>
+            </div>
+            {viewers.length > 0 ? (
+                <div className="passport-analytics-viewers">
+                    {viewers.map((v, i) => (
+                        <a key={i} className="passport-analytics-viewer" href={v.handle ? `#/u/${v.handle}` : undefined}>
+                            {v.avatar
+                                ? <img src={getImageUrl(v.avatar)} alt="" />
+                                : <span className="passport-analytics-viewer-fallback">{(v.fullName || '?').slice(0, 1).toUpperCase()}</span>}
+                            <span className="passport-analytics-viewer-name">{v.fullName}<TierBadge plan={v.plan} role={v.role} size="xs" /></span>
+                        </a>
+                    ))}
+                </div>
+            ) : (
+                <p className="passport-analytics-empty">{isLoading ? 'Loading…' : 'No views yet — share your passport to get discovered.'}</p>
+            )}
+            {countries.length > 0 && (
+                <div className="passport-analytics-countries">
+                    {countries.map((c) => <span key={c.country} className="passport-analytics-country"><MapPin size={11} /> {c.country} · {c.count}</span>)}
+                </div>
+            )}
+        </div>
+    );
+}
+
+/** Collectible stamps for the 14 iconic Tunisian destinations — earned from visited cities. */
+function PassportStamps({ visited, isOwner, rarity }: { visited: string[]; isOwner: boolean; rarity?: Record<string, number> }) {
+    const set = new Set((visited || []).map((c) => c.toLowerCase()));
+    const rarityByCity = new Map(Object.entries(rarity || {}).map(([k, v]) => [k.toLowerCase(), v]));
+    const count = TUNISIA_CITIES.filter((c) => set.has(c.name.toLowerCase())).length;
+    const total = TUNISIA_CITIES.length;
+    return (
+        <section className="passport-section">
+            <div className="passport-stamps-head">
+                <h2 className="passport-section-title">Passport stamps</h2>
+                <span className="passport-stamps-progress">{count} / {total} iconic destinations</span>
+            </div>
+            <div className="passport-stamps-grid">
+                {TUNISIA_CITIES.map((c) => {
+                    const got = set.has(c.name.toLowerCase());
+                    const explorers = got ? rarityByCity.get(c.name.toLowerCase()) : undefined;
+                    return (
+                        <div key={c.name} className={`passport-stamp${got ? ' is-earned' : ''}`} title={got ? `Stamped: ${c.name}` : `Not yet stamped: ${c.name}`}>
+                            <span className="passport-stamp-ink"><Stamp size={16} /></span>
+                            <span className="passport-stamp-name">{c.name}</span>
+                            {got && explorers ? <span className="passport-stamp-rarity">{explorers} explorer{explorers === 1 ? '' : 's'}</span> : null}
+                        </div>
+                    );
+                })}
+            </div>
+            {isOwner && count < total && (
+                <a className="passport-stamps-cta" href="#/explore">Find your next stamp →</a>
+            )}
+        </section>
+    );
+}
+
+/** "My Tunisia Journey" — a strip of the user's highlighted (pinned, non-expiring) stories. */
+function PassportHighlights({ handle }: { handle: string }) {
+    const { data } = useQuery({
+        queryKey: ['story-highlights', handle],
+        queryFn: () => api.getStoryHighlights(handle),
+        staleTime: 5 * 60_000,
+        enabled: !!handle,
+    });
+    const items: any[] = Array.isArray(data) ? data : [];
+    const [open, setOpen] = useState<any | null>(null);
+    if (items.length === 0) return null;
+    return (
+        <section className="passport-section passport-section-tight">
+            <h2 className="passport-section-title">Highlights</h2>
+            <div className="passport-highlights">
+                {items.map((h) => (
+                    <button key={h.id} type="button" className="passport-highlight" onClick={() => setOpen(h)} title={h.caption || ''}>
+                        <img src={getImageUrl(h.imageUrl)} alt={h.caption || 'Highlight'} loading="lazy" />
+                        {h.caption ? <span className="passport-highlight-cap">{h.caption}</span> : null}
+                    </button>
+                ))}
+            </div>
+            {open && (
+                <div className="passport-highlight-overlay" role="dialog" onClick={() => setOpen(null)}>
+                    <div className="passport-highlight-overlay-inner" onClick={(e) => e.stopPropagation()}>
+                        <button className="passport-highlight-close" onClick={() => setOpen(null)} aria-label="Close"><X size={18} /></button>
+                        <img src={getImageUrl(open.imageUrl)} alt={open.caption || 'Highlight'} />
+                        {open.caption ? <p className="passport-highlight-overlay-cap">{open.caption}</p> : null}
+                    </div>
+                </div>
+            )}
+        </section>
+    );
 }
 
 export default function PassportPage() {
@@ -73,7 +226,23 @@ export default function PassportPage() {
     if (!handle) {
         return <main className="passport-page passport-loading">Loading…</main>;
     }
-    if (isLoading) return <main className="passport-page passport-loading">Loading passport…</main>;
+    if (isLoading) return (
+        <main className="passport-page passport-loading p-6 max-w-3xl mx-auto space-y-6">
+            <div className="flex gap-4 items-center">
+                <Skeleton variant="circle" width={80} height={80} />
+                <div className="space-y-2 flex-1">
+                    <Skeleton variant="text" width="40%" />
+                    <Skeleton variant="text" width="25%" />
+                </div>
+            </div>
+            <Skeleton variant="rect" height={120} className="w-full" />
+            <div className="grid grid-cols-3 gap-4">
+                <Skeleton variant="card" height={80} />
+                <Skeleton variant="card" height={80} />
+                <Skeleton variant="card" height={80} />
+            </div>
+        </main>
+    );
 
     const notFound = error || !data || (data as any).error === 'passport_not_found';
     if (notFound) {
@@ -104,7 +273,7 @@ export default function PassportPage() {
 
     return (
         <main className="passport-page">
-            <section className={`passport-hero${isPro ? ' is-pro' : ''}`}>
+            <section className={`passport-hero${isPro ? ' is-pro' : ''}${p.passportTheme ? ` passport-theme-${p.passportTheme}` : ''}`}>
                 <div className="passport-hero-bg" aria-hidden="true" />
                 <div className="passport-hero-mesh" aria-hidden="true" />
                 <div className="passport-hero-orbs" aria-hidden="true">
@@ -180,6 +349,20 @@ export default function PassportPage() {
 
             {isOwner && <ProfileCompletion passport={p} />}
 
+            <PassportHighlights handle={p.handle} />
+
+            {/* Owner-only: Pro owners get the theme picker; Free owners get the upsell cards. */}
+            {isOwner && (
+                <section className="passport-section passport-section-tight">
+                    <div className="passport-pro-upsell">
+                        <ProGate feature="passport-themes">
+                            <PassportThemePicker current={p.passportTheme || null} onChange={refetch} />
+                        </ProGate>
+                        <ProGate feature="passport-analytics"><PassportAnalytics /></ProGate>
+                    </div>
+                </section>
+            )}
+
             {p.topEndorsements?.length > 0 && (
                 <section className="passport-section passport-section-tight">
                     <TopEndorsementsStrip topEndorsements={p.topEndorsements} />
@@ -197,6 +380,8 @@ export default function PassportPage() {
                     emptyCta={isOwner ? { label: 'Start exploring', href: '#/explore' } : undefined}
                 />
             </section>
+
+            <PassportStamps visited={p.visitedCities} isOwner={isOwner} rarity={p.stampRarity} />
 
             <section className="passport-section">
                 <h2 className="passport-section-title">Badges</h2>

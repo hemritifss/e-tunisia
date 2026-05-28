@@ -7,11 +7,16 @@ import { AdsService } from '../ads/ads.service';
 import { PlacesService } from '../places/places.service';
 import { Follow } from '../social/follow.entity';
 import { SafetyService } from '../safety/safety.service';
+import { User } from '../users/user.entity';
+import { PlaceVisit } from '../users/place-visit.entity';
+import { effectivePlan } from '../users/effective-plan';
+
+type FeedSort = 'new' | 'top' | 'hot' | 'foryou';
 
 interface FeedOpts {
     page?: number;
     limit?: number;
-    sort?: 'new' | 'top' | 'hot';
+    sort?: FeedSort;
     mine?: boolean;
     following?: boolean;
     userId?: string;
@@ -28,13 +33,17 @@ export class FeedService {
         private ads: AdsService,
         private places: PlacesService,
         @InjectRepository(Follow) private follows: Repository<Follow>,
+        @InjectRepository(User) private users: Repository<User>,
+        @InjectRepository(PlaceVisit) private placeVisits: Repository<PlaceVisit>,
         private safety: SafetyService,
     ) {}
 
     async unified(opts: FeedOpts = {}) {
         const page = Math.max(1, Number(opts.page) || 1);
         const limit = Math.min(50, Math.max(1, Number(opts.limit) || 10));
-        const sort = opts.sort || 'hot';
+        const sort: FeedSort = opts.sort || 'hot';
+        // 'foryou' re-ranks a 'hot' candidate window with personalization, so fetch as 'hot'.
+        const baseSort: 'new' | 'top' | 'hot' = sort === 'foryou' ? 'hot' : sort;
 
         // If 'mine' filter is requested, only return that user's posts (no reviews mixed in).
         if (opts.mine && opts.userId) {
@@ -52,7 +61,7 @@ export class FeedService {
                 return { data: [], meta: { page, limit, total: 0, totalPages: 0 } };
             }
             // Pull a wide window, filter to followed authors, sort, slice.
-            const wide = await this.posts.list({ page: 1, limit: page * limit + 50, sort });
+            const wide = await this.posts.list({ page: 1, limit: page * limit + 50, sort: baseSort });
             const filtered = (wide.data || []).filter((p: any) => ids.includes(p.authorId));
             const offset = (page - 1) * limit;
             return {
@@ -71,8 +80,8 @@ export class FeedService {
         const need = page * limit + limit; // headroom
         const fetchN = Math.max(need, 30);
         const [postsRes, reviewsRes] = await Promise.all([
-            this.posts.list({ page: 1, limit: fetchN, sort, category: opts.category }),
-            this.reviews.findFeed({ page: 1, limit: fetchN, sort }),
+            this.posts.list({ page: 1, limit: fetchN, sort: baseSort, category: opts.category }),
+            this.reviews.findFeed({ page: 1, limit: fetchN, sort: baseSort }),
         ]);
 
         const reviewsTagged = reviewsRes.data.map((r: any) => ({ ...r, type: 'review' as const }));
@@ -110,10 +119,80 @@ export class FeedService {
             - (a.downvotes || 0)
             + 1.2 * (a.commentCount || 0)
             + 0.6 * (a.savesCount || a.saveCount || 0)
-            + 0.4 * (a.reactionsCount || a.reactionCount || 0);
+            + 0.4 * (a.reactionsCount || a.reactionCount || 0)
+            + 0.8 * (a.repostCount || 0);
         const hotScore = (a: any): number => engagement(a) * decay(a.createdAt);
 
-        if (sort === 'hot') {
+        // Freshness boost: content < 1h gets extra visibility (real-time pulse)
+        const freshnessBoost = (a: any): number => {
+            const ageHours = (Date.now() - new Date(a.createdAt).getTime()) / 3_600_000;
+            if (ageHours < 1) return 1.4;   // +40% for first hour
+            if (ageHours < 4) return 1.15;  // +15% for first 4 hours
+            return 1;
+        };
+
+        // ─── "For You": hot score × creator-tier boost × interest match ───
+        // Paid creators get amplified reach (transparent value exchange — Free is
+        // never hidden, just not boosted), and items matching the viewer's interests
+        // surface higher. Falls back to plain hot when the viewer is anonymous.
+        const viewerInterests = new Set<string>();
+        const viewerCities = new Set<string>();
+        if (sort === 'foryou' && opts.userId) {
+            const u = await this.users.findOne({ where: { id: opts.userId }, select: ['interests'] as any });
+            for (const it of (u?.interests || [])) viewerInterests.add(String(it).toLowerCase());
+            // Real behavior signal: cities the viewer has actually visited (place_visits).
+            const visitRows = await this.placeVisits.createQueryBuilder('v')
+                .select('DISTINCT v.city', 'city')
+                .where('v.userId = :id AND v.city IS NOT NULL', { id: opts.userId })
+                .getRawMany();
+            for (const r of visitRows) viewerCities.add(String(r.city).toLowerCase());
+        }
+        const tierBoost = (a: any): number => {
+            const author = a.author || a.user;
+            const plan = author ? effectivePlan(author) : 'free';
+            return plan === 'business' ? 1.5 : plan === 'premium' ? 1.2 : 1;
+        };
+        const interestBoost = (a: any): number => {
+            if (viewerInterests.size === 0 && viewerCities.size === 0) return 1;
+            let matches = 0;
+            if (viewerInterests.size) {
+                const tags = [
+                    ...(Array.isArray(a.tags) ? a.tags : []),
+                    a.category,
+                    a.place?.category?.name,
+                ].filter(Boolean).map((s: string) => String(s).toLowerCase());
+                for (const t of tags) if (viewerInterests.has(t)) matches++;
+            }
+            if (viewerCities.size) {
+                // Affinity for content about cities the viewer has been to.
+                const cities = [a.city, a.location, a.place?.city]
+                    .filter(Boolean).map((s: string) => String(s).toLowerCase());
+                if (cities.some((c) => viewerCities.has(c))) matches++;
+            }
+            return 1 + 0.25 * Math.min(matches, 2); // up to +50%
+        };
+        // +0.5 floor so brand-new, zero-engagement posts still differentiate by tier/interest.
+        const forYouScore = (a: any): number => (hotScore(a) + 0.5) * tierBoost(a) * interestBoost(a) * freshnessBoost(a);
+
+        if (sort === 'foryou') {
+            merged.sort((a: any, b: any) => {
+                const sb = forYouScore(b); const sa = forYouScore(a);
+                if (sb !== sa) return sb - sa;
+                return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+            });
+            // Diversity: cap same-author content to 2 per page window
+            const authorCounts = new Map<string, number>();
+            const diverse: any[] = [];
+            for (const item of merged) {
+                const aid = item.authorId || item.userId || 'unknown';
+                const count = authorCounts.get(aid) || 0;
+                if (count < 2) {
+                    diverse.push(item);
+                    authorCounts.set(aid, count + 1);
+                }
+            }
+            merged = diverse;
+        } else if (sort === 'hot') {
             merged.sort((a: any, b: any) => {
                 const sb = hotScore(b); const sa = hotScore(a);
                 if (sb !== sa) return sb - sa;

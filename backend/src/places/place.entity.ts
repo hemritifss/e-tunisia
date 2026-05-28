@@ -7,6 +7,7 @@ import {
     ManyToOne,
     OneToMany,
     JoinColumn,
+    Index,
 } from 'typeorm';
 import { Category } from '../categories/category.entity';
 import { Review } from '../reviews/review.entity';
@@ -41,6 +42,7 @@ export class Place {
     address: string;
 
     @Column({ length: 100 })
+    @Index()
     city: string;
 
     @Column({ length: 100 })
@@ -74,6 +76,7 @@ export class Place {
     priceRange: string;
 
     @Column('decimal', { precision: 2, scale: 1, default: 0 })
+    @Index()
     rating: number;
 
     @Column({ default: 0 })
@@ -86,9 +89,11 @@ export class Place {
     tags: string[];
 
     @Column({ default: true })
+    @Index()
     isActive: boolean;
 
     @Column({ default: false })
+    @Index()
     isFeatured: boolean;
 
     @Column({ default: false })
@@ -98,9 +103,11 @@ export class Place {
     boostExpiresAt: Date;
 
     @Column({ default: true })
+    @Index()
     isApproved: boolean;
 
     @Column({ nullable: true })
+    @Index()
     submittedBy: string;
 
     @ManyToOne(() => Category, (category) => category.places, {

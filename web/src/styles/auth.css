@@ -421,3 +421,23 @@
     text-shadow: 0 1px 4px oklch(0% 0 0 / 0.4);
 }
 .auth-page .auth-footer a { color: oklch(100% 0 0); border-bottom-color: oklch(100% 0 0 / 0.4); }
+
+/* Social login */
+.auth-social {
+  margin-bottom: 1rem;
+}
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1.25rem 0;
+  color: oklch(80% 0 0);
+  font-size: 0.875rem;
+}
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: oklch(100% 0 0 / 0.15);
+}

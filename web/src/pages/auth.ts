@@ -111,6 +111,11 @@ function renderAuthPage(cfg: AuthConfig): string {
             <span class="auth-error-text" id="auth-error-text"></span>
           </div>
 
+          <div class="auth-social">
+            <div class="g_id_signin" data-type="standard" data-shape="rectangular" data-theme="outline" data-text="${isRegister ? 'signup_with' : 'signin_with'}" data-size="large" data-width="100%"></div>
+          </div>
+          <div class="auth-divider"><span>or</span></div>
+
           <form class="auth-form" id="${cfg.mode}-form" novalidate>
             ${isRegister ? field({
               id: 'fullname',
@@ -167,7 +172,7 @@ function renderAuthPage(cfg: AuthConfig): string {
                   <span class="auth-check-box" aria-hidden="true"><i class="lucide-check"></i></span>
                   <span>Remember me</span>
                 </label>
-                <a href="mailto:support@etunisia.com?subject=Password%20reset" class="auth-link">Forgot password?</a>
+                <a href="#/forgot-password" class="auth-link">Forgot password?</a>
               </div>
             ` : ''}
 
@@ -247,6 +252,48 @@ export function initAuthPage() {
   setupPasswordToggle(root);
   wireStrengthMeter();
 
+  // Google OAuth
+  const googleClientId = (import.meta as any).env?.VITE_GOOGLE_CLIENT_ID;
+  if (googleClientId && googleClientId !== 'your-google-client-id.apps.googleusercontent.com') {
+    if (!document.getElementById('google-gsi-script')) {
+      const script = document.createElement('script');
+      script.id = 'google-gsi-script';
+      script.src = 'https://accounts.google.com/gsi/client';
+      script.async = true;
+      script.defer = true;
+      script.onload = () => {
+        (window as any).google?.accounts?.id?.initialize({
+          client_id: googleClientId,
+          callback: handleGoogleCredentialResponse,
+          auto_select: false,
+          cancel_on_tap_outside: true,
+        });
+        (window as any).google?.accounts?.id?.renderButton(
+          document.querySelector('.g_id_signin'),
+          { theme: 'outline', size: 'large', width: '100%', text: 'continue_with' },
+        );
+      };
+      document.head.appendChild(script);
+    }
+  }
+
+  (window as any).handleGoogleCredentialResponse = async (response: any) => {
+    try {
+      const res = await api.googleLogin(response.credential);
+      if (res.accessToken) {
+        localStorage.setItem('etunisia_token', res.accessToken);
+        location.hash = '#/';
+      }
+    } catch (err: any) {
+      const errorTextEl = document.getElementById('auth-error-text');
+      const errorEl = document.getElementById('auth-error');
+      if (errorTextEl && errorEl) {
+        errorTextEl.textContent = err?.message || 'Google sign-in failed.';
+        errorEl.hidden = false;
+      }
+    }
+  };
+
   const loginForm = document.getElementById('login-form') as HTMLFormElement | null;
   const registerForm = document.getElementById('register-form') as HTMLFormElement | null;
   const errorEl = document.getElementById('auth-error');
@@ -287,7 +334,8 @@ export function initAuthPage() {
     try {
       const res = await api.login(email, password);
       if ((res as any).accessToken) {
-        localStorage.setItem('token', (res as any).accessToken);
+        localStorage.setItem('etunisia_token', (res as any).accessToken);
+        import('../push-notifications').then((m) => m.initPushNotifications()).catch(() => {});
         location.hash = '#/';
       }
     } catch (err: any) {
@@ -314,10 +362,14 @@ export function initAuthPage() {
       return;
     }
 
+    // Pick up a referral handle from the link (#/register?ref=<handle>).
+    const refQs = location.hash.includes('?') ? location.hash.split('?')[1] : '';
+    const ref = new URLSearchParams(refQs).get('ref') || undefined;
+
     try {
-      const res = await api.register({ name, email, password, country });
+      const res = await api.register({ name, email, password, country, ref });
       if ((res as any).accessToken) {
-        localStorage.setItem('token', (res as any).accessToken);
+        localStorage.setItem('etunisia_token', (res as any).accessToken);
         location.hash = '#/onboarding';
       }
     } catch (err: any) {

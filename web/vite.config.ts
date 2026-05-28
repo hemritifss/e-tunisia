@@ -49,10 +49,8 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      // self-destroying SW: any existing service worker unregisters itself on next visit,
-      // and no new SW is registered. Eliminates stale-cache pain during active development.
-      // Re-enable later by removing `selfDestroying`.
-      selfDestroying: true,
+      // PWA enabled for production. Set selfDestroying: true only during active dev.
+      selfDestroying: false,
       registerType: 'autoUpdate',
       manifest: {
         name: 'e-Tunisia',

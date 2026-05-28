@@ -10,4 +10,5 @@ export declare class QueryPlacesDto {
     sortBy?: string;
     order?: 'ASC' | 'DESC';
     featured?: string;
+    verified?: string;
 }

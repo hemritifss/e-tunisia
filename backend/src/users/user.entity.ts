@@ -5,6 +5,7 @@ import {
     CreateDateColumn,
     UpdateDateColumn,
     OneToMany,
+    Index,
 } from 'typeorm';
 import { Exclude } from 'class-transformer';
 import { Review } from '../reviews/review.entity';
@@ -13,6 +14,7 @@ export enum UserRole {
     USER = 'user',
     CREATOR = 'creator',
     ADMIN = 'admin',
+    SUPERADMIN = 'superadmin',
 }
 
 export enum UserPlan {
@@ -61,7 +63,12 @@ export class User {
     onboardingComplete: boolean;
 
     @Column({ default: UserRole.USER })
+    @Index()
     role: UserRole;
+
+    @Column({ default: UserPlan.FREE })
+    @Index()
+    plan: UserPlan;
 
     @Column('simple-array', { nullable: true })
     favoriteIds: string[];
@@ -70,13 +77,22 @@ export class User {
     visitedPlaceIds: string[];
 
     @Column({ default: true })
+    @Index()
     isActive: boolean;
-
-    @Column({ default: UserPlan.FREE })
-    plan: UserPlan;
 
     @Column({ nullable: true })
     subscriptionExpiresAt: Date;
+
+    @Column({ nullable: true })
+    stripeCustomerId: string | null;
+
+    /** Pro perk: chosen passport hero theme (sahara | mediterranean | medina). */
+    @Column({ nullable: true })
+    passportTheme: string | null;
+
+    /** Referral: the user id of whoever referred this account (set once at registration). */
+    @Column({ nullable: true })
+    referredBy: string | null;
 
     @Column('simple-array', { nullable: true })
     badges: string[];
@@ -89,6 +105,19 @@ export class User {
 
     @Column({ type: 'int', default: 0 })
     followingCount: number;
+
+    @Column({ nullable: true, unique: true })
+    @Exclude()
+    passwordResetToken: string | null;
+
+    @Column({ nullable: true })
+    @Exclude()
+    passwordResetExpires: Date | null;
+
+    /** Incremented on password change to invalidate all existing JWTs. */
+    @Column({ default: 0 })
+    @Exclude()
+    tokenVersion: number;
 
     @OneToMany(() => Review, (review) => review.user)
     reviews: Review[];

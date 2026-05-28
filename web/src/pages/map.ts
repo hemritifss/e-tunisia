@@ -483,7 +483,7 @@ export function initMapPage() {
     maxZoom: 19,
   }).addTo(mapInstance);
 
-  // Add markers with staggered animation
+  // Add place markers with staggered animation
   mapPlaces.forEach((place, index) => {
     const icon = createMarkerIcon(place);
     const marker = L.marker([place.lat, place.lng], { icon, opacity: 0 }).addTo(mapInstance!);
@@ -516,6 +516,45 @@ export function initMapPage() {
     });
 
     markers.push({ marker, place });
+  });
+
+  // Add active traveler pins
+  api.getActiveTravelers(30).then((travelers) => {
+    if (travelers && travelers.length > 0) {
+      travelers.forEach((t: any, index: number) => {
+        const travelerIcon = L.divIcon({
+          className: 'map-traveler-marker',
+          html: `
+            <div class="map-traveler-avatar">
+              <img src="${t.avatar || 'https://api.dicebear.com/9.x/thumbs/svg?seed=' + (t.handle || t.userId)}" alt="" />
+            </div>
+          `,
+          iconSize: [36, 36],
+          iconAnchor: [18, 18],
+        });
+        const marker = L.marker([t.lat, t.lng], { icon: travelerIcon, opacity: 0 }).addTo(mapInstance!);
+        setTimeout(() => {
+          marker.setOpacity(1);
+          const el = marker.getElement();
+          if (el) el.classList.add('map-marker-animate-in');
+        }, 100 + index * 60);
+
+        const popup = L.popup({
+          maxWidth: 240,
+          className: 'map-traveler-popup',
+        }).setContent(`
+          <div class="map-traveler-popup-content">
+            <strong>${t.fullName || 'Traveler'}</strong>
+            ${t.handle ? `<div class="map-traveler-handle">@${t.handle}</div>` : ''}
+            <div class="map-traveler-place">📍 ${t.placeName || t.city}</div>
+            <a href="#/u/${t.handle || t.userId}" class="map-traveler-link">View profile →</a>
+          </div>
+        `);
+        marker.bindPopup(popup);
+      });
+    }
+  }).catch(() => {
+    // Silently fail if travelers can't be loaded
   });
 
   // ---- Category filter ----

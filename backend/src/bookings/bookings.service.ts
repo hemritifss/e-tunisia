@@ -11,6 +11,7 @@ import { InventoryItem } from '../inventory/inventory.entity';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { ConfigService } from '@nestjs/config';
 import { RedisService } from '../redis/redis.service';
+import { QueuesService } from '../queues/queues.service';
 
 @Injectable()
 export class BookingsService {
@@ -21,6 +22,7 @@ export class BookingsService {
     private inventoryRepo: Repository<InventoryItem>,
     private configService: ConfigService,
     private redisService: RedisService,
+    private queuesService: QueuesService,
   ) {}
 
   async create(userId: string, dto: CreateBookingDto): Promise<Booking> {
@@ -171,7 +173,19 @@ export class BookingsService {
     booking.paymentIntentId = paymentIntentId;
     booking.qrCode = this.generateQRCode(booking.id);
 
-    return this.bookingRepo.save(booking);
+    const saved = await this.bookingRepo.save(booking);
+
+    // Queue confirmation email and push notification
+    try {
+      await this.queuesService.addBookingJob('confirm', {
+        bookingId: saved.id,
+        paymentIntentId,
+        userEmail: saved.user?.email,
+        userId: saved.userId,
+      });
+    } catch { /* confirmation job failure never blocks payment */ }
+
+    return saved;
   }
 
   async cancel(id: string, userId: string, reason?: string): Promise<Booking> {

@@ -77,6 +77,13 @@ export class ChallengesController {
     return this.challengesService.recordActivity(userId, action);
   }
 
+  @Post('check-in')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Daily check-in — advances streak + awards Travel Dust (idempotent per day)' })
+  async checkIn(@CurrentUser('id') userId: string) {
+    return this.challengesService.checkIn(userId);
+  }
+
   @Get('leaderboard')
   @ApiOperation({ summary: 'Get challenge leaderboard' })
   async getLeaderboard(

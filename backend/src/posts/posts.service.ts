@@ -6,6 +6,7 @@ import { Comment } from './comment.entity';
 import { CommentLike } from './comment-like.entity';
 import { PostReaction, ReactionType } from './post-reaction.entity';
 import { SavedPost } from './saved-post.entity';
+import { Repost } from './repost.entity';
 import { effectivePlan } from '../users/effective-plan';
 import { BillingService } from '../billing/billing.service';
 import { BadgesService } from '../badges/badges.service';
@@ -29,6 +30,7 @@ export class PostsService {
         @InjectRepository(CommentLike) private commentLikesRepo: Repository<CommentLike>,
         @InjectRepository(PostReaction) private reactionsRepo: Repository<PostReaction>,
         @InjectRepository(SavedPost) private savedRepo: Repository<SavedPost>,
+        @InjectRepository(Repost) private repostsRepo: Repository<Repost>,
         @InjectRepository(User) private usersRepo: Repository<User>,
         private notifications: NotificationsService,
         private badges: BadgesService,
@@ -392,7 +394,29 @@ export class PostsService {
             authorId,
             isActive: true,
         });
-        return this.postsRepo.save(post);
+        const saved = await this.postsRepo.save(post);
+
+        // Detect @mentions and notify mentioned users
+        const text = `${data.title || ''} ${data.body || ''}`;
+        const mentionMatches = text.match(/@([a-zA-Z0-9_]{3,30})/g);
+        if (mentionMatches) {
+            const handles = [...new Set(mentionMatches.map((m) => m.slice(1).toLowerCase()))];
+            const mentionedUsers = await this.usersRepo.find({
+                where: handles.map((h) => ({ handle: h })),
+            });
+            for (const user of mentionedUsers) {
+                if (user.id === authorId) continue;
+                await this.notifications.create(
+                    user.id,
+                    'You were mentioned',
+                    `${(data as any).authorName || 'Someone'} mentioned you in a post`,
+                    NotificationType.MENTION,
+                    { postId: saved.id },
+                );
+            }
+        }
+
+        return saved;
     }
 
     async list(opts: ListOpts = {}) {
@@ -469,5 +493,34 @@ export class PostsService {
         post.isActive = false;
         await this.postsRepo.save(post);
         return { deleted: true };
+    }
+
+    async repost(postId: string, userId: string, comment?: string) {
+        const existing = await this.repostsRepo.findOne({ where: { postId, userId } });
+        if (existing) throw new ForbiddenException('Already reposted');
+
+        const repost = this.repostsRepo.create({ postId, userId, comment });
+        await this.repostsRepo.save(repost);
+
+        // Increment repost count on post
+        await this.postsRepo.increment({ id: postId }, 'repostCount', 1);
+
+        return repost;
+    }
+
+    async undoRepost(postId: string, userId: string) {
+        const repost = await this.repostsRepo.findOne({ where: { postId, userId } });
+        if (!repost) throw new NotFoundException('Repost not found');
+        await this.repostsRepo.remove(repost);
+        await this.postsRepo.decrement({ id: postId }, 'repostCount', 1);
+        return { removed: true };
+    }
+
+    async listReposts(postId: string) {
+        return this.repostsRepo.find({
+            where: { postId },
+            relations: ['user'],
+            order: { createdAt: 'DESC' },
+        });
     }
 }

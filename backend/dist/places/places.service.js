@@ -66,7 +66,7 @@ let PlacesService = class PlacesService {
         };
     }
     async findAll(query) {
-        const { search, categoryId, category, city, governorate, minRating, page = 1, limit = 20, sortBy = 'createdAt', order = 'DESC', featured, } = query;
+        const { search, categoryId, category, city, governorate, minRating, page = 1, limit = 20, sortBy = 'createdAt', order = 'DESC', featured, verified, } = query;
         const qb = this.placesRepo
             .createQueryBuilder('place')
             .leftJoinAndSelect('place.category', 'category')
@@ -91,6 +91,9 @@ let PlacesService = class PlacesService {
         }
         if (featured === 'true') {
             qb.andWhere('place.isFeatured = :featured', { featured: true });
+        }
+        if (verified === 'true') {
+            qb.andWhere(`place.submittedBy IN (SELECT u.id FROM users u WHERE u.plan = 'business' AND (u."subscriptionExpiresAt" IS NULL OR u."subscriptionExpiresAt" > :nowVerified))`, { nowVerified: new Date() });
         }
         qb.orderBy(`place.${sortBy}`, order);
         qb.skip((page - 1) * limit).take(limit);

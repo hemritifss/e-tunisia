@@ -8,11 +8,12 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AdminGuard = void 0;
 const common_1 = require("@nestjs/common");
+const is_super_admin_1 = require("./is-super-admin");
 let AdminGuard = class AdminGuard {
     canActivate(context) {
         const request = context.switchToHttp().getRequest();
         const user = request.user;
-        if (!user || user.role !== 'admin') {
+        if (!(0, is_super_admin_1.isAdmin)(user)) {
             throw new common_1.ForbiddenException('Admin access only');
         }
         return true;

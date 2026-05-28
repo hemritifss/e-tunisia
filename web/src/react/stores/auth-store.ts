@@ -43,12 +43,15 @@ export const useAuthStore = create<AuthState>()(
       login: (user, token) => {
         set({ user, token, isAuthenticated: true });
         localStorage.setItem('etunisia_token', token);
+        // Initialize push notifications after login (lazy import to avoid circular deps)
+        import('../../push-notifications').then((m) => m.initPushNotifications()).catch(() => {});
       },
 
       logout: () => {
         set({ user: null, token: null, isAuthenticated: false });
         localStorage.removeItem('etunisia_token');
         queryClient.clear();
+        import('../../push-notifications').then((m) => m.unsubscribePushNotifications()).catch(() => {});
       },
 
       updateUser: (updates) => {

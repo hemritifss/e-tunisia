@@ -10,6 +10,9 @@ export declare class UserStreak {
         pointsEarned: number;
     }>;
     totalDaysActive: number;
+    freezesRemaining: number;
+    freezeMonth: string;
+    lastCheckInDate: Date;
     createdAt: Date;
     updatedAt: Date;
 }
