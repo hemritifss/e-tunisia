@@ -6,6 +6,7 @@
 import React from 'react';
 import { mountIsland, unmountAllIslands } from './react/lib/islands';
 import { showToast } from './ui-utils';
+import { goTo, replace, currentRoute, onRouteChange, normalizeLegacyHash, beforeLeave, restoreScroll } from './router';
 
 function esc(v: unknown): string {
   const s = String(v ?? '');
@@ -28,42 +29,39 @@ import ProUpgradePage from './react/pages/ProUpgradePage';
 const ReelsPage = React.lazy(() => import('./react/pages/ReelsPage'));
 const AITravelPlanner = React.lazy(() => import('./react/pages/AITravelPlanner'));
 const AdminPage = React.lazy(() => import('./react/pages/AdminPage'));
+const LeaderboardPage = React.lazy(() => import('./react/pages/LeaderboardPage'));
+const FavoritesPage = React.lazy(() => import('./react/pages/FavoritesPage'));
+const SavedPage = React.lazy(() => import('./react/pages/SavedPage'));
+const EventsPage = React.lazy(() => import('./react/pages/EventsPage'));
+const CollectionsPage = React.lazy(() => import('./react/pages/CollectionsPage'));
+const TagPage = React.lazy(() => import('./react/pages/TagPage'));
+const ItinerariesPage = React.lazy(() => import('./react/pages/ItinerariesPage'));
+const DiscoverTripsPage = React.lazy(() => import('./react/pages/DiscoverTripsPage'));
+const TipsPage = React.lazy(() => import('./react/pages/TipsPage'));
+const SettingsPage = React.lazy(() => import('./react/pages/SettingsPage'));
+const CreditsPage = React.lazy(() => import('./react/pages/CreditsPage'));
+const InquiriesPage = React.lazy(() => import('./react/pages/InquiriesPage'));
+const PasswordResetPage = React.lazy(() => import('./react/pages/PasswordResetPage'));
+const OnboardingPage = React.lazy(() => import('./react/pages/OnboardingPage'));
+const AuthPage = React.lazy(() => import('./react/pages/AuthPage'));
+const PlaceDetailPage = React.lazy(() => import('./react/pages/PlaceDetailPage'));
+const MapPage = React.lazy(() => import('./react/pages/MapPage'));
+const ProfilePage = React.lazy(() => import('./react/pages/ProfilePage'));
+const UserProfilePage = React.lazy(() => import('./react/pages/UserProfilePage'));
+const TripPage = React.lazy(() => import('./react/pages/TripPage'));
+const PostDetailPage = React.lazy(() => import('./react/pages/PostDetailPage'));
+const OwnerPage = React.lazy(() => import('./react/pages/OwnerPage'));
+const MessagesPage = React.lazy(() => import('./react/pages/MessagesPage'));
+const SearchPage = React.lazy(() => import('./react/pages/SearchPage'));
+const BadgesPage = React.lazy(() => import('./react/pages/BadgesPage'));
+const ProfileEditPage = React.lazy(() => import('./react/pages/ProfileEditPage'));
 
 // Vanilla pages
-import { renderFeedPage, initFeedPage } from './pages/feed';
-import { renderExplorePage, initExplorePage } from './pages/explore';
-import { renderEventsPage, initEventsPage } from './pages/events';
-import { renderTipsPage, initTipsPage } from './pages/tips';
-import { renderPlaceDetailPage, initPlaceDetailPage } from './pages/place-detail';
-import { renderProfilePage, initProfilePage } from './pages/profile';
-import { renderLeaderboardPage, initLeaderboardPage } from './pages/leaderboard';
-import { renderBadgesPage, initBadgesPage } from './pages/badges';
-import { renderLoginPage, renderRegisterPage, initAuthPage } from './pages/auth';
-import { renderMapPage, initMapPage } from './pages/map';
-import { renderFavoritesPage, initFavoritesPage } from './pages/favorites';
-import { renderSettingsPage, initSettingsPage } from './pages/settings';
-import { renderPremiumPage, initPremiumPage } from './pages/premium';
 import { renderPartnerPage, initPartnerPage } from './pages/partner';
 import { renderAboutPage, initAboutPage } from './pages/about';
-import { renderItinerariesPage, initItinerariesPage } from './pages/itineraries';
-import { renderCollectionsPage, initCollectionsPage } from './pages/collections';
 import { renderHeroPage, initHeroPage } from './pages/hero';
-import { renderCreditsPage, initCreditsPage } from './pages/credits';
-import { renderUserProfilePage, initUserProfilePage } from './pages/user-profile';
-import { renderPostDetailPage, initPostDetailPage } from './pages/post-detail';
-import { renderSearchPage, initSearchPage } from './pages/search';
 import { initCommandPalette } from './command-palette';
 import { initToasts } from './toasts';
-import { renderProfileEditPage, initProfileEditPage } from './pages/profile-edit';
-import { renderMessagesPage, initMessagesPage } from './pages/messages';
-import { renderOnboardingPage, initOnboardingPage } from './pages/onboarding';
-import { renderSavedPage, initSavedPage } from './pages/saved';
-import { renderTagPage, initTagPage } from './pages/tag';
-import { renderInquiriesPage, initInquiriesPage } from './pages/inquiries';
-import { renderOwnerPage, initOwnerPage } from './pages/owner';
-import { renderTripPage, initTripPage } from './pages/trip';
-import { renderDiscoverTripsPage, initDiscoverTripsPage } from './pages/discover-trips';
-import { renderPasswordResetPage, renderNewPasswordPage, initPasswordResetPage } from './pages/password-reset';
 import { mountTripCart, syncTripCartAuth } from './trip-cart-ui';
 import { mountMessengerGlobals } from './react/lib/mount-messenger';
 import { connectRealtime, disconnectRealtime } from './realtime';
@@ -84,8 +82,8 @@ type Route = {
   isReact?: boolean;
 };
 
-function getRoute(hash: string): Route {
-  const path = hash.replace('#', '') || '/';
+function getRoute(route: string): Route {
+  const path = route || '/';
 
   // --- Auth Guard ---
   // Routes that REQUIRE login (personal data). Everything else is browsable as guest.
@@ -97,58 +95,34 @@ function getRoute(hash: string): Route {
   const isLoggedIn = apiService.isLoggedIn();
 
   if (!isLoggedIn && requiresAuth) {
-    history.replaceState(null, '', '#/hero');
+    replace('/hero');
     return { render: renderHeroPage, init: () => initHeroPage(), page: 'hero' };
   }
 
   if (isLoggedIn && isHeroOnly) {
-    history.replaceState(null, '', '#/');
-    return { render: renderFeedPage, init: initFeedPage, page: 'feed', isReact: true };
+    replace('/');
+    return { render: () => '', init: () => {}, page: 'feed', isReact: true };
   }
   // ------------------
 
-  // Post detail (uuid)
-  const postMatch = path.match(/^\/post\/([0-9a-fA-F-]+)/);
-  if (postMatch) {
-    const pid = postMatch[1];
-    return {
-      render: () => renderPostDetailPage(pid),
-      init: () => initPostDetailPage(pid),
-      page: 'feed',
-    };
+  // Post detail (React island reads the id from the path)
+  if (/^\/post\/[0-9a-fA-F-]+/.test(path)) {
+    return { render: () => '', init: () => {}, page: 'feed', isReact: true };
   }
 
-  // Hashtag page — /tag/<slug>
-  const tagMatch = path.match(/^\/tag\/([^?/]+)/);
-  if (tagMatch) {
-    const tag = decodeURIComponent(tagMatch[1]);
-    return {
-      render: () => renderTagPage(tag),
-      init: () => initTagPage(tag),
-      page: 'explore',
-    };
+  // Hashtag page — /tag/<slug> (React island reads the tag from the path)
+  if (/^\/tag\/[^?/]+/.test(path)) {
+    return { render: () => '', init: () => {}, page: 'explore', isReact: true };
   }
 
-  // Trip plan — /trip (current cart) or /trip/<slug> (saved)
-  const tripMatch = path.match(/^\/trip(?:\/([a-z0-9]{4,32}))?$/i);
-  if (tripMatch) {
-    const slug = tripMatch[1] || null;
-    return {
-      render: () => renderTripPage(slug),
-      init: () => initTripPage(slug),
-      page: 'itineraries',
-    };
+  // Trip plan — /trip (cart) or /trip/<slug> (saved); React island reads slug from path
+  if (/^\/trip(?:\/[a-z0-9]{4,32})?$/i.test(path)) {
+    return { render: () => '', init: () => {}, page: 'itineraries', isReact: true };
   }
 
-  // Password reset with token
-  const resetMatch = path.match(/^\/reset-password\/([a-zA-Z0-9]+)/);
-  if (resetMatch) {
-    const token = resetMatch[1];
-    return {
-      render: () => renderNewPasswordPage(token),
-      init: initPasswordResetPage,
-      page: '',
-    };
+  // Password reset with token (React island reads the token from the path)
+  if (/^\/reset-password\/[a-zA-Z0-9]+/.test(path)) {
+    return { render: () => '', init: () => {}, page: '', isReact: true };
   }
 
   // Public passport (handle): /u/<handle> — React island
@@ -184,73 +158,53 @@ function getRoute(hash: string): Route {
     return { render: () => '', init: () => {}, page: 'admin', isReact: true };
   }
 
-  // Public user profile (uuid)
-  const userMatch = path.match(/^\/user\/([0-9a-fA-F-]+)/);
-  if (userMatch) {
-    const uid = userMatch[1];
-    return {
-      render: () => renderUserProfilePage(uid),
-      init: () => initUserProfilePage(uid),
-      page: 'profile',
-    };
+  // Public user profile (React island reads the id from the path)
+  if (/^\/user\/[0-9a-fA-F-]+/.test(path)) {
+    return { render: () => '', init: () => {}, page: 'profile', isReact: true };
   }
 
   // Search results — supports /search?q=…
   if (path === '/search' || path.startsWith('/search?')) {
-    return {
-      render: renderSearchPage,
-      init: initSearchPage,
-      page: 'explore',
-    };
+    return { render: () => '', init: () => {}, page: 'explore', isReact: true };
   }
 
   // Messages — /messages, /messages/<roomId>, /messages/user/<userId>
   if (path === '/messages' || path.startsWith('/messages/')) {
-    return {
-      render: renderMessagesPage,
-      init: initMessagesPage,
-      page: 'messages',
-    };
+    return { render: () => '', init: () => {}, page: 'messages', isReact: true };
   }
 
-  // Place detail
-  const placeMatch = path.match(/^\/place\/(\w+)/);
-  if (placeMatch) {
-    return {
-      render: () => renderPlaceDetailPage(placeMatch[1]),
-      init: () => initPlaceDetailPage(),
-      page: 'explore',
-    };
+  // Place detail (React island reads the id from the path)
+  if (/^\/place\/\w+/.test(path)) {
+    return { render: () => '', init: () => {}, page: 'explore', isReact: true };
   }
 
   const routes: Record<string, Route> = {
-    '/': { render: renderFeedPage, init: initFeedPage, page: 'feed', isReact: true },
-    '/explore': { render: renderExplorePage, init: () => initExplorePage(), page: 'explore', isReact: true },
-    '/events': { render: renderEventsPage, init: () => initEventsPage(), page: 'events' },
-    '/tips': { render: renderTipsPage, init: () => initTipsPage(), page: 'tips' },
-    '/map': { render: renderMapPage, init: initMapPage, page: 'map' },
-    '/profile': { render: renderProfilePage, init: () => initProfilePage(), page: 'profile' },
-    '/leaderboard': { render: renderLeaderboardPage, init: () => initLeaderboardPage(), page: 'profile' },
-    '/badges': { render: renderBadgesPage, init: () => initBadgesPage(), page: 'profile' },
-    '/favorites': { render: renderFavoritesPage, init: () => initFavoritesPage(), page: 'favorites' },
-    '/settings': { render: renderSettingsPage, init: initSettingsPage, page: 'profile' },
-    '/login': { render: renderLoginPage, init: initAuthPage, page: '' },
-    '/register': { render: renderRegisterPage, init: initAuthPage, page: '' },
-    '/premium': { render: renderPremiumPage, init: initPremiumPage, page: 'premium' },
+    '/': { render: () => '', init: () => {}, page: 'feed', isReact: true },
+    '/explore': { render: () => '', init: () => {}, page: 'explore', isReact: true },
+    '/events': { render: () => '', init: () => {}, page: 'events', isReact: true },
+    '/tips': { render: () => '', init: () => {}, page: 'tips', isReact: true },
+    '/map': { render: () => '', init: () => {}, page: 'map', isReact: true },
+    '/profile': { render: () => '', init: () => {}, page: 'profile', isReact: true },
+    '/leaderboard': { render: () => '', init: () => {}, page: 'profile', isReact: true },
+    '/badges': { render: () => '', init: () => {}, page: 'profile', isReact: true },
+    '/favorites': { render: () => '', init: () => {}, page: 'favorites', isReact: true },
+    '/settings': { render: () => '', init: () => {}, page: 'profile', isReact: true },
+    '/login': { render: () => '', init: () => {}, page: '', isReact: true },
+    '/register': { render: () => '', init: () => {}, page: '', isReact: true },
     '/partner': { render: renderPartnerPage, init: initPartnerPage, page: 'partner' },
-    '/itineraries': { render: renderItinerariesPage, init: () => initItinerariesPage(), page: 'itineraries' },
-    '/collections': { render: renderCollectionsPage, init: () => initCollectionsPage(), page: 'collections' },
+    '/itineraries': { render: () => '', init: () => {}, page: 'itineraries', isReact: true },
+    '/collections': { render: () => '', init: () => {}, page: 'collections', isReact: true },
     '/about': { render: renderAboutPage, init: () => initAboutPage(), page: 'hero' },
     '/hero': { render: renderHeroPage, init: () => initHeroPage(), page: 'hero' },
-    '/credits': { render: renderCreditsPage, init: () => initCreditsPage(), page: 'profile' },
-    '/profile/edit': { render: renderProfileEditPage, init: () => initProfileEditPage(), page: 'profile' },
-    '/profile-edit': { render: renderProfileEditPage, init: () => initProfileEditPage(), page: 'profile' },
-    '/onboarding':   { render: renderOnboardingPage,  init: () => initOnboardingPage(),  page: '' },
-    '/saved':        { render: renderSavedPage,       init: () => initSavedPage(),       page: 'favorites' },
-    '/inquiries':    { render: renderInquiriesPage,   init: () => initInquiriesPage(),   page: 'profile' },
-    '/owner':        { render: renderOwnerPage,       init: () => initOwnerPage(),       page: 'profile' },
-    '/discover-trips': { render: renderDiscoverTripsPage, init: () => initDiscoverTripsPage(), page: 'itineraries' },
-    '/forgot-password': { render: renderPasswordResetPage, init: initPasswordResetPage, page: '' },
+    '/credits': { render: () => '', init: () => {}, page: 'profile', isReact: true },
+    '/profile/edit': { render: () => '', init: () => {}, page: 'profile', isReact: true },
+    '/profile-edit': { render: () => '', init: () => {}, page: 'profile', isReact: true },
+    '/onboarding':   { render: () => '', init: () => {}, page: '', isReact: true },
+    '/saved':        { render: () => '', init: () => {}, page: 'favorites', isReact: true },
+    '/inquiries':    { render: () => '', init: () => {}, page: 'profile', isReact: true },
+    '/owner':        { render: () => '', init: () => {}, page: 'profile', isReact: true },
+    '/discover-trips': { render: () => '', init: () => {}, page: 'itineraries', isReact: true },
+    '/forgot-password': { render: () => '', init: () => {}, page: '', isReact: true },
   };
 
   return routes[path] || routes['/'];
@@ -259,6 +213,9 @@ function getRoute(hash: string): Route {
 function navigate() {
   const content = document.getElementById('page-content');
   if (!content) return;
+
+  // Save scroll position before leaving current route
+  beforeLeave();
 
   // Clean up any existing React islands
   if (currentUnmount) {
@@ -298,21 +255,21 @@ function navigate() {
   if (mobileCreateBtn) {
     mobileCreateBtn.onclick = () => {
       if (!apiService.isLoggedIn()) {
-        location.hash = '#/login';
+        goTo('/login');
         return;
       }
       document.dispatchEvent(new CustomEvent('etunisia:open-post-modal'));
     };
   }
 
-  const route = getRoute(location.hash);
+  const route = getRoute(currentRoute());
 
   // Handle React island routes
   if (route.isReact) {
     content.innerHTML = '<div id="react-island-root" class="react-island-shell"></div>';
     const islandRoot = document.getElementById('react-island-root');
     if (islandRoot) {
-      const path = location.hash.replace('#', '') || '/';
+      const path = currentRoute();
       if (path === '/' || path === '') {
         currentUnmount = mountIsland(FeedPage, islandRoot);
       } else if (path === '/explore') {
@@ -333,6 +290,58 @@ function navigate() {
         currentUnmount = mountIsland(AdminPage, islandRoot);
       } else if (path === '/reels') {
         currentUnmount = mountIsland(ReelsPage, islandRoot);
+      } else if (path === '/leaderboard') {
+        currentUnmount = mountIsland(LeaderboardPage, islandRoot);
+      } else if (path === '/favorites') {
+        currentUnmount = mountIsland(FavoritesPage, islandRoot);
+      } else if (path === '/saved') {
+        currentUnmount = mountIsland(SavedPage, islandRoot);
+      } else if (path === '/events') {
+        currentUnmount = mountIsland(EventsPage, islandRoot);
+      } else if (path === '/collections') {
+        currentUnmount = mountIsland(CollectionsPage, islandRoot);
+      } else if (/^\/tag\//.test(path)) {
+        currentUnmount = mountIsland(TagPage, islandRoot);
+      } else if (path === '/itineraries') {
+        currentUnmount = mountIsland(ItinerariesPage, islandRoot);
+      } else if (path === '/discover-trips') {
+        currentUnmount = mountIsland(DiscoverTripsPage, islandRoot);
+      } else if (path === '/tips') {
+        currentUnmount = mountIsland(TipsPage, islandRoot);
+      } else if (path === '/settings') {
+        currentUnmount = mountIsland(SettingsPage, islandRoot);
+      } else if (path === '/credits') {
+        currentUnmount = mountIsland(CreditsPage, islandRoot);
+      } else if (path === '/inquiries') {
+        currentUnmount = mountIsland(InquiriesPage, islandRoot);
+      } else if (path === '/forgot-password' || /^\/reset-password\//.test(path)) {
+        currentUnmount = mountIsland(PasswordResetPage, islandRoot);
+      } else if (path === '/onboarding') {
+        currentUnmount = mountIsland(OnboardingPage, islandRoot);
+      } else if (path === '/login' || path === '/register') {
+        currentUnmount = mountIsland(AuthPage, islandRoot);
+      } else if (/^\/place\//.test(path)) {
+        currentUnmount = mountIsland(PlaceDetailPage, islandRoot);
+      } else if (/^\/post\//.test(path)) {
+        currentUnmount = mountIsland(PostDetailPage, islandRoot);
+      } else if (path === '/map') {
+        currentUnmount = mountIsland(MapPage, islandRoot);
+      } else if (path === '/profile') {
+        currentUnmount = mountIsland(ProfilePage, islandRoot);
+      } else if (/^\/user\//.test(path)) {
+        currentUnmount = mountIsland(UserProfilePage, islandRoot);
+      } else if (/^\/trip(\/|$)/.test(path)) {
+        currentUnmount = mountIsland(TripPage, islandRoot);
+      } else if (path === '/owner') {
+        currentUnmount = mountIsland(OwnerPage, islandRoot);
+      } else if (path === '/messages' || path.startsWith('/messages/')) {
+        currentUnmount = mountIsland(MessagesPage, islandRoot);
+      } else if (path === '/search' || path.startsWith('/search?')) {
+        currentUnmount = mountIsland(SearchPage, islandRoot);
+      } else if (path === '/badges') {
+        currentUnmount = mountIsland(BadgesPage, islandRoot);
+      } else if (path === '/profile/edit' || path === '/profile-edit') {
+        currentUnmount = mountIsland(ProfileEditPage, islandRoot);
       }
     }
   } else {
@@ -369,7 +378,7 @@ function navigate() {
     if (isProtected && !apiService.isLoggedIn()) {
       el.onclick = (e) => {
         e.preventDefault();
-        location.hash = '#/login';
+        goTo('/login');
       };
     } else {
       el.onclick = null;
@@ -377,8 +386,15 @@ function navigate() {
     link.classList.toggle('active', page === route.page);
   });
 
-  // Scroll to top on navigation
-  window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
+  // Restore scroll position on back/forward; scroll to top on new navigation.
+  // We detect popstate by checking if the navigation was not triggered by goTo/replace.
+  const isPopstate = !(window as any).__routerPush;
+  if (isPopstate) {
+    restoreScroll(currentRoute());
+  } else {
+    window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
+  }
+  (window as any).__routerPush = false;
 }
 
 // ---- User hydration ----
@@ -420,7 +436,7 @@ async function hydrateCurrentUser() {
 // Force a freshly-signed-in user (with onboardingComplete=false) into the wizard.
 // Runs once per session, won't fight back if the user is already on onboarding/login/hero.
 async function maybeRedirectToOnboarding() {
-  const path = (location.hash || '#/').replace('#', '') || '/';
+  const path = currentRoute();
   // Don't bounce away from auth/landing routes or from the wizard itself.
   if (
     path === '/onboarding' ||
@@ -431,7 +447,7 @@ async function maybeRedirectToOnboarding() {
   try {
     const me: any = await apiService.getMyProfile();
     if (me && me.onboardingComplete === false) {
-      location.hash = '#/onboarding';
+      goTo('/onboarding');
     }
   } catch {
     // Silent — auth wrapper handles 401 elsewhere.
@@ -500,7 +516,7 @@ function initSearch() {
     tag.addEventListener('click', () => {
       const q = (tag.textContent || '').trim();
       overlay?.classList.remove('open');
-      location.hash = q ? `#/search?q=${encodeURIComponent(q)}` : '#/search';
+      goTo(q ? `/search?q=${encodeURIComponent(q)}` : '/search');
     });
   });
 
@@ -509,7 +525,7 @@ function initSearch() {
     if (e.key === 'Enter') {
       const q = input.value.trim();
       overlay?.classList.remove('open');
-      location.hash = q ? `#/search?q=${encodeURIComponent(q)}` : '#/search';
+      goTo(q ? `/search?q=${encodeURIComponent(q)}` : '/search');
     }
   });
 }
@@ -750,7 +766,7 @@ function initNotifications() {
   });
 
   window.addEventListener('focus', () => { refreshBadge(); });
-  window.addEventListener('hashchange', () => { refreshBadge(); });
+  onRouteChange(() => { refreshBadge(); });
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') refreshBadge();
   });
@@ -791,7 +807,7 @@ function initNotifications() {
     if (item.tagName === 'A') closeNotifs();
   });
 
-  window.addEventListener('hashchange', closeNotifs);
+  onRouteChange(closeNotifs);
 
   // Pre-load badge count on app start (logged-in users only).
   if (apiService.isLoggedIn()) {
@@ -913,7 +929,7 @@ function initHamburger() {
   panel?.querySelectorAll('a').forEach(link => {
     link.addEventListener('click', closeMobileMenu);
   });
-  window.addEventListener('hashchange', closeMobileMenu);
+  onRouteChange(closeMobileMenu);
 }
 
 // ---- Post composer modal ----
@@ -1266,7 +1282,7 @@ function initPostModal() {
     // Tell the React feed to refresh.
     window.dispatchEvent(new CustomEvent('etunisia:post-created'));
 
-    location.hash = '#/';
+    goTo('/');
     navigate();
   }
 
@@ -1298,15 +1314,49 @@ function initPostModal() {
   // React feed dispatches this when the user clicks "Share your moment" / "Your story" tile.
   document.addEventListener('etunisia:open-post-modal', () => {
     if (!apiService.isLoggedIn()) {
-      location.hash = '#/login';
+      goTo('/login');
       return;
     }
     openModal();
   });
 }
 
+// ---- Internal link interceptor ----
+// Turns clicks on in-app links into client-side navigations (History API).
+// Handles legacy `href="#/x"` anchors and any element with `data-link="/x"`,
+// so existing templates keep working without a full href rewrite.
+function initLinkInterceptor() {
+  document.addEventListener('click', (e: MouseEvent) => {
+    // Let modified clicks (new tab, etc.) and already-handled clicks pass through.
+    if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+
+    const el = (e.target as HTMLElement | null)?.closest('a[href], [data-link]') as HTMLElement | null;
+    if (!el) return;
+
+    let target: string | null = null;
+    const dataLink = el.getAttribute('data-link');
+    if (dataLink) {
+      target = dataLink;
+    } else {
+      const a = el as HTMLAnchorElement;
+      if (a.target === '_blank' || a.hasAttribute('download')) return;
+      const href = a.getAttribute('href') || '';
+      // Only intercept in-app routes: legacy "#/x". Bare "#" anchors, "#section"
+      // jumps, and external/absolute URLs keep their native behavior.
+      if (href.startsWith('#/')) target = href;
+    }
+    if (!target) return;
+
+    e.preventDefault();
+    goTo(target);
+  });
+}
+
 // ---- Init ----
 function init() {
+  // Migrate any legacy "#/x" URL to a clean path before the first render.
+  normalizeLegacyHash();
+
   initTheme();
   initToasts();
   initSearch();
@@ -1316,6 +1366,7 @@ function init() {
   initScrollNav();
   initHamburger();
   initPostModal();
+  initLinkInterceptor();
 
   document.getElementById('theme-toggle')?.addEventListener('click', toggleTheme);
 
@@ -1328,12 +1379,12 @@ function init() {
     document.querySelectorAll<HTMLImageElement>('img[data-user-avatar]').forEach(el => {
       el.src = 'https://api.dicebear.com/9.x/thumbs/svg?seed=Tunisia';
     });
-    const target = '#/hero';
-    if (location.hash === target) {
-      // Already on hero — hashchange won't fire; force navigate() so guest-mode applies.
+    const target = '/hero';
+    if (currentRoute() === target) {
+      // Already on hero — a same-route nav won't fire a route change; force navigate() so guest-mode applies.
       navigate();
     } else {
-      location.hash = target;
+      goTo(target);
     }
   };
   document.getElementById('logout-btn')?.addEventListener('click', handleLogout);
@@ -1344,7 +1395,7 @@ function init() {
   // Mount the Messenger globals (chat popups + mobile conversations launcher)
   mountMessengerGlobals();
 
-  window.addEventListener('hashchange', navigate);
+  onRouteChange(navigate);
   navigate();
 }
 

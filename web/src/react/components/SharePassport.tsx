@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { Share2, Copy, Check, X } from 'lucide-react';
+import { absoluteUrl } from '../../router';
 
 interface Props { handle: string; fullName: string; }
 
 export function SharePassport({ handle, fullName }: Props) {
     const [open, setOpen] = useState(false);
     const [copied, setCopied] = useState(false);
-    const url = `${window.location.origin}${window.location.pathname}#/u/${handle}`;
+    const url = absoluteUrl(`/u/${handle}`);
     const text = `Check out ${fullName}'s Tunisia journey 🇹🇳`;
 
     const copy = async () => {

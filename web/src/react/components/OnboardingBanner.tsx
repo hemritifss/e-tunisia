@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Sparkles, X, ChevronRight } from 'lucide-react';
 import { api } from '../../shared/api';
+import { goTo } from '../../router';
 
 const DISMISS_KEY = 'etunisia_onboarding_banner_dismissed_until';
 
@@ -44,7 +45,7 @@ export function OnboardingBanner() {
   };
 
   const goFinish = () => {
-    location.hash = '#/onboarding';
+    goTo('/onboarding');
   };
 
   return (

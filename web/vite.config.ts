@@ -72,6 +72,10 @@ export default defineConfig({
         ],
       },
       workbox: {
+        // SPA + History API: serve the app shell for client-side routes,
+        // but never hijack API / upload / socket requests.
+        navigateFallback: 'index.html',
+        navigateFallbackDenylist: [/^\/api/, /^\/uploads/, /^\/socket\.io/],
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
         runtimeCaching: [
           {

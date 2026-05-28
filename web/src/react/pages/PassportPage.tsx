@@ -8,6 +8,7 @@ import { SharePassport } from '../components/SharePassport';
 import { PassportTabs } from '../components/PassportTabs';
 import { SignupGate } from '../components/SignupGate';
 import { PassportOnboarding } from '../components/PassportOnboarding';
+import { goTo, currentRoute, onRouteChange, absoluteUrl } from '../../router';
 import { FollowList } from '../components/FollowList';
 import { EndorseModal, TopEndorsementsStrip } from '../components/EndorseModal';
 import { Award, Trophy, Sparkles, X, Check, MapPin } from 'lucide-react';
@@ -18,7 +19,7 @@ import { TUNISIA_CITIES } from '../components/tunisia-cities';
 import { Pencil, UserPlus, UserCheck, Stamp } from 'lucide-react';
 
 function handleFromHash(): string {
-    const m = (window.location.hash || '').match(/^#\/u\/([^/?]+)/);
+    const m = currentRoute().match(/^\/u\/([^/?]+)/);
     return m ? decodeURIComponent(m[1]).toLowerCase() : '';
 }
 
@@ -187,8 +188,7 @@ export default function PassportPage() {
     // Re-read when the hash changes (in-app nav between passports).
     useEffect(() => {
         const onHash = () => setHandle(handleFromHash());
-        window.addEventListener('hashchange', onHash);
-        return () => window.removeEventListener('hashchange', onHash);
+        return onRouteChange(onHash);
     }, []);
 
     const me = currentUser();
@@ -217,7 +217,7 @@ export default function PassportPage() {
         setMeta('og:title', `${p.fullName}'s Tunisia Passport`);
         setMeta('og:description', `🇹🇳 ${p.stats.citiesVisited} cities · ${p.stats.tripsPlanned} trips · ${p.badges.length} badges`);
         setMeta('og:image', ogUrl);
-        setMeta('og:url', `${window.location.origin}/#/u/${p.handle}`);
+        setMeta('og:url', absoluteUrl(`/u/${p.handle}`));
         setMeta('og:type', 'profile');
         setMeta('twitter:card', 'summary_large_image');
         setMeta('twitter:image', ogUrl);
@@ -418,7 +418,7 @@ export default function PassportPage() {
                 <PassportOnboarding
                     handle={onboardingUser.handle}
                     fullName={onboardingUser.fullName}
-                    onDone={() => { setOnboardingUser(null); window.location.hash = `#/u/${onboardingUser.handle}`; refetch(); }}
+                    onDone={() => { setOnboardingUser(null); goTo(`/u/${onboardingUser.handle}`); refetch(); }}
                 />
             )}
         </main>

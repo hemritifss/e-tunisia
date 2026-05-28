@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Sparkles, Check, Crown, Briefcase, Loader2, CreditCard, Landmark, Banknote, PartyPopper, Settings, Wallet } from 'lucide-react';
 import { useUserPlan } from '../hooks/useUserPlan';
 import { api } from '../../shared/api';
+import { goTo, currentRoute } from '../../router';
 
 type Tier = 'free' | 'premium' | 'business';
 type Cycle = 'monthly' | 'yearly';
@@ -71,7 +72,7 @@ export default function ProUpgradePage() {
     const [busy, setBusy] = useState<Tier | 'manage' | null>(null);
 
     const isAnon = typeof window !== 'undefined' && !localStorage.getItem('etunisia_token');
-    const isWelcome = typeof window !== 'undefined' && (location.hash || '').includes('/premium/welcome');
+    const isWelcome = typeof window !== 'undefined' && currentRoute().includes('/premium/welcome');
 
     const { data: catalog } = useQuery<Catalog>({
         queryKey: ['plan-catalog'],
@@ -108,7 +109,7 @@ export default function ProUpgradePage() {
                 if (res?.mock) {
                     // No keys configured — backend already flipped the plan. Celebrate + go to welcome.
                     refetch();
-                    window.location.hash = `#/premium/welcome?plan=${tier}`;
+                    goTo(`/premium/welcome?plan=${tier}`);
                 } else if (res?.url) {
                     window.location.href = res.url; // Stripe / Flouci hosted checkout
                 } else {

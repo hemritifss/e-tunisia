@@ -1,4 +1,5 @@
 import { QueryClient } from '@tanstack/react-query';
+import { onRouteChange } from '../../router';
 
 /**
  * Defaults tuned for a "feels live" social/travel app — NOT for a static catalogue.
@@ -53,7 +54,7 @@ if (typeof window !== 'undefined') {
 
   // Navigating to a new hash route — refetch the few global widgets that depend
   // on it (passport stats when landing on /#/u/<handle>, etc.).
-  window.addEventListener('hashchange', () => {
+  onRouteChange(() => {
     queryClient.invalidateQueries({ queryKey: ['passport'] });
   });
 }

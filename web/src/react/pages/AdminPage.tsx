@@ -1,5 +1,6 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { currentRoute } from '../../router';
 import {
     Shield, Users, MapPin, Crown, Calendar, Lightbulb, MessageSquare, ExternalLink,
     LayoutDashboard, Check, Star, Trash2, ShieldCheck, ShieldOff, Sparkles, X,
@@ -138,7 +139,7 @@ const SUBNAV: { key: string; label: string; icon: React.ReactNode }[] = [
 ];
 
 function currentSub(): string {
-    const m = (typeof window !== 'undefined' ? location.hash : '').match(/^#?\/admin\/?([a-z]*)/i);
+    const m = (typeof window !== 'undefined' ? currentRoute() : '').match(/^\/admin\/?([a-z]*)/i);
     return (m?.[1] || '').toLowerCase();
 }
 

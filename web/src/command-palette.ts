@@ -7,6 +7,7 @@
  */
 
 import * as api from './api';
+import { goTo } from './router';
 
 interface CommandItem {
     id: string;
@@ -283,7 +284,7 @@ function commit() {
     const item = lastItems[activeIndex];
     if (!item) return;
     const href = resolveHref(item);
-    if (href && href !== '#') location.hash = href;
+    if (href && href !== '#') goTo(href);
     close();
 }
 

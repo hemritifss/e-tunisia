@@ -4,6 +4,8 @@
 // survive a page refresh until backend per-user tracking is in.
 // ============================================
 
+import { goTo } from './router';
+
 const SAVED_KEY = 'etunisia_saved_items'; // legacy bookmarks/saves namespace
 const FLAGS_KEY = 'etunisia_flags';       // generic boolean flags ("event:abc:attend", "tip:xyz:like", etc.)
 const VOTES_KEY = 'etunisia_votes';       // post-id → 'up'|'down'
@@ -78,7 +80,7 @@ export function isLoggedIn(): boolean {
 export function requireAuth(action = 'do this'): boolean {
   if (isLoggedIn()) return true;
   showToast(`Sign in to ${action}`, { type: 'info' });
-  setTimeout(() => { location.hash = '#/login'; }, 700);
+  setTimeout(() => { goTo('/login'); }, 700);
   return false;
 }
 

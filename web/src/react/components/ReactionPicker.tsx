@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { api } from '../../shared/api';
 import { useAuthStore } from '../stores/auth-store';
+import { goTo } from '../../router';
 
 export type ReactionType =
   | 'like' | 'love' | 'celebrate' | 'insightful' | 'laugh' | 'wow' | 'support';
@@ -67,7 +68,7 @@ export function ReactionPicker({
 
   const send = async (type: ReactionType | null) => {
     if (!isAuth) {
-      location.hash = '#/login';
+      goTo('/login');
       return;
     }
     setOpen(false);

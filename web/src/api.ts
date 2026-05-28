@@ -7,6 +7,8 @@
 //   ""                                     → same-origin (recommended; works behind a proxy / ngrok)
 //   "https://abc.ngrok-free.app"           → /api/v1 is appended
 //   "https://abc.ngrok-free.app/api/v1"    → used as-is
+import { goTo } from './router';
+
 const RAW_BASE = (import.meta.env?.VITE_API_URL ?? '').replace(/\/+$/, '');
 const BASE_URL = !RAW_BASE
     ? '/api/v1'
@@ -66,7 +68,7 @@ async function api<T>(path: string, opts: RequestInit = {}): Promise<T> {
   if (!res.ok) {
     if (res.status === 401) {
       clearToken();
-      window.location.hash = '#/hero';
+      goTo('/hero');
       window.location.reload();
     }
     const body = await res.json().catch(() => ({}));

@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, X, ChevronLeft, ChevronRight, Image as ImageIcon, Bookmark, BookmarkCheck } from 'lucide-react';
 import StoryComposer from './StoryComposer';
 import { api } from '../../shared/api';
+import { goTo } from '../../router';
 import { useAuthStore } from '../stores/auth-store';
 
 interface StoryItem {
@@ -81,7 +82,7 @@ export function StoriesStrip() {
     e.target.value = ''; // allow re-select same file
     if (!file) return;
     if (!isAuth) {
-      location.hash = '#/login';
+      goTo('/login');
       return;
     }
     const reader = new FileReader();
@@ -94,7 +95,7 @@ export function StoriesStrip() {
   };
 
   const openYourTile = () => {
-    if (!isAuth) { location.hash = '#/login'; return; }
+    if (!isAuth) { goTo('/login'); return; }
     fileInputRef.current?.click();
   };
 

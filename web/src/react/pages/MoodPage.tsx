@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { api, getImageUrl } from '../../shared/api';
 import { ArrowLeft, MapPin, Star, Compass, Award, Sparkles, ImageOff, Route, Check } from 'lucide-react';
 import { moodFromHash, MOOD_LIST, MoodDef } from '../components/mood-definitions';
+import { onRouteChange } from '../../router';
 
 interface Place { id: string; name: string; city?: string; rating?: number; coverImage?: string; images?: string[]; category?: any; }
 interface Trip { slug: string; title: string; days: number; travelers: number; stops?: any[]; }
@@ -83,8 +84,7 @@ export default function MoodPage() {
 
     useEffect(() => {
         const onHash = () => setMood(moodFromHash());
-        window.addEventListener('hashchange', onHash);
-        return () => window.removeEventListener('hashchange', onHash);
+        return onRouteChange(onHash);
     }, []);
 
     // Places: search by the mood's query then filter to the mood's cities (cheap, no backend changes).

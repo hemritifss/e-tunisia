@@ -1,5 +1,7 @@
 // VITE_API_URL accepts either a full URL or empty (= same-origin, recommended).
 // Endpoints below include /api/v1, so we strip it from the env if user added one.
+import { goTo } from '../router';
+
 const RAW = (import.meta.env.VITE_API_URL ?? '').replace(/\/+$/, '');
 const API_BASE = RAW.replace(/\/api\/v\d+$/, ''); // '' when same-origin
 
@@ -92,7 +94,7 @@ async function fetchWithAuth(
             message: `Free is capped at ${capPayload.cap}. Pro and Business get unlimited — and a ✦ badge.`,
             type: 'achievement',
             duration: 7000,
-            action: { label: 'Upgrade →', onClick: () => { window.location.hash = '#/pro'; } },
+            action: { label: 'Upgrade →', onClick: () => { goTo('/pro'); } },
           });
         } catch {}
       } else if (code === 'pro_required' || code === 'business_required') {
@@ -102,7 +104,7 @@ async function fetchWithAuth(
             message: capPayload?.message || 'This feature is part of a paid plan.',
             type: 'info',
             duration: 6000,
-            action: { label: 'See plans →', onClick: () => { window.location.hash = '#/pro'; } },
+            action: { label: 'See plans →', onClick: () => { goTo('/pro'); } },
           });
         } catch {}
       }

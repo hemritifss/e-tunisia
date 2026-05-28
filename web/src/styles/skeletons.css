@@ -1,0 +1,761 @@
+/* ============================================
+   SKELETON LOADING SCREENS v2.0
+   Context-aware shimmer placeholders that mirror
+   the actual page layout for each route.
+   ============================================ */
+
+/* ── Base skeleton building blocks ── */
+.skeleton-block {
+  background: linear-gradient(
+    90deg,
+    var(--bg-tertiary) 25%,
+    var(--bg-secondary) 50%,
+    var(--bg-tertiary) 75%
+  );
+  background-size: 1200px 100%;
+  animation: shimmer 1.8s ease-in-out infinite;
+  border-radius: var(--radius-md);
+}
+
+.skeleton-circle {
+  border-radius: 50%;
+}
+
+.skeleton-text {
+  height: 1em;
+  margin-bottom: 0.5em;
+}
+
+.skeleton-text-sm { height: 0.75em; }
+.skeleton-text-lg { height: 1.25em; }
+.skeleton-text-xl { height: 1.5em; }
+
+.skeleton-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+}
+
+.skeleton-card {
+  border-radius: var(--radius-lg);
+  min-height: 160px;
+}
+
+.skeleton-cover {
+  height: 220px;
+  border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+}
+
+/* ── Stagger fade-in for loaded content ── */
+@keyframes contentReveal {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.content-reveal > * {
+  animation: contentReveal 0.4s var(--ease-out) both;
+}
+
+.content-reveal > *:nth-child(1) { animation-delay: 0ms; }
+.content-reveal > *:nth-child(2) { animation-delay: 50ms; }
+.content-reveal > *:nth-child(3) { animation-delay: 100ms; }
+.content-reveal > *:nth-child(4) { animation-delay: 150ms; }
+.content-reveal > *:nth-child(5) { animation-delay: 200ms; }
+.content-reveal > *:nth-child(6) { animation-delay: 250ms; }
+.content-reveal > *:nth-child(7) { animation-delay: 300ms; }
+.content-reveal > *:nth-child(8) { animation-delay: 350ms; }
+
+/* ── Profile Page Skeleton ── */
+.profile-skeleton {
+  max-width: 640px;
+  margin: 0 auto;
+  padding-bottom: 80px;
+}
+
+.profile-skeleton .sk-cover {
+  height: 220px;
+  border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+  position: relative;
+}
+
+.profile-skeleton .sk-cover-badge {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  width: 120px;
+  height: 28px;
+  border-radius: 14px;
+}
+
+.profile-skeleton .sk-identity {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: -40px;
+  padding: 0 24px;
+  position: relative;
+  z-index: 1;
+}
+
+.profile-skeleton .sk-avatar {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  border: 4px solid var(--bg-primary);
+}
+
+.profile-skeleton .sk-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.profile-skeleton .sk-btn {
+  width: 140px;
+  height: 40px;
+  border-radius: var(--radius-md);
+}
+
+.profile-skeleton .sk-bio {
+  text-align: center;
+  padding: 20px 24px 0;
+}
+
+.profile-skeleton .sk-name {
+  width: 180px;
+  height: 24px;
+  margin: 0 auto 8px;
+}
+
+.profile-skeleton .sk-handle {
+  width: 100px;
+  height: 14px;
+  margin: 0 auto 12px;
+}
+
+.profile-skeleton .sk-bio-line {
+  width: 280px;
+  height: 14px;
+  margin: 0 auto 6px;
+}
+
+.profile-skeleton .sk-bio-line.short { width: 200px; }
+
+.profile-skeleton .sk-meta {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  padding: 16px 24px;
+}
+
+.profile-skeleton .sk-meta-item {
+  width: 100px;
+  height: 14px;
+}
+
+.profile-skeleton .sk-xp {
+  padding: 0 24px;
+  margin-top: 8px;
+}
+
+.profile-skeleton .sk-xp-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.profile-skeleton .sk-xp-label { width: 120px; height: 14px; }
+.profile-skeleton .sk-xp-value { width: 60px; height: 14px; }
+
+.profile-skeleton .sk-xp-bar {
+  height: 8px;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.profile-skeleton .sk-xp-footer {
+  display: flex;
+  justify-content: space-between;
+}
+
+.profile-skeleton .sk-xp-ft { width: 100px; height: 12px; }
+
+.profile-skeleton .sk-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  padding: 16px 24px;
+}
+
+.profile-skeleton .sk-stat {
+  height: 90px;
+  border-radius: var(--radius-lg);
+}
+
+.profile-skeleton .sk-links-title {
+  width: 120px;
+  height: 18px;
+  margin: 24px 24px 12px;
+}
+
+.profile-skeleton .sk-links-grid {
+  display: grid;
+  gap: 10px;
+  padding: 0 24px;
+}
+
+.profile-skeleton .sk-link-card {
+  height: 64px;
+  border-radius: var(--radius-md);
+}
+
+/* ── Badges Page Skeleton ── */
+.badges-skeleton .sk-hero {
+  height: 180px;
+  border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+  margin-bottom: 24px;
+}
+
+.badges-skeleton .sk-progress {
+  height: 80px;
+  border-radius: var(--radius-lg);
+  margin: 0 24px 16px;
+}
+
+.badges-skeleton .sk-stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  padding: 0 24px;
+  margin-bottom: 24px;
+}
+
+.badges-skeleton .sk-stat-tile {
+  height: 80px;
+  border-radius: var(--radius-lg);
+}
+
+.badges-skeleton .sk-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+  padding: 0 24px;
+}
+
+.badges-skeleton .sk-badge-card {
+  height: 180px;
+  border-radius: var(--radius-lg);
+}
+
+/* ── Messages Page Skeleton ── */
+.messages-skeleton {
+  display: flex;
+  height: calc(100vh - 64px);
+}
+
+.messages-skeleton .sk-sidebar {
+  width: 320px;
+  border-right: 1px solid var(--border);
+  padding: 16px;
+}
+
+.messages-skeleton .sk-sidebar-header {
+  height: 36px;
+  border-radius: var(--radius-md);
+  margin-bottom: 16px;
+}
+
+.messages-skeleton .sk-convo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  margin-bottom: 8px;
+}
+
+.messages-skeleton .sk-convo-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.messages-skeleton .sk-convo-lines {
+  flex: 1;
+}
+
+.messages-skeleton .sk-convo-line {
+  height: 14px;
+  margin-bottom: 6px;
+}
+
+.messages-skeleton .sk-convo-line.name { width: 60%; }
+.messages-skeleton .sk-convo-line.msg { width: 80%; }
+
+.messages-skeleton .sk-chat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+}
+
+.messages-skeleton .sk-chat-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.messages-skeleton .sk-chat-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+.messages-skeleton .sk-chat-name {
+  width: 120px;
+  height: 16px;
+}
+
+.messages-skeleton .sk-chat-bubble-left,
+.messages-skeleton .sk-chat-bubble-right {
+  height: 48px;
+  border-radius: var(--radius-lg);
+  margin-bottom: 12px;
+  max-width: 70%;
+}
+
+.messages-skeleton .sk-chat-bubble-left {
+  align-self: flex-start;
+  width: 60%;
+}
+
+.messages-skeleton .sk-chat-bubble-right {
+  align-self: flex-end;
+  width: 50%;
+}
+
+.messages-skeleton .sk-input {
+  height: 48px;
+  border-radius: var(--radius-lg);
+  margin-top: auto;
+}
+
+/* ── Owner Page Skeleton ── */
+.owner-skeleton {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.owner-skeleton .sk-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.owner-skeleton .sk-title {
+  width: 200px;
+  height: 28px;
+}
+
+.owner-skeleton .sk-subtitle {
+  width: 140px;
+  height: 16px;
+  margin-top: 6px;
+}
+
+.owner-skeleton .sk-action-btn {
+  width: 140px;
+  height: 40px;
+  border-radius: var(--radius-md);
+}
+
+.owner-skeleton .sk-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 12px;
+}
+
+.owner-skeleton .sk-tab {
+  width: 100px;
+  height: 32px;
+  border-radius: var(--radius-md);
+}
+
+.owner-skeleton .sk-card {
+  height: 120px;
+  border-radius: var(--radius-lg);
+  margin-bottom: 16px;
+}
+
+.owner-skeleton .sk-stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.owner-skeleton .sk-stat {
+  height: 90px;
+  border-radius: var(--radius-lg);
+}
+
+/* ── Trip Page Skeleton ── */
+.trip-skeleton {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.trip-skeleton .sk-title {
+  width: 250px;
+  height: 28px;
+  margin-bottom: 8px;
+}
+
+.trip-skeleton .sk-subtitle {
+  width: 180px;
+  height: 16px;
+  margin-bottom: 24px;
+}
+
+.trip-skeleton .sk-day {
+  margin-bottom: 24px;
+}
+
+.trip-skeleton .sk-day-header {
+  width: 100px;
+  height: 20px;
+  margin-bottom: 12px;
+}
+
+.trip-skeleton .sk-day-card {
+  height: 100px;
+  border-radius: var(--radius-lg);
+  margin-bottom: 8px;
+}
+
+/* ── Profile Edit Skeleton ── */
+.edit-skeleton {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.edit-skeleton .sk-title {
+  width: 160px;
+  height: 24px;
+  margin-bottom: 24px;
+}
+
+.edit-skeleton .sk-field {
+  margin-bottom: 20px;
+}
+
+.edit-skeleton .sk-label {
+  width: 80px;
+  height: 14px;
+  margin-bottom: 8px;
+}
+
+.edit-skeleton .sk-input {
+  height: 44px;
+  border-radius: var(--radius-md);
+}
+
+.edit-skeleton .sk-textarea {
+  height: 100px;
+  border-radius: var(--radius-md);
+}
+
+.edit-skeleton .sk-avatar-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.edit-skeleton .sk-avatar-preview {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+}
+
+.edit-skeleton .sk-avatar-btn {
+  width: 120px;
+  height: 36px;
+  border-radius: var(--radius-md);
+}
+
+.edit-skeleton .sk-submit {
+  width: 100%;
+  height: 48px;
+  border-radius: var(--radius-md);
+  margin-top: 8px;
+}
+
+/* ── User Profile Skeleton ── */
+.user-profile-skeleton {
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.user-profile-skeleton .sk-cover {
+  height: 200px;
+  border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+}
+
+.user-profile-skeleton .sk-identity {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: -36px;
+  padding: 0 24px;
+}
+
+.user-profile-skeleton .sk-avatar {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  border: 4px solid var(--bg-primary);
+}
+
+.user-profile-skeleton .sk-name {
+  width: 160px;
+  height: 22px;
+  margin: 12px auto 6px;
+}
+
+.user-profile-skeleton .sk-handle {
+  width: 100px;
+  height: 14px;
+  margin: 0 auto 12px;
+}
+
+.user-profile-skeleton .sk-bio {
+  width: 260px;
+  height: 14px;
+  margin: 0 auto 16px;
+}
+
+.user-profile-skeleton .sk-stats {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  padding: 0 24px 24px;
+}
+
+.user-profile-skeleton .sk-stat {
+  text-align: center;
+}
+
+.user-profile-skeleton .sk-stat-num {
+  width: 40px;
+  height: 20px;
+  margin: 0 auto 4px;
+}
+
+.user-profile-skeleton .sk-stat-label {
+  width: 60px;
+  height: 12px;
+  margin: 0 auto;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   BUTTON LOADING STATES & MICRO-INTERACTIONS
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── Loading spinner inside buttons ── */
+.btn-loading,
+.btn.is-loading {
+  position: relative;
+  color: transparent !important;
+  pointer-events: none;
+}
+
+.btn-loading::after,
+.btn.is-loading::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 18px;
+  height: 18px;
+  margin: -9px 0 0 -9px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  opacity: 0.9;
+}
+
+.btn-primary.btn-loading::after,
+.btn-primary.is-loading::after {
+  border-color: rgba(255,255,255,0.4);
+  border-top-color: transparent;
+}
+
+/* ── Touch feedback (mobile) ── */
+@media (hover: none) {
+  .btn:active,
+  .pp-quick-link-card:active,
+  .badge-card:active,
+  .up-post-tile:active,
+  .trip-stop:active,
+  .owner-place-card:active,
+  .inquiry-card:active {
+    transform: scale(0.97);
+    opacity: 0.92;
+  }
+}
+
+/* Remove default blue tap highlight on mobile */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ── Card hover lift ── */
+.card-hover,
+.pp-quick-link-card,
+.badge-card,
+.trip-stop,
+.owner-place-card,
+.inquiry-card {
+  transition: transform var(--duration-fast) var(--ease-out),
+              box-shadow var(--duration-fast) var(--ease-out);
+}
+
+@media (hover: hover) {
+  .card-hover:hover,
+  .pp-quick-link-card:hover,
+  .badge-card:hover,
+  .trip-stop:hover,
+  .owner-place-card:hover,
+  .inquiry-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+}
+
+/* ── Button press feedback ── */
+.btn {
+  transition: transform 0.1s var(--ease-out),
+              opacity 0.1s var(--ease-out),
+              background-color var(--duration-fast) var(--ease-out);
+}
+
+.btn:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ── Link ripple effect (subtle) ── */
+.ripple {
+  position: relative;
+  overflow: hidden;
+}
+
+.ripple::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at var(--ripple-x, 50%) var(--ripple-y, 50%), rgba(255,255,255,0.25) 0%, transparent 60%);
+  opacity: 0;
+  transform: scale(0.5);
+  transition: opacity 0.3s, transform 0.4s var(--ease-out);
+  pointer-events: none;
+}
+
+.ripple:active::before {
+  opacity: 1;
+  transform: scale(1.5);
+  transition: opacity 0.1s, transform 0s;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   EMPTY STATES — POLISHED
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.empty-state-v2 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 48px 24px;
+  color: var(--text-muted);
+}
+
+.empty-state-v2 i {
+  width: 64px;
+  height: 64px;
+  color: var(--text-muted);
+  opacity: 0.5;
+  margin-bottom: 16px;
+}
+
+.empty-state-v2 h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+.empty-state-v2 p {
+  font-size: 0.9rem;
+  max-width: 320px;
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   FORM VALIDATION UX
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.input.is-invalid {
+  border-color: var(--danger, #dc2626);
+  box-shadow: 0 0 0 3px oklch(55% 0.2 25 / 0.15);
+}
+
+.input.is-valid {
+  border-color: var(--success, #16a34a);
+  box-shadow: 0 0 0 3px oklch(65% 0.15 145 / 0.15);
+}
+
+/* Shake animation for invalid form submission */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-3px); }
+  80% { transform: translateX(3px); }
+}
+
+.shake {
+  animation: shake 0.4s var(--ease-out);
+}
+
+/* ── Responsive adjustments ── */
+@media (max-width: 640px) {
+  .profile-skeleton .sk-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .owner-skeleton .sk-stats-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .messages-skeleton .sk-sidebar {
+    display: none;
+  }
+  .badges-skeleton .sk-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

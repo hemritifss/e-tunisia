@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import * as api from '../../api';
 import { getOnlineUsers, isUserOnline } from '../../realtime';
 import { MessageCircle, Search, X, Sparkles } from 'lucide-react';
+import { goTo, currentPath, onRouteChange } from '../../router';
 
 /**
  * Active conversations & online friends.
@@ -69,7 +70,7 @@ function timeAgoShort(d: string): string {
 function openChat(userId: string) {
     const fn = (window as any).openChatPopup;
     if (typeof fn === 'function') fn(userId);
-    else location.hash = `#/messages/user/${encodeURIComponent(userId)}`;
+    else goTo(`/messages/user/${encodeURIComponent(userId)}`);
 }
 
 // ─────────── Hook: rooms + presence ───────────
@@ -258,8 +259,7 @@ export function ActiveConversationsLauncher() {
 
     useEffect(() => {
         function onHash() { setHidden(isMessagesRoute() || !api.isLoggedIn()); }
-        window.addEventListener('hashchange', onHash);
-        return () => window.removeEventListener('hashchange', onHash);
+        return onRouteChange(onHash);
     }, []);
 
     useEffect(() => {
@@ -319,7 +319,7 @@ export function ActiveConversationsLauncher() {
 }
 
 function isMessagesRoute(): boolean {
-    return (location.hash || '').startsWith('#/messages');
+    return currentPath().startsWith('/messages');
 }
 
 export default ActiveConversationsLauncher;

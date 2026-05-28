@@ -1,4 +1,5 @@
 import type { LucideIcon } from 'lucide-react';
+import { currentRoute } from '../../router';
 import {
     Waves,
     Sparkles,
@@ -110,7 +111,7 @@ const SLUG_ALIASES: Record<string, string> = {
 export const MOOD_LIST: MoodDef[] = Object.values(MOOD_DEFS);
 
 export function moodFromHash(): MoodDef | null {
-    const m = (window.location.hash || '').match(/^#\/mood\/([a-z-]+)/i);
+    const m = currentRoute().match(/^\/mood\/([a-z-]+)/i);
     if (!m) return null;
     const raw = m[1].toLowerCase();
     const slug = SLUG_ALIASES[raw] || raw;

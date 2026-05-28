@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import * as api from '../../api';
 import { MessageCircle, UserPlus, UserMinus, ExternalLink, Link2, Sparkles, Check } from 'lucide-react';
+import { goTo, absoluteUrl } from '../../router';
 
 /**
  * Facebook-style context menu for any user avatar / byline.
@@ -44,7 +45,7 @@ function profileHref(user: UserMenuPayload): string {
 }
 
 function profileUrl(user: UserMenuPayload): string {
-    return `${location.origin}${location.pathname}${profileHref(user)}`;
+    return absoluteUrl(profileHref(user));
 }
 
 function clamp(x: number, min: number, max: number): number {
@@ -117,7 +118,7 @@ function MenuPanel({ user, position, onClose }: { user: UserMenuPayload; positio
     const sendMessage = useCallback(() => {
         const fn = (window as any).openChatPopup;
         if (typeof fn === 'function') fn(user.id);
-        else location.hash = `#/messages/user/${encodeURIComponent(user.id)}`;
+        else goTo(`/messages/user/${encodeURIComponent(user.id)}`);
         onClose();
     }, [user.id, onClose]);
 

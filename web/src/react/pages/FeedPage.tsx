@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { goTo, absoluteUrl } from '../../router';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   MessageCircle,
@@ -71,11 +72,11 @@ function PostCard({ post }: { post: Post }) {
       : `#/post/${post.id}`;
 
   const handleComment = () => {
-    location.hash = detailHash;
+    goTo(detailHash);
   };
 
   const handleShare = async () => {
-    const url = `${location.origin}${location.pathname}${detailHash}`;
+    const url = absoluteUrl(detailHash);
     if ((navigator as any).share) {
       try {
         await (navigator as any).share({ title: post.title, text: post.body?.slice(0, 100), url });

@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import * as api from '../../api';
 import { isUserOnline, emitDmTyping } from '../../realtime';
 import { X, Minus, Maximize2, Send, Sparkles } from 'lucide-react';
+import { goTo, currentPath, onRouteChange } from '../../router';
 
 /**
  * Messenger-style floating chat popups.
@@ -53,8 +54,7 @@ function saveOpen(chats: OpenChat[]) {
 
 // ─────────── Helpers ───────────
 function isMessagesRoute(): boolean {
-    const h = location.hash || '';
-    return h.startsWith('#/messages');
+    return currentPath().startsWith('/messages');
 }
 
 function myId(): string | null {
@@ -314,10 +314,10 @@ export function ChatPopupManager() {
 
     useEffect(() => {
         function onHash() { setHidden(isMessagesRoute() || !api.isLoggedIn()); }
-        window.addEventListener('hashchange', onHash);
+        const unsub = onRouteChange(onHash);
         window.addEventListener('storage', onHash);
         return () => {
-            window.removeEventListener('hashchange', onHash);
+            unsub();
             window.removeEventListener('storage', onHash);
         };
     }, []);
@@ -338,7 +338,7 @@ export function ChatPopupManager() {
 
     const openByUser = useCallback(async (userId: string) => {
         if (!userId || !api.isLoggedIn()) {
-            location.hash = '#/login';
+            goTo('/login');
             return;
         }
         try {
@@ -410,7 +410,7 @@ export function ChatPopupManager() {
                     onMinimize={() => setOpenChats((prev) =>
                         prev.map((x) => x.roomId === c.roomId ? { ...x, minimized: !x.minimized, unread: x.minimized ? 0 : x.unread } : x)
                     )}
-                    onExpand={() => { location.hash = `#/messages/${c.roomId}`; }}
+                    onExpand={() => { goTo(`/messages/${c.roomId}`); }}
                     onClear={() => setOpenChats((prev) =>
                         prev.map((x) => x.roomId === c.roomId ? { ...x, unread: 0 } : x)
                     )}

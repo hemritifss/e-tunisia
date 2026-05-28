@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useInfiniteQuery } from '@tanstack/react-query';
+import { goTo, absoluteUrl } from '../../router';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Heart,
@@ -69,7 +70,7 @@ function ReelCard({
   };
 
   const handleShare = async () => {
-    const url = `${location.origin}${location.pathname}#/post/${reel.id}`;
+    const url = absoluteUrl(`/post/${reel.id}`);
     try {
       await navigator.clipboard.writeText(url);
       showToast('Link copied!', 'success');
@@ -257,7 +258,7 @@ export default function ReelsPage() {
         <h2 className="text-xl font-semibold">No reels yet</h2>
         <p className="text-white/50 text-sm">Be the first to share a video from Tunisia</p>
         <button
-          onClick={() => (window.location.hash = '#/')}
+          onClick={() => goTo('/')}
           className="px-6 py-2.5 rounded-full bg-brand text-white font-medium"
         >
           Back to feed

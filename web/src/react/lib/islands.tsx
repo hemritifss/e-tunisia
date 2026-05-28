@@ -2,6 +2,7 @@ import React, { Suspense } from 'react';
 import { createRoot, Root } from 'react-dom/client';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from './query-client';
+import { ErrorBoundary } from './ErrorBoundary';
 
 const rootMap = new Map<HTMLElement, Root>();
 
@@ -36,9 +37,11 @@ export function mountIsland(
 
   root.render(
     <QueryClientProvider client={queryClient}>
-      <Suspense fallback={<IslandFallback />}>
-        <Component {...props} />
-      </Suspense>
+      <ErrorBoundary>
+        <Suspense fallback={<IslandFallback />}>
+          <Component {...props} />
+        </Suspense>
+      </ErrorBoundary>
     </QueryClientProvider>,
   );
 

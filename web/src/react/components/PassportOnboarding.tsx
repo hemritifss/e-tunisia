@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { api } from '../../shared/api';
 import { readDraft, clearDraft } from '../../passport-draft';
 import { MapPin, Star } from 'lucide-react';
+import { goTo } from '../../router';
 
 interface Props { handle: string; fullName: string; onDone(): void; }
 
@@ -43,7 +44,7 @@ export function PassportOnboarding({ handle, fullName, onDone }: Props) {
         setStep(3);
         setShowConfetti(true);
         window.setTimeout(() => {
-            window.location.hash = `#/u/${handle}`;
+            goTo(`/u/${handle}`);
             onDone();
         }, 2200);
     };

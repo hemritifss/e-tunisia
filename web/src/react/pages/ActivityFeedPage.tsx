@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api, getImageUrl } from '../../shared/api';
+import { goTo } from '../../router';
 import {
     Star,
     Compass,
@@ -216,7 +217,7 @@ export default function ActivityFeedPage() {
     const [mode, setMode] = useState<FeedMode>(readMode());
     const setModePersist = (m: FeedMode) => {
         if (m === 'following' && anon) {
-            window.location.hash = '#/login';
+            goTo('/login');
             return;
         }
         localStorage.setItem('activity-feed-mode', m);

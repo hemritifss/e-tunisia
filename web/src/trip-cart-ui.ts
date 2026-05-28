@@ -7,6 +7,7 @@ import * as cart from './trip-cart';
 import * as api from './api';
 import { replaceIcons } from './icons';
 import { showToast } from './ui-utils';
+import { goTo, absoluteUrl } from './router';
 
 let mounted = false;
 let cartUnsubscribe: (() => void) | null = null;
@@ -356,10 +357,10 @@ function openDrawer() {
         })),
       });
       showToast('Trip saved — link copied to clipboard');
-      const url = `${location.origin}${location.pathname}#/trip/${trip.slug}`;
+      const url = absoluteUrl(`/trip/${trip.slug}`);
       try { await navigator.clipboard.writeText(url); } catch {}
       close();
-      location.hash = `#/trip/${trip.slug}`;
+      goTo(`/trip/${trip.slug}`);
     } catch (err: any) {
       btn.disabled = false;
       showToast(err?.message || 'Could not save trip', { type: 'error' });
