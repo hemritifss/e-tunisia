@@ -275,6 +275,43 @@ grep -r "from '../../api'" web/src/react/
 
 ---
 
+## 🐛 BACKEND BUGS FOUND DURING FRONTEND QA (2026-05-29)
+
+Found by live-QA'ing the React migration against the Docker backend (Postgres). Listed worst-first. All are backend-side — the frontend handles each gracefully.
+
+### B1 — 🔴 CRITICAL: Two `Follow` entities collide on one table → follow 500s
+**Symptom:** `POST` follow returns 500 — Postgres `null value in column "followedId" violates not-null constraint`.
+**Root cause:** Two separate entity classes both declare `@Entity('follows')` with **conflicting column names**:
+- `backend/src/users/follow.entity.ts` → `followerId`, **`followedId`** (NOT NULL, `@Unique`, `@Index`) — used by `users/follows.service.ts`
+- `backend/src/social/follow.entity.ts` → `followerId`, **`followingId`** — used by `social/social.service.ts`
+
+Both modules register their entity against the **same physical table**. The table ends up with a NOT-NULL `followedId` column, but `social.service.ts:38` inserts `{ followerId, followingId }` (never sets `followedId`) → constraint violation.
+**Fix:** Consolidate to ONE Follow entity + one service. The `users/follow.entity.ts` version is more complete (unique constraint + indexes) — make `social.service.ts` use it and rename its `followingId` usages to `followedId`, then delete `social/follow.entity.ts`. Verify only one entity maps to `follows`.
+
+### B2 — 🔴 CRITICAL: `password` (bcrypt hash) leaks in user responses
+**Symptom:** `GET /users/me` and `PUT /users/me` return the full `User` entity including the `password` field (bcrypt hash).
+**Root cause:** `user.entity.ts:41` marks `password` with `@Exclude()`, but **no `ClassSerializerInterceptor` is registered**. The only global interceptors (`main.ts:112`) are `TransformInterceptor` + `LoggingInterceptor`, so `@Exclude()` is never applied. `users.controller.ts:233` returns `usersService.update(...)` → `findById()` → raw entity.
+**Fix (pick one):** (a) register `ClassSerializerInterceptor` globally via `APP_INTERCEPTOR` in `app.module.ts` (cleanest — makes every `@Exclude()` effective), or (b) hand-strip `password` in the service/controller like the public `:id` endpoint already does (`users.controller.ts:272-284`). Audit every endpoint that returns a raw `User`.
+
+### B3 — 🟠 `credit_transactions` enum causes `synchronize` crash-loop on Postgres
+**Symptom:** With `synchronize: true` (dev), the API crash-loops trying to ALTER `credit_transactions_kind_enum` on every boot.
+**Root cause:** `credits/credit-transaction.entity.ts:31` uses `@Column({ type: 'simple-enum', enum: CreditTxKind })`. `simple-enum` is meant for SQLite/MySQL; on Postgres TypeORM detects a phantom diff against the native enum every sync and retries forever.
+**Fix:** Change to `type: 'enum'` (native Postgres enum) or `type: 'varchar'`. Long-term, prefer migrations over `synchronize` (infra already exists — see "Priority 1"). Temporary QA workaround used: `backend/docker-compose.override.yml` sets `NODE_ENV=staging` to disable sync (delete this file once fixed).
+
+### B4 — 🟡 Dev CORS rejects Vite's fallback port 5174
+**Symptom:** When 5173 is taken, Vite serves on **5174**; browser writes (follow, profile save) fail with `Not allowed by CORS: http://localhost:5174`.
+**Root cause:** `main.ts:42-52` default `ALLOWED_ORIGINS` lists `localhost:5173/3000/4173` only — 5174 isn't covered.
+**Fix:** Add `http://localhost:5174` to the dev defaults, or a `http://localhost:*` wildcard pattern (the regex builder at `main.ts:54-57` already supports `*`). Dev-only; production sets explicit `ALLOWED_ORIGINS`.
+
+### B5 — 🟡 `GET /api/v1/search` returned 404 at runtime (stale build)
+**Symptom:** Search API 404s; `api.search()` swallows it → search UI shows "No matches" for everything.
+**Root cause:** NOT a source bug — `search.controller.ts` (`@Controller('search')` + `@Get()`) is correct and `SearchModule` IS registered (`app.module.ts:101`). The running Docker container serves the committed `backend/dist`, which appears **stale** (predates the route) — or `search.service.search()` throws (Meilisearch — see Known Issue #1) and maps to 404.
+**Fix:** Rebuild `dist` in the container (`npm run build`) and confirm Meilisearch is reachable. Verify `GET /api/v1/search?q=test` returns 200.
+
+> **Note on XSS audit (Priorities 4–5 above):** those reference `web/src/pages/*.ts`, which the 2026-05-29 frontend migration **deleted** — those surfaces are now React (JSX auto-escapes). Remaining XSS risk is limited to the few `dangerouslySetInnerHTML` calls (linkified hashtags/mentions) in the new `web/src/react/pages/*.tsx`.
+
+---
+
 ## 📁 FILES CREATED (13)
 
 ```
