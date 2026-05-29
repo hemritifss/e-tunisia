@@ -16,6 +16,12 @@ export class Follow {
   @Column()
   followingId: string; // Who is being followed
 
+  // The `follows` table is shared with users/follow.entity, which has a NOT NULL
+  // `followedId`. Mirror followingId here so inserts via this service satisfy that
+  // column and both follow subsystems (social + activity/feed) see the same edges.
+  @Column()
+  followedId: string;
+
   @CreateDateColumn()
   createdAt: Date;
 }

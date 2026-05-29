@@ -27,6 +27,10 @@ __decorate([
     __metadata("design:type", String)
 ], Follow.prototype, "followingId", void 0);
 __decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], Follow.prototype, "followedId", void 0);
+__decorate([
     (0, typeorm_1.CreateDateColumn)(),
     __metadata("design:type", Date)
 ], Follow.prototype, "createdAt", void 0);

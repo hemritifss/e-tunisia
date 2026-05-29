@@ -35,7 +35,7 @@ export class SocialService {
       throw new ConflictException('Already following this user');
     }
 
-    const follow = this.followRepo.create({ followerId, followingId });
+    const follow = this.followRepo.create({ followerId, followingId, followedId: followingId });
     const saved = await this.followRepo.save(follow);
 
     // Create activity
