@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { motion, useScroll, useTransform, useReducedMotion } from 'framer-motion';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   ArrowLeft, Heart, Share2, MapPin, Star, Send, Phone, MessageCircle, ExternalLink,
@@ -339,6 +340,12 @@ export default function PlaceDetailPage() {
   const [reviewText, setReviewText] = useState('');
   const [inquiry, setInquiry] = useState<{ pkg: any | null } | null>(null);
 
+  // Scroll-linked hero zoom (scrollytelling) — gated on reduced-motion.
+  const reduceMotion = useReducedMotion();
+  const heroRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] });
+  const heroScale = useTransform(scrollYProgress, [0, 1], reduceMotion ? [1, 1] : [1, 1.12]);
+
   const dq = routeQuery();
   const verifyingInquiryId = dq.get('inquiry') || null;
 
@@ -362,7 +369,7 @@ export default function PlaceDetailPage() {
   if (placeQ.isLoading || !place) {
     return (
       <div className="place-detail-page page-enter" id="place-detail-page" data-place-id={placeId}>
-        <div className="place-detail-loading"><div className="spinner" /><p>Loading place details...</p></div>
+        <div className="place-detail-loading"><div className="spinner" /><p>Loading place details…</p></div>
       </div>
     );
   }
@@ -411,8 +418,8 @@ export default function PlaceDetailPage() {
 
   return (
     <div className="place-detail-page page-enter" id="place-detail-page" data-place-id={placeId}>
-      <div className="place-detail-hero">
-        <img src={cover} alt={place.name} className="place-detail-hero-img" onError={(e) => { (e.currentTarget as HTMLImageElement).style.background = 'linear-gradient(135deg, var(--terracotta-pale), var(--mediterranean-pale))'; }} />
+      <div className="place-detail-hero" ref={heroRef}>
+        <motion.img src={cover} alt={place.name} className="place-detail-hero-img" style={{ scale: heroScale }} onError={(e) => { (e.currentTarget as HTMLImageElement).style.background = 'linear-gradient(135deg, var(--terracotta-pale), var(--mediterranean-pale))'; }} />
         <div className="place-detail-hero-overlay" />
         <div className="place-detail-hero-actions">
           <a href="#/" className="btn-icon place-detail-back" aria-label="Back"><ArrowLeft /></a>

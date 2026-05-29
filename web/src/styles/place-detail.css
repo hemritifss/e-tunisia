@@ -25,19 +25,8 @@
     height: 100%;
     object-fit: cover;
     display: block;
-    transition: transform 8s var(--ease-out);
     will-change: transform;
-}
-/* Subtle Ken Burns drift while resting — disabled under reduced-motion */
-.place-detail-page .place-detail-hero-img:hover { transform: scale(1.04); }
-@media (prefers-reduced-motion: no-preference) {
-    .place-detail-page .place-detail-hero-img {
-        animation: place-hero-drift 22s var(--ease-in-out) infinite alternate;
-    }
-}
-@keyframes place-hero-drift {
-    from { transform: scale(1) translate3d(0, 0, 0); }
-    to   { transform: scale(1.06) translate3d(-1%, -1%, 0); }
+    /* Transform is driven by a scroll-linked zoom in PlaceDetailPage (framer-motion). */
 }
 .place-detail-page .place-detail-hero-overlay {
     position: absolute;
