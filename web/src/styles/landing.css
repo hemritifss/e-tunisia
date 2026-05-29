@@ -4,6 +4,13 @@
    All values from tokens.css — no raw hex.
    ============================================ */
 
+/* The landing is full-bleed — cancel the React island shell's max-width + padding
+   (which is correct for app pages, but leaves gutters around the hero here). */
+.react-island-shell:has(.tn-landing) {
+    max-width: none;
+    padding: 0;
+}
+
 /* ── Marketing nav (logged-out landing only) ──── */
 .tn-landing .tn-nav {
     position: fixed;
