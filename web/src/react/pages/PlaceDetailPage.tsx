@@ -121,7 +121,7 @@ function ReviewItem({ r, place, me, placeId }: { r: any; place: any; me: any; pl
           </button>
         ) : isOwner && replyOpen ? (
           <div className="review-host-reply-form">
-            <textarea className="input" rows={2} maxLength={2000} placeholder="Thank the traveler, clarify, or follow up..." value={replyText} onChange={(e) => setReplyText(e.target.value)} />
+            <textarea className="input" rows={2} maxLength={2000} placeholder="Thank the traveler, clarify, or follow up…" value={replyText} onChange={(e) => setReplyText(e.target.value)} />
             <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
               <button type="button" className="btn btn-ghost btn-sm" onClick={() => setReplyOpen(false)}>Cancel</button>
               <button type="button" className="btn btn-primary btn-sm" disabled={busy} onClick={postReply}>Post reply</button>
@@ -447,7 +447,7 @@ export default function PlaceDetailPage() {
                   <button key={n} className={`star-btn ${n <= selectedRating ? 'active' : ''}`} onClick={() => setSelectedRating(n)}><Star /></button>
                 ))}
               </div>
-              <textarea className="input" rows={3} placeholder="Share your experience..." value={reviewText} onChange={(e) => setReviewText(e.target.value)} />
+              <textarea className="input" rows={3} placeholder="Share your experience…" value={reviewText} onChange={(e) => setReviewText(e.target.value)} />
               <button className="btn btn-primary" onClick={submitReview}>Submit Review</button>
             </div>
           )}

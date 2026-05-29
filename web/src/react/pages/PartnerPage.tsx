@@ -265,7 +265,7 @@ export default function PartnerPage() {
                 </div>
                 <div className="input-group">
                   <label className="input-label" htmlFor="partner-message">Message *</label>
-                  <textarea id="partner-message" className="input" rows={4} placeholder="Tell us about your partnership goals..." required value={form.message} onChange={set('message')} />
+                  <textarea id="partner-message" className="input" rows={4} placeholder="Tell us about your partnership goals…" required value={form.message} onChange={set('message')} />
                 </div>
                 <button type="submit" className="hero2-pricing-btn hero2-pricing-btn-primary" disabled={submitting}>{submitting ? 'Submitting…' : 'Submit Application'}</button>
               </form>

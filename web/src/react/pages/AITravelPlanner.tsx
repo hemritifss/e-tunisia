@@ -426,7 +426,7 @@ export default function AITravelPlanner() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-            placeholder="Ask about Tunisia or plan your trip..."
+            placeholder="Ask about Tunisia or plan your trip…"
             className="flex-1 px-4 py-2.5 rounded-xl border border-black/10 dark:border-white/10 bg-surface focus:outline-none focus:ring-2 focus:ring-brand/30 text-sm"
           />
           <Button

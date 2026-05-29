@@ -194,7 +194,7 @@ function PackageEditorModal({ place, pkg, onClose, onSaved }: { place: any; pkg:
           </div>
           <div className="inquiry-row">
             <label><span>Duration (days)</span><input name="durationDays" type="number" min={1} max={60} defaultValue={pkg?.durationDays || 1} /></label>
-            <label><span>Badge</span><input name="badge" type="text" maxLength={60} defaultValue={pkg?.badge || ''} placeholder="Bestseller, New, Limited..." /></label>
+            <label><span>Badge</span><input name="badge" type="text" maxLength={60} defaultValue={pkg?.badge || ''} placeholder="Bestseller, New, Limited…" /></label>
           </div>
           <div className="inquiry-row">
             <label><span>Min travelers</span><input name="minPartySize" type="number" min={1} max={50} defaultValue={pkg?.minPartySize || 1} /></label>

@@ -199,7 +199,7 @@ export default function HeroPage() {
   const lpSet = (k: keyof typeof lp) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setLp((s) => ({ ...s, [k]: e.target.value }));
   const submitLp = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLpDisabled(true); setLpBtn('Sending...');
+    setLpDisabled(true); setLpBtn('Sending…');
     try {
       await api.submitContactForm({ name: lp.name.trim(), email: lp.email.trim(), businessName: lp.business.trim(), type: lp.type, message: 'Partner application from landing page' });
       setLpBtn('Application Sent!');

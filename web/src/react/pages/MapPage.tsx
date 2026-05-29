@@ -187,7 +187,7 @@ export default function MapPage() {
         <div className="map-search-wrapper">
           <Search className="map-search-icon" size={16} />
           <input
-            type="text" className="map-search-input" placeholder="Search places..." autoComplete="off"
+            type="text" className="map-search-input" placeholder="Search places…" autoComplete="off"
             value={search}
             onChange={(e) => { setSearch(e.target.value); setSearchOpen(!!e.target.value.trim()); }}
             onFocus={() => setSearchOpen(!!search.trim())}
