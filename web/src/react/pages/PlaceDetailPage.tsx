@@ -412,9 +412,9 @@ export default function PlaceDetailPage() {
           <img src={cover} alt={place.name} className="place-detail-hero-img" onError={(e) => { (e.currentTarget as HTMLImageElement).style.background = 'linear-gradient(135deg, var(--terracotta-pale), var(--mediterranean-pale))'; }} />
           <div className="place-detail-hero-overlay" />
           <div className="place-detail-hero-actions">
-            <a href="#/" className="btn-icon place-detail-back"><ArrowLeft /></a>
+            <a href="#/" className="btn-icon place-detail-back" aria-label="Back"><ArrowLeft /></a>
             <div className="place-detail-hero-right">
-              <button className={`btn-icon place-detail-save ${saved ? 'saved' : ''}`} aria-label="Save" onClick={onSave}><Heart /></button>
+              <button className={`btn-icon place-detail-save ${saved ? 'saved' : ''}`} aria-label={saved ? 'Remove from favorites' : 'Save to favorites'} aria-pressed={saved} onClick={onSave}><Heart /></button>
               <button className="btn-icon" aria-label="Share" onClick={onShare}><Share2 /></button>
             </div>
           </div>

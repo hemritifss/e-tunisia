@@ -87,6 +87,12 @@ export function requireAuth(action = 'do this'): boolean {
 let toastTimer: number | null = null;
 
 export function showToast(message: string, opts: { type?: 'success' | 'info' | 'error' } = {}) {
+  // Prefer the richer, consistent global toast layer (toasts.ts) when mounted.
+  const globalToast = (window as any).showToast as ((m: string, t?: string) => void) | undefined;
+  if (typeof globalToast === 'function') {
+    globalToast(message, opts.type || 'success');
+    return;
+  }
   let toast = document.getElementById('ui-toast');
   if (!toast) {
     toast = document.createElement('div');
