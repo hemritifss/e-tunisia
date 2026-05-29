@@ -3,6 +3,13 @@
    Loaded after pages.css. Token-driven.
    ============================================ */
 
+/* Auth is a full-screen immersive page — cancel the React island shell's
+   max-width + padding so the background bleeds edge-to-edge (no cream gutters). */
+.react-island-shell:has(.auth-page) {
+    max-width: none;
+    padding: 0;
+}
+
 .auth-page {
     position: relative;
     min-height: 100dvh;
@@ -579,13 +586,25 @@
     .auth-page .auth-split,
     .auth-page .auth-split[data-mode="register"] {
         flex-direction: column;
-        max-width: 480px;
+        max-width: 460px;
     }
-    .auth-page .auth-visual { min-height: 200px; flex: 0 0 auto; }
-    .auth-page .auth-formside { flex: 1 1 auto; }
-    .auth-visual-body { justify-content: flex-end; gap: var(--space-3); }
+    .auth-page .auth-visual { min-height: 190px; flex: 0 0 auto; }
+    .auth-page .auth-formside { flex: 1 1 auto; align-items: stretch; }
+    /* Center the banner content on mobile + tighten its padding. */
+    .auth-visual-body {
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        gap: var(--space-2);
+        padding: var(--space-5) var(--space-4);
+    }
+    .auth-visual-eyebrow { align-self: center; }
     .auth-visual-title { font-size: var(--text-2xl); }
     .auth-visual-text { display: none; }
+    .auth-visual-switch { justify-content: center; flex-wrap: wrap; }
+    .auth-visual-meta { justify-content: center; }
+    /* Less outer chrome so the card fills more of the screen. */
+    .auth-page .auth-content { padding: var(--space-4) var(--space-3); gap: var(--space-4); }
 }
 
 /* Social login */
