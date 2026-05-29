@@ -288,8 +288,9 @@
     gap: 2px;
     margin-top: var(--space-3);
     background: var(--bg-tertiary);
+    overflow: hidden;
 }
-.post-card-v2-media-1 { grid-template-columns: 1fr; }
+.post-card-v2-media-1 { grid-template-columns: 1fr; grid-template-rows: minmax(0, 1fr); aspect-ratio: 16 / 10; }
 .post-card-v2-media-2 { grid-template-columns: 1fr 1fr; aspect-ratio: 2 / 1; }
 .post-card-v2-media-3 { grid-template-columns: 2fr 1fr; grid-template-rows: 1fr 1fr; aspect-ratio: 3 / 2; }
 .post-card-v2-media-3 img:first-child { grid-row: span 2; }
@@ -302,6 +303,7 @@
     aspect-ratio: 16 / 10;
     transition: transform var(--duration-slow) var(--ease-out);
 }
+.post-card-v2-media-1 img,
 .post-card-v2-media-2 img,
 .post-card-v2-media-3 img,
 .post-card-v2-media-4 img { aspect-ratio: auto; }
