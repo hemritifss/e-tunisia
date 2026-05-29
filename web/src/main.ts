@@ -55,11 +55,11 @@ const MessagesPage = React.lazy(() => import('./react/pages/MessagesPage'));
 const SearchPage = React.lazy(() => import('./react/pages/SearchPage'));
 const BadgesPage = React.lazy(() => import('./react/pages/BadgesPage'));
 const ProfileEditPage = React.lazy(() => import('./react/pages/ProfileEditPage'));
+const HeroPage = React.lazy(() => import('./react/pages/HeroPage'));
+const AboutPage = React.lazy(() => import('./react/pages/AboutPage'));
+const PartnerPage = React.lazy(() => import('./react/pages/PartnerPage'));
 
 // Vanilla pages
-import { renderPartnerPage, initPartnerPage } from './pages/partner';
-import { renderAboutPage, initAboutPage } from './pages/about';
-import { renderHeroPage, initHeroPage } from './pages/hero';
 import { initCommandPalette } from './command-palette';
 import { initToasts } from './toasts';
 import { mountTripCart, syncTripCartAuth } from './trip-cart-ui';
@@ -96,7 +96,7 @@ function getRoute(route: string): Route {
 
   if (!isLoggedIn && requiresAuth) {
     replace('/hero');
-    return { render: renderHeroPage, init: () => initHeroPage(), page: 'hero' };
+    return { render: () => '', init: () => {}, page: 'hero', isReact: true };
   }
 
   if (isLoggedIn && isHeroOnly) {
@@ -191,11 +191,11 @@ function getRoute(route: string): Route {
     '/settings': { render: () => '', init: () => {}, page: 'profile', isReact: true },
     '/login': { render: () => '', init: () => {}, page: '', isReact: true },
     '/register': { render: () => '', init: () => {}, page: '', isReact: true },
-    '/partner': { render: renderPartnerPage, init: initPartnerPage, page: 'partner' },
+    '/partner': { render: () => '', init: () => {}, page: 'partner', isReact: true },
     '/itineraries': { render: () => '', init: () => {}, page: 'itineraries', isReact: true },
     '/collections': { render: () => '', init: () => {}, page: 'collections', isReact: true },
-    '/about': { render: renderAboutPage, init: () => initAboutPage(), page: 'hero' },
-    '/hero': { render: renderHeroPage, init: () => initHeroPage(), page: 'hero' },
+    '/about': { render: () => '', init: () => {}, page: 'hero', isReact: true },
+    '/hero': { render: () => '', init: () => {}, page: 'hero', isReact: true },
     '/credits': { render: () => '', init: () => {}, page: 'profile', isReact: true },
     '/profile/edit': { render: () => '', init: () => {}, page: 'profile', isReact: true },
     '/profile-edit': { render: () => '', init: () => {}, page: 'profile', isReact: true },
@@ -342,6 +342,12 @@ function navigate() {
         currentUnmount = mountIsland(BadgesPage, islandRoot);
       } else if (path === '/profile/edit' || path === '/profile-edit') {
         currentUnmount = mountIsland(ProfileEditPage, islandRoot);
+      } else if (path === '/hero') {
+        currentUnmount = mountIsland(HeroPage, islandRoot);
+      } else if (path === '/about') {
+        currentUnmount = mountIsland(AboutPage, islandRoot);
+      } else if (path === '/partner') {
+        currentUnmount = mountIsland(PartnerPage, islandRoot);
       }
     }
   } else {
