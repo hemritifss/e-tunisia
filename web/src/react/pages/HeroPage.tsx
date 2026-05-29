@@ -115,6 +115,15 @@ export default function HeroPage() {
   const rootRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [pulseRef, pulseSeen] = useInView(0.4);
+  const [navScrolled, setNavScrolled] = useState(false);
+
+  // Marketing nav gains a solid backdrop once the visitor scrolls past the hero top.
+  useEffect(() => {
+    const onScroll = () => setNavScrolled(window.scrollY > 40);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   const placesQ = useQuery({
     queryKey: ['hero-places'],
@@ -214,6 +223,22 @@ export default function HeroPage() {
   return (
     <div className="tn-landing" ref={rootRef}>
       <canvas id="tn-particles" className="tn-particles" ref={canvasRef} />
+
+      <nav className={`tn-nav${navScrolled ? ' is-scrolled' : ''}`} aria-label="Primary">
+        <div className="tn-nav-inner">
+          <a href="#/hero" className="tn-nav-logo"><img src="/icon.png" alt="" /><span>e-Tunisia</span></a>
+          <div className="tn-nav-links">
+            <a href="#/explore">Explore</a>
+            <a href="#/itineraries">Itineraries</a>
+            <a href="#/about">About</a>
+            <a href="#/premium">Pricing</a>
+          </div>
+          <div className="tn-nav-actions">
+            <a href="#/login" className="tn-nav-login">Log in</a>
+            <a href="#/register" className="tn-btn-primary tn-nav-cta">Join Free</a>
+          </div>
+        </div>
+      </nav>
 
       <section className="tn-hero">
         <div className="tn-hero-slideshow">

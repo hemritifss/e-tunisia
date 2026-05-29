@@ -4,6 +4,97 @@
    All values from tokens.css — no raw hex.
    ============================================ */
 
+/* ── Marketing nav (logged-out landing only) ──── */
+.tn-landing .tn-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 200;
+    border-bottom: 1px solid transparent;
+    transition: background var(--duration-normal) var(--ease-out),
+                backdrop-filter var(--duration-normal) var(--ease-out),
+                border-color var(--duration-normal) var(--ease-out);
+}
+.tn-landing .tn-nav-inner {
+    max-width: 1240px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: var(--space-6);
+    padding: var(--space-4) var(--space-6);
+    transition: padding var(--duration-normal) var(--ease-out);
+}
+.tn-landing .tn-nav.is-scrolled {
+    background: oklch(14% 0.02 260 / 0.72);
+    backdrop-filter: blur(16px) saturate(160%);
+    -webkit-backdrop-filter: blur(16px) saturate(160%);
+    border-bottom-color: oklch(100% 0 0 / 0.1);
+}
+.tn-landing .tn-nav.is-scrolled .tn-nav-inner {
+    padding-top: var(--space-3);
+    padding-bottom: var(--space-3);
+}
+.tn-landing .tn-nav-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    color: oklch(98% 0 0);
+    font-family: var(--font-display);
+    font-size: var(--text-lg);
+    font-weight: 800;
+    letter-spacing: var(--tracking-tight);
+    text-decoration: none;
+    text-shadow: 0 1px 8px oklch(0% 0 0 / 0.4);
+}
+.tn-landing .tn-nav-logo img {
+    width: 34px;
+    height: 34px;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+}
+.tn-landing .tn-nav-links {
+    display: flex;
+    align-items: center;
+    gap: var(--space-5);
+    margin-left: auto;
+}
+.tn-landing .tn-nav-links a {
+    color: oklch(92% 0.01 80 / 0.85);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    text-decoration: none;
+    text-shadow: 0 1px 6px oklch(0% 0 0 / 0.35);
+    transition: color var(--duration-fast) var(--ease-out);
+}
+.tn-landing .tn-nav-links a:hover { color: oklch(99% 0 0); }
+.tn-landing .tn-nav-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+.tn-landing .tn-nav-login {
+    color: oklch(96% 0 0);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    text-decoration: none;
+    padding: 8px var(--space-4);
+    border-radius: var(--radius-full);
+    text-shadow: 0 1px 6px oklch(0% 0 0 / 0.35);
+    transition: background var(--duration-fast) var(--ease-out);
+}
+.tn-landing .tn-nav-login:hover { background: oklch(100% 0 0 / 0.12); }
+.tn-landing .tn-nav-cta {
+    font-size: var(--text-sm);
+    padding: 10px var(--space-5);
+}
+@media (max-width: 768px) {
+    .tn-landing .tn-nav-links { display: none; }
+    .tn-landing .tn-nav-actions { margin-left: auto; }
+    .tn-landing .tn-nav-logo span { font-size: var(--text-base); }
+    .tn-landing .tn-nav-inner { gap: var(--space-3); padding: var(--space-3) var(--space-4); }
+}
+
 /* ── Hero refinements ─────────────────────────── */
 .tn-landing .tn-hero-content {
     text-align: left;
