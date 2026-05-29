@@ -37,6 +37,10 @@ export default function AuthPage() {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
 
+  // Only show the social-login section (and the "or" divider) when Google is configured.
+  const googleClientId = (import.meta as any).env?.VITE_GOOGLE_CLIENT_ID;
+  const googleEnabled = !!googleClientId && googleClientId !== 'your-google-client-id.apps.googleusercontent.com';
+
   // Google OAuth: load the GSI script, init, render the button, wire the global callback.
   useEffect(() => {
     (window as any).handleGoogleCredentialResponse = async (response: any) => {
@@ -51,8 +55,7 @@ export default function AuthPage() {
       }
     };
 
-    const googleClientId = (import.meta as any).env?.VITE_GOOGLE_CLIENT_ID;
-    if (!googleClientId || googleClientId === 'your-google-client-id.apps.googleusercontent.com') return;
+    if (!googleEnabled) return;
 
     const setup = () => {
       const g = (window as any).google;
@@ -152,10 +155,14 @@ export default function AuthPage() {
             </div>
           )}
 
-          <div className="auth-social">
-            <div className="g_id_signin" data-type="standard" data-shape="rectangular" data-theme="outline" data-text={isRegister ? 'signup_with' : 'signin_with'} data-size="large" data-width="100%" />
-          </div>
-          <div className="auth-divider"><span>or</span></div>
+          {googleEnabled && (
+            <>
+              <div className="auth-social">
+                <div className="g_id_signin" data-type="standard" data-shape="rectangular" data-theme="outline" data-text={isRegister ? 'signup_with' : 'signin_with'} data-size="large" data-width="100%" />
+              </div>
+              <div className="auth-divider"><span>or</span></div>
+            </>
+          )}
 
           <form className="auth-form" onSubmit={isRegister ? onRegister : onLogin} noValidate>
             {isRegister && (
