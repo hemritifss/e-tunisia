@@ -10,6 +10,7 @@ import * as apiService from '../../api';
 import { places as mockPlaces } from '../../data';
 import { shareUrl, toggleSaved, isSaved, showToast } from '../../ui-utils';
 import * as tripCart from '../../trip-cart';
+import { Reveal } from '../components/Reveal';
 import { currentPath, query as routeQuery, absoluteUrl, onRouteChange } from '../../router';
 import { addVisitedCity, isAnonymous } from '../../passport-draft';
 
@@ -453,23 +454,23 @@ export default function PlaceDetailPage() {
           )}
 
           {packages.length > 0 && (
-            <div className="place-detail-packages">
+            <Reveal className="place-detail-packages">
               <h2><Package /> Bookable experiences</h2>
               <div className="packages-grid">
                 {packages.map((pkg: any) => (
                   <PackageCard key={pkg.id} place={place} placeId={placeId} pkg={pkg} onBook={(p) => setInquiry({ pkg: p })} />
                 ))}
               </div>
-            </div>
+            </Reveal>
           )}
 
-          <div className="place-detail-reviews">
+          <Reveal className="place-detail-reviews">
             <h2><MessageSquare /> Reviews ({reviews.length})</h2>
             <div className="place-detail-review-list">
               {reviews.length === 0 && <p className="text-muted text-center">No reviews yet. Be the first!</p>}
               {reviews.map((r: any, i: number) => <ReviewItem key={r.id || i} r={r} place={place} me={me} placeId={placeId} />)}
             </div>
-          </div>
+          </Reveal>
         </div>
 
         <aside className="place-detail-aside">
