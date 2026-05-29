@@ -523,3 +523,61 @@
     .place-detail-loading .spinner { animation-duration: 2s; }
     .place-detail-page .place-detail-hero-img { animation: none; }
 }
+
+/* ── Phase 2: 2-column layout (sticky booking aside) ───────────── */
+.place-detail-page { max-width: 1180px; }
+
+.place-detail-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+    padding: 0 var(--page-padding);
+    margin-top: var(--space-6);
+}
+/* Info fills the main column now (was a narrow centered block) */
+.place-detail-page .place-detail-info {
+    padding: 0;
+    max-width: none;
+    margin-inline: 0;
+}
+.place-detail-main { min-width: 0; display: flex; flex-direction: column; gap: var(--space-8); }
+.place-detail-aside { order: -1; }
+
+/* Booking card */
+.place-detail-booking {
+    background: var(--surface);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-lg);
+    padding: var(--space-5);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+.pdb-rating { display: flex; align-items: baseline; gap: var(--space-2); }
+.pdb-rating-score {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: var(--font-display); font-weight: 700; font-size: var(--text-xl);
+    color: var(--text-primary);
+}
+.pdb-rating-score svg, .pdb-rating-score i { color: var(--gold); fill: var(--gold); width: 18px; height: 18px; }
+.pdb-rating-count { color: var(--text-secondary); font-size: var(--text-sm); }
+.place-detail-booking .pdb-cta { width: 100%; justify-content: center; }
+.pdb-actions { display: flex; flex-direction: column; gap: var(--space-2); }
+.pdb-actions .btn { width: 100%; justify-content: center; }
+
+@media (min-width: 1024px) {
+    .place-detail-body {
+        flex-direction: row;
+        align-items: flex-start;
+        gap: var(--space-8);
+    }
+    .place-detail-main { flex: 1; }
+    .place-detail-aside {
+        order: 2;
+        width: 340px;
+        flex-shrink: 0;
+        position: sticky;
+        top: 84px;
+    }
+}

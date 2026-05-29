@@ -405,81 +405,94 @@ export default function PlaceDetailPage() {
   const cat = typeof place.category === 'object' && place.category ? place.category.name : (place.category || '');
   const cover = apiService.getImageUrl(place.coverImage || place.image || place.imageUrl || (place.images && place.images[0]) || '');
 
+  const ratingValue = Number(place.rating) || 4.5;
+  const reviewTotal = place.reviewCount || reviews.length;
+
   return (
     <div className="place-detail-page page-enter" id="place-detail-page" data-place-id={placeId}>
-      <div className="place-detail-content">
-        <div className="place-detail-hero">
-          <img src={cover} alt={place.name} className="place-detail-hero-img" onError={(e) => { (e.currentTarget as HTMLImageElement).style.background = 'linear-gradient(135deg, var(--terracotta-pale), var(--mediterranean-pale))'; }} />
-          <div className="place-detail-hero-overlay" />
-          <div className="place-detail-hero-actions">
-            <a href="#/" className="btn-icon place-detail-back" aria-label="Back"><ArrowLeft /></a>
-            <div className="place-detail-hero-right">
-              <button className={`btn-icon place-detail-save ${saved ? 'saved' : ''}`} aria-label={saved ? 'Remove from favorites' : 'Save to favorites'} aria-pressed={saved} onClick={onSave}><Heart /></button>
-              <button className="btn-icon" aria-label="Share" onClick={onShare}><Share2 /></button>
+      <div className="place-detail-hero">
+        <img src={cover} alt={place.name} className="place-detail-hero-img" onError={(e) => { (e.currentTarget as HTMLImageElement).style.background = 'linear-gradient(135deg, var(--terracotta-pale), var(--mediterranean-pale))'; }} />
+        <div className="place-detail-hero-overlay" />
+        <div className="place-detail-hero-actions">
+          <a href="#/" className="btn-icon place-detail-back" aria-label="Back"><ArrowLeft /></a>
+          <div className="place-detail-hero-right">
+            <button className={`btn-icon place-detail-save ${saved ? 'saved' : ''}`} aria-label={saved ? 'Remove from favorites' : 'Save to favorites'} aria-pressed={saved} onClick={onSave}><Heart /></button>
+            <button className="btn-icon" aria-label="Share" onClick={onShare}><Share2 /></button>
+          </div>
+        </div>
+      </div>
+
+      <div className="place-detail-body">
+        <div className="place-detail-main">
+          <div className="place-detail-info">
+            <div className="place-detail-category">{cat}</div>
+            <h1 className="place-detail-name">{place.name}</h1>
+            <div className="place-detail-location"><MapPin /> {place.location || place.city || ''}</div>
+            <div className="place-detail-rating">
+              <div className="place-detail-stars"><Stars rating={Math.round(ratingValue)} /></div>
+              <span className="place-detail-rating-value">{ratingValue.toFixed(1)}</span>
+              <span className="place-detail-review-count">({reviewTotal} reviews)</span>
+            </div>
+            <p className="place-detail-description">{place.description || ''}</p>
+          </div>
+
+          {reviewFormOpen && (
+            <div className="place-detail-review-form">
+              <h3>Write a Review</h3>
+              {verifyingInquiryId && (
+                <div className="review-verified-hint"><ShieldCheck /><span> This review will show a Verified booking badge.</span></div>
+              )}
+              <div className="place-review-rating-input">
+                {[1, 2, 3, 4, 5].map((n) => (
+                  <button key={n} className={`star-btn ${n <= selectedRating ? 'active' : ''}`} onClick={() => setSelectedRating(n)}><Star /></button>
+                ))}
+              </div>
+              <textarea className="input" rows={3} placeholder="Share your experience..." value={reviewText} onChange={(e) => setReviewText(e.target.value)} />
+              <button className="btn btn-primary" onClick={submitReview}>Submit Review</button>
+            </div>
+          )}
+
+          {packages.length > 0 && (
+            <div className="place-detail-packages">
+              <h2><Package /> Bookable experiences</h2>
+              <div className="packages-grid">
+                {packages.map((pkg: any) => (
+                  <PackageCard key={pkg.id} place={place} placeId={placeId} pkg={pkg} onBook={(p) => setInquiry({ pkg: p })} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="place-detail-reviews">
+            <h2><MessageSquare /> Reviews ({reviews.length})</h2>
+            <div className="place-detail-review-list">
+              {reviews.length === 0 && <p className="text-muted text-center">No reviews yet. Be the first!</p>}
+              {reviews.map((r: any, i: number) => <ReviewItem key={r.id || i} r={r} place={place} me={me} placeId={placeId} />)}
             </div>
           </div>
         </div>
 
-        <div className="place-detail-info">
-          <div className="place-detail-category">{cat}</div>
-          <h1 className="place-detail-name">{place.name}</h1>
-          <div className="place-detail-location"><MapPin /> {place.location || place.city || ''}</div>
-          <div className="place-detail-rating">
-            <div className="place-detail-stars"><Stars rating={Math.round(place.rating || 4.5)} /></div>
-            <span className="place-detail-rating-value">{place.rating || '4.5'}</span>
-            <span className="place-detail-review-count">({place.reviewCount || reviews.length} reviews)</span>
-          </div>
-          <p className="place-detail-description">{place.description || ''}</p>
-
-          <div className="place-detail-cta-row">
-            <button className="btn btn-primary place-cta-primary" onClick={() => setInquiry({ pkg: null })}><Send /> Request a quote</button>
-            {place.phone && <a className="btn btn-outline" href={`tel:${place.phone}`}><Phone /> Call</a>}
-            {place.phone && <a className="btn btn-outline" target="_blank" rel="noopener" href={whatsappLink(place.phone)}><MessageCircle /> WhatsApp</a>}
-            {place.website && <a className="btn btn-outline" target="_blank" rel="noopener" href={place.website}><ExternalLink /> Website</a>}
-            {place.latitude && place.longitude ? (
-              <a className="btn btn-outline" target="_blank" rel="noopener" href={`https://www.google.com/maps/dir/?api=1&destination=${place.latitude},${place.longitude}`}><Navigation /> Directions</a>
-            ) : (
-              <button className="btn btn-outline" data-link="/map"><MapIcon /> View on Map</button>
-            )}
-            <button className={`btn btn-outline ${inTrip ? 'is-added' : ''}`} type="button" onClick={onAddTrip}><Luggage /> Add to trip</button>
-            <button className="btn btn-ghost" onClick={() => setReviewFormOpen((o) => !o)}><Pencil /> Review</button>
-          </div>
-        </div>
-
-        {reviewFormOpen && (
-          <div className="place-detail-review-form">
-            <h3>Write a Review</h3>
-            {verifyingInquiryId && (
-              <div className="review-verified-hint"><ShieldCheck /><span> This review will show a Verified booking badge.</span></div>
-            )}
-            <div className="place-review-rating-input">
-              {[1, 2, 3, 4, 5].map((n) => (
-                <button key={n} className={`star-btn ${n <= selectedRating ? 'active' : ''}`} onClick={() => setSelectedRating(n)}><Star /></button>
-              ))}
+        <aside className="place-detail-aside">
+          <div className="place-detail-booking">
+            <div className="pdb-rating">
+              <div className="pdb-rating-score"><Star /> {ratingValue.toFixed(1)}</div>
+              <span className="pdb-rating-count">{reviewTotal} review{reviewTotal === 1 ? '' : 's'}</span>
             </div>
-            <textarea className="input" rows={3} placeholder="Share your experience..." value={reviewText} onChange={(e) => setReviewText(e.target.value)} />
-            <button className="btn btn-primary" onClick={submitReview}>Submit Review</button>
-          </div>
-        )}
-
-        {packages.length > 0 && (
-          <div className="place-detail-packages">
-            <h2><Package /> Bookable experiences</h2>
-            <div className="packages-grid">
-              {packages.map((pkg: any) => (
-                <PackageCard key={pkg.id} place={place} placeId={placeId} pkg={pkg} onBook={(p) => setInquiry({ pkg: p })} />
-              ))}
+            <button className="btn btn-primary pdb-cta" onClick={() => setInquiry({ pkg: null })}><Send /> Request a quote</button>
+            <div className="pdb-actions">
+              {place.phone && <a className="btn btn-outline" href={`tel:${place.phone}`}><Phone /> Call</a>}
+              {place.phone && <a className="btn btn-outline" target="_blank" rel="noopener" href={whatsappLink(place.phone)}><MessageCircle /> WhatsApp</a>}
+              {place.website && <a className="btn btn-outline" target="_blank" rel="noopener" href={place.website}><ExternalLink /> Website</a>}
+              {place.latitude && place.longitude ? (
+                <a className="btn btn-outline" target="_blank" rel="noopener" href={`https://www.google.com/maps/dir/?api=1&destination=${place.latitude},${place.longitude}`}><Navigation /> Directions</a>
+              ) : (
+                <button className="btn btn-outline" data-link="/map"><MapIcon /> View on Map</button>
+              )}
+              <button className={`btn btn-outline ${inTrip ? 'is-added' : ''}`} type="button" onClick={onAddTrip}><Luggage /> {inTrip ? 'Added to trip' : 'Add to trip'}</button>
+              <button className="btn btn-ghost" onClick={() => setReviewFormOpen((o) => !o)}><Pencil /> Write a review</button>
             </div>
           </div>
-        )}
-
-        <div className="place-detail-reviews">
-          <h2><MessageSquare /> Reviews ({reviews.length})</h2>
-          <div className="place-detail-review-list">
-            {reviews.length === 0 && <p className="text-muted text-center">No reviews yet. Be the first!</p>}
-            {reviews.map((r: any, i: number) => <ReviewItem key={r.id || i} r={r} place={place} me={me} placeId={placeId} />)}
-          </div>
-        </div>
+        </aside>
       </div>
 
       {inquiry && <InquiryModal place={place} placeId={placeId} pkg={inquiry.pkg} onClose={() => setInquiry(null)} />}
