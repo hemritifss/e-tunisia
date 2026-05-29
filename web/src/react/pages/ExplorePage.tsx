@@ -20,6 +20,7 @@ import {
   Mountain,
 } from 'lucide-react';
 import { api, getImageUrl } from '../../shared/api';
+import { coverPlaceholder } from '../../shared/placeholder';
 import { requireAuth } from '../../ui-utils';
 import type { Place, Category } from '../../shared/types/api';
 import { Card, CardImage, CardContent, CardFooter } from '../components/Card';
@@ -107,7 +108,7 @@ function PlaceCard({
         <Card hover className="flex gap-4">
           <div className="w-48 shrink-0">
             <CardImage
-              src={getImageUrl(place.coverImage || place.images?.[0]) || 'https://images.unsplash.com/photo-1539020140153-e479b8c22e70?w=400'}
+              src={getImageUrl(place.coverImage || place.images?.[0]) || coverPlaceholder(place.id, place.name)}
               alt={place.name}
               aspect="square"
             />
@@ -165,7 +166,7 @@ function PlaceCard({
       <Card hover className="h-full flex flex-col">
         <div className="relative">
           <CardImage
-            src={getImageUrl(place.coverImage || place.images?.[0]) || 'https://images.unsplash.com/photo-1539020140153-e479b8c22e70?w=400'}
+            src={getImageUrl(place.coverImage || place.images?.[0]) || coverPlaceholder(place.id, place.name)}
             alt={place.name}
             aspect="video"
           />
