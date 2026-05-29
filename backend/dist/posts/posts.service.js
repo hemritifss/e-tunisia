@@ -21,6 +21,7 @@ const comment_entity_1 = require("./comment.entity");
 const comment_like_entity_1 = require("./comment-like.entity");
 const post_reaction_entity_1 = require("./post-reaction.entity");
 const saved_post_entity_1 = require("./saved-post.entity");
+const repost_entity_1 = require("./repost.entity");
 const effective_plan_1 = require("../users/effective-plan");
 const billing_service_1 = require("../billing/billing.service");
 const badges_service_1 = require("../badges/badges.service");
@@ -28,12 +29,13 @@ const user_entity_1 = require("../users/user.entity");
 const notifications_service_1 = require("../notifications/notifications.service");
 const notification_entity_1 = require("../notifications/notification.entity");
 let PostsService = class PostsService {
-    constructor(postsRepo, commentsRepo, commentLikesRepo, reactionsRepo, savedRepo, usersRepo, notifications, badges, billing) {
+    constructor(postsRepo, commentsRepo, commentLikesRepo, reactionsRepo, savedRepo, repostsRepo, usersRepo, notifications, badges, billing) {
         this.postsRepo = postsRepo;
         this.commentsRepo = commentsRepo;
         this.commentLikesRepo = commentLikesRepo;
         this.reactionsRepo = reactionsRepo;
         this.savedRepo = savedRepo;
+        this.repostsRepo = repostsRepo;
         this.usersRepo = usersRepo;
         this.notifications = notifications;
         this.badges = badges;
@@ -361,7 +363,21 @@ let PostsService = class PostsService {
             authorId,
             isActive: true,
         });
-        return this.postsRepo.save(post);
+        const saved = await this.postsRepo.save(post);
+        const text = `${data.title || ''} ${data.body || ''}`;
+        const mentionMatches = text.match(/@([a-zA-Z0-9_]{3,30})/g);
+        if (mentionMatches) {
+            const handles = [...new Set(mentionMatches.map((m) => m.slice(1).toLowerCase()))];
+            const mentionedUsers = await this.usersRepo.find({
+                where: handles.map((h) => ({ handle: h })),
+            });
+            for (const user of mentionedUsers) {
+                if (user.id === authorId)
+                    continue;
+                await this.notifications.create(user.id, 'You were mentioned', `${data.authorName || 'Someone'} mentioned you in a post`, notification_entity_1.NotificationType.MENTION, { postId: saved.id });
+            }
+        }
+        return saved;
     }
     async list(opts = {}) {
         const page = Math.max(1, Number(opts.page) || 1);
@@ -438,6 +454,30 @@ let PostsService = class PostsService {
         await this.postsRepo.save(post);
         return { deleted: true };
     }
+    async repost(postId, userId, comment) {
+        const existing = await this.repostsRepo.findOne({ where: { postId, userId } });
+        if (existing)
+            throw new common_1.ForbiddenException('Already reposted');
+        const repost = this.repostsRepo.create({ postId, userId, comment });
+        await this.repostsRepo.save(repost);
+        await this.postsRepo.increment({ id: postId }, 'repostCount', 1);
+        return repost;
+    }
+    async undoRepost(postId, userId) {
+        const repost = await this.repostsRepo.findOne({ where: { postId, userId } });
+        if (!repost)
+            throw new common_1.NotFoundException('Repost not found');
+        await this.repostsRepo.remove(repost);
+        await this.postsRepo.decrement({ id: postId }, 'repostCount', 1);
+        return { removed: true };
+    }
+    async listReposts(postId) {
+        return this.repostsRepo.find({
+            where: { postId },
+            relations: ['user'],
+            order: { createdAt: 'DESC' },
+        });
+    }
 };
 exports.PostsService = PostsService;
 exports.PostsService = PostsService = __decorate([
@@ -447,8 +487,10 @@ exports.PostsService = PostsService = __decorate([
     __param(2, (0, typeorm_1.InjectRepository)(comment_like_entity_1.CommentLike)),
     __param(3, (0, typeorm_1.InjectRepository)(post_reaction_entity_1.PostReaction)),
     __param(4, (0, typeorm_1.InjectRepository)(saved_post_entity_1.SavedPost)),
-    __param(5, (0, typeorm_1.InjectRepository)(user_entity_1.User)),
+    __param(5, (0, typeorm_1.InjectRepository)(repost_entity_1.Repost)),
+    __param(6, (0, typeorm_1.InjectRepository)(user_entity_1.User)),
     __metadata("design:paramtypes", [typeorm_2.Repository,
+        typeorm_2.Repository,
         typeorm_2.Repository,
         typeorm_2.Repository,
         typeorm_2.Repository,

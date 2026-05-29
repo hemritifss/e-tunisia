@@ -53,6 +53,9 @@ let UsersService = class UsersService {
             return null;
         return this.usersRepository.findOne({ where: { handle: handle.toLowerCase() } });
     }
+    async findByResetToken(token) {
+        return this.usersRepository.findOne({ where: { passwordResetToken: token } });
+    }
     async generateAvailableHandle(fullName) {
         const { HANDLE_PATTERN, RESERVED_HANDLES } = await Promise.resolve().then(() => require('./reserved-handles'));
         const slugify = (s) => (s || 'traveler')
@@ -237,6 +240,39 @@ let UsersService = class UsersService {
             catch { }
         }
         return visited;
+    }
+    async activeTravelers(limit = 50) {
+        const rows = await this.placeVisitsRepo.createQueryBuilder('v')
+            .select([
+            'v.userId as userId',
+            'v.placeId as placeId',
+            'v.city as city',
+            'p.latitude as lat',
+            'p.longitude as lng',
+            'p.name as placeName',
+            'u.fullName as fullName',
+            'u.handle as handle',
+            'u.avatar as avatar',
+        ])
+            .innerJoin('places', 'p', 'p.id::text = v.placeId')
+            .innerJoin('users', 'u', 'u.id::text = v.userId')
+            .where('u.isActive = :a', { a: true })
+            .andWhere('p.latitude IS NOT NULL')
+            .andWhere('p.longitude IS NOT NULL')
+            .orderBy('v.createdAt', 'DESC')
+            .limit(limit)
+            .getRawMany();
+        return rows.map((r) => ({
+            userId: r.userId,
+            fullName: r.fullName,
+            handle: r.handle,
+            avatar: r.avatar,
+            placeId: r.placeId,
+            placeName: r.placeName,
+            city: r.city,
+            lat: Number(r.lat),
+            lng: Number(r.lng),
+        }));
     }
     async cityVisitorCounts(cities) {
         const list = (cities || []).filter(Boolean);

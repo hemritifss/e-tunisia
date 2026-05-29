@@ -137,6 +137,17 @@ export declare class UsersController {
     }>;
     activityFeed(req: any, limit?: string): Promise<import("./activity.service").ActivityEntry[]>;
     globalActivityFeed(limit?: string): Promise<import("./activity.service").ActivityEntry[]>;
+    activeTravelers(limit?: string): Promise<{
+        userId: any;
+        fullName: any;
+        handle: any;
+        avatar: any;
+        placeId: any;
+        placeName: any;
+        city: any;
+        lat: number;
+        lng: number;
+    }[]>;
     updateProfile(req: any, body: Partial<any>): Promise<import("./user.entity").User>;
     toggleFavorite(req: any, placeId: string): Promise<string[]>;
     getFavorites(req: any): Promise<string[]>;

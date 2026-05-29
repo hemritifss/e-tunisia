@@ -80,8 +80,14 @@ __decorate([
 ], User.prototype, "onboardingComplete", void 0);
 __decorate([
     (0, typeorm_1.Column)({ default: UserRole.USER }),
+    (0, typeorm_1.Index)(),
     __metadata("design:type", String)
 ], User.prototype, "role", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ default: UserPlan.FREE }),
+    (0, typeorm_1.Index)(),
+    __metadata("design:type", String)
+], User.prototype, "plan", void 0);
 __decorate([
     (0, typeorm_1.Column)('simple-array', { nullable: true }),
     __metadata("design:type", Array)
@@ -92,12 +98,9 @@ __decorate([
 ], User.prototype, "visitedPlaceIds", void 0);
 __decorate([
     (0, typeorm_1.Column)({ default: true }),
+    (0, typeorm_1.Index)(),
     __metadata("design:type", Boolean)
 ], User.prototype, "isActive", void 0);
-__decorate([
-    (0, typeorm_1.Column)({ default: UserPlan.FREE }),
-    __metadata("design:type", String)
-], User.prototype, "plan", void 0);
 __decorate([
     (0, typeorm_1.Column)({ nullable: true }),
     __metadata("design:type", Date)
@@ -130,6 +133,21 @@ __decorate([
     (0, typeorm_1.Column)({ type: 'int', default: 0 }),
     __metadata("design:type", Number)
 ], User.prototype, "followingCount", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true, unique: true }),
+    (0, class_transformer_1.Exclude)(),
+    __metadata("design:type", String)
+], User.prototype, "passwordResetToken", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    (0, class_transformer_1.Exclude)(),
+    __metadata("design:type", Date)
+], User.prototype, "passwordResetExpires", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ default: 0 }),
+    (0, class_transformer_1.Exclude)(),
+    __metadata("design:type", Number)
+], User.prototype, "tokenVersion", void 0);
 __decorate([
     (0, typeorm_1.OneToMany)(() => review_entity_1.Review, (review) => review.user),
     __metadata("design:type", Array)

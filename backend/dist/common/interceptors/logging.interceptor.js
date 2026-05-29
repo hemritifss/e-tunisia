@@ -16,24 +16,45 @@ let LoggingInterceptor = class LoggingInterceptor {
     intercept(context, next) {
         const request = context.switchToHttp().getRequest();
         const method = request.method;
-        const url = request.url;
+        const url = this.sanitizeUrl(request.url);
         const userAgent = request.get('user-agent') || 'unknown';
         const ip = request.ip;
         const userId = request.user?.id || 'anonymous';
+        const requestId = request.id || 'no-id';
         const now = Date.now();
         return next.handle().pipe((0, operators_1.tap)({
             next: () => {
                 const response = context.switchToHttp().getResponse();
                 const statusCode = response.statusCode;
                 const duration = Date.now() - now;
-                this.logger.log(`${method} ${url} ${statusCode} — ${duration}ms — user:${userId} — ${ip} — ${userAgent}`);
+                this.logger.log(`[${requestId}] ${method} ${url} ${statusCode} — ${duration}ms — user:${userId} — ${ip} — ${userAgent}`);
             },
             error: (error) => {
                 const duration = Date.now() - now;
                 const statusCode = error.status || 500;
-                this.logger.error(`${method} ${url} ${statusCode} — ${duration}ms — user:${userId} — ${ip} — ${error.message}`);
+                this.logger.error(`[${requestId}] ${method} ${url} ${statusCode} — ${duration}ms — user:${userId} — ${ip} — ${error.message}`);
             },
         }));
+    }
+    sanitizeUrl(url) {
+        try {
+            const sensitiveParams = ['token', 'password', 'resetToken', 'api_key', 'secret', 'credential'];
+            const [path, query] = url.split('?');
+            if (!query)
+                return url;
+            const params = new URLSearchParams(query);
+            let sanitized = false;
+            for (const param of sensitiveParams) {
+                if (params.has(param)) {
+                    params.set(param, '[REDACTED]');
+                    sanitized = true;
+                }
+            }
+            return sanitized ? `${path}?${params.toString()}` : url;
+        }
+        catch {
+            return url;
+        }
     }
 };
 exports.LoggingInterceptor = LoggingInterceptor;

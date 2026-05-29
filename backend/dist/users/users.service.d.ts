@@ -26,6 +26,7 @@ export declare class UsersService {
     constructor(usersRepository: Repository<User>, reviewsRepo: Repository<Review>, placesRepo: Repository<Place>, tripsRepo: Repository<TripPlan>, savesRepo: Repository<SavedPost>, passportViewsRepo: Repository<PassportView>, placeVisitsRepo: Repository<PlaceVisit>, cache: Cache, badges: BadgesService, notifications: NotificationsService, endorsements: EndorsementsService);
     findByEmail(email: string): Promise<User | null>;
     findByHandle(handle: string): Promise<User | null>;
+    findByResetToken(token: string): Promise<User | null>;
     generateAvailableHandle(fullName: string): Promise<string>;
     isHandleAvailable(handle: string): Promise<boolean>;
     findById(id: string): Promise<User>;
@@ -53,6 +54,17 @@ export declare class UsersService {
     toggleFavorite(userId: string, placeId: string): Promise<string[]>;
     getFavoriteIds(userId: string): Promise<string[]>;
     toggleVisited(userId: string, placeId: string): Promise<string[]>;
+    activeTravelers(limit?: number): Promise<{
+        userId: any;
+        fullName: any;
+        handle: any;
+        avatar: any;
+        placeId: any;
+        placeName: any;
+        city: any;
+        lat: number;
+        lng: number;
+    }[]>;
     cityVisitorCounts(cities: string[]): Promise<Record<string, number>>;
     getVisitedIds(userId: string): Promise<string[]>;
     suggestedUsers(limit?: number): Promise<{

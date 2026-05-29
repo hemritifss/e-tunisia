@@ -20,6 +20,7 @@ const admin_guard_1 = require("./admin.guard");
 const super_admin_guard_1 = require("./super-admin.guard");
 const admin_service_1 = require("./admin.service");
 const audit_interceptor_1 = require("./audit.interceptor");
+const update_user_dto_1 = require("./dto/update-user.dto");
 const is_super_admin_1 = require("./is-super-admin");
 let AdminController = class AdminController {
     constructor(adminService) {
@@ -132,7 +133,7 @@ __decorate([
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:paramtypes", [String, update_user_dto_1.UpdateUserDto]),
     __metadata("design:returntype", void 0)
 ], AdminController.prototype, "updateUser", null);
 __decorate([

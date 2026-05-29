@@ -16,6 +16,7 @@ const jwt_strategy_1 = require("./strategies/jwt.strategy");
 const users_module_1 = require("../users/users.module");
 const badges_module_1 = require("../badges/badges.module");
 const credits_module_1 = require("../credits/credits.module");
+const queues_module_1 = require("../queues/queues.module");
 let AuthModule = class AuthModule {
 };
 exports.AuthModule = AuthModule;
@@ -25,6 +26,7 @@ exports.AuthModule = AuthModule = __decorate([
             users_module_1.UsersModule,
             badges_module_1.BadgesModule,
             credits_module_1.CreditsModule,
+            queues_module_1.QueuesModule,
             passport_1.PassportModule.register({ defaultStrategy: 'jwt' }),
             jwt_1.JwtModule.register({
                 secret: process.env.JWT_SECRET || 'etunisia_secret',

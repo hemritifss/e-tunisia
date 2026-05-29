@@ -40,6 +40,7 @@ __decorate([
 ], Notification.prototype, "user", void 0);
 __decorate([
     (0, typeorm_1.Column)(),
+    (0, typeorm_1.Index)(),
     __metadata("design:type", String)
 ], Notification.prototype, "userId", void 0);
 __decorate([
@@ -67,6 +68,7 @@ __decorate([
     __metadata("design:type", Date)
 ], Notification.prototype, "createdAt", void 0);
 exports.Notification = Notification = __decorate([
-    (0, typeorm_1.Entity)('notifications')
+    (0, typeorm_1.Entity)('notifications'),
+    (0, typeorm_1.Index)(['userId', 'isRead', 'createdAt'])
 ], Notification);
 //# sourceMappingURL=notification.entity.js.map

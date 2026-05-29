@@ -76,8 +76,14 @@ let AdminService = class AdminService {
         return { data, meta: { total, page, limit, totalPages: Math.ceil(total / limit) } };
     }
     async updateUser(id, updates) {
-        const { role, password, ...safe } = updates;
-        await this.usersRepo.update(id, safe);
+        const { role, password, tokenVersion, stripeCustomerId, passwordResetToken, passwordResetExpires, ...safe } = updates;
+        const allowedFields = ['fullName', 'handle', 'email', 'avatar', 'phone', 'country', 'bio', 'website', 'interests', 'plan', 'isActive', 'onboardingComplete', 'passportTheme', 'subscriptionExpiresAt'];
+        const filtered = {};
+        for (const key of allowedFields) {
+            if (key in safe)
+                filtered[key] = safe[key];
+        }
+        await this.usersRepo.update(id, filtered);
         return this.usersRepo.findOne({ where: { id } });
     }
     async setUserRole(id, role) {

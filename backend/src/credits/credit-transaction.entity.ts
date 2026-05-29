@@ -28,7 +28,10 @@ export class CreditTransaction {
     @Index()
     userId: string;
 
-    @Column({ type: 'simple-enum', enum: CreditTxKind })
+    // Stored as varchar (not simple-enum): on Postgres, TypeORM's simple-enum
+    // produces a phantom diff every sync → ALTER crash-loop. Kind is validated
+    // in code; varchar avoids the churn while keeping the TS enum type.
+    @Column({ type: 'varchar', length: 32, nullable: true })
     @Index()
     kind: CreditTxKind;
 

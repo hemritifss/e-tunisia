@@ -15,13 +15,17 @@ const jwt_1 = require("@nestjs/jwt");
 const users_service_1 = require("../users/users.service");
 const badges_service_1 = require("../badges/badges.service");
 const credits_service_1 = require("../credits/credits.service");
+const queues_service_1 = require("../queues/queues.service");
 const bcrypt = require("bcrypt");
+const crypto_1 = require("crypto");
+const google_auth_library_1 = require("google-auth-library");
 let AuthService = class AuthService {
-    constructor(usersService, jwtService, badgesService, creditsService) {
+    constructor(usersService, jwtService, badgesService, creditsService, queuesService) {
         this.usersService = usersService;
         this.jwtService = jwtService;
         this.badgesService = badgesService;
         this.creditsService = creditsService;
+        this.queuesService = queuesService;
     }
     async register(dto) {
         const existingEmail = await this.usersService.findByEmail(dto.email);
@@ -53,6 +57,13 @@ let AuthService = class AuthService {
             catch { }
         }
         const token = this.generateToken(user);
+        try {
+            await this.queuesService.addEmailJob('welcome', {
+                email: user.email,
+                name: user.fullName,
+            });
+        }
+        catch { }
         return {
             user: {
                 id: user.id,
@@ -91,7 +102,96 @@ let AuthService = class AuthService {
             sub: user.id,
             email: user.email,
             role: user.role,
+            tv: user.tokenVersion || 0,
         });
+    }
+    async requestPasswordReset(email) {
+        const user = await this.usersService.findByEmail(email);
+        if (!user) {
+            return { message: 'If an account exists, a reset link has been sent.' };
+        }
+        const token = (0, crypto_1.randomBytes)(32).toString('hex');
+        const expires = new Date(Date.now() + 1000 * 60 * 60);
+        await this.usersService.update(user.id, {
+            passwordResetToken: token,
+            passwordResetExpires: expires,
+        });
+        try {
+            await this.queuesService.addEmailJob('password_reset', {
+                email: user.email,
+                token,
+            });
+        }
+        catch { }
+        return {
+            message: 'If an account exists, a reset link has been sent.',
+            ...(process.env.NODE_ENV !== 'production' ? { token } : {}),
+        };
+    }
+    async resetPassword(token, newPassword) {
+        if (!token || !newPassword || newPassword.length < 6) {
+            throw new common_1.BadRequestException('Invalid token or password too short');
+        }
+        const user = await this.usersService.findByResetToken(token);
+        if (!user) {
+            throw new common_1.BadRequestException('Invalid or expired token');
+        }
+        if (!user.passwordResetExpires || user.passwordResetExpires < new Date()) {
+            throw new common_1.BadRequestException('Token has expired');
+        }
+        const hashed = await bcrypt.hash(newPassword, 10);
+        await this.usersService.update(user.id, {
+            password: hashed,
+            passwordResetToken: null,
+            passwordResetExpires: null,
+            tokenVersion: (user.tokenVersion || 0) + 1,
+        });
+        return { message: 'Password updated successfully' };
+    }
+    async googleLogin(credential) {
+        const client = new google_auth_library_1.OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+        let ticket;
+        try {
+            ticket = await client.verifyIdToken({
+                idToken: credential,
+                audience: process.env.GOOGLE_CLIENT_ID,
+            });
+        }
+        catch {
+            throw new common_1.UnauthorizedException('Invalid Google credential');
+        }
+        const payload = ticket.getPayload();
+        if (!payload || !payload.email) {
+            throw new common_1.UnauthorizedException('Invalid Google credential');
+        }
+        let user = await this.usersService.findByEmail(payload.email);
+        if (!user) {
+            const handle = await this.usersService.generateAvailableHandle(payload.name || 'User');
+            user = await this.usersService.create({
+                fullName: payload.name || payload.email.split('@')[0],
+                email: payload.email,
+                password: await bcrypt.hash((0, crypto_1.randomBytes)(32).toString('hex'), 10),
+                handle,
+                avatar: payload.picture || null,
+                onboardingComplete: false,
+            });
+            await this.badgesService.awardIfEligible(user.id, 'user.created', {});
+        }
+        if (!user.isActive) {
+            throw new common_1.UnauthorizedException('Account deactivated');
+        }
+        const token = this.generateToken(user);
+        return {
+            user: {
+                id: user.id,
+                fullName: user.fullName,
+                handle: user.handle,
+                email: user.email,
+                avatar: user.avatar,
+                role: user.role,
+            },
+            accessToken: token,
+        };
     }
 };
 exports.AuthService = AuthService;
@@ -100,6 +200,7 @@ exports.AuthService = AuthService = __decorate([
     __metadata("design:paramtypes", [users_service_1.UsersService,
         jwt_1.JwtService,
         badges_service_1.BadgesService,
-        credits_service_1.CreditsService])
+        credits_service_1.CreditsService,
+        queues_service_1.QueuesService])
 ], AuthService);
 //# sourceMappingURL=auth.service.js.map

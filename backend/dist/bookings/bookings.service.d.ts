@@ -4,12 +4,14 @@ import { InventoryItem } from '../inventory/inventory.entity';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { ConfigService } from '@nestjs/config';
 import { RedisService } from '../redis/redis.service';
+import { QueuesService } from '../queues/queues.service';
 export declare class BookingsService {
     private bookingRepo;
     private inventoryRepo;
     private configService;
     private redisService;
-    constructor(bookingRepo: Repository<Booking>, inventoryRepo: Repository<InventoryItem>, configService: ConfigService, redisService: RedisService);
+    private queuesService;
+    constructor(bookingRepo: Repository<Booking>, inventoryRepo: Repository<InventoryItem>, configService: ConfigService, redisService: RedisService, queuesService: QueuesService);
     create(userId: string, dto: CreateBookingDto): Promise<Booking>;
     findByUser(userId: string): Promise<Booking[]>;
     findByPlace(placeId: string): Promise<Booking[]>;

@@ -12,16 +12,21 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.HealthController = void 0;
 const common_1 = require("@nestjs/common");
 const terminus_1 = require("@nestjs/terminus");
+const queues_service_1 = require("../queues/queues.service");
+const redis_health_indicator_1 = require("../redis/redis.health.indicator");
 let HealthController = class HealthController {
-    constructor(health, db, memory, disk) {
+    constructor(health, db, memory, disk, queuesService, redis) {
         this.health = health;
         this.db = db;
         this.memory = memory;
         this.disk = disk;
+        this.queuesService = queuesService;
+        this.redis = redis;
     }
     check() {
         return this.health.check([
             () => this.db.pingCheck('database'),
+            () => this.redis.isHealthy('redis'),
             () => this.memory.checkHeap('memory_heap', 300 * 1024 * 1024),
             () => this.memory.checkRSS('memory_rss', 300 * 1024 * 1024),
             () => this.disk.checkStorage('storage', {
@@ -32,6 +37,17 @@ let HealthController = class HealthController {
     }
     checkDb() {
         return this.health.check([() => this.db.pingCheck('database')]);
+    }
+    checkRedis() {
+        return this.health.check([() => this.redis.isHealthy('redis')]);
+    }
+    async checkQueues() {
+        const stats = await this.queuesService.getQueueStats();
+        const allHealthy = Object.values(stats).every((q) => q.failed < 100);
+        return {
+            status: allHealthy ? 'ok' : 'warning',
+            queues: stats,
+        };
     }
 };
 exports.HealthController = HealthController;
@@ -49,11 +65,26 @@ __decorate([
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)
 ], HealthController.prototype, "checkDb", null);
+__decorate([
+    (0, common_1.Get)('redis'),
+    (0, terminus_1.HealthCheck)(),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], HealthController.prototype, "checkRedis", null);
+__decorate([
+    (0, common_1.Get)('queues'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], HealthController.prototype, "checkQueues", null);
 exports.HealthController = HealthController = __decorate([
     (0, common_1.Controller)('health'),
     __metadata("design:paramtypes", [terminus_1.HealthCheckService,
         terminus_1.TypeOrmHealthIndicator,
         terminus_1.MemoryHealthIndicator,
-        terminus_1.DiskHealthIndicator])
+        terminus_1.DiskHealthIndicator,
+        queues_service_1.QueuesService,
+        redis_health_indicator_1.RedisHealthIndicator])
 ], HealthController);
 //# sourceMappingURL=health.controller.js.map

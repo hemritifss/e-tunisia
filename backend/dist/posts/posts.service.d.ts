@@ -4,6 +4,7 @@ import { Comment } from './comment.entity';
 import { CommentLike } from './comment-like.entity';
 import { PostReaction, ReactionType } from './post-reaction.entity';
 import { SavedPost } from './saved-post.entity';
+import { Repost } from './repost.entity';
 import { BillingService } from '../billing/billing.service';
 import { BadgesService } from '../badges/badges.service';
 import { User } from '../users/user.entity';
@@ -21,11 +22,12 @@ export declare class PostsService {
     private commentLikesRepo;
     private reactionsRepo;
     private savedRepo;
+    private repostsRepo;
     private usersRepo;
     private notifications;
     private badges;
     private billing;
-    constructor(postsRepo: Repository<Post>, commentsRepo: Repository<Comment>, commentLikesRepo: Repository<CommentLike>, reactionsRepo: Repository<PostReaction>, savedRepo: Repository<SavedPost>, usersRepo: Repository<User>, notifications: NotificationsService, badges: BadgesService, billing: BillingService);
+    constructor(postsRepo: Repository<Post>, commentsRepo: Repository<Comment>, commentLikesRepo: Repository<CommentLike>, reactionsRepo: Repository<PostReaction>, savedRepo: Repository<SavedPost>, repostsRepo: Repository<Repost>, usersRepo: Repository<User>, notifications: NotificationsService, badges: BadgesService, billing: BillingService);
     listReactors(postId: string, opts?: {
         type?: string | null;
         page?: number;
@@ -188,5 +190,10 @@ export declare class PostsService {
     remove(id: string, requesterId: string): Promise<{
         deleted: boolean;
     }>;
+    repost(postId: string, userId: string, comment?: string): Promise<Repost>;
+    undoRepost(postId: string, userId: string): Promise<{
+        removed: boolean;
+    }>;
+    listReposts(postId: string): Promise<Repost[]>;
 }
 export {};

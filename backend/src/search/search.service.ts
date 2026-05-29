@@ -1,7 +1,7 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 const MeiliSearch = require('meilisearch').MeiliSearch;
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, ILike } from 'typeorm';
 import { Place } from '../places/place.entity';
 import { Post } from '../posts/post.entity';
 import { User } from '../users/user.entity';
@@ -16,10 +16,17 @@ export class SearchService implements OnModuleInit {
     @InjectRepository(Post) private postsRepo: Repository<Post>,
     @InjectRepository(User) private usersRepo: Repository<User>,
   ) {
-    const host = process.env.MEILISEARCH_HOST || 'http://localhost:7700';
+    // Only wire Meilisearch when explicitly configured; otherwise search()
+    // falls back to DB queries. Guard the constructor too — the meilisearch
+    // package export shape varies across versions (can be undefined here).
+    const host = process.env.MEILISEARCH_HOST;
     const apiKey = process.env.MEILISEARCH_API_KEY || '';
-    if (host) {
-      this.client = new MeiliSearch({ host, apiKey });
+    if (host && typeof MeiliSearch === 'function') {
+      try {
+        this.client = new MeiliSearch({ host, apiKey });
+      } catch {
+        this.client = undefined;
+      }
     }
   }
 
@@ -112,18 +119,21 @@ export class SearchService implements OnModuleInit {
 
   private async databaseFallbackSearch(query: string, options?: { limit?: number }) {
     const limit = options?.limit || 20;
-    const q = `%${query}%`;
+    const q = ILike(`%${query}%`);
 
     const [places, posts, users] = await Promise.all([
       this.placesRepo.find({ where: [
-        { name: q as any }, { city: q as any }, { description: q as any },
+        { name: q }, { city: q }, { description: q },
       ], take: limit }),
       this.postsRepo.find({ where: [
-        { title: q as any }, { body: q as any },
+        { title: q }, { body: q },
       ], take: limit }),
-      this.usersRepo.find({ where: [
-        { fullName: q as any }, { handle: q as any },
-      ], take: limit }),
+      // Public endpoint — select only safe, displayable fields (never password).
+      this.usersRepo.find({
+        where: [{ fullName: q }, { handle: q }],
+        select: ['id', 'fullName', 'handle', 'avatar', 'bio', 'country', 'plan', 'role', 'followersCount'],
+        take: limit,
+      }),
     ]);
 
     return { places, posts, users, total: places.length + posts.length + users.length };

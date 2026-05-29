@@ -8,9 +8,11 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AppModule = void 0;
 const common_1 = require("@nestjs/common");
+const core_1 = require("@nestjs/core");
 const typeorm_1 = require("@nestjs/typeorm");
 const config_1 = require("@nestjs/config");
 const throttler_1 = require("@nestjs/throttler");
+const throttler_guard_1 = require("./common/guards/throttler.guard");
 const cache_manager_1 = require("@nestjs/cache-manager");
 const auth_module_1 = require("./auth/auth.module");
 const users_module_1 = require("./users/users.module");
@@ -37,6 +39,8 @@ const ads_module_1 = require("./ads/ads.module");
 const gamification_module_1 = require("./gamification/gamification.module");
 const notifications_module_1 = require("./notifications/notifications.module");
 const contact_module_1 = require("./contact/contact.module");
+const push_module_1 = require("./push/push.module");
+const search_module_1 = require("./search/search.module");
 const redis_module_1 = require("./redis/redis.module");
 const storage_module_1 = require("./storage/storage.module");
 const health_module_1 = require("./health/health.module");
@@ -51,6 +55,7 @@ const messages_module_1 = require("./messages/messages.module");
 const marketplace_module_1 = require("./marketplace/marketplace.module");
 const queues_module_1 = require("./queues/queues.module");
 const analytics_module_1 = require("./analytics/analytics.module");
+const email_module_1 = require("./email/email.module");
 const database_config_1 = require("./database/database.config");
 let AppModule = class AppModule {
 };
@@ -104,6 +109,8 @@ exports.AppModule = AppModule = __decorate([
             gamification_module_1.GamificationModule,
             notifications_module_1.NotificationsModule,
             contact_module_1.ContactModule,
+            push_module_1.PushModule,
+            search_module_1.SearchModule,
             bookings_module_1.BookingsModule,
             inventory_module_1.InventoryModule,
             payments_module_1.PaymentsModule,
@@ -115,6 +122,13 @@ exports.AppModule = AppModule = __decorate([
             marketplace_module_1.MarketplaceModule,
             queues_module_1.QueuesModule,
             analytics_module_1.AnalyticsModule,
+            email_module_1.EmailModule,
+        ],
+        providers: [
+            {
+                provide: core_1.APP_GUARD,
+                useClass: throttler_guard_1.CustomThrottlerGuard,
+            },
         ],
     })
 ], AppModule);

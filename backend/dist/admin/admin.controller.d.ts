@@ -1,4 +1,5 @@
 import { AdminService } from './admin.service';
+import { UpdateUserDto } from './dto/update-user.dto';
 export declare class AdminController {
     private adminService;
     constructor(adminService: AdminService);
@@ -36,7 +37,7 @@ export declare class AdminController {
             totalPages: number;
         };
     }>;
-    updateUser(id: string, body: any): Promise<import("../users/user.entity").User>;
+    updateUser(id: string, body: UpdateUserDto): Promise<import("../users/user.entity").User>;
     setUserRole(id: string, body: {
         role: string;
     }): Promise<import("../users/user.entity").User>;

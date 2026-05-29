@@ -24,10 +24,10 @@ export declare class User {
     interests: string[];
     onboardingComplete: boolean;
     role: UserRole;
+    plan: UserPlan;
     favoriteIds: string[];
     visitedPlaceIds: string[];
     isActive: boolean;
-    plan: UserPlan;
     subscriptionExpiresAt: Date;
     stripeCustomerId: string | null;
     passportTheme: string | null;
@@ -36,6 +36,9 @@ export declare class User {
     points: number;
     followersCount: number;
     followingCount: number;
+    passwordResetToken: string | null;
+    passwordResetExpires: Date | null;
+    tokenVersion: number;
     reviews: Review[];
     createdAt: Date;
     updatedAt: Date;

@@ -22,13 +22,15 @@ const user_entity_1 = require("../users/user.entity");
 const place_entity_1 = require("../places/place.entity");
 const booking_entity_1 = require("../bookings/booking.entity");
 const review_entity_1 = require("../reviews/review.entity");
+const queues_service_1 = require("../queues/queues.service");
 let AnalyticsService = AnalyticsService_1 = class AnalyticsService {
-    constructor(userRepo, placeRepo, bookingRepo, reviewRepo, redisService) {
+    constructor(userRepo, placeRepo, bookingRepo, reviewRepo, redisService, queuesService) {
         this.userRepo = userRepo;
         this.placeRepo = placeRepo;
         this.bookingRepo = bookingRepo;
         this.reviewRepo = reviewRepo;
         this.redisService = redisService;
+        this.queuesService = queuesService;
         this.logger = new common_1.Logger(AnalyticsService_1.name);
     }
     async getDashboardStats() {
@@ -147,6 +149,19 @@ let AnalyticsService = AnalyticsService_1 = class AnalyticsService {
         };
     }
     async trackEvent(eventType, userId, metadata) {
+        try {
+            await this.queuesService.addAnalyticsJob('track_event', {
+                eventType,
+                userId,
+                metadata,
+            });
+        }
+        catch (error) {
+            this.logger.warn(`Failed to queue analytics event: ${error.message}`);
+            await this.trackEventSync(eventType, userId, metadata);
+        }
+    }
+    async trackEventSync(eventType, userId, metadata) {
         const event = {
             type: eventType,
             userId,
@@ -215,6 +230,7 @@ exports.AnalyticsService = AnalyticsService = AnalyticsService_1 = __decorate([
         typeorm_2.Repository,
         typeorm_2.Repository,
         typeorm_2.Repository,
-        redis_service_1.RedisService])
+        redis_service_1.RedisService,
+        queues_service_1.QueuesService])
 ], AnalyticsService);
 //# sourceMappingURL=analytics.service.js.map

@@ -97,8 +97,17 @@ let FeedService = class FeedService {
             - (a.downvotes || 0)
             + 1.2 * (a.commentCount || 0)
             + 0.6 * (a.savesCount || a.saveCount || 0)
-            + 0.4 * (a.reactionsCount || a.reactionCount || 0);
+            + 0.4 * (a.reactionsCount || a.reactionCount || 0)
+            + 0.8 * (a.repostCount || 0);
         const hotScore = (a) => engagement(a) * decay(a.createdAt);
+        const freshnessBoost = (a) => {
+            const ageHours = (Date.now() - new Date(a.createdAt).getTime()) / 3_600_000;
+            if (ageHours < 1)
+                return 1.4;
+            if (ageHours < 4)
+                return 1.15;
+            return 1;
+        };
         const viewerInterests = new Set();
         const viewerCities = new Set();
         if (sort === 'foryou' && opts.userId) {
@@ -139,7 +148,7 @@ let FeedService = class FeedService {
             }
             return 1 + 0.25 * Math.min(matches, 2);
         };
-        const forYouScore = (a) => (hotScore(a) + 0.5) * tierBoost(a) * interestBoost(a);
+        const forYouScore = (a) => (hotScore(a) + 0.5) * tierBoost(a) * interestBoost(a) * freshnessBoost(a);
         if (sort === 'foryou') {
             merged.sort((a, b) => {
                 const sb = forYouScore(b);
@@ -148,6 +157,17 @@ let FeedService = class FeedService {
                     return sb - sa;
                 return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
             });
+            const authorCounts = new Map();
+            const diverse = [];
+            for (const item of merged) {
+                const aid = item.authorId || item.userId || 'unknown';
+                const count = authorCounts.get(aid) || 0;
+                if (count < 2) {
+                    diverse.push(item);
+                    authorCounts.set(aid, count + 1);
+                }
+            }
+            merged = diverse;
         }
         else if (sort === 'hot') {
             merged.sort((a, b) => {

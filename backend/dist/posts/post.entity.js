@@ -29,6 +29,7 @@ __decorate([
 ], Post.prototype, "body", void 0);
 __decorate([
     (0, typeorm_1.Column)({ nullable: true }),
+    (0, typeorm_1.Index)(),
     __metadata("design:type", String)
 ], Post.prototype, "category", void 0);
 __decorate([
@@ -37,12 +38,17 @@ __decorate([
 ], Post.prototype, "location", void 0);
 __decorate([
     (0, typeorm_1.Column)({ nullable: true }),
+    (0, typeorm_1.Index)(),
     __metadata("design:type", String)
 ], Post.prototype, "placeId", void 0);
 __decorate([
     (0, typeorm_1.Column)('simple-array', { nullable: true }),
     __metadata("design:type", Array)
 ], Post.prototype, "images", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], Post.prototype, "videoUrl", void 0);
 __decorate([
     (0, typeorm_1.Column)('simple-array', { nullable: true }),
     __metadata("design:type", Array)
@@ -73,6 +79,10 @@ __decorate([
     (0, typeorm_1.Column)({ default: 0 }),
     __metadata("design:type", Number)
 ], Post.prototype, "viewCount", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ default: 0 }),
+    __metadata("design:type", Number)
+], Post.prototype, "repostCount", void 0);
 __decorate([
     (0, typeorm_1.Column)({ default: false }),
     __metadata("design:type", Boolean)

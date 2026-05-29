@@ -20,12 +20,14 @@ const booking_entity_1 = require("./booking.entity");
 const inventory_entity_1 = require("../inventory/inventory.entity");
 const config_1 = require("@nestjs/config");
 const redis_service_1 = require("../redis/redis.service");
+const queues_service_1 = require("../queues/queues.service");
 let BookingsService = class BookingsService {
-    constructor(bookingRepo, inventoryRepo, configService, redisService) {
+    constructor(bookingRepo, inventoryRepo, configService, redisService, queuesService) {
         this.bookingRepo = bookingRepo;
         this.inventoryRepo = inventoryRepo;
         this.configService = configService;
         this.redisService = redisService;
+        this.queuesService = queuesService;
     }
     async create(userId, dto) {
         const item = await this.inventoryRepo.findOne({
@@ -130,7 +132,17 @@ let BookingsService = class BookingsService {
         booking.status = 'confirmed';
         booking.paymentIntentId = paymentIntentId;
         booking.qrCode = this.generateQRCode(booking.id);
-        return this.bookingRepo.save(booking);
+        const saved = await this.bookingRepo.save(booking);
+        try {
+            await this.queuesService.addBookingJob('confirm', {
+                bookingId: saved.id,
+                paymentIntentId,
+                userEmail: saved.user?.email,
+                userId: saved.userId,
+            });
+        }
+        catch { }
+        return saved;
     }
     async cancel(id, userId, reason) {
         const booking = await this.findOne(id);
@@ -253,6 +265,7 @@ exports.BookingsService = BookingsService = __decorate([
     __metadata("design:paramtypes", [typeorm_2.Repository,
         typeorm_2.Repository,
         config_1.ConfigService,
-        redis_service_1.RedisService])
+        redis_service_1.RedisService,
+        queues_service_1.QueuesService])
 ], BookingsService);
 //# sourceMappingURL=bookings.service.js.map

@@ -22,6 +22,10 @@ let EventsGateway = EventsGateway_1 = class EventsGateway {
         this.redisService = redisService;
         this.logger = new common_1.Logger(EventsGateway_1.name);
         this.userSockets = new Map();
+        this.messageRateLimits = new Map();
+        this.MAX_MESSAGE_LENGTH = 2000;
+        this.RATE_LIMIT_WINDOW_MS = 10000;
+        this.RATE_LIMIT_MAX_MSGS = 20;
     }
     async handleConnection(client) {
         try {
@@ -137,16 +141,25 @@ let EventsGateway = EventsGateway_1 = class EventsGateway {
         const user = client.data.user;
         if (!userId)
             return { error: 'Unauthorized' };
+        if (!this.checkRateLimit(userId)) {
+            return { error: 'Rate limit exceeded. Please slow down.' };
+        }
+        if (!payload.content || payload.content.length > this.MAX_MESSAGE_LENGTH) {
+            return { error: `Message too long (max ${this.MAX_MESSAGE_LENGTH} chars)` };
+        }
         const message = {
             id: `msg_${Date.now()}_${Math.random().toString(36).slice(2)}`,
             roomId: payload.roomId,
             senderId: userId,
             senderName: user?.fullName || 'Anonymous',
             senderAvatar: user?.avatar,
-            content: payload.content,
+            content: payload.content.trim(),
             type: payload.type || 'text',
             timestamp: new Date().toISOString(),
         };
+        this.redisService.client.lpush(`chat:${payload.roomId}:history`, JSON.stringify(message));
+        this.redisService.client.ltrim(`chat:${payload.roomId}:history`, 0, 49);
+        this.redisService.client.expire(`chat:${payload.roomId}:history`, 86400);
         this.redisService.setJson(`chat:${payload.roomId}:latest`, message, 86400);
         this.server.to(`chat:${payload.roomId}`).emit('chat:message', message);
         return { status: 'ok', message };
@@ -165,13 +178,22 @@ let EventsGateway = EventsGateway_1 = class EventsGateway {
         return { status: 'ok', viewerCount };
     }
     handleStreamComment(client, payload) {
+        const userId = client.data.userId;
         const user = client.data.user;
+        if (!userId)
+            return { error: 'Unauthorized' };
+        if (!this.checkRateLimit(userId)) {
+            return { error: 'Rate limit exceeded. Please slow down.' };
+        }
+        if (!payload.comment || payload.comment.length > this.MAX_MESSAGE_LENGTH) {
+            return { error: `Comment too long (max ${this.MAX_MESSAGE_LENGTH} chars)` };
+        }
         this.server.to(`stream:${payload.streamId}`).emit('stream:comment', {
             id: `c_${Date.now()}`,
-            userId: client.data.userId,
+            userId,
             userName: user?.fullName || 'Anonymous',
             avatar: user?.avatar,
-            comment: payload.comment,
+            comment: payload.comment.trim(),
             timestamp: new Date().toISOString(),
         });
         return { status: 'ok' };
@@ -197,6 +219,34 @@ let EventsGateway = EventsGateway_1 = class EventsGateway {
             if (uid === readerId)
                 continue;
             this.server.to(`user:${uid}`).emit('dm:read', payload);
+        }
+    }
+    checkRateLimit(userId) {
+        const now = Date.now();
+        const windowStart = now - this.RATE_LIMIT_WINDOW_MS;
+        const timestamps = this.messageRateLimits.get(userId) || [];
+        const recent = timestamps.filter(ts => ts > windowStart);
+        if (recent.length >= this.RATE_LIMIT_MAX_MSGS) {
+            return false;
+        }
+        recent.push(now);
+        this.messageRateLimits.set(userId, recent);
+        if (recent.length === 1 && this.messageRateLimits.size > 10000) {
+            this.gcRateLimits();
+        }
+        return true;
+    }
+    gcRateLimits() {
+        const now = Date.now();
+        const windowStart = now - this.RATE_LIMIT_WINDOW_MS;
+        for (const [userId, timestamps] of this.messageRateLimits.entries()) {
+            const recent = timestamps.filter(ts => ts > windowStart);
+            if (recent.length === 0) {
+                this.messageRateLimits.delete(userId);
+            }
+            else {
+                this.messageRateLimits.set(userId, recent);
+            }
         }
     }
 };
@@ -280,7 +330,23 @@ __decorate([
 exports.EventsGateway = EventsGateway = EventsGateway_1 = __decorate([
     (0, websockets_1.WebSocketGateway)({
         cors: {
-            origin: '*',
+            origin: (origin, callback) => {
+                const allowedPatterns = (process.env.ALLOWED_ORIGINS?.split(',').map(s => s.trim()) || [
+                    'http://localhost:5173',
+                    'http://localhost:3000',
+                    'http://localhost:4173',
+                ]).filter(Boolean);
+                const originRegexes = allowedPatterns.map(pattern => {
+                    const escaped = pattern.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*');
+                    return new RegExp(`^${escaped}$`);
+                });
+                if (!origin || originRegexes.some(r => r.test(origin))) {
+                    callback(null, true);
+                }
+                else {
+                    callback(new Error(`Not allowed by CORS: ${origin}`), false);
+                }
+            },
             credentials: true,
         },
         namespace: '/events',

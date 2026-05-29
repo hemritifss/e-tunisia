@@ -13,12 +13,13 @@ const bookings_controller_1 = require("./bookings.controller");
 const bookings_service_1 = require("./bookings.service");
 const booking_entity_1 = require("./booking.entity");
 const inventory_entity_1 = require("../inventory/inventory.entity");
+const queues_module_1 = require("../queues/queues.module");
 let BookingsModule = class BookingsModule {
 };
 exports.BookingsModule = BookingsModule;
 exports.BookingsModule = BookingsModule = __decorate([
     (0, common_1.Module)({
-        imports: [typeorm_1.TypeOrmModule.forFeature([booking_entity_1.Booking, inventory_entity_1.InventoryItem])],
+        imports: [typeorm_1.TypeOrmModule.forFeature([booking_entity_1.Booking, inventory_entity_1.InventoryItem]), queues_module_1.QueuesModule],
         controllers: [bookings_controller_1.BookingsController],
         providers: [bookings_service_1.BookingsService],
         exports: [bookings_service_1.BookingsService],

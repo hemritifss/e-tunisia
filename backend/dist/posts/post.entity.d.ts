@@ -7,6 +7,7 @@ export declare class Post {
     location: string;
     placeId: string;
     images: string[];
+    videoUrl: string | null;
     tags: string[];
     author: User;
     authorId: string;
@@ -14,6 +15,7 @@ export declare class Post {
     downvotes: number;
     commentCount: number;
     viewCount: number;
+    repostCount: number;
     isPinned: boolean;
     isActive: boolean;
     createdAt: Date;

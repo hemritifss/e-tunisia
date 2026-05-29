@@ -132,6 +132,9 @@ let UsersController = class UsersController {
     globalActivityFeed(limit) {
         return this.activityService.globalFeed(limit ? Number(limit) : 20);
     }
+    activeTravelers(limit) {
+        return this.usersService.activeTravelers(limit ? Number(limit) : 50);
+    }
     async updateProfile(req, body) {
         const ALLOWED = [
             'fullName', 'handle', 'avatar', 'phone', 'country', 'bio', 'website',
@@ -364,6 +367,13 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "globalActivityFeed", null);
+__decorate([
+    (0, common_1.Get)('active-travelers'),
+    __param(0, (0, common_1.Query)('limit')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "activeTravelers", null);
 __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, swagger_1.ApiBearerAuth)(),

@@ -8,6 +8,10 @@ export declare class EventsGateway implements OnGatewayConnection, OnGatewayDisc
     server: Server;
     private readonly logger;
     private userSockets;
+    private messageRateLimits;
+    private readonly MAX_MESSAGE_LENGTH;
+    private readonly RATE_LIMIT_WINDOW_MS;
+    private readonly RATE_LIMIT_MAX_MSGS;
     constructor(jwtService: JwtService, redisService: RedisService);
     handleConnection(client: Socket): Promise<void>;
     handleDisconnect(client: Socket): void;
@@ -84,7 +88,11 @@ export declare class EventsGateway implements OnGatewayConnection, OnGatewayDisc
         streamId: string;
         comment: string;
     }): {
+        error: string;
+        status?: undefined;
+    } | {
         status: string;
+        error?: undefined;
     };
     broadcastToUser(userId: string, event: string, data: any): void;
     broadcastToFeed(event: string, data: any): void;
@@ -92,4 +100,6 @@ export declare class EventsGateway implements OnGatewayConnection, OnGatewayDisc
     getOnlineUsersCount(): number;
     isUserOnline(userId: string): boolean;
     broadcastReadReceipt(roomId: string, readerId: string, participantIds: string[]): void;
+    private checkRateLimit;
+    private gcRateLimits;
 }

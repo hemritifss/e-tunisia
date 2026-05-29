@@ -229,5 +229,12 @@ export declare class PostsController {
         body: string;
         parentId?: string;
     }): Promise<import("./comment.entity").Comment>;
+    repost(req: any, id: string, body: {
+        comment?: string;
+    }): Promise<import("./repost.entity").Repost>;
+    undoRepost(req: any, id: string): Promise<{
+        removed: boolean;
+    }>;
+    listReposts(id: string): Promise<import("./repost.entity").Repost[]>;
 }
 export {};

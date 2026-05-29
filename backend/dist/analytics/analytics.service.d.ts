@@ -4,14 +4,16 @@ import { User } from '../users/user.entity';
 import { Place } from '../places/place.entity';
 import { Booking } from '../bookings/booking.entity';
 import { Review } from '../reviews/review.entity';
+import { QueuesService } from '../queues/queues.service';
 export declare class AnalyticsService {
     private userRepo;
     private placeRepo;
     private bookingRepo;
     private reviewRepo;
     private redisService;
+    private queuesService;
     private readonly logger;
-    constructor(userRepo: Repository<User>, placeRepo: Repository<Place>, bookingRepo: Repository<Booking>, reviewRepo: Repository<Review>, redisService: RedisService);
+    constructor(userRepo: Repository<User>, placeRepo: Repository<Place>, bookingRepo: Repository<Booking>, reviewRepo: Repository<Review>, redisService: RedisService, queuesService: QueuesService);
     getDashboardStats(): Promise<{
         users: {
             total: number;
@@ -53,6 +55,7 @@ export declare class AnalyticsService {
         d30: number;
     }>;
     trackEvent(eventType: string, userId?: string, metadata?: Record<string, unknown>): Promise<void>;
+    private trackEventSync;
     getRealtimeStats(): Promise<{
         onlineUsers: number;
         activeSessions: number;

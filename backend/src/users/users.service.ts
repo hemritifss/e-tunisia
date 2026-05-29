@@ -267,8 +267,8 @@ export class UsersService {
                 'u.handle as handle',
                 'u.avatar as avatar',
             ])
-            .innerJoin('places', 'p', 'p.id = v.placeId')
-            .innerJoin('users', 'u', 'u.id = v.userId')
+            .innerJoin('places', 'p', 'p.id::text = v.placeId')
+            .innerJoin('users', 'u', 'u.id::text = v.userId')
             .where('u.isActive = :a', { a: true })
             .andWhere('p.latitude IS NOT NULL')
             .andWhere('p.longitude IS NOT NULL')

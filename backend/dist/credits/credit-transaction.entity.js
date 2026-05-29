@@ -41,7 +41,7 @@ __decorate([
     __metadata("design:type", String)
 ], CreditTransaction.prototype, "userId", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'simple-enum', enum: CreditTxKind }),
+    (0, typeorm_1.Column)({ type: 'varchar', length: 32, nullable: true }),
     (0, typeorm_1.Index)(),
     __metadata("design:type", String)
 ], CreditTransaction.prototype, "kind", void 0);
