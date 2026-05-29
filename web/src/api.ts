@@ -326,6 +326,23 @@ export async function getLeaderboard(limit = 20) {
   return api<any[]>(`/gamification/leaderboard?limit=${limit}`);
 }
 
+// ── CHALLENGES / DAILY TASKS / STREAK ─────────
+export async function getDailyChallenges() {
+  return api<any[]>('/challenges/daily');
+}
+export async function getMyStreak() {
+  return api<any>('/challenges/streak');
+}
+export async function getChallengeLeaderboard(period: 'daily' | 'weekly' | 'all-time' = 'weekly', limit = 50) {
+  return api<any[]>(`/challenges/leaderboard?period=${period}&limit=${limit}`);
+}
+export async function claimChallenge(userChallengeId: string) {
+  return api<any>(`/challenges/${userChallengeId}/claim`, { method: 'POST' });
+}
+export async function challengeCheckIn() {
+  return api<any>('/challenges/check-in', { method: 'POST' });
+}
+
 export async function getActiveTravelers(limit = 50) {
   return api<any[]>('/users/active-travelers?limit=' + limit);
 }

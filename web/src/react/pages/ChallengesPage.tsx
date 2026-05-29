@@ -20,7 +20,7 @@ import {
 import { Card, CardContent } from '../components/Card';
 import { Button } from '../components/Button';
 import { Skeleton } from '../components/Skeleton';
-import { api } from '../../shared/api';
+import * as api from '../../api';
 import { useUIStore } from '../stores/ui-store';
 
 interface Challenge {
@@ -172,57 +172,28 @@ export default function ChallengesPage() {
 
   const { data: challengesData, isLoading: challengesLoading } = useQuery({
     queryKey: ['challenges', 'daily'],
-    queryFn: async () => {
-      const token = localStorage.getItem('etunisia_token');
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/v1/challenges/daily`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
-      return res.json();
-    },
+    queryFn: () => api.getDailyChallenges().catch(() => []),
   });
 
   const { data: streakData } = useQuery({
     queryKey: ['streak'],
-    queryFn: async () => {
-      const token = localStorage.getItem('etunisia_token');
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/v1/challenges/streak`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
-      return res.json();
-    },
+    queryFn: () => api.getMyStreak().catch(() => null),
   });
 
   const { data: leaderboardData } = useQuery({
     queryKey: ['leaderboard'],
-    queryFn: async () => {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/v1/challenges/leaderboard?period=weekly&limit=50`);
-      return res.json();
-    },
+    queryFn: () => api.getChallengeLeaderboard('weekly', 50).catch(() => []),
   });
 
   const claimMutation = useMutation({
-    mutationFn: async (userChallengeId: string) => {
-      const token = localStorage.getItem('etunisia_token');
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/v1/challenges/${userChallengeId}/claim`, {
-        method: 'POST',
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
-      return res.json();
-    },
-    onSuccess: (data) => {
-      showToast(`+${data.xpEarned || 0} XP earned!`, 'success');
+    mutationFn: (userChallengeId: string) => api.claimChallenge(userChallengeId),
+    onSuccess: (data: any) => {
+      showToast(`+${data?.xpEarned || 0} XP earned!`, 'success');
     },
   });
 
   const checkInMutation = useMutation({
-    mutationFn: async () => {
-      const token = localStorage.getItem('etunisia_token');
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/v1/challenges/check-in`, {
-        method: 'POST',
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
-      return res.json();
-    },
+    mutationFn: () => api.challengeCheckIn(),
     onSuccess: (data) => {
       const d = data?.data || data || {};
       if (d.alreadyCheckedIn) {
