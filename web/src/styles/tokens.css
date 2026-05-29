@@ -121,13 +121,14 @@
   --text-sm:            0.8125rem;
   --text-base:          0.9375rem;
   --text-lg:            1.0625rem;
-  --text-xl:            1.25rem;
-  --text-2xl:           1.5rem;
-  --text-3xl:           1.875rem;
-  --text-4xl:           2.5rem;
-  --text-5xl:           3.25rem;
-  --text-6xl:           4rem;
-  --text-7xl:           5rem;
+  /* Headings are fluid: max == prior fixed value (desktop unchanged), min smaller for mobile */
+  --text-xl:            clamp(1.125rem, 1.05rem + 0.40vw, 1.25rem);
+  --text-2xl:           clamp(1.35rem, 1.20rem + 0.75vw, 1.5rem);
+  --text-3xl:           clamp(1.55rem, 1.30rem + 1.25vw, 1.875rem);
+  --text-4xl:           clamp(1.95rem, 1.55rem + 2.00vw, 2.5rem);
+  --text-5xl:           clamp(2.30rem, 1.75rem + 2.75vw, 3.25rem);
+  --text-6xl:           clamp(2.60rem, 1.90rem + 3.50vw, 4rem);
+  --text-7xl:           clamp(3.00rem, 2.10rem + 4.50vw, 5rem);
 
   --leading-tight:      1.15;
   --leading-snug:       1.3;
