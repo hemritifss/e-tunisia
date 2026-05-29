@@ -18,6 +18,7 @@ import {
   Trees,
   Library,
   Mountain,
+  Star,
 } from 'lucide-react';
 import { api, getImageUrl } from '../../shared/api';
 import { coverPlaceholder } from '../../shared/placeholder';
@@ -181,22 +182,26 @@ function PlaceCard({
             <Heart size={18} className={isLiked ? 'fill-current' : ''} />
           </button>
           {place.isFeatured && (
-            <span className="absolute top-3 left-3 px-2 py-1 text-xs font-medium rounded-full bg-brand text-white">
+            <span className="absolute top-3 left-3 px-2.5 py-1 text-xs font-semibold rounded-full bg-brand text-white shadow-sm">
               Featured
+            </span>
+          )}
+          {/* Bottom scrim + glassy rating pill (editorial travel-card style) */}
+          <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/55 to-transparent pointer-events-none" />
+          {Number(place.rating) > 0 && (
+            <span className="absolute bottom-3 left-3 inline-flex items-center gap-1 px-2 py-1 rounded-full bg-white/95 backdrop-blur-md text-xs font-bold text-gray-900 shadow-sm">
+              <Star size={12} className="fill-amber-400 text-amber-400" />
+              {Number(place.rating).toFixed(1)}
             </span>
           )}
         </div>
         <CardContent className="flex-1 flex flex-col">
-          <h3 className="font-semibold text-base mb-1">{place.name}</h3>
-          <div className="flex items-center gap-1 text-sm text-muted-foreground mb-2">
-            <MapPin size={14} />
-            {place.city}
-          </div>
-          <div className="flex items-center gap-2 mt-auto">
-            <StarRating rating={place.rating} size={14} />
-            <span className="text-xs text-muted-foreground">
-              {formatNumber(place.reviewCount)}
-            </span>
+          <h3 className="font-semibold text-base leading-snug mb-1 line-clamp-1 group-hover:text-brand transition-colors">{place.name}</h3>
+          <div className="flex items-center gap-1 text-sm text-muted-foreground">
+            <MapPin size={14} className="shrink-0" />
+            <span className="truncate">{place.city}</span>
+            <span className="text-muted-foreground/50 mx-1">·</span>
+            <span className="whitespace-nowrap">{formatNumber(place.reviewCount)} reviews</span>
           </div>
         </CardContent>
       </Card>
