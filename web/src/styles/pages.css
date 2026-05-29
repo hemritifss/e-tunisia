@@ -9445,9 +9445,19 @@ section[class^="hero-"] {
   .tn-partner-cta-grid {
     grid-template-columns: 1fr;
     gap: 2.5rem;
+    justify-items: center;
   }
 
+  /* When stacked, center the text + form so they read as one column. */
+  .tn-partner-cta-text {
+    max-width: 520px;
+    margin: 0 auto;
+    text-align: center;
+  }
+  .tn-partner-cta-benefits { align-items: center; }
+
   .tn-partner-cta-formwrap {
+    width: 100%;
     max-width: 480px;
     margin: 0 auto;
   }
