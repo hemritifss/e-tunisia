@@ -14710,6 +14710,16 @@ section[class^="hero-"] {
     color: oklch(14% 0.02 260);
     box-shadow: var(--shadow-md);
 }
+@media (max-width: 559px) {
+    .pro-page-cycle {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+    .pro-page-cycle button {
+        flex: 1 1 calc(50% - 3px);
+    }
+}
 
 .pro-page-grid {
     display: grid;

@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import * as api from '../../api';
+import { usePlanCatalog, fmtPrice } from '../lib/plan-catalog';
+import { coverPlaceholder } from '../../shared/placeholder';
 
 // Migrated from vanilla pages/hero.ts — the landing page. Mostly static marketing,
 // plus: canvas particles, real places/itineraries (with fallbacks), count-up stats,
@@ -13,10 +15,10 @@ interface Place { id: string; name: string; city: string; category?: { name: str
 const fallbackPlaces: Place[] = [
   { id: '1', name: 'Amphitheatre of El Jem', city: 'El Jem', rating: 4.9, reviewCount: 1240, category: { name: 'Historical' }, images: ['/img/hero3.png'] },
   { id: '2', name: 'Sidi Bou Said', city: 'Sidi Bou Said', rating: 4.8, reviewCount: 2100, category: { name: 'Cultural' }, images: ['/img/hero1.png'] },
-  { id: '3', name: 'Medina of Tunis', city: 'Tunis', rating: 4.7, reviewCount: 1850, category: { name: 'Historical' } },
-  { id: '4', name: 'Dougga', city: 'Téboursouk', rating: 4.9, reviewCount: 890, category: { name: 'Historical' } },
-  { id: '5', name: 'Djerba Island', city: 'Houmt Souk', rating: 4.6, reviewCount: 1560, category: { name: 'Beach' } },
-  { id: '6', name: 'Kairouan Great Mosque', city: 'Kairouan', rating: 4.8, reviewCount: 980, category: { name: 'Religious' } },
+  { id: '3', name: 'Medina of Tunis', city: 'Tunis', rating: 4.7, reviewCount: 1850, category: { name: 'Historical' }, images: ['/img/hero2.png'] },
+  { id: '4', name: 'Dougga', city: 'Téboursouk', rating: 4.9, reviewCount: 890, category: { name: 'Historical' }, images: ['/img/hero3.png'] },
+  { id: '5', name: 'Djerba Island', city: 'Houmt Souk', rating: 4.6, reviewCount: 1560, category: { name: 'Beach' }, images: ['/img/hero1.png'] },
+  { id: '6', name: 'Kairouan Great Mosque', city: 'Kairouan', rating: 4.8, reviewCount: 980, category: { name: 'Religious' }, images: ['/img/hero2.png'] },
 ];
 
 const fallbackItineraries = [
@@ -67,13 +69,14 @@ function CountUp({ target, start, initial = '0' }: { target: number; start: bool
 }
 
 function PlaceCard({ p }: { p: Place }) {
-  const img = p.images?.[0] || p.image || '/img/hero1.png';
+  const [imgSrc, setImgSrc] = useState(p.images?.[0] || p.image || '/img/hero1.png');
   const cat = p.category?.name || 'Place';
   const filled = Math.floor(p.rating || 0);
+  const handleImgError = () => setImgSrc(coverPlaceholder(p.id, p.name));
   return (
     <a href={`#/place/${p.id}`} className="tn-place-card">
       <div className="tn-place-img">
-        <img src={img} alt={p.name} loading="lazy" />
+        <img src={imgSrc} alt={p.name} loading="lazy" onError={handleImgError} />
         <span className="tn-place-cat">{cat}</span>
       </div>
       <div className="tn-place-body">
@@ -108,6 +111,33 @@ function ItinCard({ it }: { it: any }) {
         <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg> {(it.viewCount || 0).toLocaleString()}</span>
       </div>
     </a>
+  );
+}
+
+function PricingGrid() {
+  const { data: catalog } = usePlanCatalog();
+  const plans = catalog?.plans || [];
+  const currency = catalog?.currency || 'TND';
+  return (
+    <div className="tn-pricing-grid">
+      {plans.map((plan) => (
+        <div key={plan.id} className={`tn-pricing-card${plan.featured ? ' tn-pricing-popular' : ''}`}>
+          {plan.featured && <div className="tn-pricing-badge">Most Popular</div>}
+          <div className="tn-pricing-name">{plan.name}</div>
+          <div className="tn-pricing-price">
+            {plan.monthly === 0 ? '0' : fmtPrice(plan.monthly, currency).split(' ')[0]}
+            <span>{plan.monthly === 0 ? currency : `${currency}/mo`}</span>
+          </div>
+          <p className="tn-pricing-desc">{plan.tagline}</p>
+          <ul className="tn-pricing-features">
+            {plan.features.slice(0, 4).map((feature, i) => <li key={i}><Check /> {feature}</li>)}
+          </ul>
+          <a href={plan.id === 'free' ? '#/register' : '#/pro'} className={`tn-btn-${plan.featured ? 'primary' : 'outline'}`} style={{ width: '100%', justifyContent: 'center' }}>
+            {plan.id === 'free' ? 'Get Started' : `Upgrade to ${plan.name} →`}
+          </a>
+        </div>
+      ))}
+    </div>
   );
 }
 
@@ -262,10 +292,10 @@ export default function HeroPage() {
           </div>
           <div className="tn-hero-meta">
             <span className="tn-hero-meta-avatars" aria-hidden="true">
-              <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=yasmine" alt="" loading="lazy" />
-              <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=marco" alt="" loading="lazy" />
-              <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=amina" alt="" loading="lazy" />
-              <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=david" alt="" loading="lazy" />
+              <img src="https://api.dicebear.com/9.x/personas/svg?seed=yasmine" alt="" loading="lazy" />
+              <img src="https://api.dicebear.com/9.x/personas/svg?seed=marco" alt="" loading="lazy" />
+              <img src="https://api.dicebear.com/9.x/personas/svg?seed=amina" alt="" loading="lazy" />
+              <img src="https://api.dicebear.com/9.x/personas/svg?seed=david" alt="" loading="lazy" />
             </span>
             <span>Join <strong>12,400+</strong> travelers already exploring</span>
           </div>
@@ -284,10 +314,10 @@ export default function HeroPage() {
           <div className="tn-pulse-stat"><strong><CountUp target={312} start={pulseSeen} /></strong><span>Trips planned</span></div>
         </div>
         <div className="tn-pulse-avatars" aria-hidden="true">
-          <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=emma" alt="" loading="lazy" />
-          <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=sarah" alt="" loading="lazy" />
-          <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=david" alt="" loading="lazy" />
-          <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=marco" alt="" loading="lazy" />
+          <img src="https://api.dicebear.com/9.x/personas/svg?seed=emma" alt="" loading="lazy" />
+          <img src="https://api.dicebear.com/9.x/personas/svg?seed=sarah" alt="" loading="lazy" />
+          <img src="https://api.dicebear.com/9.x/personas/svg?seed=david" alt="" loading="lazy" />
+          <img src="https://api.dicebear.com/9.x/personas/svg?seed=marco" alt="" loading="lazy" />
           <span className="tn-pulse-more">+88</span>
         </div>
       </section>
@@ -420,7 +450,7 @@ export default function HeroPage() {
               <article key={t.seed} className={`tn-testimonial${t.pro ? ' is-pro' : ''}`} style={{ transitionDelay: `${i * 0.05}s` }}>
                 <p className="tn-testimonial-quote">{t.quote}</p>
                 <div className="tn-testimonial-user">
-                  <img src={`https://api.dicebear.com/9.x/thumbs/svg?seed=${t.seed}`} alt={t.name} loading="lazy" />
+                  <img src={`https://api.dicebear.com/9.x/personas/svg?seed=${t.seed}`} alt={t.name} loading="lazy" />
                   <div><strong>{t.name}</strong><span>{t.sub}</span></div>
                 </div>
               </article>
@@ -499,36 +529,7 @@ export default function HeroPage() {
             <h2>Start free. Upgrade when you're hooked.</h2>
             <p>Every plan supports Tunisian local businesses. No hidden fees.</p>
           </div>
-          <div className="tn-pricing-grid">
-            <div className="tn-pricing-card">
-              <div className="tn-pricing-name">Free</div>
-              <div className="tn-pricing-price">0 <span>TND</span></div>
-              <p className="tn-pricing-desc">For casual explorers</p>
-              <ul className="tn-pricing-features">
-                <li><Check /> Browse all places</li><li><Check /> Read community reviews</li><li><Check /> Basic map features</li><li><Check /> Join challenges</li>
-              </ul>
-              <a href="#/register" className="tn-btn-outline" style={{ width: '100%', justifyContent: 'center' }}>Get Started</a>
-            </div>
-            <div className="tn-pricing-card tn-pricing-popular">
-              <div className="tn-pricing-badge">Most Popular</div>
-              <div className="tn-pricing-name">Explorer</div>
-              <div className="tn-pricing-price">9.99 <span>TND/mo</span></div>
-              <p className="tn-pricing-desc">For serious travelers</p>
-              <ul className="tn-pricing-features">
-                <li><Check /> Everything in Free</li><li><Check /> AI Trip Planner</li><li><Check /> Offline maps</li><li><Check /> No ads</li><li><Check /> Priority support</li>
-              </ul>
-              <a href="#/register" className="tn-btn-primary" style={{ width: '100%', justifyContent: 'center' }}>Start Free Trial</a>
-            </div>
-            <div className="tn-pricing-card">
-              <div className="tn-pricing-name">Nomad</div>
-              <div className="tn-pricing-price">29.99 <span>TND/mo</span></div>
-              <p className="tn-pricing-desc">For the ultimate traveler</p>
-              <ul className="tn-pricing-features">
-                <li><Check /> Everything in Explorer</li><li><Check /> Exclusive hidden gems</li><li><Check /> VIP host discounts</li><li><Check /> Rare badges & status</li>
-              </ul>
-              <a href="#/register" className="tn-btn-outline" style={{ width: '100%', justifyContent: 'center' }}>Go Nomad</a>
-            </div>
-          </div>
+          <PricingGrid />
         </div>
       </section>
 

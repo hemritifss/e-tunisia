@@ -1,12 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { Sparkles, Check, Crown, Briefcase, Loader2, CreditCard, Landmark, Banknote, PartyPopper, Settings, Wallet } from 'lucide-react';
 import { useUserPlan } from '../hooks/useUserPlan';
 import { api } from '../../shared/api';
 import { goTo, currentRoute } from '../../router';
+import { Tier, Cycle, fmtPrice, usePlanCatalog } from '../lib/plan-catalog';
 
-type Tier = 'free' | 'premium' | 'business';
-type Cycle = 'monthly' | 'yearly';
 type PayMethod = 'card' | 'flouci' | 'bank' | 'cash';
 
 const showToast = (opts: any) => (window as any).showToast?.(opts);
@@ -16,47 +14,6 @@ const ICONS: Record<string, React.ReactNode> = {
     premium: <Crown size={20} />,
     business: <Briefcase size={20} />,
 };
-
-interface CatalogPlan {
-    id: Tier;
-    name: string;
-    tagline: string;
-    tint: string;
-    monthly: number;
-    yearly: number;
-    features: string[];
-    ctaLabel: string;
-    featured?: boolean;
-}
-interface Catalog { currency: string; plans: CatalogPlan[]; }
-
-// Mirrors backend plan-catalog.ts so the page still renders if /billing/plans is unreachable.
-const FALLBACK: Catalog = {
-    currency: 'TND',
-    plans: [
-        {
-            id: 'free', name: 'Free', tagline: 'Everything you need to start exploring', tint: 'var(--text-secondary)',
-            monthly: 0, yearly: 0, ctaLabel: 'Current plan',
-            features: ['Browse every place & hidden gem', 'Read & write reviews', 'Up to 3 saved trip plans', 'Up to 20 saved places', 'Mood discovery, leaderboards & activity feed'],
-        },
-        {
-            id: 'premium', name: 'Pro Traveler', tagline: 'For active explorers & creators', tint: 'var(--gold)',
-            monthly: 14.9, yearly: 149, ctaLabel: 'Upgrade to Pro', featured: true,
-            features: ['Everything in Free', 'Unlimited trip plans & saves', 'Gold Pro badge across the app', 'Custom passport themes', 'Passport analytics — who viewed you', 'Priority in suggestion feeds', 'Ad-free experience & early event access'],
-        },
-        {
-            id: 'business', name: 'Verified Business', tagline: 'For riads, restaurants, tours & agencies', tint: 'var(--violet)',
-            monthly: 74.9, yearly: 749, ctaLabel: 'Go Business',
-            features: ['Everything in Pro', 'Verified business badge', 'Owner dashboard & inquiry analytics', 'Boost listings into featured slots', 'Multi-language listings (FR / AR / EN)', 'Reply to reviews as the business', 'Priority partner support'],
-        },
-    ],
-};
-
-function fmtPrice(n: number, currency: string): string {
-    if (!n) return 'Free';
-    const hasFraction = Math.round(n * 100) % 100 !== 0;
-    return `${n.toLocaleString(undefined, { minimumFractionDigits: hasFraction ? 2 : 0, maximumFractionDigits: 2 })} ${currency}`;
-}
 
 const METHODS: { id: PayMethod; label: string; icon: React.ReactNode }[] = [
     { id: 'card', label: 'Card', icon: <CreditCard size={14} /> },
@@ -74,16 +31,9 @@ export default function ProUpgradePage() {
     const isAnon = typeof window !== 'undefined' && !localStorage.getItem('etunisia_token');
     const isWelcome = typeof window !== 'undefined' && currentRoute().includes('/premium/welcome');
 
-    const { data: catalog } = useQuery<Catalog>({
-        queryKey: ['plan-catalog'],
-        queryFn: async () => {
-            try { return (await api.getPlans()) as Catalog; } catch { return FALLBACK; }
-        },
-        staleTime: 30 * 60_000,
-        initialData: FALLBACK,
-    });
+    const { data: catalog } = usePlanCatalog();
     const currency = catalog?.currency || 'TND';
-    const plans = catalog?.plans || FALLBACK.plans;
+    const plans = catalog?.plans || [];
 
     // On the welcome screen, make sure the plan badge reflects the just-completed purchase.
     useEffect(() => {
