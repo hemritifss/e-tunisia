@@ -252,6 +252,8 @@ export const api = {
     videoUrl?: string;
   }) =>
     fetchWithAuth('/api/v1/posts', { method: 'POST', body: JSON.stringify(data) }),
+  aiAssist: (input: { text: string; action: 'improve' | 'translate' | 'shorten' | 'expand'; targetLang?: string; tone?: string }) =>
+    fetchWithAuth('/api/v1/ai/assist', { method: 'POST', body: JSON.stringify(input) }),
   aiCaption: (input: { topic?: string; location?: string }) =>
     fetchWithAuth('/api/v1/ai/caption', { method: 'POST', body: JSON.stringify(input) }),
   aiSuggestions: (interests?: string[]) =>

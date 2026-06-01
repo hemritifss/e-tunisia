@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, FileQuestion, ThumbsUp, MessageSquare, Eye, BarChart3, Heart, CornerDownRight, X } from 'lucide-react';
+import { ArrowLeft, FileQuestion, ThumbsUp, MessageSquare, Eye, BarChart3, Heart, CornerDownRight, X, Languages } from 'lucide-react';
 import * as api from '../../api';
 import { requireAuth, showToast, linkifyHashtagsAndMentions, isLoggedIn } from '../../ui-utils';
 import { currentPath, onRouteChange } from '../../router';
@@ -218,6 +218,10 @@ export default function PostDetailPage() {
   const [commentText, setCommentText] = useState('');
   const [posting, setPosting] = useState(false);
   const [reactorsOpen, setReactorsOpen] = useState(false);
+  // AI "translate to read"
+  const [translated, setTranslated] = useState<string | null>(null);
+  const [showOriginal, setShowOriginal] = useState(false);
+  const [translating, setTranslating] = useState(false);
 
   const postQ = useQuery({ queryKey: ['post', postId], queryFn: () => api.getPostById(postId).catch(() => null) });
   const meQ = useQuery({ queryKey: ['me-postdetail'], queryFn: () => api.getMyProfile().catch(() => null), enabled: isLoggedIn() });
@@ -279,6 +283,22 @@ export default function PostDetailPage() {
   const views = Number(post.viewCount) || 0;
   const engagementRate = views > 0 ? (((reactions + comments) / views) * 100).toFixed(1) + '%' : '—';
 
+  const handleTranslate = async () => {
+    if (translated) { setShowOriginal((v) => !v); return; }
+    if (!post.body?.trim()) return;
+    setTranslating(true);
+    try {
+      const r: any = await api.aiAssist({ text: post.body, action: 'translate', targetLang: 'en' });
+      if (r?.mock) showToast('Translation needs AI to be configured.');
+      else if (r?.text) { setTranslated(r.text); setShowOriginal(false); }
+    } catch (err: any) {
+      showToast(err?.message || 'Could not translate right now.', { type: 'error' });
+    } finally {
+      setTranslating(false);
+    }
+  };
+  const displayBody = translated && !showOriginal ? translated : post.body;
+
   return (
     <div className="post-detail-page page-enter" data-design="sleek" id="post-detail-root">
       {BackLink}
@@ -297,7 +317,18 @@ export default function PostDetailPage() {
 
         <h1 className="post-detail-title" dangerouslySetInnerHTML={{ __html: linkedHtml(post.title) }} />
         {cover && <img src={cover} alt="" className="post-detail-image" loading="lazy" />}
-        <p className="post-detail-body" dangerouslySetInnerHTML={{ __html: linkedHtml(post.body, true) }} />
+        <p className="post-detail-body" dangerouslySetInnerHTML={{ __html: linkedHtml(displayBody, true) }} />
+        {post.body && post.body.trim().length > 0 && (
+          <button
+            type="button"
+            onClick={handleTranslate}
+            disabled={translating}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: '0.8rem', fontWeight: 600, color: 'var(--brand)', background: 'none', border: 'none', cursor: 'pointer', marginTop: 4, padding: 0 }}
+          >
+            <Languages size={13} />
+            {translating ? 'Translating…' : translated && !showOriginal ? 'Show original' : 'Translate'}
+          </button>
+        )}
 
         <div className="post-detail-actions">
           <button className="post-detail-stat post-detail-stat-btn" type="button" disabled={reactions === 0} onClick={() => setReactorsOpen(true)}>

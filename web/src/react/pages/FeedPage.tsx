@@ -12,6 +12,7 @@ import {
   Flame,
   Coins,
   Repeat,
+  Languages,
 } from 'lucide-react';
 import { openDonateModal } from '../../donate-modal';
 import { api } from '../../shared/api';
@@ -64,6 +65,28 @@ function PostCard({ post }: { post: Post }) {
     }
   });
   const showToast = useUIStore((s) => s.showToast);
+
+  // AI "translate to read" — translates the body in place, with a toggle back to the original.
+  const [translated, setTranslated] = useState<string | null>(null);
+  const [showOriginal, setShowOriginal] = useState(false);
+  const [translating, setTranslating] = useState(false);
+  const handleTranslate = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (translated) { setShowOriginal((v) => !v); return; }
+    if (!post.body?.trim()) return;
+    setTranslating(true);
+    try {
+      const r: any = await api.aiAssist({ text: post.body, action: 'translate', targetLang: 'en' });
+      if (r?.mock) showToast('Translation needs AI to be configured.', 'info');
+      else if (r?.text) { setTranslated(r.text); setShowOriginal(false); }
+    } catch (err: any) {
+      showToast(err?.message || 'Could not translate right now.', 'error');
+    } finally {
+      setTranslating(false);
+    }
+  };
+  const displayBody = translated && !showOriginal ? translated : post.body;
 
   // For review items, navigate to the underlying place; for real posts, the post itself.
   const detailHash =
@@ -191,8 +214,19 @@ function PostCard({ post }: { post: Post }) {
 
       <a className="post-card-v2-content" href={detailHash}>
         {post.title && <h3 className="post-card-v2-title">{post.title}</h3>}
-        {post.body && <p className="post-card-v2-body">{post.body}</p>}
+        {post.body && <p className="post-card-v2-body">{displayBody}</p>}
       </a>
+      {post.body && post.body.trim().length > 0 && (
+        <button
+          type="button"
+          onClick={handleTranslate}
+          disabled={translating}
+          className="post-card-v2-translate inline-flex items-center gap-1 text-xs font-medium text-brand hover:underline disabled:opacity-50 mt-0.5 ml-0.5"
+        >
+          <Languages size={12} />
+          {translating ? 'Translating…' : translated && !showOriginal ? 'Show original' : 'Translate'}
+        </button>
+      )}
 
       {(post as any).videoUrl && (
         <a className="post-card-v2-media post-card-v2-media-1" href={detailHash} aria-label="Open post">
