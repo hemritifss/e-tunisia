@@ -117,7 +117,7 @@ export default function PartnerPage() {
   };
 
   return (
-    <div className="tn-landing partner-v3 page-enter" ref={rootRef}>
+    <div className="tn-landing partner-v3" ref={rootRef}>
       {/* ── Hero ── */}
       <section className="partner-v3-hero">
         <div className="partner-v3-hero-bg"><img src="/img/hero2.png" alt="Tunisia" /></div>
@@ -163,8 +163,8 @@ export default function PartnerPage() {
             <p>No paid placements. No tourist traps. Just travelers looking for exactly what you offer.</p>
           </div>
           <div className="tn-why-grid">
-            {BENEFITS.map((b) => (
-              <div className="tn-why-card" key={b.title}>
+            {BENEFITS.map((b, i) => (
+              <div className="tn-why-card" key={b.title} style={{ transitionDelay: `${i * 70}ms` }}>
                 <div className="tn-why-icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">{b.icon}</svg></div>
                 <h3>{b.title}</h3>
                 <p>{b.desc}</p>

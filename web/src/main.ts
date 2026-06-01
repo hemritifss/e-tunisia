@@ -272,9 +272,13 @@ function navigate() {
 
   // Handle React island routes
   if (route.isReact) {
-    content.innerHTML = '<div id="react-island-root" class="react-island-shell"></div>';
+    content.innerHTML = '<div id="react-island-root" class="react-island-shell page-enter"></div>';
     const islandRoot = document.getElementById('react-island-root');
     if (islandRoot) {
+      // Drop the entrance class once it finishes so its lingering transform/filter
+      // (animation fill) doesn't establish a containing block that would break any
+      // position:fixed children (modals, the reel composer, etc.).
+      islandRoot.addEventListener('animationend', () => islandRoot.classList.remove('page-enter'), { once: true });
       const path = currentRoute();
       if (path === '/' || path === '') {
         currentUnmount = mountIsland(FeedPage, islandRoot);

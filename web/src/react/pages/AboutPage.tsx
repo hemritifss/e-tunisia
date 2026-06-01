@@ -82,7 +82,7 @@ export default function AboutPage() {
   }, []);
 
   return (
-    <div className="tn-landing partner-v3 about-v3 page-enter" ref={rootRef}>
+    <div className="tn-landing partner-v3 about-v3" ref={rootRef}>
       {/* ── Hero ── */}
       <section className="partner-v3-hero">
         <div className="partner-v3-hero-bg"><img src="/img/hero1.png" alt="Tunisia" /></div>
@@ -130,8 +130,8 @@ export default function AboutPage() {
             <h2>Values that drive us.</h2>
           </div>
           <div className="tn-why-grid">
-            {VALUES.map((v) => (
-              <div className="tn-why-card" key={v.title}>
+            {VALUES.map((v, i) => (
+              <div className="tn-why-card" key={v.title} style={{ transitionDelay: `${i * 70}ms` }}>
                 <div className="tn-why-icon" style={{ color: v.color }}><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">{v.icon}</svg></div>
                 <h3>{v.title}</h3>
                 <p>{v.desc}</p>
@@ -150,8 +150,8 @@ export default function AboutPage() {
             <p>A youth-led project, designed and built in Sfax.</p>
           </div>
           <div className="about-v3-team">
-            {TEAM.map((m) => (
-              <div className="about-v3-team-card" key={m.name}>
+            {TEAM.map((m, i) => (
+              <div className="about-v3-team-card" key={m.name} style={{ transitionDelay: `${i * 90}ms` }}>
                 <img
                   src={m.img}
                   alt={m.name}

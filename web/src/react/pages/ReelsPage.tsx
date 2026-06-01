@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { goTo, absoluteUrl } from '../../router';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import {
   Heart,
   MessageCircle,
@@ -51,7 +51,12 @@ function ReelCard({
   const [isMuted, setIsMuted] = useState(true);
   const [isLiked, setIsLiked] = useState(false);
   const [showComments, setShowComments] = useState(false);
+  const [burstKey, setBurstKey] = useState(0);   // retriggers the double-tap heart burst
+  const [muteFlash, setMuteFlash] = useState(0); // retriggers the center mute icon flash
+  const lastTap = useRef(0);
+  const muteFlashTimer = useRef<number | null>(null);
   const showToast = useUIStore((s) => s.showToast);
+  const reduceMotion = useReducedMotion();
 
   useEffect(() => {
     const video = videoRef.current;
@@ -64,16 +69,40 @@ function ReelCard({
     }
   }, [isActive]);
 
+  useEffect(() => () => { if (muteFlashTimer.current) window.clearTimeout(muteFlashTimer.current); }, []);
+
   const toggleMute = () => {
     const video = videoRef.current;
     if (!video) return;
     video.muted = !video.muted;
     setIsMuted(video.muted);
+    setMuteFlash((k) => k + 1);
+  };
+
+  const likeOn = () => {
+    if (!isLiked) {
+      setIsLiked(true);
+      api.votePost(reel.id, 'up').catch(() => {});
+    }
   };
 
   const handleLike = () => {
-    setIsLiked(!isLiked);
+    setIsLiked((v) => !v);
     api.votePost(reel.id, isLiked ? 'clear' : 'up').catch(() => {});
+  };
+
+  // Single tap toggles mute; a quick second tap "likes" with a heart burst.
+  // The two mute toggles of a double-tap cancel out, so the mute state is preserved.
+  const handleVideoTap = () => {
+    toggleMute();
+    const now = Date.now();
+    if (now - lastTap.current < 300) {
+      likeOn();
+      setBurstKey((k) => k + 1);
+      lastTap.current = 0;
+    } else {
+      lastTap.current = now;
+    }
   };
 
   const handleShare = async () => {
@@ -96,11 +125,65 @@ function ReelCard({
         loop
         playsInline
         muted={isMuted}
-        onClick={toggleMute}
+        onClick={handleVideoTap}
       />
 
       {/* Gradient overlay for text readability */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/60 pointer-events-none" />
+
+      {/* Double-tap heart burst */}
+      <AnimatePresence>
+        {burstKey > 0 && !reduceMotion && (
+          <motion.div
+            key={burstKey}
+            className="absolute inset-0 z-20 grid place-items-center pointer-events-none"
+            initial={{ opacity: 1 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              initial={{ scale: 0.2, opacity: 0, rotate: -12 }}
+              animate={{ scale: [0.2, 1.15, 1], opacity: [0, 1, 0], rotate: 0 }}
+              transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], times: [0, 0.4, 1] }}
+            >
+              <Heart size={120} className="text-white fill-current drop-shadow-2xl" />
+            </motion.div>
+            {[...Array(6)].map((_, i) => (
+              <motion.span
+                key={i}
+                className="absolute"
+                initial={{ scale: 0, x: 0, y: 0, opacity: 0 }}
+                animate={{
+                  scale: [0, 1, 0.6],
+                  x: Math.cos((i / 6) * Math.PI * 2) * 90,
+                  y: Math.sin((i / 6) * Math.PI * 2) * 90,
+                  opacity: [0, 1, 0],
+                }}
+                transition={{ duration: 0.6, ease: 'easeOut' }}
+              >
+                <Heart size={22} className="text-rose-400 fill-current" />
+              </motion.span>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Mute / unmute center flash */}
+      <AnimatePresence>
+        {muteFlash > 0 && (
+          <motion.div
+            key={muteFlash}
+            className="absolute inset-0 z-20 grid place-items-center pointer-events-none"
+            initial={{ opacity: 0, scale: 0.7 }}
+            animate={{ opacity: reduceMotion ? 0 : [0, 1, 0], scale: 1 }}
+            transition={{ duration: 0.6, ease: 'easeOut' }}
+          >
+            <span className="grid place-items-center w-20 h-20 rounded-full bg-black/45 backdrop-blur-sm text-white">
+              {isMuted ? <VolumeX size={34} /> : <Volume2 size={34} />}
+            </span>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Right action rail */}
       <div className="absolute right-3 bottom-24 flex flex-col items-center gap-5 z-10">
@@ -109,12 +192,20 @@ function ReelCard({
             {isMuted ? <VolumeX size={22} /> : <Volume2 size={22} />}
           </div>
         </button>
-        <button onClick={handleLike} className="flex flex-col items-center gap-1">
+        <motion.button onClick={handleLike} className="flex flex-col items-center gap-1" whileTap={reduceMotion ? undefined : { scale: 0.82 }}>
           <div className={`p-2.5 rounded-full ${isLiked ? 'text-red-500' : 'text-white'}`}>
-            <Heart size={28} className={isLiked ? 'fill-current' : ''} />
+            <motion.span
+              key={isLiked ? 'liked' : 'unliked'}
+              initial={reduceMotion ? false : { scale: 0.5 }}
+              animate={{ scale: 1 }}
+              transition={{ type: 'spring', stiffness: 520, damping: 14 }}
+              style={{ display: 'inline-flex' }}
+            >
+              <Heart size={28} className={isLiked ? 'fill-current' : ''} />
+            </motion.span>
           </div>
           <span className="text-white text-xs font-medium">{reel.upvotes || 0}</span>
-        </button>
+        </motion.button>
         <button onClick={() => setShowComments(true)} className="flex flex-col items-center gap-1">
           <div className="p-2.5 rounded-full text-white">
             <MessageCircle size={28} />
@@ -458,6 +549,7 @@ function MyReelsGrid({ onCreate }: { onCreate: () => void }) {
 export default function ReelsPage() {
   const user = useAuthStore((s) => s.user) as any;
   const queryClient = useQueryClient();
+  const reduceMotion = useReducedMotion();
   const [tab, setTab] = useState<'foryou' | 'mine'>('foryou');
   const [composerOpen, setComposerOpen] = useState(false);
 
@@ -513,22 +605,33 @@ export default function ReelsPage() {
         </button>
       </div>
 
-      {tab === 'foryou' ? (
-        <ForYouFeed />
-      ) : !user ? (
-        <div className="h-full flex flex-col items-center justify-center text-white gap-4 px-8 text-center">
-          <h2 className="text-xl font-semibold">Sign in to manage your reels</h2>
-          <p className="text-white/50 text-sm">Your posted reels live here — sign in to see and edit them.</p>
-          <button
-            onClick={() => goTo('/login')}
-            className="px-6 py-2.5 rounded-full bg-white text-black font-medium"
-          >
-            Sign in
-          </button>
-        </div>
-      ) : (
-        <MyReelsGrid onCreate={openComposer} />
-      )}
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.div
+          key={tab}
+          className="h-full"
+          initial={reduceMotion ? false : { opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={reduceMotion ? { opacity: 1 } : { opacity: 0, y: -8 }}
+          transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+        >
+          {tab === 'foryou' ? (
+            <ForYouFeed />
+          ) : !user ? (
+            <div className="h-full flex flex-col items-center justify-center text-white gap-4 px-8 text-center">
+              <h2 className="text-xl font-semibold">Sign in to manage your reels</h2>
+              <p className="text-white/50 text-sm">Your posted reels live here — sign in to see and edit them.</p>
+              <button
+                onClick={() => goTo('/login')}
+                className="px-6 py-2.5 rounded-full bg-white text-black font-medium"
+              >
+                Sign in
+              </button>
+            </div>
+          ) : (
+            <MyReelsGrid onCreate={openComposer} />
+          )}
+        </motion.div>
+      </AnimatePresence>
 
       {composerOpen && (
         <ReelComposer

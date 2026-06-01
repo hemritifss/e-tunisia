@@ -1039,3 +1039,24 @@
     text-transform: uppercase; letter-spacing: 0.06em;
 }
 .about-v3-team-card p { font-size: var(--text-sm); color: var(--text-secondary); line-height: var(--leading-relaxed); }
+
+/* ── Hero content entrance cascade (partner + about cinematic heroes) ── */
+.partner-v3-hero-content > * {
+    animation: pv3-rise 0.7s var(--ease-out) both;
+}
+.partner-v3-hero-content > *:nth-child(1) { animation-delay: 0.06s; }
+.partner-v3-hero-content > *:nth-child(2) { animation-delay: 0.14s; }
+.partner-v3-hero-content > *:nth-child(3) { animation-delay: 0.22s; }
+.partner-v3-hero-content > *:nth-child(4) { animation-delay: 0.30s; }
+.partner-v3-hero-content > *:nth-child(5) { animation-delay: 0.38s; }
+.partner-v3-hero-content > *:nth-child(6) { animation-delay: 0.46s; }
+@keyframes pv3-rise {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .partner-v3-hero-content > * { animation: none !important; opacity: 1; transform: none; }
+    /* Force scroll-reveal cards visible without depending on the observer. */
+    .partner-v3-tile,
+    .about-v3-team-card { opacity: 1 !important; transform: none !important; }
+}

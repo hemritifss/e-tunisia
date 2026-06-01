@@ -287,7 +287,13 @@ function PostCard({ post }: { post: Post }) {
           onClick={handleSave}
           aria-label={isSavedLocal ? 'Unsave' : 'Save'}
         >
-          <Bookmark size={15} className={isSavedLocal ? 'fill-current' : ''} />
+          <motion.span
+            animate={isSavedLocal ? { scale: [1, 1.35, 1] } : { scale: 1 }}
+            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            style={{ display: 'inline-flex' }}
+          >
+            <Bookmark size={15} className={isSavedLocal ? 'fill-current' : ''} />
+          </motion.span>
           <span>{isSavedLocal ? 'Saved' : 'Save'}</span>
         </button>
         {post.author && (
