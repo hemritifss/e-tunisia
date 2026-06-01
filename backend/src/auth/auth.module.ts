@@ -18,7 +18,8 @@ import { QueuesModule } from '../queues/queues.module';
         PassportModule.register({ defaultStrategy: 'jwt' }),
         JwtModule.register({
             secret: process.env.JWT_SECRET || 'etunisia_secret',
-            signOptions: { expiresIn: process.env.JWT_EXPIRES_IN || '7d' },
+            // jwt v11's types want `StringValue | number`; an env string is fine at runtime.
+            signOptions: { expiresIn: (process.env.JWT_EXPIRES_IN || '7d') as any },
         }),
     ],
     providers: [AuthService, JwtStrategy],
