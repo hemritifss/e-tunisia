@@ -115,6 +115,7 @@ export declare class AIService {
         placeId: string;
         reason: string;
         score: number;
+        place: any;
     }>>;
     private buildItineraryPrompt;
     private generateMockItinerary;

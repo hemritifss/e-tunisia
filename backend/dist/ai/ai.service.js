@@ -399,7 +399,7 @@ let AIService = AIService_1 = class AIService {
         })
             .sort((a, b) => b.score - a.score)
             .slice(0, 20);
-        const ruleTop = () => scored.slice(0, 10).map(({ placeId, reason, score }) => ({ placeId, reason, score }));
+        const ruleTop = () => scored.slice(0, 10).map(({ placeId, reason, score, place }) => ({ placeId, reason, score, place }));
         if (!this.llm.live || scored.length <= 3 || userProfile.interests.length === 0) {
             return ruleTop();
         }
@@ -428,7 +428,7 @@ let AIService = AIService_1 = class AIService {
             for (const r of ranked) {
                 const s = byId.get(r.id);
                 if (s && !out.find((o) => o.placeId === s.place.id)) {
-                    out.push({ placeId: s.place.id, reason: r.reason || s.reason, score: s.score });
+                    out.push({ placeId: s.place.id, reason: r.reason || s.reason, score: s.score, place: s.place });
                 }
                 if (out.length >= 10)
                     break;
@@ -437,7 +437,7 @@ let AIService = AIService_1 = class AIService {
                 if (out.length >= 10)
                     break;
                 if (!out.find((o) => o.placeId === s.place.id)) {
-                    out.push({ placeId: s.place.id, reason: s.reason, score: s.score });
+                    out.push({ placeId: s.place.id, reason: s.reason, score: s.score, place: s.place });
                 }
             }
             return out;

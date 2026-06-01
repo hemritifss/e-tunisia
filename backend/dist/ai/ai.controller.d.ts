@@ -63,5 +63,6 @@ export declare class AIController {
         placeId: string;
         reason: string;
         score: number;
+        place: any;
     }[]>;
 }

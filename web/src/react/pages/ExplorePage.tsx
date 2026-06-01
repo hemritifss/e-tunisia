@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { LucideIcon } from 'lucide-react';
 import {
@@ -19,6 +19,7 @@ import {
   Library,
   Mountain,
   Star,
+  Sparkles,
 } from 'lucide-react';
 import { api, getImageUrl } from '../../shared/api';
 import { coverPlaceholder } from '../../shared/placeholder';
@@ -206,6 +207,58 @@ function PlaceCard({
         </CardContent>
       </Card>
     </motion.div>
+  );
+}
+
+/**
+ * AI "For you" strip — Claude-re-ranked place picks for the signed-in user
+ * (GET /ai/suggestions). Rendered only on the unfiltered Explore view; hidden
+ * for guests and when there are no suggestions.
+ */
+function ForYouStrip() {
+  const user = useAuthStore((s) => s.user);
+  const { data } = useQuery({
+    queryKey: ['ai-suggestions', user?.id],
+    queryFn: () => api.aiSuggestions((user as any)?.interests).catch(() => []),
+    enabled: !!user,
+    staleTime: 5 * 60 * 1000,
+  });
+  const items = Array.isArray(data) ? data : [];
+  if (!user || items.length === 0) return null;
+
+  return (
+    <section className="explore-foryou mt-2 mb-6">
+      <div className="flex items-center gap-2 mb-3 px-1">
+        <Sparkles size={16} className="text-brand" />
+        <h2 className="font-semibold text-base">For you</h2>
+        <span className="text-xs text-muted-foreground">AI picks based on your taste</span>
+      </div>
+      <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 snap-x">
+        {items.slice(0, 10).map((it: any) => {
+          const p = it.place || {};
+          const img = getImageUrl(p.coverImage || p.images?.[0]) || coverPlaceholder(p.id, p.name);
+          return (
+            <a key={it.placeId} href={`#/place/${p.id}`} className="shrink-0 w-44 snap-start group">
+              <div className="relative w-44 h-28 rounded-xl overflow-hidden bg-black/5 dark:bg-white/5">
+                <img
+                  src={img}
+                  alt={p.name}
+                  loading="lazy"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+                {Number(p.rating) > 0 && (
+                  <span className="absolute bottom-1.5 left-1.5 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-white/95 text-[11px] font-bold text-gray-900">
+                    <Star size={10} className="fill-amber-400 text-amber-400" /> {Number(p.rating).toFixed(1)}
+                  </span>
+                )}
+              </div>
+              <h3 className="mt-1.5 text-sm font-medium line-clamp-1 group-hover:text-brand transition-colors">{p.name}</h3>
+              {it.reason && <p className="text-xs text-muted-foreground line-clamp-2 leading-snug">{it.reason}</p>}
+            </a>
+          );
+        })}
+      </div>
+    </section>
   );
 }
 
@@ -479,6 +532,9 @@ export default function ExplorePage() {
           <span>Verified</span>
         </button>
       </nav>
+
+      {/* AI "For you" — only on the unfiltered discovery view */}
+      {activeCategory === 'all' && !searchQuery.trim() && minRating === 0 && !verifiedOnly && <ForYouStrip />}
 
       {/* Results */}
       <PullToRefresh onRefresh={async () => {

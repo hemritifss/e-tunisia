@@ -523,7 +523,7 @@ export class AIService {
     visitedPlaceIds: string[];
     favoriteIds: string[];
     interests: string[];
-  }): Promise<Array<{ placeId: string; reason: string; score: number }>> {
+  }): Promise<Array<{ placeId: string; reason: string; score: number; place: any }>> {
     const placesResponse = await this.placesService.findAll({} as any);
     const allPlaces = placesResponse.data || [];
 
@@ -545,7 +545,7 @@ export class AIService {
       .sort((a, b) => b.score - a.score)
       .slice(0, 20);
 
-    const ruleTop = () => scored.slice(0, 10).map(({ placeId, reason, score }) => ({ placeId, reason, score }));
+    const ruleTop = () => scored.slice(0, 10).map(({ placeId, reason, score, place }) => ({ placeId, reason, score, place }));
 
     // No LLM, too few candidates, or no stated interests → just use the scoring.
     if (!this.llm.live || scored.length <= 3 || userProfile.interests.length === 0) {
@@ -575,11 +575,11 @@ export class AIService {
       const ranked: Array<{ id: string; reason?: string }> = JSON.parse(m[0]);
 
       const byId = new Map(scored.map((s) => [s.place.id, s]));
-      const out: Array<{ placeId: string; reason: string; score: number }> = [];
+      const out: Array<{ placeId: string; reason: string; score: number; place: any }> = [];
       for (const r of ranked) {
         const s = byId.get(r.id);
         if (s && !out.find((o) => o.placeId === s.place.id)) {
-          out.push({ placeId: s.place.id, reason: r.reason || s.reason, score: s.score });
+          out.push({ placeId: s.place.id, reason: r.reason || s.reason, score: s.score, place: s.place });
         }
         if (out.length >= 10) break;
       }
@@ -587,7 +587,7 @@ export class AIService {
       for (const s of scored) {
         if (out.length >= 10) break;
         if (!out.find((o) => o.placeId === s.place.id)) {
-          out.push({ placeId: s.place.id, reason: s.reason, score: s.score });
+          out.push({ placeId: s.place.id, reason: s.reason, score: s.score, place: s.place });
         }
       }
       return out;
