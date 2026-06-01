@@ -17,31 +17,60 @@ let LlmService = LlmService_1 = class LlmService {
     constructor(config) {
         this.config = config;
         this.logger = new common_1.Logger(LlmService_1.name);
-        this.client = null;
-        this.defaultModel = this.config.get('ANTHROPIC_MODEL') || 'claude-haiku-4-5-20251001';
-        this.proModel = this.config.get('ANTHROPIC_MODEL_PRO') || 'claude-opus-4-8';
-        const apiKey = this.config.get('ANTHROPIC_API_KEY');
-        if (!apiKey) {
-            this.logger.warn('ANTHROPIC_API_KEY not set — AI runs in mock mode');
-            return;
+        this.anthropic = null;
+        this.oai = null;
+        const baseURL = this.config.get('LLM_BASE_URL');
+        const compatKey = this.config.get('LLM_API_KEY');
+        const anthropicKey = this.config.get('ANTHROPIC_API_KEY');
+        if (baseURL && compatKey) {
+            try {
+                const OpenAI = require('openai');
+                const Ctor = OpenAI.default || OpenAI;
+                this.oai = new Ctor({ apiKey: compatKey, baseURL });
+            }
+            catch (e) {
+                this.logger.warn(`openai SDK not loadable — ${e?.message || e}`);
+            }
         }
-        try {
-            const mod = require('@anthropic-ai/sdk');
-            const Anthropic = mod.default || mod;
-            this.client = new Anthropic({ apiKey });
-            this.logger.log(`Claude initialised (chat=${this.defaultModel}, pro=${this.proModel})`);
+        if (anthropicKey) {
+            try {
+                const mod = require('@anthropic-ai/sdk');
+                const Anthropic = mod.default || mod;
+                this.anthropic = new Anthropic({ apiKey: anthropicKey });
+            }
+            catch (e) {
+                this.logger.warn(`@anthropic-ai/sdk not loadable — ${e?.message || e}`);
+            }
         }
-        catch (e) {
-            this.logger.warn(`@anthropic-ai/sdk not loadable — AI runs in mock mode (${e?.message || e})`);
+        const freeModel = this.config.get('LLM_MODEL') || 'llama-3.3-70b-versatile';
+        const freeModelPro = this.config.get('LLM_MODEL_PRO') || freeModel;
+        const claudeModel = this.config.get('ANTHROPIC_MODEL') || 'claude-haiku-4-5-20251001';
+        const claudePro = this.config.get('ANTHROPIC_MODEL_PRO') || 'claude-opus-4-8';
+        this.defaultProvider = this.oai ? 'openai' : this.anthropic ? 'anthropic' : null;
+        this.proProvider = this.anthropic ? 'anthropic' : this.oai ? 'openai' : null;
+        this.defaultModel = this.oai ? freeModel : this.anthropic ? claudeModel : '';
+        this.proModel = this.anthropic ? claudePro : this.oai ? freeModelPro : '';
+        if (this.live) {
+            this.logger.log(`LLM ready — default=${this.defaultProvider}:${this.defaultModel}, pro=${this.proProvider}:${this.proModel}`);
+        }
+        else {
+            this.logger.warn('No LLM provider configured — AI runs in mock mode');
         }
     }
     get live() {
-        return !!this.client;
+        return !!(this.oai || this.anthropic);
     }
     async complete(opts) {
-        if (!this.client)
-            throw new Error('LLM not configured (mock mode)');
-        const model = opts.model || this.defaultModel;
+        const isPro = !!(opts.model && opts.model === this.proModel && this.proProvider);
+        const provider = isPro ? this.proProvider : this.defaultProvider;
+        const model = opts.model || (isPro ? this.proModel : this.defaultModel);
+        if (provider === 'anthropic')
+            return this.completeAnthropic(opts, model);
+        if (provider === 'openai')
+            return this.completeOpenAICompat(opts, model);
+        throw new Error('LLM not configured (mock mode)');
+    }
+    async completeAnthropic(opts, model) {
         const maxTokens = opts.maxTokens ?? 1024;
         const temperature = opts.temperature ?? 0.7;
         const maxRounds = opts.maxToolRounds ?? 3;
@@ -52,7 +81,7 @@ let LlmService = LlmService_1 = class LlmService {
         const toolsUsed = new Set();
         for (let round = 0; round <= maxRounds; round++) {
             const canUseTools = !!(opts.tools && opts.toolRunner && round < maxRounds);
-            const resp = await this.client.messages.create({
+            const resp = await this.anthropic.messages.create({
                 model,
                 max_tokens: maxTokens,
                 temperature,
@@ -87,6 +116,65 @@ let LlmService = LlmService_1 = class LlmService {
                 });
             }
             messages.push({ role: 'user', content: results });
+        }
+        return { text: '', stopReason: null, toolsUsed: [...toolsUsed] };
+    }
+    async completeOpenAICompat(opts, model) {
+        const maxTokens = opts.maxTokens ?? 1024;
+        const temperature = opts.temperature ?? 0.7;
+        const maxRounds = opts.maxToolRounds ?? 3;
+        const messages = [];
+        if (opts.system)
+            messages.push({ role: 'system', content: opts.system });
+        for (const m of opts.messages) {
+            messages.push({ role: m.role, content: typeof m.content === 'string' ? m.content : JSON.stringify(m.content) });
+        }
+        const tools = opts.tools?.map((t) => ({
+            type: 'function',
+            function: { name: t.name, description: t.description, parameters: t.input_schema },
+        }));
+        const toolsUsed = new Set();
+        for (let round = 0; round <= maxRounds; round++) {
+            const canUseTools = !!(tools && opts.toolRunner && round < maxRounds);
+            const resp = await this.oai.chat.completions.create({
+                model,
+                max_tokens: maxTokens,
+                temperature,
+                messages,
+                ...(canUseTools ? { tools, tool_choice: 'auto' } : {}),
+            });
+            const choice = resp.choices?.[0];
+            const msg = choice?.message;
+            const toolCalls = canUseTools ? msg?.tool_calls || [] : [];
+            if (!toolCalls.length) {
+                return {
+                    text: (msg?.content || '').trim(),
+                    stopReason: choice?.finish_reason ?? null,
+                    toolsUsed: [...toolsUsed],
+                };
+            }
+            messages.push({ role: 'assistant', content: msg.content || '', tool_calls: toolCalls });
+            for (const tc of toolCalls) {
+                toolsUsed.add(tc.function?.name);
+                let args = {};
+                try {
+                    args = JSON.parse(tc.function?.arguments || '{}');
+                }
+                catch {
+                }
+                let out;
+                try {
+                    out = await opts.toolRunner(tc.function.name, args);
+                }
+                catch (e) {
+                    out = { error: String(e?.message || e) };
+                }
+                messages.push({
+                    role: 'tool',
+                    tool_call_id: tc.id,
+                    content: typeof out === 'string' ? out : JSON.stringify(out),
+                });
+            }
         }
         return { text: '', stopReason: null, toolsUsed: [...toolsUsed] };
     }

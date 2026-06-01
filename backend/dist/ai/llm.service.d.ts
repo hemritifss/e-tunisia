@@ -26,10 +26,15 @@ export interface LlmResult {
 export declare class LlmService {
     private readonly config;
     private readonly logger;
-    private client;
+    private anthropic;
+    private oai;
+    private readonly defaultProvider;
+    private readonly proProvider;
     readonly defaultModel: string;
     readonly proModel: string;
     constructor(config: ConfigService);
     get live(): boolean;
     complete(opts: CompleteOpts): Promise<LlmResult>;
+    private completeAnthropic;
+    private completeOpenAICompat;
 }
