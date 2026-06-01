@@ -25,6 +25,7 @@ import { Avatar } from '../components/Avatar';
 import { useAuthStore } from '../stores/auth-store';
 import { useUIStore } from '../stores/ui-store';
 import { ReelComposer } from '../components/ReelComposer';
+import { RollingNumber } from '../components/RollingNumber';
 
 interface ReelItem {
   id: string;
@@ -54,6 +55,7 @@ function ReelCard({
   const [burstKey, setBurstKey] = useState(0);   // retriggers the double-tap heart burst
   const [muteFlash, setMuteFlash] = useState(0); // retriggers the center mute icon flash
   const [progress, setProgress] = useState(0);   // active video playback progress (0–100)
+  const [likes, setLikes] = useState(reel.upvotes || 0);
   const lastTap = useRef(0);
   const muteFlashTimer = useRef<number | null>(null);
   const showToast = useUIStore((s) => s.showToast);
@@ -87,12 +89,14 @@ function ReelCard({
   const likeOn = () => {
     if (!isLiked) {
       setIsLiked(true);
+      setLikes((n) => n + 1);
       api.votePost(reel.id, 'up').catch(() => {});
     }
   };
 
   const handleLike = () => {
     setIsLiked((v) => !v);
+    setLikes((n) => Math.max(0, n + (isLiked ? -1 : 1)));
     api.votePost(reel.id, isLiked ? 'clear' : 'up').catch(() => {});
   };
 
@@ -217,7 +221,7 @@ function ReelCard({
               <Heart size={28} className={isLiked ? 'fill-current' : ''} />
             </motion.span>
           </div>
-          <span className="text-white text-xs font-medium">{reel.upvotes || 0}</span>
+          <RollingNumber value={likes} className="text-white text-xs font-medium" />
         </motion.button>
         <button onClick={() => setShowComments(true)} className="flex flex-col items-center gap-1">
           <div className="p-2.5 rounded-full text-white">

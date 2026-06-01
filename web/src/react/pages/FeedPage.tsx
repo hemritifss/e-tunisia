@@ -40,6 +40,8 @@ import { MoodCompass } from '../components/MoodCompass';
 import { TierBadge } from '../components/TierBadge';
 import { PullToRefresh } from '../components/PullToRefresh';
 import { TunisiaNowPanel } from '../components/TunisiaNowPanel';
+import { PostImageCarousel } from '../components/PostImageCarousel';
+import { Reveal } from '../components/Reveal';
 import { Plus, User as UserIcon, RefreshCcw, Users as UsersIcon, Sparkles, Compass } from 'lucide-react';
 import { useAuthStore as _useAuthStoreFeed } from '../stores/auth-store';
 import { requireAuth } from '../../ui-utils';
@@ -243,14 +245,7 @@ function PostCard({ post }: { post: Post }) {
         </a>
       )}
       {images.length > 0 && !(post as any).videoUrl && (
-        <a className={`post-card-v2-media post-card-v2-media-${Math.min(images.length, 4)}`} href={detailHash} aria-label="Open post">
-          {images.slice(0, 4).map((src, i) => (
-            <img key={i} src={src} alt="" loading="lazy" />
-          ))}
-          {images.length > 4 && (
-            <span className="post-card-v2-media-overflow">+{images.length - 4}</span>
-          )}
-        </a>
+        <PostImageCarousel images={images} onOpen={() => goTo(detailHash)} />
       )}
 
       {post.location && (
@@ -502,10 +497,10 @@ export default function FeedPage() {
           <StoriesStrip />
           {isAuth && <ComposeBox user={user} />}
           <div className="compass-discovery-mobile">
-            <FeaturedPlaces />
-            <DiscoverTrips />
-            <TrendingHashtags />
-            <SuggestedUsers />
+            <Reveal><FeaturedPlaces /></Reveal>
+            <Reveal delay={0.06}><DiscoverTrips /></Reveal>
+            <Reveal delay={0.12}><TrendingHashtags /></Reveal>
+            <Reveal delay={0.18}><SuggestedUsers /></Reveal>
           </div>
 
       {/* Sort bar — segmented pill control with sliding refresh affordance */}

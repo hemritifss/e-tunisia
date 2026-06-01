@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { motion } from 'framer-motion';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, FileQuestion, ThumbsUp, MessageSquare, Eye, BarChart3, Heart, CornerDownRight, X, Languages } from 'lucide-react';
 import * as api from '../../api';
@@ -66,7 +67,13 @@ function LikeButton({ comment, label }: { comment: any; label: string }) {
   };
   return (
     <button className={`comment-like-btn ${liked ? 'liked' : ''}`} aria-label={label} disabled={busy} onClick={onLike}>
-      <Heart />
+      <motion.span
+        animate={liked ? { scale: [1, 1.4, 1] } : { scale: 1 }}
+        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+        style={{ display: 'inline-flex' }}
+      >
+        <Heart />
+      </motion.span>
       <span className="comment-like-count">{count}</span>
     </button>
   );
@@ -365,7 +372,16 @@ export default function PostDetailPage() {
           ) : threads.length === 0 ? (
             <div className="text-muted text-center" style={{ padding: 'var(--space-4)' }}>No comments yet — be the first.</div>
           ) : (
-            threads.map((c: any) => <CommentThread key={c.id} c={c} me={me} postId={postId} />)
+            threads.map((c: any, i: number) => (
+              <motion.div
+                key={c.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1], delay: Math.min(i * 0.04, 0.32) }}
+              >
+                <CommentThread c={c} me={me} postId={postId} />
+              </motion.div>
+            ))
           )}
         </div>
       </section>

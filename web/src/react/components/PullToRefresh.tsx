@@ -1,4 +1,5 @@
 import React, { useState, useRef, useCallback } from 'react';
+import { motion } from 'framer-motion';
 import { RefreshCcw } from 'lucide-react';
 
 interface Props {
@@ -56,6 +57,9 @@ export function PullToRefresh({ onRefresh, children }: Props) {
     }
   }, [pullDistance, refreshing, onRefresh]);
 
+  const progress = Math.min(pullDistance / 60, 1);
+  const ready = pullDistance > 60;
+
   return (
     <div
       ref={containerRef}
@@ -65,19 +69,24 @@ export function PullToRefresh({ onRefresh, children }: Props) {
       onTouchEnd={handleTouchEnd}
       style={{ touchAction: pulling ? 'none' : 'auto' }}
     >
-      {/* Pull indicator */}
-      <div
-        className="flex items-center justify-center transition-all duration-200 overflow-hidden"
-        style={{
-          height: `${pullDistance}px`,
-          opacity: pullDistance > 10 ? 1 : 0,
-        }}
+      {/* Pull indicator — tracks the finger 1:1 while pulling, then springs back elastically on release */}
+      <motion.div
+        className="flex items-center justify-center overflow-hidden"
+        animate={{ height: pulling ? pullDistance : refreshing ? 56 : 0 }}
+        transition={pulling ? { duration: 0 } : { type: 'spring', stiffness: 380, damping: 26 }}
+        style={{ opacity: pullDistance > 6 || refreshing ? 1 : 0 }}
       >
-        <RefreshCcw
-          size={20}
-          className={`text-brand ${refreshing ? 'animate-spin' : pullDistance > 60 ? 'rotate-180' : ''}`}
-        />
-      </div>
+        <motion.div
+          className="grid place-items-center w-9 h-9 rounded-full bg-surface shadow-md"
+          style={{ color: ready || refreshing ? 'var(--olive)' : 'var(--coral)' }}
+          animate={refreshing ? { rotate: 360, scale: 1 } : { rotate: progress * 270, scale: 0.6 + progress * 0.4 }}
+          transition={refreshing
+            ? { repeat: Infinity, ease: 'linear', duration: 0.8 }
+            : { type: 'spring', stiffness: 300, damping: 20 }}
+        >
+          <RefreshCcw size={18} />
+        </motion.div>
+      </motion.div>
       {children}
     </div>
   );

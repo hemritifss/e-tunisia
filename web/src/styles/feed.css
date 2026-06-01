@@ -479,3 +479,73 @@
 .compass-discovery-mobile {
     gap: var(--space-3);
 }
+
+/* ── Post image carousel (multi-image swipe + dot indicators) ── */
+.post-carousel {
+    position: relative;
+    margin-top: var(--space-3);
+    background: var(--bg-tertiary);
+    overflow: hidden;
+}
+.post-carousel-single,
+.post-carousel-slide {
+    display: block;
+    border: none;
+    padding: 0;
+    margin: 0;
+    background: none;
+    cursor: pointer;
+    width: 100%;
+}
+.post-carousel-single { aspect-ratio: 16 / 10; }
+.post-carousel-single img {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+    transition: transform var(--duration-normal) var(--ease-out);
+}
+.post-card-v2:hover .post-carousel-single img { transform: scale(1.02); }
+
+.post-carousel-track {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    aspect-ratio: 16 / 10;
+}
+.post-carousel-slide {
+    flex: 0 0 100%;
+    scroll-snap-align: center;
+    height: 100%;
+}
+.post-carousel-slide img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.post-carousel-counter {
+    position: absolute;
+    top: var(--space-2);
+    right: var(--space-2);
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: var(--text-xs);
+    font-weight: 600;
+    color: oklch(99% 0 0);
+    background: oklch(0% 0 0 / 0.55);
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+    pointer-events: none;
+}
+.post-carousel-dots {
+    position: absolute;
+    bottom: var(--space-2);
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 5px;
+    pointer-events: none;
+}
+.post-carousel-dot {
+    width: 6px; height: 6px;
+    border-radius: 999px;
+    background: oklch(100% 0 0 / 0.55);
+    box-shadow: 0 0 2px oklch(0% 0 0 / 0.4);
+    transition: width 0.25s var(--ease-out), background-color 0.25s var(--ease-out);
+}
+.post-carousel-dot.is-active { width: 16px; background: oklch(100% 0 0); }

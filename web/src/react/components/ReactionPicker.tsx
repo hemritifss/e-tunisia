@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { api } from '../../shared/api';
 import { useAuthStore } from '../stores/auth-store';
 import { goTo } from '../../router';
+import { RollingNumber } from './RollingNumber';
 
 export type ReactionType =
   | 'like' | 'love' | 'celebrate' | 'insightful' | 'laugh' | 'wow' | 'support';
@@ -118,7 +119,7 @@ export function ReactionPicker({
           {current ? current.emoji : '👍'}
         </span>
         <span className="reaction-trigger-label">{triggerLabel}</span>
-        {total > 0 && <span className="reaction-trigger-count">{total}</span>}
+        {total > 0 && <RollingNumber value={total} className="reaction-trigger-count" />}
       </button>
 
       {/* Top-3 mini bar (always visible when there are reactions) */}

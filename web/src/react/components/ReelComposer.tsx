@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Film, MapPin, Loader2, Sparkles, UploadCloud, RefreshCw } from 'lucide-react';
 import { api, uploadMedia } from '../../shared/api';
 import { useUIStore } from '../stores/ui-store';
+import { fireConfetti } from '../../confetti';
 
 // Backend (media.controller) only accepts these video MIME types. Phone-recorded
 // .mov (video/quicktime) is intentionally excluded so we can fail fast client-side
@@ -105,6 +106,7 @@ export function ReelComposer({ onClose, onPosted }: Props) {
         videoUrl,
       });
       showToast('Your reel is live! 🎬', 'success');
+      fireConfetti();
       // Tell every feed surface to refetch (home feed + reels).
       window.dispatchEvent(new CustomEvent('etunisia:post-created'));
       onPosted();
