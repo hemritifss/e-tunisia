@@ -53,6 +53,7 @@ function ReelCard({
   const [showComments, setShowComments] = useState(false);
   const [burstKey, setBurstKey] = useState(0);   // retriggers the double-tap heart burst
   const [muteFlash, setMuteFlash] = useState(0); // retriggers the center mute icon flash
+  const [progress, setProgress] = useState(0);   // active video playback progress (0–100)
   const lastTap = useRef(0);
   const muteFlashTimer = useRef<number | null>(null);
   const showToast = useUIStore((s) => s.showToast);
@@ -63,9 +64,13 @@ function ReelCard({
     if (!video) return;
     if (isActive) {
       video.play().catch(() => {});
+      const onTime = () => { if (video.duration) setProgress((video.currentTime / video.duration) * 100); };
+      video.addEventListener('timeupdate', onTime);
+      return () => video.removeEventListener('timeupdate', onTime);
     } else {
       video.pause();
       video.currentTime = 0;
+      setProgress(0);
     }
   }, [isActive]);
 
@@ -130,6 +135,14 @@ function ReelCard({
 
       {/* Gradient overlay for text readability */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/60 pointer-events-none" />
+
+      {/* Playback progress bar */}
+      <div className="absolute top-0 inset-x-0 z-40 h-[3px] bg-white/15 pointer-events-none">
+        <div
+          className="h-full bg-white/90"
+          style={{ width: `${progress}%`, transition: 'width 0.2s linear' }}
+        />
+      </div>
 
       {/* Double-tap heart burst */}
       <AnimatePresence>
