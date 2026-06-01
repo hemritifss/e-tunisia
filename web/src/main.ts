@@ -277,8 +277,19 @@ function navigate() {
     if (islandRoot) {
       // Drop the entrance class once it finishes so its lingering transform/filter
       // (animation fill) doesn't establish a containing block that would break any
-      // position:fixed children (modals, the reel composer, etc.).
-      islandRoot.addEventListener('animationend', () => islandRoot.classList.remove('page-enter'), { once: true });
+      // position:fixed children (modals, the reel composer, etc.). Scope to the
+      // pageEnter keyframe specifically — otherwise a child element's animationend
+      // bubbles up and could strip the class mid-entrance. A timeout is the
+      // belt-and-suspenders cleanup in case the event never fires.
+      const el = islandRoot;
+      const clearEnter = () => {
+        el.classList.remove('page-enter');
+        el.removeEventListener('animationend', onEnterEnd);
+        window.clearTimeout(enterFallback);
+      };
+      const onEnterEnd = (e: AnimationEvent) => { if (e.animationName === 'pageEnter') clearEnter(); };
+      el.addEventListener('animationend', onEnterEnd as EventListener);
+      const enterFallback = window.setTimeout(clearEnter, 1200);
       const path = currentRoute();
       if (path === '/' || path === '') {
         currentUnmount = mountIsland(FeedPage, islandRoot);

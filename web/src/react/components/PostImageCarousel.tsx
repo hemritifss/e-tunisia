@@ -7,6 +7,9 @@ import React, { useRef, useState } from 'react';
 export function PostImageCarousel({ images, onOpen }: { images: string[]; onOpen: () => void }) {
   const trackRef = useRef<HTMLDivElement>(null);
   const [idx, setIdx] = useState(0);
+  // Distinguish a tap (→ open the post) from a swipe (→ just scroll).
+  const downX = useRef<number | null>(null);
+  const moved = useRef(false);
 
   const onScroll = () => {
     const el = trackRef.current;
@@ -14,6 +17,12 @@ export function PostImageCarousel({ images, onOpen }: { images: string[]; onOpen
     const i = Math.round(el.scrollLeft / el.clientWidth);
     if (i !== idx) setIdx(i);
   };
+
+  const onPointerDown = (e: React.PointerEvent) => { downX.current = e.clientX; moved.current = false; };
+  const onPointerMove = (e: React.PointerEvent) => {
+    if (downX.current !== null && Math.abs(e.clientX - downX.current) > 8) moved.current = true;
+  };
+  const onSlideClick = () => { if (!moved.current) onOpen(); };
 
   if (images.length === 1) {
     return (
@@ -25,13 +34,19 @@ export function PostImageCarousel({ images, onOpen }: { images: string[]; onOpen
 
   return (
     <div className="post-carousel">
-      <div ref={trackRef} className="post-carousel-track scrollbar-hide" onScroll={onScroll}>
+      <div
+        ref={trackRef}
+        className="post-carousel-track scrollbar-hide"
+        onScroll={onScroll}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+      >
         {images.map((src, i) => (
           <button
             type="button"
             key={i}
             className="post-carousel-slide"
-            onClick={onOpen}
+            onClick={onSlideClick}
             aria-label={`Image ${i + 1} of ${images.length} — open post`}
           >
             <img src={src} alt="" loading="lazy" />

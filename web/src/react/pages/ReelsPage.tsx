@@ -78,13 +78,15 @@ function ReelCard({
 
   useEffect(() => () => { if (muteFlashTimer.current) window.clearTimeout(muteFlashTimer.current); }, []);
 
-  const toggleMute = () => {
+  const applyMute = () => {
     const video = videoRef.current;
     if (!video) return;
     video.muted = !video.muted;
     setIsMuted(video.muted);
-    setMuteFlash((k) => k + 1);
   };
+  const flashMute = () => setMuteFlash((k) => k + 1);
+  // Rail mute button — toggle with an immediate flash.
+  const toggleMute = () => { applyMute(); flashMute(); };
 
   const likeOn = () => {
     if (!isLiked) {
@@ -103,14 +105,18 @@ function ReelCard({
   // Single tap toggles mute; a quick second tap "likes" with a heart burst.
   // The two mute toggles of a double-tap cancel out, so the mute state is preserved.
   const handleVideoTap = () => {
-    toggleMute();
+    applyMute();
     const now = Date.now();
     if (now - lastTap.current < 300) {
+      // Double tap → like. Cancel the pending single-tap mute flash so a like never flashes.
+      if (muteFlashTimer.current) { window.clearTimeout(muteFlashTimer.current); muteFlashTimer.current = null; }
       likeOn();
       setBurstKey((k) => k + 1);
       lastTap.current = 0;
     } else {
       lastTap.current = now;
+      if (muteFlashTimer.current) window.clearTimeout(muteFlashTimer.current);
+      muteFlashTimer.current = window.setTimeout(() => { flashMute(); muteFlashTimer.current = null; }, 280);
     }
   };
 
