@@ -107,6 +107,19 @@ async function fetchWithAuth(
             action: { label: 'See plans →', onClick: () => { goTo('/pro'); } },
           });
         } catch {}
+      } else if (code === 'ai_quota_reached') {
+        // Daily AI allowance hit → nudge to Pro (guests get a sign-in hint instead).
+        try {
+          (window as any).showToast?.({
+            title: capPayload?.scope === 'guest' ? 'Sign in for more AI' : "You've hit today's AI limit",
+            message: capPayload?.message || 'Upgrade to Pro for more AI every day.',
+            type: 'achievement',
+            duration: 7000,
+            action: capPayload?.scope === 'guest'
+              ? { label: 'Sign in →', onClick: () => { goTo('/hero'); } }
+              : { label: 'Upgrade →', onClick: () => { goTo('/pro'); } },
+          });
+        } catch {}
       } else if (code === 'content_blocked') {
         // AI moderation rejected the post/comment before publishing.
         try {

@@ -156,6 +156,7 @@ export const PLAN_CATALOG: PlanCatalogEntry[] = [
       'Read & write reviews',
       'Up to 3 saved trip plans',
       'Up to 20 saved places',
+      'AI travel concierge — 5 chats a day',
       'Mood discovery, leaderboards & activity feed',
     ],
   },
@@ -173,6 +174,7 @@ export const PLAN_CATALOG: PlanCatalogEntry[] = [
     caps: PRO_CAPS,
     features: [
       'Everything in Free',
+      'AI concierge, translations & smart search — 100 chats a day',
       'Unlimited trip plans & saves',
       'Gold Pro badge across the app',
       'Custom passport themes',
@@ -194,6 +196,7 @@ export const PLAN_CATALOG: PlanCatalogEntry[] = [
     caps: BUSINESS_CAPS,
     features: [
       'Everything in Pro',
+      'Unlimited AI concierge & tools',
       'Verified business badge',
       'Owner dashboard & inquiry analytics',
       'Boost listings into featured slots',
