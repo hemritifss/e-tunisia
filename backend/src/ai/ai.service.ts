@@ -104,6 +104,17 @@ const KNOWN_CATEGORIES = new Set([
   'beaches', 'food', 'historical', 'nature', 'culture', 'nightlife', 'shopping', 'events', 'tips',
 ]);
 
+const CAPTION_SYSTEM = `You write short, punchy social captions for Tunisia travel reels (e-Tunisia app).
+- 1-2 lines, warm and authentic, a touch of Tunisian flavour (a derja word like "barcha", "3aslema", "yezzi" is welcome but optional).
+- Then a new line with 3-5 relevant hashtags (always include #Tunisia).
+- Match the language of the notes if given; otherwise English.
+Output ONLY the caption text — no quotes, no commentary.`;
+
+const RERANK_SYSTEM = `You re-rank candidate Tunisian places for a traveler by how well they fit the traveler's interests.
+Input is JSON: {"interests":[...],"candidates":[{"id","name","city","category","rating","tags"}]}.
+Return ONLY a JSON array, best-first, of up to 10 items: [{"id":"<a candidate id>","reason":"<one short, personalized reason>"}].
+Use only ids that appear in candidates. Prefer strong interest/tag matches and higher ratings.`;
+
 @Injectable()
 export class AIService {
   private readonly logger = new Logger(AIService.name);
@@ -344,6 +355,36 @@ export class AIService {
     }
   }
 
+  // ──────────────── Reels caption generator (Phase 5) ────────────────
+
+  /** Generate a short reel caption (+ hashtags) from optional notes and a location. */
+  async generateCaption(input: { topic?: string; location?: string }): Promise<{ caption: string; mock?: boolean }> {
+    const topic = (input.topic || '').trim();
+    const loc = (input.location || '').trim();
+
+    if (!this.llm.live) {
+      const base = topic || (loc ? `Exploring ${loc}` : 'A little Tunisia moment');
+      const tags = ['Tunisia', ...(loc ? [loc.replace(/\s+/g, '')] : []), 'eTunisia', 'travel'];
+      return { caption: `${base} ✨\n${tags.map((t) => `#${t}`).join(' ')}`, mock: true };
+    }
+
+    try {
+      const result = await this.llm.complete({
+        model: this.llm.defaultModel,
+        system: CAPTION_SYSTEM,
+        messages: [{ role: 'user', content: `Notes: ${topic || '(none)'}\nLocation: ${loc || '(none)'}` }],
+        temperature: 0.9,
+        maxTokens: 220,
+      });
+      const caption = result.text.trim();
+      return { caption: caption || `${topic || 'Tunisia'} ✨\n#Tunisia #eTunisia` };
+    } catch (error: any) {
+      this.logger.error('Caption generation failed:', error.message);
+      const base = topic || (loc ? `Exploring ${loc}` : 'A little Tunisia moment');
+      return { caption: `${base} ✨\n#Tunisia #eTunisia #travel`, mock: true };
+    }
+  }
+
   // ──────────────── Natural-language search (Phase 3b) ────────────────
 
   /**
@@ -486,10 +527,11 @@ export class AIService {
     const placesResponse = await this.placesService.findAll({} as any);
     const allPlaces = placesResponse.data || [];
 
-    return allPlaces
+    // Rule-based scoring picks a candidate pool; the LLM (when live) re-ranks it.
+    const scored = allPlaces
       .filter((p: any) => !userProfile.visitedPlaceIds.includes(p.id))
       .map((place: any) => {
-        let score = place.rating * 20;
+        let score = (place.rating || 0) * 20;
         const matchingTags =
           place.tags?.filter((tag: string) =>
             userProfile.interests.some((i) => tag.toLowerCase().includes(i.toLowerCase())),
@@ -498,10 +540,61 @@ export class AIService {
         if (place.isFeatured) score += 10;
         if (place.isBoosted) score += 5;
         if (userProfile.favoriteIds.includes(place.id)) score -= 30;
-        return { placeId: place.id, reason: this.generateReason(place, matchingTags), score };
+        return { place, placeId: place.id, reason: this.generateReason(place, matchingTags), score };
       })
       .sort((a, b) => b.score - a.score)
-      .slice(0, 10);
+      .slice(0, 20);
+
+    const ruleTop = () => scored.slice(0, 10).map(({ placeId, reason, score }) => ({ placeId, reason, score }));
+
+    // No LLM, too few candidates, or no stated interests → just use the scoring.
+    if (!this.llm.live || scored.length <= 3 || userProfile.interests.length === 0) {
+      return ruleTop();
+    }
+
+    try {
+      const candidates = scored.map((s) => ({
+        id: s.place.id,
+        name: s.place.name,
+        city: s.place.city,
+        category: s.place.category?.name ?? s.place.category,
+        rating: s.place.rating,
+        tags: (s.place.tags || []).slice(0, 6),
+      }));
+
+      const result = await this.llm.complete({
+        model: this.llm.defaultModel,
+        system: RERANK_SYSTEM,
+        messages: [{ role: 'user', content: JSON.stringify({ interests: userProfile.interests, candidates }) }],
+        temperature: 0.3,
+        maxTokens: 700,
+      });
+
+      const m = result.text.match(/\[[\s\S]*\]/);
+      if (!m) return ruleTop();
+      const ranked: Array<{ id: string; reason?: string }> = JSON.parse(m[0]);
+
+      const byId = new Map(scored.map((s) => [s.place.id, s]));
+      const out: Array<{ placeId: string; reason: string; score: number }> = [];
+      for (const r of ranked) {
+        const s = byId.get(r.id);
+        if (s && !out.find((o) => o.placeId === s.place.id)) {
+          out.push({ placeId: s.place.id, reason: r.reason || s.reason, score: s.score });
+        }
+        if (out.length >= 10) break;
+      }
+      // Backfill from the scored pool if the model returned fewer than 10.
+      for (const s of scored) {
+        if (out.length >= 10) break;
+        if (!out.find((o) => o.placeId === s.place.id)) {
+          out.push({ placeId: s.place.id, reason: s.reason, score: s.score });
+        }
+      }
+      return out;
+    } catch (error: any) {
+      this.logger.warn(`Recommendation re-rank failed, using scores: ${error.message}`);
+      return ruleTop();
+    }
   }
 
   // ──────────────── Prompt builders + mock fallbacks ────────────────

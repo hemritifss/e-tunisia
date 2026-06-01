@@ -71,6 +71,23 @@ export function ReelComposer({ onClose, onPosted }: Props) {
     acceptFile(e.dataTransfer.files?.[0]);
   };
 
+  const [genLoading, setGenLoading] = useState(false);
+  const generateCaption = async () => {
+    if (genLoading) return;
+    setGenLoading(true);
+    try {
+      const r: any = await api.aiCaption({
+        topic: caption.trim() || undefined,
+        location: location.trim() || undefined,
+      });
+      if (r?.caption) setCaption(r.caption);
+    } catch (err: any) {
+      showToast(err?.message || 'Could not generate a caption right now.', 'error');
+    } finally {
+      setGenLoading(false);
+    }
+  };
+
   const reset = () => { setFile(null); setCaption(''); setLocation(''); };
 
   const publish = async () => {

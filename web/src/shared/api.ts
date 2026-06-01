@@ -252,6 +252,8 @@ export const api = {
     videoUrl?: string;
   }) =>
     fetchWithAuth('/api/v1/posts', { method: 'POST', body: JSON.stringify(data) }),
+  aiCaption: (input: { topic?: string; location?: string }) =>
+    fetchWithAuth('/api/v1/ai/caption', { method: 'POST', body: JSON.stringify(input) }),
   votePost: (postId: string, direction: 'up' | 'down' | 'clear') =>
     fetchWithAuth(`/api/v1/posts/${postId}/vote`, { method: 'POST', body: JSON.stringify({ direction }) }),
   deletePost: (postId: string) =>

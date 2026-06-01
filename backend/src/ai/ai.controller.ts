@@ -88,6 +88,18 @@ export class AIController {
     return this.aiService.autoTag(body || {});
   }
 
+  @Post('caption')
+  @UseGuards(OptionalJwtAuthGuard)
+  @ApiOperation({ summary: 'Generate a reel caption + hashtags' })
+  async caption(
+    @CurrentUser('id') userId: string | null,
+    @Req() req: any,
+    @Body() body: { topic?: string; location?: string },
+  ) {
+    await this.aiService.assertQuotaAndCount({ userId, ip: req.ip });
+    return this.aiService.generateCaption(body || {});
+  }
+
   @Get('suggestions')
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Get personalized place suggestions' })
