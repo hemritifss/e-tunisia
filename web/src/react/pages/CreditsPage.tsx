@@ -2,11 +2,12 @@ import React from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   ArrowLeft, Coins, PlusCircle, HeartHandshake, Gift, Copy, Inbox,
-  MinusCircle, Send, Percent, RotateCcw, UserPlus, Sparkles, Circle,
+  MinusCircle, Send, Percent, RotateCcw, UserPlus, Sparkles, Circle, Crown,
 } from 'lucide-react';
 import * as api from '../../api';
 import { showToast } from '../../ui-utils';
 import { openDonateModal } from '../../donate-modal';
+import { openTopupModal } from '../../topup-modal';
 import { absoluteUrl } from '../../router';
 
 // Migrated from vanilla pages/credits.ts — balance, top-up, donate, referral,
@@ -15,12 +16,13 @@ import { absoluteUrl } from '../../router';
 const TX_LABEL: Record<string, string> = {
   deposit: 'Top-up', withdrawal: 'Withdrawal', donation_out: 'Donation sent',
   donation_in: 'Donation received', platform_fee: 'Platform commission', refund: 'Refund',
-  referral: 'Referral reward', boost: 'Listing boost',
+  referral: 'Referral reward', boost: 'Listing boost', subscription: 'Subscription',
 };
 
 const TX_ICON: Record<string, React.ComponentType> = {
   deposit: PlusCircle, withdrawal: MinusCircle, donation_out: Send, donation_in: Gift,
   platform_fee: Percent, refund: RotateCcw, referral: UserPlus, boost: Sparkles,
+  subscription: Crown,
 };
 
 function fmt(n: number): string {
@@ -63,22 +65,25 @@ export default function CreditsPage() {
 
   const refresh = () => queryClient.invalidateQueries({ queryKey: ['credits'] });
 
-  const topUp = async () => {
-    const raw = window.prompt('How many credits would you like to top up? (1–5000 TND)');
-    if (!raw) return;
-    const amount = Number(raw);
-    if (!Number.isFinite(amount) || amount <= 0) {
-      showToast('Invalid amount', { type: 'error' });
-      return;
-    }
-    try {
-      await api.depositCredits(amount);
-      showToast(`Topped up ${fmt(amount)} TND`);
+  const topUp = () => openTopupModal({ onSuccess: refresh });
+
+  // Land here after a Flouci top-up return (#/credits?topup=success|failed). Toast,
+  // refresh the balance, then strip the param so a reload doesn't re-fire the toast.
+  React.useEffect(() => {
+    const hash = window.location.hash;
+    const qIdx = hash.indexOf('?');
+    if (qIdx === -1) return;
+    const topup = new URLSearchParams(hash.slice(qIdx + 1)).get('topup');
+    if (!topup) return;
+    if (topup === 'success') {
+      showToast('Top-up complete — your balance is updated.');
       refresh();
-    } catch (err: any) {
-      showToast(err?.message || 'Top-up failed', { type: 'error' });
+    } else if (topup === 'failed') {
+      showToast('Top-up was not completed.', { type: 'error' });
     }
-  };
+    window.history.replaceState(null, '', hash.slice(0, qIdx));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const donatePlatform = () => openDonateModal({ target: 'platform', onSuccess: refresh });
 

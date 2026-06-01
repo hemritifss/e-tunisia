@@ -13,6 +13,7 @@ export enum CreditTxKind {
     REFUND = 'refund',
     BOOST = 'boost',               // paid to promote a place listing
     REFERRAL = 'referral',         // give-10-get-10 referral reward
+    SUBSCRIPTION = 'subscription', // paid a Pro/Business subscription from the wallet
 }
 
 @Entity('credit_transactions')

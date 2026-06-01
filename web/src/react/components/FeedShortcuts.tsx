@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import {
     Compass, Map, Bookmark, Trophy, Globe2, IdCard,
     Heart, Briefcase, Send, Calendar, Crown, Lightbulb, Award,
-    ChevronDown, ChevronUp,
+    ChevronDown, ChevronUp, Clapperboard,
 } from 'lucide-react';
 import { api, getImageUrl } from '../../shared/api';
 import { useAuthStore } from '../stores/auth-store';
@@ -29,6 +29,7 @@ type ShortcutItem = {
 
 const PRIMARY: ShortcutItem[] = [
     { id: 'passport',   icon: <IdCard size={18} />,   label: 'My Passport',  isPassport: true },
+    { id: 'reels',      icon: <Clapperboard size={18} />, label: 'Reels',    href: '#/reels' },
     { id: 'activity',   icon: <Globe2 size={18} />,   label: 'Following',    href: '#/activity' },
     { id: 'explore',    icon: <Compass size={18} />,  label: 'Explore',      href: '#/explore' },
     { id: 'trips',      icon: <Map size={18} />,      label: 'Trips',        href: '#/discover-trips' },

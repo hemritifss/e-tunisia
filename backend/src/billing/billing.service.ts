@@ -6,6 +6,7 @@ import { User, UserPlan } from '../users/user.entity';
 import { Subscription, SubStatus } from '../subscriptions/subscription.entity';
 import { PaymentsService } from '../payments/payments.service';
 import { FlouciService } from '../payments/flouci.service';
+import { CreditsService } from '../credits/credits.service';
 import {
     BillingCycle,
     FeatureCaps,
@@ -41,6 +42,7 @@ export class BillingService {
         @InjectRepository(Subscription) private subsRepo: Repository<Subscription>,
         private payments: PaymentsService,
         private flouci: FlouciService,
+        private credits: CreditsService,
         private config: ConfigService,
     ) {}
 
@@ -251,6 +253,43 @@ export class BillingService {
         await this.subsRepo.save(sub);
         this.logger.log(`Manual ${method} upgrade requested by ${userId} for ${entry.id} (${cycle}) — awaiting admin confirm`);
         return { status: 'pending', plan: entry.id };
+    }
+
+    /**
+     * Pay for a plan from the user's credit wallet. Debits the balance, then activates
+     * the plan immediately. If activation fails after the debit, the charge is refunded
+     * so the user is never left short. Throws BadRequestException (code
+     * `insufficient_credits`) when the balance is too low — the FE offers a top-up.
+     */
+    async payWithCredits(
+        userId: string,
+        planId: string,
+        cycle: BillingCycle,
+    ): Promise<{ ok: true; plan: PlanId; balance: number }> {
+        const entry = getPlan(planId);
+        if (!entry || entry.id === 'free') throw new BadRequestException('Choose a paid plan (premium or business).');
+
+        const amount = amountFor(entry.id, cycle);
+        const note = `${entry.name} (${cycle})`;
+
+        // Debit first (atomic + balance check inside chargeSubscription).
+        const charge = await this.credits.chargeSubscription(userId, amount, note, entry.id);
+
+        // Then grant the plan. Roll the charge back if anything goes wrong.
+        try {
+            await this.applyPlan(userId, entry.id as PlanId, cycle, {
+                paymentMethod: 'credits',
+                reference: `CREDITS_${Date.now()}`,
+                status: SubStatus.ACTIVE,
+            });
+        } catch (err) {
+            await this.credits.refund(userId, amount, `Refund — ${note} could not be activated`);
+            this.logger.error(`payWithCredits: applyPlan failed for ${userId} (${entry.id}); refunded ${amount} TND`);
+            throw err;
+        }
+
+        this.logger.log(`Credits checkout → ${entry.id} (${cycle}) for ${userId}, charged ${amount} TND`);
+        return { ok: true, plan: entry.id as PlanId, balance: charge.balance };
     }
 
     /** Open the Stripe billing portal (manage card / cancel / invoices). */

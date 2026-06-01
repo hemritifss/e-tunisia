@@ -18,11 +18,22 @@ import {
   Clock,
   Utensils,
   Car,
+  Crown,
 } from 'lucide-react';
 import { Button } from '../components/Button';
 import { Card, CardContent } from '../components/Card';
 import { api } from '../../shared/api';
 import { useUIStore } from '../stores/ui-store';
+
+interface GroundedPlace {
+  id: string;
+  name: string;
+  city?: string | null;
+  category?: string | null;
+  rating?: number | null;
+  description?: string;
+  url?: string;
+}
 
 interface Message {
   id: string;
@@ -30,6 +41,10 @@ interface Message {
   content: string;
   suggestions?: string[];
   itinerary?: any;
+  /** Real places the concierge pulled from the DB — rendered as clickable chips. */
+  places?: GroundedPlace[];
+  /** Render an Upgrade-to-Pro CTA (shown when the daily AI limit is hit). */
+  upgrade?: boolean;
 }
 
 interface ItineraryDay {
@@ -87,12 +102,28 @@ export default function AITravelPlanner() {
 
       chatMessages.push({ role: 'user' as const, content: userMessage });
 
+      const token = localStorage.getItem('etunisia_token');
       const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/v1/ai/chat`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({ messages: chatMessages }),
       });
-      return res.json();
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        // Errors are wrapped as { success:false, error: { message, details } }; the
+        // structured ForbiddenException payload lands on error.message (an object).
+        const e = data?.error ?? data;
+        const payload = e?.message && typeof e.message === 'object' ? e.message : e?.details ?? e;
+        const err: any = new Error(
+          (typeof e?.message === 'string' ? e.message : payload?.message) || 'AI request failed',
+        );
+        err.code = payload?.code;
+        throw err;
+      }
+      return data;
     },
   });
 
@@ -132,17 +163,30 @@ export default function AITravelPlanner() {
     setInput('');
 
     try {
-      const data = await chatMutation.mutateAsync(input);
+      const data = await chatMutation.mutateAsync(userMsg.content);
 
       const assistantMsg: Message = {
         id: `assistant-${Date.now()}`,
         role: 'assistant',
         content: data.reply || data.data?.reply || 'I\'m thinking about that...',
         suggestions: data.suggestions || data.data?.suggestions,
+        places: data.places || data.data?.places,
       };
 
       setMessages((prev) => [...prev, assistantMsg]);
-    } catch {
+    } catch (err: any) {
+      if (err?.code === 'ai_quota_reached') {
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: `quota-${Date.now()}`,
+            role: 'assistant',
+            content: err.message || 'You\'ve reached today\'s AI limit. Upgrade to keep planning!',
+            upgrade: true,
+          },
+        ]);
+        return;
+      }
       setMessages((prev) => [
         ...prev,
         {
@@ -178,6 +222,107 @@ export default function AITravelPlanner() {
     setInput(suggestion);
   };
 
+  // ─── Itinerary export (zero-dep: print-to-PDF via hidden iframe + share/clipboard) ───
+  const itineraryToText = (it: any): string => {
+    const lines: string[] = [it.title];
+    if (it.description) lines.push(it.description);
+    lines.push(`Estimated total: ${it.totalEstimatedCost} ${it.currency || 'TND'}`, '');
+    (it.days || []).forEach((d: any) => {
+      lines.push(`Day ${d.day}: ${d.title}`);
+      if (d.description) lines.push(d.description);
+      (d.places || []).forEach((p: any) => lines.push(`  • ${p.name}${p.duration ? ` — ${p.duration}` : ''}`));
+      if (d.meals?.length) lines.push(`  Meals: ${d.meals.join('; ')}`);
+      if (d.transport) lines.push(`  Transport: ${d.transport}`);
+      lines.push(`  Day cost: ${d.estimatedCost} TND`, '');
+    });
+    if (it.tips?.length) {
+      lines.push('Pro tips:');
+      it.tips.forEach((t: string) => lines.push(`  • ${t}`));
+    }
+    return lines.join('\n');
+  };
+
+  const itineraryToHtml = (it: any): string => {
+    const esc = (s: any) =>
+      String(s ?? '').replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c] as string));
+    const days = (it.days || [])
+      .map(
+        (d: any) => `
+        <section class="day">
+          <h2>Day ${esc(d.day)}: ${esc(d.title)}</h2>
+          <p>${esc(d.description)}</p>
+          <ul>${(d.places || []).map((p: any) => `<li><strong>${esc(p.name)}</strong>${p.duration ? ` — ${esc(p.duration)}` : ''}</li>`).join('')}</ul>
+          <p class="meta">${(d.meals || []).length ? `🍽️ ${esc((d.meals || []).join(', '))}<br/>` : ''}${d.transport ? `🚗 ${esc(d.transport)}<br/>` : ''}💰 ${esc(d.estimatedCost)} TND</p>
+        </section>`,
+      )
+      .join('');
+    const tips = (it.tips || []).length
+      ? `<section class="tips"><h2>💡 Pro Tips</h2><ul>${it.tips.map((t: string) => `<li>${esc(t)}</li>`).join('')}</ul></section>`
+      : '';
+    return `<!doctype html><html><head><meta charset="utf-8"/><title>${esc(it.title)}</title>
+      <style>
+        body{font-family:-apple-system,Segoe UI,Roboto,sans-serif;color:#1a1a1a;max-width:720px;margin:32px auto;padding:0 20px;line-height:1.5}
+        h1{font-size:24px;margin-bottom:4px}
+        .sub{color:#666;margin:0 0 16px}
+        .day{border-left:3px solid #c8102e;padding-left:14px;margin:18px 0}
+        h2{font-size:16px;margin:0 0 6px}
+        ul{margin:6px 0;padding-left:18px}
+        .meta{color:#555;font-size:13px}
+        .tips{background:#fff8e1;padding:12px 16px;border-radius:10px;margin-top:20px}
+        @media print{body{margin:0}}
+      </style></head>
+      <body>
+        <h1>${esc(it.title)}</h1>
+        <p class="sub">${esc(it.description)} · <strong>${esc(it.totalEstimatedCost)} ${esc(it.currency || 'TND')}</strong></p>
+        ${days}${tips}
+      </body></html>`;
+  };
+
+  const handleDownloadItinerary = (it: any) => {
+    if (!it) return;
+    const iframe = document.createElement('iframe');
+    iframe.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;';
+    document.body.appendChild(iframe);
+    const doc = iframe.contentWindow?.document;
+    if (!doc) {
+      document.body.removeChild(iframe);
+      return;
+    }
+    doc.open();
+    doc.write(itineraryToHtml(it));
+    doc.close();
+    setTimeout(() => {
+      try {
+        iframe.contentWindow?.focus();
+        iframe.contentWindow?.print();
+      } catch {
+        /* print blocked — nothing else to do */
+      }
+      setTimeout(() => {
+        try {
+          document.body.removeChild(iframe);
+        } catch {
+          /* already gone */
+        }
+      }, 1000);
+    }, 300);
+  };
+
+  const handleShareItinerary = async (it: any) => {
+    if (!it) return;
+    const text = itineraryToText(it);
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: it.title, text });
+        return;
+      }
+      await navigator.clipboard.writeText(text);
+      showToast('Itinerary copied to clipboard', 'success');
+    } catch {
+      /* user dismissed the share sheet — ignore */
+    }
+  };
+
   return (
     <div className="max-w-3xl mx-auto h-[calc(100vh-80px)] flex flex-col animate-fade-in">
       {/* Header */}
@@ -187,7 +332,7 @@ export default function AITravelPlanner() {
         </div>
         <div>
           <h1 className="font-semibold">AI Travel Planner</h1>
-          <p className="text-xs text-muted-foreground">Powered by GPT-4o</p>
+          <p className="text-xs text-muted-foreground">Powered by Claude</p>
         </div>
         <Button
           variant="primary"
@@ -345,6 +490,35 @@ export default function AITravelPlanner() {
                 </div>
               )}
 
+              {/* Grounded places — real listings the concierge pulled from the DB */}
+              {msg.places && msg.places.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {msg.places.map((p) => (
+                    <a
+                      key={p.id}
+                      href={`#/place/${p.id}`}
+                      className="inline-flex items-center gap-1 px-3 py-1.5 text-xs rounded-full bg-brand/5 text-brand border border-brand/15 hover:bg-brand/10 transition-colors"
+                    >
+                      <MapPin size={12} />
+                      <span className="font-medium">{p.name}</span>
+                      {p.city && <span className="text-brand/60">· {p.city}</span>}
+                    </a>
+                  ))}
+                </div>
+              )}
+
+              {/* Daily AI limit reached → upgrade */}
+              {msg.upgrade && (
+                <div className="mt-2">
+                  <a
+                    href="#/pro"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 text-sm rounded-xl bg-gradient-to-br from-brand to-mediterranean text-white font-medium hover:opacity-90 transition-opacity"
+                  >
+                    <Crown size={14} /> Upgrade to Pro
+                  </a>
+                </div>
+              )}
+
               {/* Itinerary Card */}
               {msg.itinerary && (
                 <div className="mt-3 space-y-3">
@@ -403,10 +577,20 @@ export default function AITravelPlanner() {
                   )}
 
                   <div className="flex gap-2">
-                    <Button variant="outline" size="sm" leftIcon={<Download size={14} />}>
-                      Download PDF
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      leftIcon={<Download size={14} />}
+                      onClick={() => handleDownloadItinerary(msg.itinerary)}
+                    >
+                      Save as PDF
                     </Button>
-                    <Button variant="ghost" size="sm" leftIcon={<Share2 size={14} />}>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      leftIcon={<Share2 size={14} />}
+                      onClick={() => handleShareItinerary(msg.itinerary)}
+                    >
                       Share
                     </Button>
                   </div>

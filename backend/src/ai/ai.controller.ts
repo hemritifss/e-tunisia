@@ -5,9 +5,11 @@ import {
   UseGuards,
   Get,
   Query,
+  Req,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { AIService } from './ai.service';
 
@@ -22,6 +24,7 @@ export class AIController {
   @ApiOperation({ summary: 'Generate AI-powered itinerary' })
   async generateItinerary(
     @CurrentUser('id') userId: string,
+    @Req() req: any,
     @Body()
     preferences: {
       duration: number;
@@ -32,16 +35,57 @@ export class AIController {
       travelStyle?: string;
     },
   ) {
+    await this.aiService.assertQuotaAndCount({ userId, ip: req.ip });
     return this.aiService.generateItinerary(preferences);
   }
 
   @Post('chat')
-  @ApiOperation({ summary: 'Chat with AI travel planner' })
+  @UseGuards(OptionalJwtAuthGuard)
+  @ApiOperation({ summary: 'Chat with the grounded AI travel concierge' })
   async chatPlanner(
+    @CurrentUser('id') userId: string | null,
+    @Req() req: any,
     @Body()
     { messages }: { messages: Array<{ role: 'user' | 'assistant'; content: string }> },
   ) {
+    await this.aiService.assertQuotaAndCount({ userId, ip: req.ip });
     return this.aiService.chatTravelPlanner(messages);
+  }
+
+  @Post('assist')
+  @UseGuards(OptionalJwtAuthGuard)
+  @ApiOperation({ summary: 'AI compose assist — improve / translate / shorten / expand text' })
+  async assist(
+    @CurrentUser('id') userId: string | null,
+    @Req() req: any,
+    @Body() body: { text: string; action: string; targetLang?: string; tone?: string },
+  ) {
+    await this.aiService.assertQuotaAndCount({ userId, ip: req.ip });
+    return this.aiService.assist(body);
+  }
+
+  @Post('search')
+  @UseGuards(OptionalJwtAuthGuard)
+  @ApiOperation({ summary: 'Natural-language search — parses the query into place filters' })
+  async smartSearch(
+    @CurrentUser('id') userId: string | null,
+    @Req() req: any,
+    @Body() body: { query: string },
+  ) {
+    await this.aiService.assertQuotaAndCount({ userId, ip: req.ip });
+    return this.aiService.smartSearch(body?.query || '');
+  }
+
+  @Post('autotag')
+  @UseGuards(OptionalJwtAuthGuard)
+  @ApiOperation({ summary: 'Suggest a category, tags and location for a post' })
+  async autoTag(
+    @CurrentUser('id') userId: string | null,
+    @Req() req: any,
+    @Body() body: { title?: string; body?: string },
+  ) {
+    await this.aiService.assertQuotaAndCount({ userId, ip: req.ip });
+    return this.aiService.autoTag(body || {});
   }
 
   @Get('suggestions')

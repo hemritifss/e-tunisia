@@ -5,6 +5,7 @@ import { queryClient } from './query-client';
 import ChatPopupManager from '../components/ChatPopupManager';
 import ActiveConversationsLauncher from '../components/ActiveConversations';
 import UserActionMenu from '../components/UserActionMenu';
+import { PopupHost } from '../components/popups';
 
 /**
  * Globally-mounted Messenger surfaces: the floating chat popups
@@ -26,6 +27,7 @@ export function mountMessengerGlobals() {
             <ChatPopupManager />
             <ActiveConversationsLauncher />
             <UserActionMenu />
+            <PopupHost />
         </QueryClientProvider>,
     );
 }

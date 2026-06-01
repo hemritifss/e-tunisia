@@ -4,15 +4,18 @@ import { CreditBalance } from './credit-balance.entity';
 import { CreditTransaction } from './credit-transaction.entity';
 import { Donation } from './donation.entity';
 import { ReferralReward } from './referral-reward.entity';
+import { Topup } from './topup.entity';
 import { User } from '../users/user.entity';
 import { CreditsController } from './credits.controller';
 import { CreditsService } from './credits.service';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { PaymentsModule } from '../payments/payments.module';
 
 @Module({
     imports: [
-        TypeOrmModule.forFeature([CreditBalance, CreditTransaction, Donation, ReferralReward, User]),
+        TypeOrmModule.forFeature([CreditBalance, CreditTransaction, Donation, ReferralReward, Topup, User]),
         NotificationsModule,
+        PaymentsModule,
     ],
     controllers: [CreditsController],
     providers: [CreditsService],

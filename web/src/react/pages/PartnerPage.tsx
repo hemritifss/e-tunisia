@@ -2,34 +2,31 @@ import React, { useEffect, useRef, useState } from 'react';
 import * as api from '../../api';
 import { showToast } from '../../ui-utils';
 
-// Migrated from vanilla pages/partner.ts — B2B landing + contact form + count-up stats.
-// Note: vanilla appended the suffix to the number AND rendered a separate suffix span
-// (double "45KK"); fixed here — number counts plain, the suffix span supplies K/%.
+// Rebuilt on the .tn-landing design system so the partner page shares the
+// landing page's cinematic, photo-driven vibe: a Ken-Burns photo hero, count-up
+// stats, a photo "inspiration" gallery of business types, partner testimonials,
+// tiers, the real partner-logo wall, and an application form.
 
-function Check({ size = 16 }: { size?: number }) {
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12" /></svg>;
-}
-function Star() {
-  return <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>;
-}
+const Arrow = ({ size = 18 }: { size?: number }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14M12 5l7 7-7 7" /></svg>;
+const Check = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12" /></svg>;
 
-function AnimatedStat({ target, append = '' }: { target: number; append?: string }) {
-  const ref = useRef<HTMLSpanElement>(null);
+// Count-up stat that fires when scrolled into view.
+function Stat({ target, suffix = '', label }: { target: number; suffix?: string; label: string }) {
+  const ref = useRef<HTMLDivElement>(null);
   const [val, setVal] = useState(0);
-  const [done, setDone] = useState(false);
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
     const obs = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
-          let current = 0;
-          const increment = target / 60;
+          let cur = 0;
+          const step = target / 50;
           const timer = setInterval(() => {
-            current += increment;
-            if (current >= target) { current = target; clearInterval(timer); setDone(true); }
-            setVal(Math.floor(current));
-          }, 16);
+            cur += step;
+            if (cur >= target) { cur = target; clearInterval(timer); }
+            setVal(Math.floor(cur));
+          }, 20);
           obs.unobserve(el);
         }
       });
@@ -37,35 +34,72 @@ function AnimatedStat({ target, append = '' }: { target: number; append?: string
     obs.observe(el);
     return () => obs.disconnect();
   }, [target]);
-  return <span ref={ref} className="hero2-stat-num">{val.toLocaleString()}{done ? append : ''}</span>;
+  return (
+    <div className="tn-stat" ref={ref}>
+      <span className="tn-stat-num">{val.toLocaleString()}{suffix}</span>
+      <span className="tn-stat-label">{label}</span>
+    </div>
+  );
 }
 
-const TYPES = [
-  { key: 'sponsor', label: 'Sponsor' },
-  { key: 'partner', label: 'Partner' },
-  { key: 'advertiser', label: 'Advertiser' },
+const BUSINESS_TYPES = [
+  { img: '/img/hero1.png', title: 'Riads & Hotels', desc: 'Fill rooms year-round with travelers seeking the real Tunisia.' },
+  { img: '/img/hero2.png', title: 'Restaurants & Cafés', desc: 'Put your table in front of hungry explorers, not tour buses.' },
+  { img: '/img/hero3.png', title: 'Tours & Experiences', desc: 'Sell the desert trek, the medina walk, the dive — directly.' },
+  { img: '/img/hero1.png', title: 'Artisans & Shops', desc: 'Show your craft to people who came to Tunisia to find it.' },
+];
+
+const BENEFITS = [
+  { title: 'Massive Visibility', desc: 'Get discovered by 12,400+ active travelers searching for authentic Tunisian experiences — no SEO needed.', icon: <><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></> },
+  { title: 'Direct Bookings', desc: 'Travelers book straight through the platform. You keep more — our commission is lower than any competitor.', icon: <><rect x="1" y="4" width="22" height="16" rx="2" ry="2" /><line x1="1" y1="10" x2="23" y2="10" /></> },
+  { title: 'Real Analytics', desc: 'Track views, bookings, revenue and customer demographics in real time. Make data-driven decisions.', icon: <><line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" /></> },
+  { title: 'Community Trust', desc: 'Our verification badge signals quality. Verified partners get 3× more bookings than unverified listings.', icon: <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /> },
+];
+
+const STEPS = [
+  { n: 1, title: 'Submit your application', desc: 'Tell us about your business. Takes under 5 minutes. No upfront costs.' },
+  { n: 2, title: 'Get verified', desc: 'Our team reviews and verifies your business within 48 hours.' },
+  { n: 3, title: 'Start earning', desc: 'Your listing goes live. Receive bookings and grow your business.' },
+];
+
+const TESTIMONIALS = [
+  { pro: true, quote: '"Before e-Tunisia we relied on walk-ins and word of mouth. Now 60% of our bookings come through the platform. We hired 3 more staff and expanded our kitchen."', seed: 'hassan', name: 'Hassan Trabelsi', sub: 'Owner, Dar El Medina · Tunis' },
+  { pro: false, quote: '"My riad in Tozeur was empty in November. I listed it here and four bookings came through in two weeks — no commission, no middlemen."', seed: 'amina', name: 'Amina Khelifi', sub: 'Riad owner · Tozeur' },
+  { pro: false, quote: '"As a desert guide, I now reach travelers who want exactly the slow, off-grid trips I love giving. The platform actually understands."', seed: 'yasmine', name: 'Yasmine Ben Salah', sub: 'Local guide · Douz' },
+];
+
+const TIERS = [
+  { name: 'Bronze', price: '500', popular: false, desc: 'Perfect for small businesses', features: ['Listing on the platform', 'Basic analytics', 'Social media mention', 'Email support'] },
+  { name: 'Silver', price: '2,500', popular: true, desc: 'For growing businesses', features: ['Everything in Bronze', 'Priority placement', 'Banner advertising', 'Event co-hosting', 'Advanced analytics'] },
+  { name: 'Gold', price: '7,500', popular: false, desc: 'For established brands', features: ['Everything in Silver', 'Homepage featured', 'Dedicated account manager', 'Custom campaigns', 'API access'] },
+];
+
+const PARTNER_LOGOS = [
+  { src: '/img/partenaires/OIM_Migration.png', alt: 'OIM — International Organization for Migration' },
+  { src: '/img/partenaires/Logo%20SB%20ENET_Com_Color.png', alt: "ENET'Com" },
+  { src: '/img/partenaires/APII.png', alt: "APII" },
+  { src: '/img/partenaires/Nafship-1_upscayl_3x_ultramix_balanced.png', alt: 'Nafship' },
+  { src: '/img/partenaires/MPRR_LOGO_Draft-01__1.png', alt: 'MPRR' },
+  { src: '/img/partenaires/Bussiness_Success.png', alt: 'Business Success' },
 ];
 
 export default function PartnerPage() {
   const rootRef = useRef<HTMLDivElement>(null);
-  const [type, setType] = useState('sponsor');
-  const [form, setForm] = useState({ name: '', email: '', phone: '', business: '', message: '' });
+  const [form, setForm] = useState({ name: '', email: '', phone: '', business: '', type: 'hotel', message: '' });
   const [submitting, setSubmitting] = useState(false);
 
+  // Scroll-reveal — the tn-* cards start hidden and animate in on view.
   useEffect(() => {
     const root = rootRef.current;
     if (!root) return;
-    const els = root.querySelectorAll('.partner2-benefit-card, .hero2-step');
     const obs = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) { entry.target.classList.add('hero2-revealed'); obs.unobserve(entry.target); }
-      });
-    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
-    els.forEach((el) => obs.observe(el));
+      entries.forEach((entry) => { if (entry.isIntersecting) { entry.target.classList.add('tn-revealed'); obs.unobserve(entry.target); } });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+    root.querySelectorAll('.tn-why-card, .tn-testimonial, .tn-logo-card, .partner-v3-tile').forEach((el) => obs.observe(el));
     return () => obs.disconnect();
   }, []);
 
-  const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setForm((f) => ({ ...f, [k]: e.target.value }));
+  const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => setForm((f) => ({ ...f, [k]: e.target.value }));
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,9 +107,9 @@ export default function PartnerPage() {
     if (!name || !email || !message) return;
     setSubmitting(true);
     try {
-      await api.submitContactForm({ name, email, phone: form.phone.trim(), businessName: form.business.trim(), type, message });
+      await api.submitContactForm({ name, email, phone: form.phone.trim(), businessName: form.business.trim(), type: form.type, message });
       showToast("Application submitted! We'll be in touch within 48 hours.");
-      setForm({ name: '', email: '', phone: '', business: '', message: '' });
+      setForm({ name: '', email: '', phone: '', business: '', type: 'hotel', message: '' });
     } catch (err: any) {
       showToast(`Couldn't submit: ${err?.message || 'network error'}. Email support@etunisia.com and we'll follow up.`, { type: 'error' });
     }
@@ -83,194 +117,215 @@ export default function PartnerPage() {
   };
 
   return (
-    <div className="partner-page page-enter" ref={rootRef}>
-      <section className="partner2-hero">
-        <div className="partner2-hero-bg" />
-        <div className="partner2-hero-content">
-          <span className="partner2-eyebrow">For Businesses</span>
-          <h1>Grow Your Business with <span className="partner2-accent">e-Tunisia</span></h1>
-          <p>Join 890+ local hosts, restaurants, and experience providers reaching 12,400+ active travelers every month.</p>
-          <div className="partner2-hero-actions">
-            <a href="#partner-apply" className="hero2-btn-cta">Apply Now</a>
-            <a href="#partner-tiers" className="hero2-btn-video">View Pricing</a>
+    <div className="tn-landing partner-v3 page-enter" ref={rootRef}>
+      {/* ── Hero ── */}
+      <section className="partner-v3-hero">
+        <div className="partner-v3-hero-bg"><img src="/img/hero2.png" alt="Tunisia" /></div>
+        <div className="partner-v3-hero-overlay" />
+        <div className="partner-v3-hero-content">
+          <span className="partner-v3-badge"><span className="pv3-dot" />For Businesses</span>
+          <h1>Grow your business with <span className="tn-grad">e-Tunisia</span></h1>
+          <p className="partner-v3-hero-arabic">وصّل للسياح اللي يستاهلوك</p>
+          <p className="partner-v3-hero-sub">Join 890+ local hosts, restaurants and experience providers reaching 12,400+ active travelers every month — the ones who want the real Tunisia.</p>
+          <div className="partner-v3-hero-actions">
+            <a href="#partner-apply" className="tn-btn-primary">Apply Now — Free<Arrow /></a>
+            <a href="#partner-tiers" className="tn-btn-secondary">View Pricing</a>
+          </div>
+          <div className="partner-v3-hero-meta">
+            <span className="pv3-avatars" aria-hidden="true">
+              <img src="https://api.dicebear.com/9.x/personas/svg?seed=hassan" alt="" loading="lazy" />
+              <img src="https://api.dicebear.com/9.x/personas/svg?seed=amina" alt="" loading="lazy" />
+              <img src="https://api.dicebear.com/9.x/personas/svg?seed=karim" alt="" loading="lazy" />
+              <img src="https://api.dicebear.com/9.x/personas/svg?seed=leila" alt="" loading="lazy" />
+            </span>
+            <span>Join <strong>890+</strong> Tunisian businesses already growing</span>
           </div>
         </div>
       </section>
 
-      <div className="hero2-stats-bar">
-        <div className="hero2-stat-item"><AnimatedStat target={890} append="+" /><span className="hero2-stat-label">Active Partners</span></div>
-        <div className="hero2-stat-divider" />
-        <div className="hero2-stat-item"><AnimatedStat target={12400} append="+" /><span className="hero2-stat-label">Monthly Travelers</span></div>
-        <div className="hero2-stat-divider" />
-        <div className="hero2-stat-item"><AnimatedStat target={45} /><span className="hero2-stat-suffix">K</span><span className="hero2-stat-label">Monthly Bookings</span></div>
-        <div className="hero2-stat-divider" />
-        <div className="hero2-stat-item"><AnimatedStat target={98} /><span className="hero2-stat-suffix">%</span><span className="hero2-stat-label">Partner Satisfaction</span></div>
+      {/* ── Stats ── */}
+      <div className="tn-stats">
+        <Stat target={890} suffix="+" label="Active Partners" />
+        <div className="tn-stat-divider" />
+        <Stat target={12400} suffix="+" label="Monthly Travelers" />
+        <div className="tn-stat-divider" />
+        <Stat target={45} suffix="K" label="Monthly Bookings" />
+        <div className="tn-stat-divider" />
+        <Stat target={98} suffix="%" label="Partner Satisfaction" />
       </div>
 
-      <section className="partner2-section">
-        <div className="hero2-container">
-          <div className="hero2-section-header">
-            <span className="hero2-section-eyebrow">Why Partner With Us</span>
-            <h2 className="hero2-section-title">Everything you need to succeed.</h2>
+      {/* ── Why partner ── */}
+      <section className="tn-section">
+        <div className="tn-container">
+          <div className="tn-section-head">
+            <span className="tn-eyebrow">Why Partner With Us</span>
+            <h2>Everything you need to succeed.</h2>
+            <p>No paid placements. No tourist traps. Just travelers looking for exactly what you offer.</p>
           </div>
-          <div className="partner2-benefits-grid">
-            <div className="partner2-benefit-card">
-              <div className="partner2-benefit-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg></div>
-              <h3>Massive Visibility</h3>
-              <p>Get discovered by 12,400+ active travelers searching for authentic Tunisian experiences. No SEO needed.</p>
-            </div>
-            <div className="partner2-benefit-card">
-              <div className="partner2-benefit-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="1" y="4" width="22" height="16" rx="2" ry="2" /><line x1="1" y1="10" x2="23" y2="10" /></svg></div>
-              <h3>Direct Bookings</h3>
-              <p>Travelers book directly through our platform. You keep more of what you earn — our commission is lower than any competitor.</p>
-            </div>
-            <div className="partner2-benefit-card">
-              <div className="partner2-benefit-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" /></svg></div>
-              <h3>Real Analytics</h3>
-              <p>Track views, bookings, revenue, and customer demographics in real-time. Make data-driven decisions.</p>
-            </div>
-            <div className="partner2-benefit-card">
-              <div className="partner2-benefit-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg></div>
-              <h3>Community Trust</h3>
-              <p>Our verification badge signals quality to travelers. Verified partners get 3x more bookings than unverified listings.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="partner2-section">
-        <div className="hero2-container">
-          <div className="hero2-section-header">
-            <span className="hero2-section-eyebrow">How It Works</span>
-            <h2 className="hero2-section-title">Start receiving bookings in 3 steps.</h2>
-          </div>
-          <div className="hero2-steps-grid">
-            <div className="hero2-step">
-              <div className="hero2-step-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /></svg></div>
-              <h3>Submit Application</h3>
-              <p>Tell us about your business. Takes less than 5 minutes. No upfront costs.</p>
-            </div>
-            <div className="hero2-step-arrow"><svg width="40" height="24" viewBox="0 0 40 24" fill="none"><path d="M2 12h30M28 5l7 7-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg></div>
-            <div className="hero2-step">
-              <div className="hero2-step-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M22 11.08V12a10 10 0 11-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg></div>
-              <h3>Get Verified</h3>
-              <p>Our team reviews your application and verifies your business within 48 hours.</p>
-            </div>
-            <div className="hero2-step-arrow"><svg width="40" height="24" viewBox="0 0 40 24" fill="none"><path d="M2 12h30M28 5l7 7-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg></div>
-            <div className="hero2-step">
-              <div className="hero2-step-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="2" y="7" width="20" height="14" rx="2" ry="2" /><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16" /></svg></div>
-              <h3>Start Earning</h3>
-              <p>Your listing goes live. Start receiving bookings and growing your business.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="partner2-section">
-        <div className="hero2-container">
-          <div className="hero2-proof-card hero2-proof-featured" style={{ maxWidth: 700, margin: '0 auto' }}>
-            <div className="hero2-proof-stars" aria-label="5 out of 5 stars"><Star /><Star /><Star /><Star /><Star /></div>
-            <p className="hero2-proof-text" style={{ fontSize: '1.125rem' }}>"Before e-Tunisia, we relied on walk-ins and word of mouth. Now 60% of our bookings come through the platform. We've hired 3 more staff and expanded our kitchen. This changed our business."</p>
-            <div className="hero2-proof-author">
-              <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop&crop=face" alt="Hassan" />
-              <div><strong>Hassan Trabelsi</strong><span>Owner, Dar El Medina — Tunis</span></div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="partner2-section" id="partner-tiers">
-        <div className="hero2-container">
-          <div className="hero2-section-header">
-            <span className="hero2-section-eyebrow">Pricing</span>
-            <h2 className="hero2-section-title">Partnership tiers that scale with you.</h2>
-          </div>
-          <div className="hero2-pricing-grid" style={{ maxWidth: 900 }}>
-            <div className="hero2-pricing-card">
-              <div className="hero2-pricing-name">Bronze</div>
-              <div className="hero2-pricing-price">500 <span>TND/yr</span></div>
-              <p className="hero2-pricing-desc">Perfect for small businesses</p>
-              <ul className="hero2-pricing-features">
-                <li><Check /> Listing on platform</li>
-                <li><Check /> Basic analytics</li>
-                <li><Check /> Social media mention</li>
-                <li><Check /> Email support</li>
-              </ul>
-            </div>
-            <div className="hero2-pricing-card hero2-pricing-popular">
-              <div className="hero2-pricing-badge">Most Popular</div>
-              <div className="hero2-pricing-name">Silver</div>
-              <div className="hero2-pricing-price">2,500 <span>TND/yr</span></div>
-              <p className="hero2-pricing-desc">For growing businesses</p>
-              <ul className="hero2-pricing-features">
-                <li><Check /> Everything in Bronze</li>
-                <li><Check /> Priority placement</li>
-                <li><Check /> Banner advertising</li>
-                <li><Check /> Event co-hosting</li>
-                <li><Check /> Advanced analytics</li>
-              </ul>
-            </div>
-            <div className="hero2-pricing-card">
-              <div className="hero2-pricing-name">Gold</div>
-              <div className="hero2-pricing-price">7,500 <span>TND/yr</span></div>
-              <p className="hero2-pricing-desc">For established brands</p>
-              <ul className="hero2-pricing-features">
-                <li><Check /> Everything in Silver</li>
-                <li><Check /> Homepage featured</li>
-                <li><Check /> Dedicated account manager</li>
-                <li><Check /> Custom campaigns</li>
-                <li><Check /> API access</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="partner2-section partner2-form-section" id="partner-apply">
-        <div className="hero2-container">
-          <div className="partner2-form-grid">
-            <div className="partner2-form-info">
-              <span className="partner2-eyebrow">Apply Now</span>
-              <h2>Ready to grow your business?</h2>
-              <p>Fill out the form and our partnerships team will get back to you within 48 hours. No commitment required.</p>
-              <ul className="partner2-form-bullets">
-                <li><Check size={18} /> Free to apply</li>
-                <li><Check size={18} /> 48-hour verification</li>
-                <li><Check size={18} /> No upfront payment for Bronze</li>
-                <li><Check size={18} /> Cancel anytime</li>
-              </ul>
-            </div>
-            <div className="partner2-form-card">
-              <div className="partner2-type-selector">
-                {TYPES.map((t) => (
-                  <button key={t.key} type="button" className={`partner2-type-chip${type === t.key ? ' active' : ''}`} onClick={() => setType(t.key)}>{t.label}</button>
-                ))}
+          <div className="tn-why-grid">
+            {BENEFITS.map((b) => (
+              <div className="tn-why-card" key={b.title}>
+                <div className="tn-why-icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">{b.icon}</svg></div>
+                <h3>{b.title}</h3>
+                <p>{b.desc}</p>
               </div>
-              <form className="partner2-form" onSubmit={submit}>
-                <div className="input-group">
-                  <label className="input-label" htmlFor="partner-name">Full Name *</label>
-                  <input type="text" id="partner-name" className="input" placeholder="Your full name" required value={form.name} onChange={set('name')} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Inspiration gallery ── */}
+      <section className="tn-section">
+        <div className="tn-container">
+          <div className="tn-section-head">
+            <span className="tn-eyebrow">Who's Growing With Us</span>
+            <h2>Whatever you do, there's a traveler looking for you.</h2>
+            <p>Hotels, riads, restaurants, guides, artisans — list it, and let the right travelers find it.</p>
+          </div>
+          <div className="partner-v3-gallery">
+            {BUSINESS_TYPES.map((t, i) => (
+              <a key={i} className="partner-v3-tile" href="#partner-apply" style={{ transitionDelay: `${i * 0.06}s` }}>
+                <img src={t.img} alt={t.title} loading="lazy" />
+                <span className="partner-v3-tile-overlay" />
+                <div className="partner-v3-tile-body"><h4>{t.title}</h4><p>{t.desc}</p></div>
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── How it works ── */}
+      <section className="tn-section">
+        <div className="tn-container">
+          <div className="tn-section-head">
+            <span className="tn-eyebrow">How It Works</span>
+            <h2>Start receiving bookings in 3 steps.</h2>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.25rem' }}>
+            {STEPS.map((s) => (
+              <div className="tn-why-card" key={s.n}>
+                <span className="partner-v3-step-num">{s.n}</span>
+                <h3>{s.title}</h3>
+                <p>{s.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Testimonials ── */}
+      <section className="tn-section">
+        <div className="tn-container">
+          <div className="tn-section-head">
+            <span className="tn-eyebrow">From Our Partners</span>
+            <h2>Businesses, in their own words.</h2>
+          </div>
+          <div className="tn-testimonials">
+            {TESTIMONIALS.map((t, i) => (
+              <article key={t.seed} className={`tn-testimonial${t.pro ? ' is-pro' : ''}`} style={{ transitionDelay: `${i * 0.05}s` }}>
+                <p className="tn-testimonial-quote">{t.quote}</p>
+                <div className="tn-testimonial-user">
+                  <img src={`https://api.dicebear.com/9.x/personas/svg?seed=${t.seed}`} alt={t.name} loading="lazy" />
+                  <div><strong>{t.name}</strong><span>{t.sub}</span></div>
                 </div>
-                <div className="input-group">
-                  <label className="input-label" htmlFor="partner-email">Email *</label>
-                  <input type="email" id="partner-email" className="input" placeholder="you@business.com" required value={form.email} onChange={set('email')} />
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Pricing tiers ── */}
+      <section className="tn-section" id="partner-tiers">
+        <div className="tn-container">
+          <div className="tn-section-head">
+            <span className="tn-eyebrow">Pricing</span>
+            <h2>Partnership tiers that scale with you.</h2>
+            <p>No upfront payment for Bronze. Cancel anytime.</p>
+          </div>
+          <div className="tn-pricing-grid">
+            {TIERS.map((tier) => (
+              <div key={tier.name} className={`tn-pricing-card${tier.popular ? ' tn-pricing-popular' : ''}`}>
+                {tier.popular && <div className="tn-pricing-badge">Most Popular</div>}
+                <div className="tn-pricing-name">{tier.name}</div>
+                <div className="tn-pricing-price">{tier.price} <span>TND/yr</span></div>
+                <p className="tn-pricing-desc">{tier.desc}</p>
+                <ul className="tn-pricing-features">
+                  {tier.features.map((f, i) => <li key={i}><Check /> {f}</li>)}
+                </ul>
+                <a href="#partner-apply" className={tier.popular ? 'tn-btn-primary' : 'tn-btn-outline'} style={{ width: '100%', justifyContent: 'center' }}>
+                  Choose {tier.name}
+                </a>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Partner logo wall ── */}
+      <section className="tn-section tn-logos-section">
+        <div className="tn-container">
+          <div className="tn-logos-stack">
+            <div className="tn-logos-header">
+              <h2 className="tn-logos-heading">In good company.</h2>
+              <p className="tn-logos-description">We collaborate with forward-thinking institutions, NGOs and businesses committed to elevating Tunisian tourism and empowering local communities.</p>
+            </div>
+            <div className="tn-logos-grid">
+              {PARTNER_LOGOS.map((l, i) => (
+                <div className="tn-logo-card" key={l.src} style={{ transitionDelay: `${i * 0.08}s` }}><img src={l.src} alt={l.alt} /></div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Apply form ── */}
+      <section className="tn-section tn-partner-cta" id="partner-apply">
+        <div className="tn-partner-cta-bg" />
+        <div className="tn-container">
+          <div className="tn-partner-cta-grid">
+            <div className="tn-partner-cta-text">
+              <span className="tn-eyebrow">Apply Now</span>
+              <h2>Ready to grow your business?</h2>
+              <p className="tn-partner-cta-arabic">انضمّ لينا اليوم</p>
+              <p className="tn-partner-cta-desc">Fill out the form and our partnerships team will get back to you within 48 hours. No commitment required.</p>
+              <div className="tn-partner-cta-benefits">
+                <span><Check /> Free to apply</span>
+                <span><Check /> 48-hour verification</span>
+                <span><Check /> No upfront payment for Bronze</span>
+                <span><Check /> Cancel anytime</span>
+              </div>
+            </div>
+            <div className="tn-partner-cta-formwrap">
+              <form className="tn-partner-cta-form" onSubmit={submit}>
+                <div className="tn-auth-field"><label htmlFor="p-name">Full Name</label><input type="text" id="p-name" className="tn-auth-input" placeholder="Your full name" required value={form.name} onChange={set('name')} /></div>
+                <div className="tn-auth-field"><label htmlFor="p-business">Business Name</label><input type="text" id="p-business" className="tn-auth-input" placeholder="Your business or organization" value={form.business} onChange={set('business')} /></div>
+                <div className="tn-auth-field"><label htmlFor="p-email">Email</label><input type="email" id="p-email" className="tn-auth-input" placeholder="you@business.com" required value={form.email} onChange={set('email')} /></div>
+                <div className="tn-auth-field"><label htmlFor="p-phone">Phone</label><input type="tel" id="p-phone" className="tn-auth-input" placeholder="+216 XX XXX XXX" value={form.phone} onChange={set('phone')} /></div>
+                <div className="tn-auth-field"><label htmlFor="p-type">Business Type</label>
+                  <select id="p-type" className="tn-auth-input" value={form.type} onChange={set('type')}>
+                    <option value="hotel">Hotel / Riad</option>
+                    <option value="restaurant">Restaurant / Café</option>
+                    <option value="tour">Tour Guide / Experience</option>
+                    <option value="artisan">Artisan / Shop</option>
+                    <option value="other">Other</option>
+                  </select>
                 </div>
-                <div className="input-group">
-                  <label className="input-label" htmlFor="partner-phone">Phone</label>
-                  <input type="tel" id="partner-phone" className="input" placeholder="+216 XX XXX XXX" value={form.phone} onChange={set('phone')} />
-                </div>
-                <div className="input-group">
-                  <label className="input-label" htmlFor="partner-business">Business Name</label>
-                  <input type="text" id="partner-business" className="input" placeholder="Your business or organization" value={form.business} onChange={set('business')} />
-                </div>
-                <div className="input-group">
-                  <label className="input-label" htmlFor="partner-message">Message *</label>
-                  <textarea id="partner-message" className="input" rows={4} placeholder="Tell us about your partnership goals…" required value={form.message} onChange={set('message')} />
-                </div>
-                <button type="submit" className="hero2-pricing-btn hero2-pricing-btn-primary" disabled={submitting}>{submitting ? 'Submitting…' : 'Submit Application'}</button>
+                <div className="tn-auth-field"><label htmlFor="p-message">Message</label><textarea id="p-message" className="tn-auth-input" rows={4} placeholder="Tell us about your partnership goals…" required value={form.message} onChange={set('message')} /></div>
+                <button type="submit" className="tn-auth-btn" disabled={submitting}>{submitting ? 'Submitting…' : 'Submit Application'}</button>
               </form>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* ── Closing CTA ── */}
+      <section className="tn-cta">
+        <div className="tn-cta-bg" />
+        <div className="tn-cta-content">
+          <h2>Your <span className="tn-grad">best customers</span> are already here.</h2>
+          <p>12,400+ travelers are looking for authentic Tunisian places, food and experiences this month. Be the one they find.</p>
+          <a href="#partner-apply" className="tn-btn-primary tn-btn-large">Apply Now — Free<Arrow size={20} /></a>
+          <p className="tn-cta-small">Ahlan wa Sahlan. Welcome aboard.</p>
         </div>
       </section>
     </div>

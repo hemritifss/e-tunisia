@@ -51,6 +51,7 @@
   <link rel="stylesheet" href="/src/styles/sub-components.css" />
   <link rel="stylesheet" href="/src/styles/messages-search.css" />
   <link rel="stylesheet" href="/src/styles/skeletons.css" />
+  <link rel="stylesheet" href="/src/styles/popups.css" />
   <link rel="stylesheet" href="/src/styles/tailwind.css" />
 </head>
 <body>
@@ -293,6 +294,16 @@
 
         <input type="text" class="post-modal-input" id="post-modal-title" placeholder="Give your post a title..." maxlength="200" />
         <textarea class="post-modal-textarea" id="post-modal-body-input" placeholder="What's on your mind about Tunisia? Share an experience, tip, or question..."></textarea>
+
+        <!-- AI compose assist (Phase 3) -->
+        <div class="post-modal-ai" id="post-modal-ai">
+          <span class="post-modal-ai-label"><i class="lucide-sparkles"></i> AI</span>
+          <button type="button" class="post-modal-ai-btn" data-ai-action="improve" title="Fix spelling & flow">Improve</button>
+          <button type="button" class="post-modal-ai-btn" data-ai-action="translate" data-ai-lang="fr" title="Translate to French">FR</button>
+          <button type="button" class="post-modal-ai-btn" data-ai-action="translate" data-ai-lang="ar" title="Translate to Arabic">عربي</button>
+          <button type="button" class="post-modal-ai-btn" data-ai-action="translate" data-ai-lang="en" title="Translate to English">EN</button>
+          <span class="post-modal-ai-status" id="post-modal-ai-status"></span>
+        </div>
 
         <!-- Tag / Category selector -->
         <div class="post-modal-section">

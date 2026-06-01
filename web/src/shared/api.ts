@@ -107,6 +107,16 @@ async function fetchWithAuth(
             action: { label: 'See plans →', onClick: () => { goTo('/pro'); } },
           });
         } catch {}
+      } else if (code === 'content_blocked') {
+        // AI moderation rejected the post/comment before publishing.
+        try {
+          (window as any).showToast?.({
+            title: 'Post not published',
+            message: capPayload?.message || 'This content goes against our community guidelines.',
+            type: 'error',
+            duration: 6000,
+          });
+        } catch {}
       }
     }
 
@@ -226,6 +236,9 @@ export const api = {
   getMyCredits: () => fetchWithAuth('/api/v1/credits/me'),
   depositCredits: (amount: number, note?: string) =>
     fetchWithAuth('/api/v1/credits/deposit', { method: 'POST', body: JSON.stringify({ amount, note }) }),
+  /** Flouci (TND) wallet top-up → returns { url, mock }. Redirect to url (or mock = credited on return). */
+  startCreditTopup: (amount: number) =>
+    fetchWithAuth('/api/v1/credits/topup/flouci', { method: 'POST', body: JSON.stringify({ amount }) }),
   donate: (data: { target: 'user' | 'platform'; toUserId?: string; amount: number; message?: string; isAnonymous?: boolean }) =>
     fetchWithAuth('/api/v1/credits/donate', { method: 'POST', body: JSON.stringify(data) }),
   getMyDonationsSent: () => fetchWithAuth('/api/v1/credits/donations/sent'),
@@ -317,6 +330,10 @@ export const api = {
   /** Manual bank/cash → pending subscription an admin confirms later. */
   manualUpgrade: (plan: 'premium' | 'business', cycle: 'monthly' | 'yearly', method: 'bank' | 'cash') =>
     fetchWithAuth('/api/v1/billing/upgrade', { method: 'POST', body: JSON.stringify({ plan, cycle, method }) }),
+  /** Pay for a plan from the credit wallet → activates instantly. Throws 400 (code
+   *  insufficient_credits) when the balance is short. */
+  payWithCredits: (plan: 'premium' | 'business', cycle: 'monthly' | 'yearly') =>
+    fetchWithAuth('/api/v1/billing/pay-with-credits', { method: 'POST', body: JSON.stringify({ plan, cycle }) }),
   /** Open the Stripe billing portal → returns { url }. */
   openBillingPortal: () => fetchWithAuth('/api/v1/billing/portal', { method: 'POST' }),
   cancelPlan: () => fetchWithAuth('/api/v1/billing/cancel', { method: 'POST' }),
@@ -429,6 +446,41 @@ export const api = {
       body: JSON.stringify(data),
     }),
 };
+
+/**
+ * Upload a raw File (image or video) as multipart/form-data → returns the hosted URL.
+ * Used by the reel composer: videos are too large to base64-inline, so we stream the
+ * binary straight to MinIO via the backend. Throws ApiError on failure so callers can
+ * surface a toast.
+ */
+export async function uploadMedia(file: File, folder = 'uploads'): Promise<string> {
+  const token = localStorage.getItem('etunisia_token');
+  const form = new FormData();
+  form.append('file', file);
+  form.append('folder', folder);
+
+  const headers: Record<string, string> = {};
+  // Do NOT set Content-Type — the browser must add the multipart boundary itself.
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  if (/\.ngrok(-free)?\.(app|dev|io)/.test(API_BASE)) headers['ngrok-skip-browser-warning'] = '1';
+
+  const res = await fetch(`${API_BASE}/api/v1/media/upload`, {
+    method: 'POST',
+    headers,
+    body: form,
+  });
+  if (!res.ok) {
+    let msg = `Upload failed (HTTP ${res.status})`;
+    try { const e = await res.json(); msg = e?.error?.message || e?.message || msg; } catch {}
+    throw new ApiError(res.status, msg);
+  }
+  const json = await res.json();
+  // Unwrap the { success, data } envelope; the controller payload carries `url`.
+  const payload = (json && typeof json === 'object' && 'data' in json) ? json.data : json;
+  const url = payload?.url;
+  if (!url) throw new ApiError(500, 'Upload succeeded but no URL was returned');
+  return url;
+}
 
 export function getImageUrl(path?: string | null): string {
   if (!path) return '';

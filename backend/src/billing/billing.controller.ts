@@ -118,6 +118,15 @@ export class BillingController {
         return this.billing.manualUpgrade(req.user.id, body?.plan, normalizeCycle(body?.cycle), method);
     }
 
+    /** Pay for a plan from the credit wallet — activates immediately (no redirect). */
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    @Post('pay-with-credits')
+    @ApiOperation({ summary: 'Pay for a plan using credit balance (instant)' })
+    payWithCredits(@Request() req, @Body() body: { plan: string; cycle?: BillingCycle }) {
+        return this.billing.payWithCredits(req.user.id, body?.plan, normalizeCycle(body?.cycle));
+    }
+
     /** Open the Stripe billing portal. */
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()

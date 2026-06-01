@@ -421,8 +421,34 @@ export async function uploadDataUrl(dataUrl: string, folder = 'uploads'): Promis
 export async function createPost(data: {
   title: string; body: string; category?: string;
   location?: string; placeId?: string; images?: string[]; tags?: string[];
+  videoUrl?: string;
 }) {
   return api<any>('/posts', { method: 'POST', body: JSON.stringify(data) });
+}
+
+// ── AI compose assist ────────────────────────
+export async function aiAssist(input: {
+  text: string;
+  action: 'improve' | 'translate' | 'shorten' | 'expand';
+  targetLang?: string;
+  tone?: string;
+}) {
+  return api<{ text: string; mock?: boolean }>('/ai/assist', {
+    method: 'POST',
+    body: JSON.stringify(input),
+  });
+}
+
+// ── AI natural-language search ───────────────
+export interface AiSearchResult {
+  places: any[];
+  posts: any[];
+  users: any[];
+  interpreted: { summary?: string; city?: string; category?: string; minRating?: number; keywords?: string } | null;
+  mock?: boolean;
+}
+export async function aiSearch(query: string) {
+  return api<AiSearchResult>('/ai/search', { method: 'POST', body: JSON.stringify({ query }) });
 }
 
 // ── SAVED / BOOKMARKS ────────────────────────
@@ -468,6 +494,15 @@ export async function depositCredits(amount: number, note?: string) {
   return api<any>('/credits/deposit', {
     method: 'POST',
     body: JSON.stringify({ amount, note }),
+  });
+}
+
+/** Start a Flouci (TND) wallet top-up. Returns { url, mock }: redirect to url, or
+ *  (mock) the wallet was credited on the server-verified return. */
+export async function startCreditTopup(amount: number) {
+  return api<{ url: string; mock: boolean }>('/credits/topup/flouci', {
+    method: 'POST',
+    body: JSON.stringify({ amount }),
   });
 }
 

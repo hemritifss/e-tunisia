@@ -12,9 +12,11 @@ import { PostsService } from './posts.service';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { BadgesModule } from '../badges/badges.module';
 import { BillingModule } from '../billing/billing.module';
+import { AIModule } from '../ai/ai.module';
+import { SafetyModule } from '../safety/safety.module';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([Post, Comment, CommentLike, PostReaction, SavedPost, Repost, User]), NotificationsModule, BadgesModule, BillingModule],
+    imports: [TypeOrmModule.forFeature([Post, Comment, CommentLike, PostReaction, SavedPost, Repost, User]), NotificationsModule, BadgesModule, BillingModule, AIModule, SafetyModule],
     controllers: [PostsController],
     providers: [PostsService],
     exports: [PostsService],

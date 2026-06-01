@@ -27,6 +27,9 @@ class CreatePostDto {
     @IsOptional() @IsArray() @IsString({ each: true })
     images?: string[];
 
+    @IsOptional() @IsString() @MaxLength(2048)
+    videoUrl?: string;
+
     @IsOptional() @IsArray() @IsString({ each: true })
     tags?: string[];
 }

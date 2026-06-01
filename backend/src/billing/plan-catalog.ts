@@ -35,6 +35,8 @@ export interface FeatureCaps {
   canBoost: boolean;
   /** Whether the user can access the owner dashboard. */
   ownerDashboard: boolean;
+  /** Daily AI-concierge message allowance. Infinity = unlimited. */
+  aiMessagesPerDay: number;
 }
 
 export const FREE_CAPS: FeatureCaps = {
@@ -46,6 +48,7 @@ export const FREE_CAPS: FeatureCaps = {
   multiLangListings: false,
   canBoost: false,
   ownerDashboard: false,
+  aiMessagesPerDay: 5,
 };
 
 export const PRO_CAPS: FeatureCaps = {
@@ -57,6 +60,7 @@ export const PRO_CAPS: FeatureCaps = {
   multiLangListings: false,
   canBoost: false,
   ownerDashboard: false,
+  aiMessagesPerDay: 100,
 };
 
 export const BUSINESS_CAPS: FeatureCaps = {
@@ -68,6 +72,7 @@ export const BUSINESS_CAPS: FeatureCaps = {
   multiLangListings: true,
   canBoost: true,
   ownerDashboard: true,
+  aiMessagesPerDay: Number.POSITIVE_INFINITY,
 };
 
 export function capsFor(plan: UserPlan): FeatureCaps {
@@ -236,6 +241,7 @@ export function toPublicCatalog() {
       caps: {
         maxTrips: Number.isFinite(p.caps.maxTrips) ? p.caps.maxTrips : null,
         maxSaves: Number.isFinite(p.caps.maxSaves) ? p.caps.maxSaves : null,
+        aiMessagesPerDay: Number.isFinite(p.caps.aiMessagesPerDay) ? p.caps.aiMessagesPerDay : null,
         customThemes: p.caps.customThemes,
         passportAnalytics: p.caps.passportAnalytics,
         multiLangListings: p.caps.multiLangListings,

@@ -67,10 +67,29 @@ export default function SearchPage() {
     enabled: !!debounced,
   });
 
-  const places = data?.places || [];
-  const posts = data?.posts || [];
-  const users = data?.users || [];
+  // AI natural-language search — opt-in via the "Ask AI" button; cleared on edit.
+  const [aiData, setAiData] = useState<any>(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const runAiSearch = async () => {
+    const q = input.trim();
+    if (!q || aiLoading) return;
+    setAiLoading(true);
+    try {
+      setAiData(await api.aiSearch(q));
+    } catch {
+      /* fall back silently to keyword results */
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  const result = aiData || data;
+  const places = result?.places || [];
+  const posts = result?.posts || [];
+  const users = result?.users || [];
+  const interpreted = aiData?.interpreted || null;
   const hasResults = places.length || posts.length || users.length;
+  const busy = isFetching || aiLoading;
 
   return (
     <div className="search-page page-enter">
@@ -83,23 +102,44 @@ export default function SearchPage() {
           <input
             ref={inputRef} id="search-page-input" type="search" className="search-page-input"
             placeholder="Search places, cities, tags, people…" autoComplete="off" aria-label="Search"
-            value={input} onChange={(e) => setInput(e.target.value)}
+            value={input} onChange={(e) => { setInput(e.target.value); if (aiData) setAiData(null); }}
+            onKeyDown={(e) => { if (e.key === 'Enter') runAiSearch(); }}
           />
           {input && (
-            <button type="button" className="search-page-clear" aria-label="Clear search" onClick={() => { setInput(''); inputRef.current?.focus(); }}><X /></button>
+            <button type="button" className="search-page-clear" aria-label="Clear search" onClick={() => { setInput(''); setAiData(null); inputRef.current?.focus(); }}><X /></button>
           )}
         </div>
+        {input.trim() && (
+          <div className="search-ai-row">
+            <button type="button" className="search-ai-btn" onClick={runAiSearch} disabled={aiLoading}>
+              <Sparkles /> {aiLoading ? 'Thinking…' : 'Ask AI'}
+            </button>
+            <span className="search-ai-hint">Natural language — e.g. “best rooftop café in Tunis”</span>
+          </div>
+        )}
       </header>
 
       <div className="search-page-results">
         {!debounced ? (
           <div className="search-empty"><div className="search-empty-icon"><Search /></div><h3>Start typing to search</h3><p>Find places, cities, tags, or travelers across Tunisia.</p></div>
-        ) : isFetching ? (
+        ) : busy ? (
           <div className="search-loading">{Array.from({ length: 4 }).map((_, i) => <div className="search-skel-row" key={i} />)}</div>
         ) : !hasResults ? (
           <div className="search-empty"><div className="search-empty-icon"><Search /></div><h3>No matches for "{debounced}"</h3><p>Try a different city, tag, or handle.</p></div>
         ) : (
           <>
+            {interpreted && (
+              <div className="search-ai-banner">
+                <Sparkles />
+                <span>
+                  {interpreted.summary || 'AI search'}
+                  {interpreted.city ? ` · ${interpreted.city}` : ''}
+                  {interpreted.category ? ` · ${interpreted.category}` : ''}
+                  {interpreted.minRating ? ` · ${interpreted.minRating}★+` : ''}
+                </span>
+                <button type="button" className="search-ai-clear" onClick={() => setAiData(null)}>Clear</button>
+              </div>
+            )}
             {users.length > 0 && (
               <Section title="People" count={users.length}>
                 <div className="search-people-list">{users.map((u: any) => <PersonCard key={u.id} u={u} />)}</div>

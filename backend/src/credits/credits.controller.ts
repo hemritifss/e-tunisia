@@ -1,9 +1,11 @@
 import {
-    Controller, Get, Post, Body, Query, UseGuards, Request,
+    Controller, Get, Post, Body, Query, UseGuards, Request, Res,
 } from '@nestjs/common';
+import type { Response } from 'express';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { IsEnum, IsNumber, IsOptional, IsString, MaxLength, Max, Min } from 'class-validator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { Public } from '../common/decorators/public.decorator';
 import { CreditsService } from './credits.service';
 import { DonationTarget } from './donation.entity';
 
@@ -63,9 +65,26 @@ export class CreditsController {
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()
     @Post('deposit')
-    @ApiOperation({ summary: 'Top up credits (mock — no real payment yet)' })
+    @ApiOperation({ summary: 'Top up credits (mock — instant, no real payment)' })
     deposit(@Request() req, @Body() body: DepositDto) {
         return this.credits.deposit(req.user.id, body.amount, body.note);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    @Post('topup/flouci')
+    @ApiOperation({ summary: 'Start a Flouci (TND) wallet top-up — returns { url, mock }' })
+    topupFlouci(@Request() req, @Body() body: DepositDto) {
+        return this.credits.createFlouciTopup(req.user.id, body.amount);
+    }
+
+    /** Flouci redirects here after a top-up. Verify server-side, credit the wallet, then 302 to the FE. */
+    @Public()
+    @Get('topup/flouci/return')
+    @ApiOperation({ summary: 'Flouci top-up return (server-verified redirect)' })
+    async topupFlouciReturn(@Query('payment_id') paymentId: string, @Res() res: Response) {
+        const url = await this.credits.handleFlouciTopupReturn(paymentId);
+        res.redirect(url);
     }
 
     @UseGuards(JwtAuthGuard)

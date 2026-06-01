@@ -13,6 +13,10 @@ import { BadgesService } from '../badges/badges.service';
 import { User } from '../users/user.entity';
 import { NotificationsService } from '../notifications/notifications.service';
 import { NotificationType } from '../notifications/notification.entity';
+import { ModerationService, ModerationVerdict } from '../ai/moderation.service';
+import { AIService } from '../ai/ai.service';
+import { SafetyService } from '../safety/safety.service';
+import { ReportReason, ReportTargetType } from '../safety/report.entity';
 
 interface ListOpts {
     page?: number;
@@ -35,7 +39,67 @@ export class PostsService {
         private notifications: NotificationsService,
         private badges: BadgesService,
         private billing: BillingService,
+        private moderation: ModerationService,
+        private safety: SafetyService,
+        private ai: AIService,
     ) {}
+
+    /** Best-effort AI enrichment — fills ONLY the fields the author left empty. */
+    private async autoEnrich(data: Partial<Post>): Promise<{ category?: string; tags?: string[]; location?: string }> {
+        const needsCategory = !data.category;
+        const needsTags = !data.tags || data.tags.length === 0;
+        if (!needsCategory && !needsTags && data.location) return {};
+        try {
+            const s = await this.ai.autoTag({ title: data.title || '', body: data.body || '' });
+            return {
+                category: needsCategory ? s.category : undefined,
+                tags: needsTags && s.tags.length ? s.tags : undefined,
+                location: !data.location ? s.location : undefined,
+            };
+        } catch {
+            return {};
+        }
+    }
+
+    // ──────────────── AI moderation (Phase 2) ────────────────
+
+    /**
+     * Screen user text before publishing. Throws ForbiddenException on a hard
+     * "block" verdict; otherwise returns the verdict so the caller can file an
+     * auto-report once the row (and its id) exists. Moderation fails OPEN — see
+     * ModerationService — so a flaky LLM never stops legitimate posting.
+     */
+    private async screenContent(text: string): Promise<ModerationVerdict> {
+        const verdict = await this.moderation.moderateText(text);
+        if (verdict.action === 'block') {
+            throw new ForbiddenException({
+                code: 'content_blocked',
+                message: verdict.explanation || 'This content violates our community guidelines.',
+            });
+        }
+        return verdict;
+    }
+
+    /** File a system report for flagged content so admins can review it. Best-effort. */
+    private async fileAutoReport(
+        verdict: ModerationVerdict,
+        targetType: ReportTargetType,
+        targetId: string,
+        ownerId: string,
+    ): Promise<void> {
+        if (verdict.action !== 'flag') return;
+        try {
+            await this.safety.report('ai-moderation', {
+                targetType,
+                targetId,
+                reason: verdict.reason || ReportReason.OTHER,
+                details: `[auto] ${verdict.explanation}`.slice(0, 600),
+                targetOwnerId: ownerId,
+            });
+        } catch {
+            // Bookkeeping only — never block publishing on a report-write failure.
+        }
+    }
 
     /** Who reacted to a post — paginated, optionally filtered by reaction type. */
     async listReactors(postId: string, opts: { type?: string | null; page?: number; limit?: number } = {}) {
@@ -308,6 +372,7 @@ export class PostsService {
 
     async addComment(postId: string, authorId: string, body: string, parentId?: string | null) {
         if (!body || !body.trim()) throw new ForbiddenException('Comment cannot be empty');
+        const verdict = await this.screenContent(body);
         const post = await this.postsRepo.findOne({ where: { id: postId } });
         if (!post) throw new NotFoundException('Post not found');
 
@@ -323,6 +388,7 @@ export class PostsService {
             postId, authorId, body: body.trim(),
             parentId: parentId || null,
         }));
+        await this.fileAutoReport(verdict, ReportTargetType.COMMENT, saved.id, authorId);
         post.commentCount = (post.commentCount || 0) + 1;
         await this.postsRepo.save(post);
         if (parent) {
@@ -389,12 +455,25 @@ export class PostsService {
     }
 
     async create(authorId: string, data: Partial<Post>): Promise<Post> {
+        // Run the safety screen + auto-tagging in parallel so create latency stays
+        // ≈ a single LLM call. screenContent throws on a hard block before any write.
+        const [verdict, enrich] = await Promise.all([
+            this.screenContent(`${data.title || ''}\n${data.body || ''}`),
+            this.autoEnrich(data),
+        ]);
+
         const post = this.postsRepo.create({
             ...data,
+            category: data.category || enrich.category,
+            tags: (data.tags && data.tags.length) ? data.tags : (enrich.tags ?? data.tags),
+            location: data.location || enrich.location,
             authorId,
             isActive: true,
         });
         const saved = await this.postsRepo.save(post);
+
+        // Flagged-but-published → queue for human review.
+        await this.fileAutoReport(verdict, ReportTargetType.POST, saved.id, authorId);
 
         // Detect @mentions and notify mentioned users
         const text = `${data.title || ''} ${data.body || ''}`;
@@ -454,16 +533,19 @@ export class PostsService {
             location: p.location,
             placeId: p.placeId,
             images: p.images || [],
+            videoUrl: p.videoUrl || null,
             tags: p.tags || [],
             authorId: p.authorId,
             author: p.author ? {
                 id: p.author.id,
                 fullName: p.author.fullName,
                 avatar: p.author.avatar,
+                handle: p.author.handle,
             } : null,
             upvotes: p.upvotes,
             downvotes: p.downvotes,
             commentCount: p.commentCount,
+            viewCount: p.viewCount,
             isPinned: p.isPinned,
             createdAt: p.createdAt,
         }));

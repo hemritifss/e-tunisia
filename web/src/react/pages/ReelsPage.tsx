@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { useInfiniteQuery } from '@tanstack/react-query';
+import React, { useState, useRef, useEffect } from 'react';
+import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { goTo, absoluteUrl } from '../../router';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -14,11 +14,17 @@ import {
   ChevronUp,
   ChevronDown,
   Music,
+  ArrowLeft,
+  Plus,
+  Trash2,
+  Eye,
+  Play,
 } from 'lucide-react';
 import { api } from '../../shared/api';
 import { Avatar } from '../components/Avatar';
 import { useAuthStore } from '../stores/auth-store';
 import { useUIStore } from '../stores/ui-store';
+import { ReelComposer } from '../components/ReelComposer';
 
 interface ReelItem {
   id: string;
@@ -29,6 +35,7 @@ interface ReelItem {
   location?: string;
   upvotes: number;
   commentCount: number;
+  viewCount?: number;
   category?: string;
   createdAt: string;
 }
@@ -95,25 +102,13 @@ function ReelCard({
       {/* Gradient overlay for text readability */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/60 pointer-events-none" />
 
-      {/* Top bar */}
-      <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-4 pt-4 pb-12 z-10">
-        <button
-          onClick={() => window.history.back()}
-          className="p-2 rounded-full bg-black/20 backdrop-blur-sm text-white"
-        >
-          <X size={20} />
-        </button>
-        <span className="text-white font-semibold text-sm tracking-wide">Reels</span>
-        <button
-          onClick={toggleMute}
-          className="p-2 rounded-full bg-black/20 backdrop-blur-sm text-white"
-        >
-          {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
-        </button>
-      </div>
-
       {/* Right action rail */}
       <div className="absolute right-3 bottom-24 flex flex-col items-center gap-5 z-10">
+        <button onClick={toggleMute} className="flex flex-col items-center gap-1">
+          <div className="p-2.5 rounded-full bg-black/20 backdrop-blur-sm text-white">
+            {isMuted ? <VolumeX size={22} /> : <Volume2 size={22} />}
+          </div>
+        </button>
         <button onClick={handleLike} className="flex flex-col items-center gap-1">
           <div className={`p-2.5 rounded-full ${isLiked ? 'text-red-500' : 'text-white'}`}>
             <Heart size={28} className={isLiked ? 'fill-current' : ''} />
@@ -149,7 +144,7 @@ function ReelCard({
           )}
         </div>
         <p className="text-white text-sm leading-relaxed line-clamp-3">{reel.title}</p>
-        {reel.body && (
+        {reel.body && reel.body !== reel.title && (
           <p className="text-white/70 text-xs leading-relaxed line-clamp-2">{reel.body}</p>
         )}
         {reel.location && (
@@ -190,20 +185,19 @@ function ReelCard({
   );
 }
 
-export default function ReelsPage() {
+/** Vertical-feed "For You" experience (the original swipe view). */
+function ForYouFeed() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
-  const showToast = useUIStore((s) => s.showToast);
 
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery({
-    queryKey: ['reels'],
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isFetchNextPageError } = useInfiniteQuery({
+    queryKey: ['reels', 'foryou'],
     queryFn: async ({ pageParam = 1 }) => {
       const res = (await api.getFeed({
         page: String(pageParam),
         limit: '10',
         sort: 'hot',
       })) as { data: any[]; meta: { page: number; totalPages: number } };
-      // Filter to only video posts
       const videos = (res.data || []).filter((item: any) => item.videoUrl);
       return { data: videos, meta: res.meta };
     },
@@ -217,7 +211,6 @@ export default function ReelsPage() {
 
   const reels: ReelItem[] = data?.pages.flatMap((p: any) => p.data) || [];
 
-  // Snap scroll observer
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -236,12 +229,13 @@ export default function ReelsPage() {
     return () => observer.disconnect();
   }, [reels.length]);
 
-  // Load more when near end
   useEffect(() => {
-    if (activeIndex >= reels.length - 3 && hasNextPage && !isFetchingNextPage) {
+    // Guard on !isFetchNextPageError so a failed page (e.g. 429) doesn't loop:
+    // reels.length stays flat, the condition stays true, and we'd hammer the API.
+    if (activeIndex >= reels.length - 3 && hasNextPage && !isFetchingNextPage && !isFetchNextPageError) {
       fetchNextPage();
     }
-  }, [activeIndex, reels.length, hasNextPage, isFetchingNextPage, fetchNextPage]);
+  }, [activeIndex, reels.length, hasNextPage, isFetchingNextPage, isFetchNextPageError, fetchNextPage]);
 
   const scrollTo = (dir: 1 | -1) => {
     const container = containerRef.current;
@@ -253,23 +247,22 @@ export default function ReelsPage() {
 
   if (reels.length === 0 && !isFetchingNextPage) {
     return (
-      <div className="h-[100dvh] bg-black flex flex-col items-center justify-center text-white gap-4">
+      <div className="h-[100dvh] flex flex-col items-center justify-center text-white gap-4 px-8 text-center">
         <Music size={48} className="text-white/30" />
         <h2 className="text-xl font-semibold">No reels yet</h2>
-        <p className="text-white/50 text-sm">Be the first to share a video from Tunisia</p>
+        <p className="text-white/50 text-sm">Be the first to share a video from Tunisia.</p>
         <button
-          onClick={() => goTo('/')}
-          className="px-6 py-2.5 rounded-full bg-brand text-white font-medium"
+          onClick={() => window.dispatchEvent(new CustomEvent('etunisia:open-reel-composer'))}
+          className="px-6 py-2.5 rounded-full bg-gradient-to-r from-fuchsia-500 to-rose-500 text-white font-medium"
         >
-          Back to feed
+          Create the first reel
         </button>
       </div>
     );
   }
 
   return (
-    <div className="relative h-[100dvh] bg-black">
-      {/* Scroll container */}
+    <>
       <div
         ref={containerRef}
         className="h-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide"
@@ -296,6 +289,256 @@ export default function ReelsPage() {
           <ChevronDown size={20} />
         </button>
       </div>
+    </>
+  );
+}
+
+/** A single tappable cell in the "My Reels" management grid. */
+function MyReelCell({ reel, onDelete }: { reel: ReelItem; onDelete: (id: string) => void }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [playing, setPlaying] = useState(false);
+  const [confirming, setConfirming] = useState(false);
+
+  const togglePlay = () => {
+    const v = videoRef.current;
+    if (!v) return;
+    if (v.paused) { v.play().catch(() => {}); setPlaying(true); }
+    else { v.pause(); setPlaying(false); }
+  };
+
+  return (
+    <div className="relative aspect-[9/16] rounded-xl overflow-hidden bg-neutral-900 ring-1 ring-white/10 group">
+      <video
+        ref={videoRef}
+        src={reel.videoUrl}
+        className="absolute inset-0 w-full h-full object-cover"
+        muted
+        loop
+        playsInline
+        preload="metadata"
+        onClick={togglePlay}
+      />
+      {!playing && (
+        <button
+          onClick={togglePlay}
+          className="absolute inset-0 grid place-items-center bg-black/20"
+          aria-label="Play"
+        >
+          <span className="grid place-items-center w-11 h-11 rounded-full bg-black/50 backdrop-blur">
+            <Play size={18} className="text-white translate-x-0.5" fill="currentColor" />
+          </span>
+        </button>
+      )}
+
+      {/* Delete */}
+      {confirming ? (
+        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 bg-black/70 backdrop-blur-sm px-3 text-center">
+          <p className="text-white text-xs font-medium">Delete this reel?</p>
+          <div className="flex gap-2">
+            <button
+              onClick={() => onDelete(reel.id)}
+              className="px-3 py-1.5 rounded-lg bg-red-500 text-white text-xs font-semibold"
+            >
+              Delete
+            </button>
+            <button
+              onClick={() => setConfirming(false)}
+              className="px-3 py-1.5 rounded-lg bg-white/15 text-white text-xs font-medium"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      ) : (
+        <button
+          onClick={() => setConfirming(true)}
+          className="absolute top-2 right-2 z-10 p-1.5 rounded-full bg-black/50 backdrop-blur text-white opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity"
+          aria-label="Delete reel"
+        >
+          <Trash2 size={15} />
+        </button>
+      )}
+
+      {/* Stats + caption */}
+      <div className="absolute inset-x-0 bottom-0 p-2.5 bg-gradient-to-t from-black/80 to-transparent pointer-events-none">
+        <div className="flex items-center gap-1 text-white/90 text-xs font-medium mb-1">
+          <Eye size={13} /> {reel.viewCount || 0}
+          <Heart size={12} className="ml-2" /> {reel.upvotes || 0}
+        </div>
+        <p className="text-white text-[11px] leading-snug line-clamp-2">{reel.title}</p>
+      </div>
+    </div>
+  );
+}
+
+/** Grid management view of the signed-in user's own reels. */
+function MyReelsGrid({ onCreate }: { onCreate: () => void }) {
+  const queryClient = useQueryClient();
+  const showToast = useUIStore((s) => s.showToast);
+
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useInfiniteQuery({
+    queryKey: ['reels', 'mine'],
+    queryFn: async ({ pageParam = 1 }) => {
+      const res = (await api.getMyFeed({
+        page: String(pageParam),
+        limit: '18',
+      })) as { data: any[]; meta: { page: number; totalPages: number } };
+      const videos = (res.data || []).filter((item: any) => item.videoUrl);
+      return { data: videos, meta: res.meta };
+    },
+    getNextPageParam: (lastPage) => {
+      const meta = (lastPage as any)?.meta;
+      if (!meta || meta.page >= meta.totalPages) return undefined;
+      return meta.page + 1;
+    },
+    initialPageParam: 1,
+  });
+
+  const reels: ReelItem[] = data?.pages.flatMap((p: any) => p.data) || [];
+
+  const handleDelete = async (id: string) => {
+    try {
+      await api.deletePost(id);
+      showToast('Reel deleted', 'success');
+      queryClient.invalidateQueries({ queryKey: ['reels'] });
+      window.dispatchEvent(new CustomEvent('etunisia:post-created')); // refresh home feed too
+    } catch (err: any) {
+      showToast(err?.message || 'Could not delete the reel', 'error');
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (reels.length === 0) {
+    return (
+      <div className="h-full flex flex-col items-center justify-center text-white gap-4 px-8 text-center">
+        <span className="grid place-items-center w-16 h-16 rounded-full bg-white/5 ring-1 ring-white/10">
+          <Play size={26} className="text-white/40 translate-x-0.5" fill="currentColor" />
+        </span>
+        <h2 className="text-xl font-semibold">You haven't posted a reel yet</h2>
+        <p className="text-white/50 text-sm">Share a vertical video — it shows up here and in the feed.</p>
+        <button
+          onClick={onCreate}
+          className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-gradient-to-r from-fuchsia-500 to-rose-500 text-white font-medium"
+        >
+          <Plus size={18} /> Create a reel
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="h-full overflow-y-auto px-3 pt-20 pb-28 scrollbar-hide">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 max-w-3xl mx-auto">
+        {reels.map((reel) => (
+          <MyReelCell key={reel.id} reel={reel} onDelete={handleDelete} />
+        ))}
+      </div>
+      {hasNextPage && (
+        <div className="flex justify-center mt-6">
+          <button
+            onClick={() => fetchNextPage()}
+            disabled={isFetchingNextPage}
+            className="px-5 py-2 rounded-full bg-white/10 text-white text-sm font-medium hover:bg-white/15 disabled:opacity-50"
+          >
+            {isFetchingNextPage ? 'Loading…' : 'Load more'}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function ReelsPage() {
+  const user = useAuthStore((s) => s.user) as any;
+  const queryClient = useQueryClient();
+  const [tab, setTab] = useState<'foryou' | 'mine'>('foryou');
+  const [composerOpen, setComposerOpen] = useState(false);
+
+  const openComposer = () => {
+    if (!user) { goTo('/login'); return; }
+    setComposerOpen(true);
+  };
+
+  // The global mobile "+" (and the empty-state CTA) dispatch this when on /reels.
+  useEffect(() => {
+    const handler = () => openComposer();
+    window.addEventListener('etunisia:open-reel-composer', handler);
+    return () => window.removeEventListener('etunisia:open-reel-composer', handler);
+  }, [user]);
+
+  return (
+    <div className="relative h-[100dvh] bg-black">
+      {/* Page-level top bar (overlay) */}
+      <div className="absolute top-0 inset-x-0 z-30 flex items-center justify-between px-4 pt-4 pb-10 bg-gradient-to-b from-black/50 to-transparent pointer-events-none">
+        <button
+          onClick={() => goTo('/')}
+          className="p-2 rounded-full bg-black/30 backdrop-blur-sm text-white pointer-events-auto"
+          aria-label="Back to feed"
+        >
+          <ArrowLeft size={20} />
+        </button>
+
+        <div className="flex items-center gap-1 p-1 rounded-full bg-black/40 backdrop-blur-sm pointer-events-auto">
+          <button
+            onClick={() => setTab('foryou')}
+            className={`px-3.5 py-1.5 rounded-full text-sm font-semibold transition ${
+              tab === 'foryou' ? 'bg-white text-black' : 'text-white/70 hover:text-white'
+            }`}
+          >
+            For You
+          </button>
+          <button
+            onClick={() => setTab('mine')}
+            className={`px-3.5 py-1.5 rounded-full text-sm font-semibold transition ${
+              tab === 'mine' ? 'bg-white text-black' : 'text-white/70 hover:text-white'
+            }`}
+          >
+            My Reels
+          </button>
+        </div>
+
+        <button
+          onClick={openComposer}
+          className="p-2 rounded-full bg-gradient-to-br from-fuchsia-500 to-rose-500 text-white pointer-events-auto shadow-lg"
+          aria-label="Create a reel"
+        >
+          <Plus size={20} />
+        </button>
+      </div>
+
+      {tab === 'foryou' ? (
+        <ForYouFeed />
+      ) : !user ? (
+        <div className="h-full flex flex-col items-center justify-center text-white gap-4 px-8 text-center">
+          <h2 className="text-xl font-semibold">Sign in to manage your reels</h2>
+          <p className="text-white/50 text-sm">Your posted reels live here — sign in to see and edit them.</p>
+          <button
+            onClick={() => goTo('/login')}
+            className="px-6 py-2.5 rounded-full bg-white text-black font-medium"
+          >
+            Sign in
+          </button>
+        </div>
+      ) : (
+        <MyReelsGrid onCreate={openComposer} />
+      )}
+
+      {composerOpen && (
+        <ReelComposer
+          onClose={() => setComposerOpen(false)}
+          onPosted={() => {
+            queryClient.invalidateQueries({ queryKey: ['reels'] });
+            setTab('mine');
+          }}
+        />
+      )}
     </div>
   );
 }

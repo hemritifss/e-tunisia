@@ -64,6 +64,7 @@ import { initCommandPalette } from './command-palette';
 import { initToasts } from './toasts';
 import { mountTripCart, syncTripCartAuth } from './trip-cart-ui';
 import { mountMessengerGlobals } from './react/lib/mount-messenger';
+import { initPopupTriggers, clearPopups } from './react/components/popups';
 import { connectRealtime, disconnectRealtime } from './realtime';
 import { replaceIcons } from './icons';
 import { posts, addUserPost, generateId, type Post } from './data';
@@ -256,6 +257,11 @@ function navigate() {
     mobileCreateBtn.onclick = () => {
       if (!apiService.isLoggedIn()) {
         goTo('/login');
+        return;
+      }
+      // On the Reels tab, the "+" should create a reel (video-first), not a text post.
+      if (currentRoute() === '/reels') {
+        window.dispatchEvent(new CustomEvent('etunisia:open-reel-composer'));
         return;
       }
       document.dispatchEvent(new CustomEvent('etunisia:open-post-modal'));
@@ -859,12 +865,21 @@ function initDropdown() {
     dropdown?.classList.toggle('open');
   });
 
-  document.addEventListener('click', () => {
-    dropdown?.classList.remove('open');
+  // Close on any click outside the avatar menu. Scoped via closest() so we don't
+  // need to stopPropagation inside the dropdown — doing that would also block the
+  // global link interceptor (also on document), and menu links would stop routing.
+  document.addEventListener('click', (e) => {
+    if (!(e.target as HTMLElement)?.closest('#avatar-menu')) {
+      dropdown?.classList.remove('open');
+    }
   });
 
+  // Close the menu after picking an item. No stopPropagation here, so the click
+  // still bubbles to the link interceptor (links) and the logout handler (button).
   dropdown?.addEventListener('click', (e) => {
-    e.stopPropagation();
+    if ((e.target as HTMLElement)?.closest('.dropdown-item')) {
+      dropdown.classList.remove('open');
+    }
   });
 }
 
@@ -979,6 +994,49 @@ function initPostModal() {
       selectedCatName = el.dataset.catName || '';
       selectedCatClass = el.dataset.catClass || '';
       updateSubmitState();
+    });
+  });
+
+  // AI compose assist — improve / translate the body text in place (Phase 3).
+  const aiBar = document.getElementById('post-modal-ai');
+  const aiStatus = document.getElementById('post-modal-ai-status');
+  let aiBusy = false;
+  aiBar?.querySelectorAll('.post-modal-ai-btn').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      if (aiBusy) return;
+      const text = bodyInput?.value?.trim() || '';
+      if (!text) {
+        if (aiStatus) aiStatus.textContent = 'Write something first';
+        setTimeout(() => { if (aiStatus) aiStatus.textContent = ''; }, 1800);
+        return;
+      }
+      const el = btn as HTMLElement;
+      const action = (el.dataset.aiAction as 'improve' | 'translate' | 'shorten' | 'expand') || 'improve';
+      const lang = el.dataset.aiLang || undefined;
+      aiBusy = true;
+      aiBar.classList.add('is-busy');
+      if (aiStatus) aiStatus.textContent = action === 'translate' ? 'Translating…' : 'Improving…';
+      try {
+        const out: any = await apiService.aiAssist({ text, action, targetLang: lang });
+        if (out?.mock) {
+          if (aiStatus) aiStatus.textContent = 'AI not configured';
+        } else if (out?.text) {
+          bodyInput.value = out.text;
+          bodyInput.dispatchEvent(new Event('input', { bubbles: true }));
+          if (aiStatus) aiStatus.textContent = '✓ Done';
+        }
+      } catch (e: any) {
+        const m = typeof e?.message === 'string' ? e.message : (e?.message?.message || 'AI unavailable');
+        if (aiStatus) aiStatus.textContent = String(m).slice(0, 48);
+      } finally {
+        aiBusy = false;
+        aiBar.classList.remove('is-busy');
+        setTimeout(() => {
+          if (aiStatus && (aiStatus.textContent === '✓ Done' || aiStatus.textContent === 'AI not configured')) {
+            aiStatus.textContent = '';
+          }
+        }, 2200);
+      }
     });
   });
 
@@ -1380,6 +1438,7 @@ function init() {
 
   const handleLogout = () => {
     apiService.logout();
+    clearPopups();
     document.querySelectorAll<HTMLElement>('[data-user-name]').forEach(el => { el.textContent = 'Guest'; });
     document.querySelectorAll<HTMLElement>('[data-user-level]').forEach(el => { el.textContent = 'Welcome'; });
     document.querySelectorAll<HTMLImageElement>('img[data-user-avatar]').forEach(el => {
@@ -1400,6 +1459,8 @@ function init() {
   mountTripCart();
   // Mount the Messenger globals (chat popups + mobile conversations launcher)
   mountMessengerGlobals();
+  // Wire interactive popups (tip celebration, first-run tutorial, daily nudge)
+  initPopupTriggers();
 
   onRouteChange(navigate);
   navigate();

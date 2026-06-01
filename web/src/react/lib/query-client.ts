@@ -16,7 +16,14 @@ export const queryClient = new QueryClient({
     queries: {
       staleTime: 30_000,
       gcTime: 1000 * 60 * 30,
-      retry: 1,
+      // Never retry 4xx — a 400/401/403/404 won't fix itself, and retrying a 429
+      // (rate limit) just digs the hole deeper. Only transient 5xx/network errors
+      // get a single retry.
+      retry: (failureCount, error) => {
+        const status = (error as any)?.status;
+        if (typeof status === 'number' && status >= 400 && status < 500) return false;
+        return failureCount < 1;
+      },
       refetchOnWindowFocus: true,
       refetchOnReconnect: true,
       refetchOnMount: 'always',

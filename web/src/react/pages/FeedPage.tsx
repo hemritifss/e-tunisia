@@ -366,6 +366,7 @@ export default function FeedPage() {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
+    isFetchNextPageError,
     isLoading,
     isError,
   } = useInfiniteQuery({
@@ -408,7 +409,10 @@ export default function FeedPage() {
     if (loadMoreRef.current) {
       observerRef.current = new IntersectionObserver(
         (entries) => {
-          if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          // Bail if the last page request failed (e.g. 429 rate limit). Without this,
+          // the sentinel stays in view, the effect re-runs, and we hammer the API in a
+          // tight loop — which is exactly what trips the throttler.
+          if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage && !isFetchNextPageError) {
             fetchNextPage();
           }
         },
@@ -417,7 +421,7 @@ export default function FeedPage() {
       observerRef.current.observe(loadMoreRef.current);
     }
     return () => observerRef.current?.disconnect();
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+  }, [hasNextPage, isFetchingNextPage, isFetchNextPageError, fetchNextPage]);
 
   const allItems = (() => {
     const pages = data?.pages || [];
@@ -537,6 +541,15 @@ export default function FeedPage() {
             <PostCardSkeleton />
             <PostCardSkeleton />
           </div>
+        )}
+        {isFetchNextPageError && !isFetchingNextPage && (
+          <button
+            type="button"
+            onClick={() => fetchNextPage()}
+            className="px-5 py-2 rounded-full bg-surface border border-black/5 dark:border-white/10 text-sm font-medium"
+          >
+            Couldn't load more — tap to retry
+          </button>
         )}
         {!hasNextPage && allItems.length > 0 && (
           <div className="feed-end">
