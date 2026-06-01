@@ -41,6 +41,41 @@ interface ReelItem {
   createdAt: string;
 }
 
+// Demo reels shown in "For You" only when there are no real video posts yet, so
+// the surface is never empty (mirrors the landing page's fallback content). Real
+// reels created via the composer always take precedence. Clips are reliable,
+// CORS-open public samples.
+const SAMPLE_REELS: ReelItem[] = [
+  {
+    id: 'sample-sahara', title: 'Golden hour over the Sahara dunes 🐪',
+    body: 'Sunset in Douz — the gateway to the desert.',
+    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4',
+    author: { id: 's1', fullName: 'Sahara Diaries', handle: 'sahara', avatar: 'https://api.dicebear.com/9.x/personas/svg?seed=sahara' },
+    location: 'Douz', upvotes: 1240, commentCount: 86, viewCount: 18400, createdAt: new Date().toISOString(),
+  },
+  {
+    id: 'sample-sidibou', title: 'The blue doors of Sidi Bou Saïd 💙',
+    body: 'Every corner is a postcard.',
+    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+    author: { id: 's2', fullName: 'Leïla Travels', handle: 'leila', avatar: 'https://api.dicebear.com/9.x/personas/svg?seed=leila' },
+    location: 'Sidi Bou Said', upvotes: 2310, commentCount: 142, viewCount: 30200, createdAt: new Date().toISOString(),
+  },
+  {
+    id: 'sample-medina', title: 'Street food in the Tunis Medina 🍲',
+    body: 'Brik, fricassé, and mint tea on a rooftop.',
+    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4',
+    author: { id: 's3', fullName: 'Karim Eats', handle: 'karim', avatar: 'https://api.dicebear.com/9.x/personas/svg?seed=karimeats' },
+    location: 'Tunis Medina', upvotes: 980, commentCount: 64, viewCount: 14700, createdAt: new Date().toISOString(),
+  },
+  {
+    id: 'sample-tabarka', title: 'Diving the coast of Tabarka 🤿',
+    body: 'Crystal-clear water and coral reefs up north.',
+    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBunny.mp4',
+    author: { id: 's4', fullName: 'Blue Tunisia', handle: 'bluetn', avatar: 'https://api.dicebear.com/9.x/personas/svg?seed=bluetn' },
+    location: 'Tabarka', upvotes: 1530, commentCount: 97, viewCount: 21100, createdAt: new Date().toISOString(),
+  },
+];
+
 function ReelCard({
   reel,
   isActive,
@@ -304,7 +339,7 @@ function ForYouFeed() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
 
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isFetchNextPageError } = useInfiniteQuery({
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isFetchNextPageError, isLoading } = useInfiniteQuery({
     queryKey: ['reels', 'foryou'],
     queryFn: async ({ pageParam = 1 }) => {
       const res = (await api.getFeed({
@@ -323,7 +358,10 @@ function ForYouFeed() {
     initialPageParam: 1,
   });
 
-  const reels: ReelItem[] = data?.pages.flatMap((p: any) => p.data) || [];
+  const realReels: ReelItem[] = data?.pages.flatMap((p: any) => p.data) || [];
+  // Once the feed settles with no real videos (or it errored / backend is down),
+  // fall back to demo reels so the surface is never empty.
+  const reels: ReelItem[] = realReels.length > 0 ? realReels : (isLoading ? [] : SAMPLE_REELS);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -359,18 +397,12 @@ function ForYouFeed() {
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
-  if (reels.length === 0 && !isFetchingNextPage) {
+  // Only empty while the first fetch is in flight — show a spinner, not the empty state
+  // (a settled-but-empty feed renders SAMPLE_REELS instead).
+  if (reels.length === 0) {
     return (
-      <div className="h-[100dvh] flex flex-col items-center justify-center text-white gap-4 px-8 text-center">
-        <Music size={48} className="text-white/30" />
-        <h2 className="text-xl font-semibold">No reels yet</h2>
-        <p className="text-white/50 text-sm">Be the first to share a video from Tunisia.</p>
-        <button
-          onClick={() => window.dispatchEvent(new CustomEvent('etunisia:open-reel-composer'))}
-          className="px-6 py-2.5 rounded-full bg-gradient-to-r from-fuchsia-500 to-rose-500 text-white font-medium"
-        >
-          Create the first reel
-        </button>
+      <div className="h-[100dvh] grid place-items-center bg-black">
+        <div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin" />
       </div>
     );
   }
