@@ -2,6 +2,7 @@ import { PlacesService } from '../places/places.service';
 import { SearchService } from '../search/search.service';
 import { BillingService } from '../billing/billing.service';
 import { RedisService } from '../redis/redis.service';
+import { UserPlan } from '../users/user.entity';
 import { LlmService } from './llm.service';
 export interface ItineraryDay {
     day: number;
@@ -55,7 +56,10 @@ export declare class AIService {
     assertQuotaAndCount(identity: {
         userId?: string | null;
         ip?: string;
-    }): Promise<void>;
+    }): Promise<{
+        plan: UserPlan;
+        premium: boolean;
+    }>;
     generateItinerary(preferences: {
         duration: number;
         budget: number;
@@ -63,8 +67,8 @@ export declare class AIService {
         interests: string[];
         startLocation?: string;
         travelStyle?: string;
-    }): Promise<AIItinerary>;
-    chatTravelPlanner(messages: ChatMessage[]): Promise<{
+    }, premium?: boolean): Promise<AIItinerary>;
+    chatTravelPlanner(messages: ChatMessage[], premium?: boolean): Promise<{
         reply: string;
         suggestions?: string[];
         places?: GroundedPlace[];
@@ -74,18 +78,18 @@ export declare class AIService {
         action: AssistAction | string;
         targetLang?: string;
         tone?: string;
-    }): Promise<{
+    }, premium?: boolean): Promise<{
         text: string;
         mock?: boolean;
     }>;
     generateCaption(input: {
         topic?: string;
         location?: string;
-    }): Promise<{
+    }, premium?: boolean): Promise<{
         caption: string;
         mock?: boolean;
     }>;
-    smartSearch(query: string): Promise<{
+    smartSearch(query: string, premium?: boolean): Promise<{
         places: any[];
         posts: any[];
         users: any[];
@@ -111,7 +115,7 @@ export declare class AIService {
         visitedPlaceIds: string[];
         favoriteIds: string[];
         interests: string[];
-    }): Promise<Array<{
+    }, premium?: boolean): Promise<Array<{
         placeId: string;
         reason: string;
         score: number;

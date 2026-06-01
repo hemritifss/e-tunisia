@@ -24,35 +24,36 @@ let AIController = class AIController {
         this.aiService = aiService;
     }
     async generateItinerary(userId, req, preferences) {
-        await this.aiService.assertQuotaAndCount({ userId, ip: req.ip });
-        return this.aiService.generateItinerary(preferences);
+        const { premium } = await this.aiService.assertQuotaAndCount({ userId, ip: req.ip });
+        return this.aiService.generateItinerary(preferences, premium);
     }
     async chatPlanner(userId, req, { messages }) {
-        await this.aiService.assertQuotaAndCount({ userId, ip: req.ip });
-        return this.aiService.chatTravelPlanner(messages);
+        const { premium } = await this.aiService.assertQuotaAndCount({ userId, ip: req.ip });
+        return this.aiService.chatTravelPlanner(messages, premium);
     }
     async assist(userId, req, body) {
-        await this.aiService.assertQuotaAndCount({ userId, ip: req.ip });
-        return this.aiService.assist(body);
+        const { premium } = await this.aiService.assertQuotaAndCount({ userId, ip: req.ip });
+        return this.aiService.assist(body, premium);
     }
     async smartSearch(userId, req, body) {
-        await this.aiService.assertQuotaAndCount({ userId, ip: req.ip });
-        return this.aiService.smartSearch(body?.query || '');
+        const { premium } = await this.aiService.assertQuotaAndCount({ userId, ip: req.ip });
+        return this.aiService.smartSearch(body?.query || '', premium);
     }
     async autoTag(userId, req, body) {
         await this.aiService.assertQuotaAndCount({ userId, ip: req.ip });
         return this.aiService.autoTag(body || {});
     }
     async caption(userId, req, body) {
-        await this.aiService.assertQuotaAndCount({ userId, ip: req.ip });
-        return this.aiService.generateCaption(body || {});
+        const { premium } = await this.aiService.assertQuotaAndCount({ userId, ip: req.ip });
+        return this.aiService.generateCaption(body || {}, premium);
     }
-    async getSuggestions(user, interests) {
+    async getSuggestions(user, req, interests) {
+        const { premium } = await this.aiService.assertQuotaAndCount({ userId: user.id, ip: req.ip });
         return this.aiService.suggestPlaces({
             visitedPlaceIds: user.visitedPlaceIds || [],
             favoriteIds: user.favoriteIds || [],
             interests: interests ? interests.split(',') : ['culture', 'food', 'nature'],
-        });
+        }, premium);
     }
 };
 exports.AIController = AIController;
@@ -127,9 +128,10 @@ __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, swagger_1.ApiOperation)({ summary: 'Get personalized place suggestions' }),
     __param(0, (0, current_user_decorator_1.CurrentUser)()),
-    __param(1, (0, common_1.Query)('interests')),
+    __param(1, (0, common_1.Req)()),
+    __param(2, (0, common_1.Query)('interests')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:paramtypes", [Object, Object, String]),
     __metadata("design:returntype", Promise)
 ], AIController.prototype, "getSuggestions", null);
 exports.AIController = AIController = __decorate([

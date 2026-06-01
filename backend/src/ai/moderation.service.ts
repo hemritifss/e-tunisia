@@ -51,7 +51,7 @@ export class ModerationService {
 
     try {
       const result = await this.llm.complete({
-        model: this.llm.defaultModel,
+        // Moderation is high-volume + safety, not user-facing quality → free model.
         system: MODERATION_SYSTEM,
         messages: [{ role: 'user', content: `Content to classify:\n"""\n${clean.slice(0, 4000)}\n"""` }],
         temperature: 0,

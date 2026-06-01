@@ -89,8 +89,9 @@ let AIService = AIService_1 = class AIService {
         else {
             cap = GUEST_AI_DAILY;
         }
+        const result = { plan, premium: plan !== user_entity_1.UserPlan.FREE };
         if (!Number.isFinite(cap))
-            return;
+            return result;
         const day = new Date().toISOString().slice(0, 10);
         const subject = identity.userId || `ip:${identity.ip || 'unknown'}`;
         const key = `ai:quota:${day}:${subject}`;
@@ -101,7 +102,7 @@ let AIService = AIService_1 = class AIService {
                 await this.redis.expire(key, 60 * 60 * 26);
         }
         catch {
-            return;
+            return result;
         }
         if (used > cap) {
             throw new common_1.ForbiddenException({
@@ -114,8 +115,9 @@ let AIService = AIService_1 = class AIService {
                 scope: identity.userId ? 'user' : 'guest',
             });
         }
+        return result;
     }
-    async generateItinerary(preferences) {
+    async generateItinerary(preferences, premium = false) {
         const placesResponse = await this.placesService.findAll({});
         const places = placesResponse.data || [];
         const featuredPlaces = places.filter((p) => p.isFeatured || p.rating >= 4.0);
@@ -125,7 +127,8 @@ let AIService = AIService_1 = class AIService {
         const prompt = this.buildItineraryPrompt(preferences, featuredPlaces);
         try {
             const result = await this.llm.complete({
-                model: this.llm.proModel,
+                premium,
+                heavy: true,
                 system: 'You are an expert Tunisian travel planner. Create detailed, authentic itineraries featuring hidden gems and local experiences. Return ONLY valid JSON matching the requested format.',
                 messages: [{ role: 'user', content: prompt }],
                 temperature: 0.7,
@@ -141,7 +144,7 @@ let AIService = AIService_1 = class AIService {
             return this.generateMockItinerary(preferences, featuredPlaces);
         }
     }
-    async chatTravelPlanner(messages) {
+    async chatTravelPlanner(messages, premium = false) {
         if (!this.llm.live) {
             return this.generateMockChatResponse(messages);
         }
@@ -194,7 +197,7 @@ let AIService = AIService_1 = class AIService {
             convo.push({ role: 'user', content: 'Hi!' });
         try {
             const result = await this.llm.complete({
-                model: this.llm.defaultModel,
+                premium,
                 system: CONCIERGE_SYSTEM,
                 messages: convo,
                 temperature: 0.7,
@@ -214,7 +217,7 @@ let AIService = AIService_1 = class AIService {
             return this.generateMockChatResponse(messages);
         }
     }
-    async assist(input) {
+    async assist(input, premium = false) {
         const text = (input.text || '').trim();
         if (!text)
             return { text: '' };
@@ -241,7 +244,7 @@ let AIService = AIService_1 = class AIService {
         }
         try {
             const result = await this.llm.complete({
-                model: this.llm.defaultModel,
+                premium,
                 system: `You are a writing assistant for e-Tunisia, a Tunisian travel & social app. Users write in Tunisian derja, Arabic, French or English, often mixed.${input.tone ? ` Tone: ${input.tone}.` : ''} Never add commentary, quotes or labels — return only the resulting text.`,
                 messages: [{ role: 'user', content: `${instruction}\n\n"""\n${text.slice(0, 3000)}\n"""` }],
                 temperature: action === 'translate' ? 0.2 : 0.5,
@@ -255,7 +258,7 @@ let AIService = AIService_1 = class AIService {
             return { text, mock: true };
         }
     }
-    async generateCaption(input) {
+    async generateCaption(input, premium = false) {
         const topic = (input.topic || '').trim();
         const loc = (input.location || '').trim();
         if (!this.llm.live) {
@@ -265,7 +268,7 @@ let AIService = AIService_1 = class AIService {
         }
         try {
             const result = await this.llm.complete({
-                model: this.llm.defaultModel,
+                premium,
                 system: CAPTION_SYSTEM,
                 messages: [{ role: 'user', content: `Notes: ${topic || '(none)'}\nLocation: ${loc || '(none)'}` }],
                 temperature: 0.9,
@@ -280,7 +283,7 @@ let AIService = AIService_1 = class AIService {
             return { caption: `${base} ✨\n#Tunisia #eTunisia #travel`, mock: true };
         }
     }
-    async smartSearch(query) {
+    async smartSearch(query, premium = false) {
         const q = (query || '').trim();
         if (!q)
             return { places: [], posts: [], users: [], interpreted: null };
@@ -291,7 +294,7 @@ let AIService = AIService_1 = class AIService {
         let filters = {};
         try {
             const result = await this.llm.complete({
-                model: this.llm.defaultModel,
+                premium,
                 system: SEARCH_PARSE_SYSTEM,
                 messages: [{ role: 'user', content: q.slice(0, 300) }],
                 temperature: 0,
@@ -339,7 +342,6 @@ let AIService = AIService_1 = class AIService {
             return this.heuristicTags(text);
         try {
             const result = await this.llm.complete({
-                model: this.llm.defaultModel,
                 system: AUTOTAG_SYSTEM,
                 messages: [{ role: 'user', content: text.slice(0, 2000) }],
                 temperature: 0,
@@ -380,7 +382,7 @@ let AIService = AIService_1 = class AIService {
         const tags = [...new Set([...hashtags, ...(category ? [category] : [])])].slice(0, 6);
         return { category, tags, location: location ? location.replace(/\b\w/g, (c) => c.toUpperCase()) : undefined };
     }
-    async suggestPlaces(userProfile) {
+    async suggestPlaces(userProfile, premium = false) {
         const placesResponse = await this.placesService.findAll({});
         const allPlaces = placesResponse.data || [];
         const scored = allPlaces
@@ -413,7 +415,7 @@ let AIService = AIService_1 = class AIService {
                 tags: (s.place.tags || []).slice(0, 6),
             }));
             const result = await this.llm.complete({
-                model: this.llm.defaultModel,
+                premium,
                 system: RERANK_SYSTEM,
                 messages: [{ role: 'user', content: JSON.stringify({ interests: userProfile.interests, candidates }) }],
                 temperature: 0.3,

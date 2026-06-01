@@ -38,6 +38,10 @@ export interface CompleteOpts {
   tools?: LlmTool[];
   toolRunner?: (name: string, input: any) => Promise<any>;
   maxToolRounds?: number;
+  /** Paid users → Claude. Falls back to the free provider if Claude errors (e.g. unfunded). */
+  premium?: boolean;
+  /** Use the stronger model within the chosen provider (e.g. itinerary generation). */
+  heavy?: boolean;
 }
 
 export interface LlmResult {
@@ -46,20 +50,17 @@ export interface LlmResult {
   toolsUsed: string[];
 }
 
-type Provider = 'anthropic' | 'openai' | null;
-
 @Injectable()
 export class LlmService {
   private readonly logger = new Logger(LlmService.name);
   private anthropic: any = null;
   private oai: any = null;
 
-  /** Which provider serves each tier (resolved once at boot). */
-  private readonly defaultProvider: Provider;
-  private readonly proProvider: Provider;
-
-  readonly defaultModel: string;
-  readonly proModel: string;
+  /** Models per provider (resolved once at boot). */
+  private readonly freeModel: string;
+  private readonly freeModelPro: string;
+  private readonly claudeModel: string;
+  private readonly claudeProModel: string;
 
   constructor(private readonly config: ConfigService) {
     const baseURL = this.config.get<string>('LLM_BASE_URL');
@@ -88,21 +89,15 @@ export class LlmService {
       }
     }
 
-    const freeModel = this.config.get<string>('LLM_MODEL') || 'llama-3.3-70b-versatile';
-    const freeModelPro = this.config.get<string>('LLM_MODEL_PRO') || freeModel;
-    const claudeModel = this.config.get<string>('ANTHROPIC_MODEL') || 'claude-haiku-4-5-20251001';
-    const claudePro = this.config.get<string>('ANTHROPIC_MODEL_PRO') || 'claude-opus-4-8';
-
-    // DEFAULT tier prefers the free provider; PRO tier prefers Claude.
-    this.defaultProvider = this.oai ? 'openai' : this.anthropic ? 'anthropic' : null;
-    this.proProvider = this.anthropic ? 'anthropic' : this.oai ? 'openai' : null;
-
-    this.defaultModel = this.oai ? freeModel : this.anthropic ? claudeModel : '';
-    this.proModel = this.anthropic ? claudePro : this.oai ? freeModelPro : '';
+    this.freeModel = this.config.get<string>('LLM_MODEL') || 'llama-3.3-70b-versatile';
+    this.freeModelPro = this.config.get<string>('LLM_MODEL_PRO') || this.freeModel;
+    this.claudeModel = this.config.get<string>('ANTHROPIC_MODEL') || 'claude-haiku-4-5-20251001';
+    this.claudeProModel = this.config.get<string>('ANTHROPIC_MODEL_PRO') || 'claude-opus-4-8';
 
     if (this.live) {
       this.logger.log(
-        `LLM ready — default=${this.defaultProvider}:${this.defaultModel}, pro=${this.proProvider}:${this.proModel}`,
+        `LLM ready — free=${this.oai ? this.freeModel : 'off'}, claude=${this.anthropic ? this.claudeModel : 'off'} ` +
+          `(paid users → Claude with free-provider fallback)`,
       );
     } else {
       this.logger.warn('No LLM provider configured — AI runs in mock mode');
@@ -114,14 +109,30 @@ export class LlmService {
     return !!(this.oai || this.anthropic);
   }
 
+  /**
+   * Route by the caller's plan, not the task:
+   *   - premium (paid user) → Claude; if Claude errors (e.g. unfunded), fall back
+   *     to the free provider so the paying user still gets a real answer.
+   *   - otherwise → the free provider.
+   * `heavy` picks the stronger model within whichever provider is chosen.
+   */
   async complete(opts: CompleteOpts): Promise<LlmResult> {
-    // Route by the model the caller asked for: proModel → pro tier, else default.
-    const isPro = !!(opts.model && opts.model === this.proModel && this.proProvider);
-    const provider = isPro ? this.proProvider : this.defaultProvider;
-    const model = opts.model || (isPro ? this.proModel : this.defaultModel);
+    const useClaude = !!(opts.premium && this.anthropic);
 
-    if (provider === 'anthropic') return this.completeAnthropic(opts, model);
-    if (provider === 'openai') return this.completeOpenAICompat(opts, model);
+    if (useClaude) {
+      try {
+        return await this.completeAnthropic(opts, opts.heavy ? this.claudeProModel : this.claudeModel);
+      } catch (e: any) {
+        if (this.oai) {
+          this.logger.warn(`Claude failed (${e?.message || e}) — falling back to the free provider`);
+          return this.completeOpenAICompat(opts, opts.heavy ? this.freeModelPro : this.freeModel);
+        }
+        throw e;
+      }
+    }
+
+    if (this.oai) return this.completeOpenAICompat(opts, opts.heavy ? this.freeModelPro : this.freeModel);
+    if (this.anthropic) return this.completeAnthropic(opts, opts.heavy ? this.claudeProModel : this.claudeModel);
     throw new Error('LLM not configured (mock mode)');
   }
 

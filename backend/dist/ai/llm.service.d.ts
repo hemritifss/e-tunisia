@@ -17,6 +17,8 @@ export interface CompleteOpts {
     tools?: LlmTool[];
     toolRunner?: (name: string, input: any) => Promise<any>;
     maxToolRounds?: number;
+    premium?: boolean;
+    heavy?: boolean;
 }
 export interface LlmResult {
     text: string;
@@ -28,10 +30,10 @@ export declare class LlmService {
     private readonly logger;
     private anthropic;
     private oai;
-    private readonly defaultProvider;
-    private readonly proProvider;
-    readonly defaultModel: string;
-    readonly proModel: string;
+    private readonly freeModel;
+    private readonly freeModelPro;
+    private readonly claudeModel;
+    private readonly claudeProModel;
     constructor(config: ConfigService);
     get live(): boolean;
     complete(opts: CompleteOpts): Promise<LlmResult>;

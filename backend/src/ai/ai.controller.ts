@@ -35,8 +35,8 @@ export class AIController {
       travelStyle?: string;
     },
   ) {
-    await this.aiService.assertQuotaAndCount({ userId, ip: req.ip });
-    return this.aiService.generateItinerary(preferences);
+    const { premium } = await this.aiService.assertQuotaAndCount({ userId, ip: req.ip });
+    return this.aiService.generateItinerary(preferences, premium);
   }
 
   @Post('chat')
@@ -48,8 +48,8 @@ export class AIController {
     @Body()
     { messages }: { messages: Array<{ role: 'user' | 'assistant'; content: string }> },
   ) {
-    await this.aiService.assertQuotaAndCount({ userId, ip: req.ip });
-    return this.aiService.chatTravelPlanner(messages);
+    const { premium } = await this.aiService.assertQuotaAndCount({ userId, ip: req.ip });
+    return this.aiService.chatTravelPlanner(messages, premium);
   }
 
   @Post('assist')
@@ -60,8 +60,8 @@ export class AIController {
     @Req() req: any,
     @Body() body: { text: string; action: string; targetLang?: string; tone?: string },
   ) {
-    await this.aiService.assertQuotaAndCount({ userId, ip: req.ip });
-    return this.aiService.assist(body);
+    const { premium } = await this.aiService.assertQuotaAndCount({ userId, ip: req.ip });
+    return this.aiService.assist(body, premium);
   }
 
   @Post('search')
@@ -72,8 +72,8 @@ export class AIController {
     @Req() req: any,
     @Body() body: { query: string },
   ) {
-    await this.aiService.assertQuotaAndCount({ userId, ip: req.ip });
-    return this.aiService.smartSearch(body?.query || '');
+    const { premium } = await this.aiService.assertQuotaAndCount({ userId, ip: req.ip });
+    return this.aiService.smartSearch(body?.query || '', premium);
   }
 
   @Post('autotag')
@@ -96,8 +96,8 @@ export class AIController {
     @Req() req: any,
     @Body() body: { topic?: string; location?: string },
   ) {
-    await this.aiService.assertQuotaAndCount({ userId, ip: req.ip });
-    return this.aiService.generateCaption(body || {});
+    const { premium } = await this.aiService.assertQuotaAndCount({ userId, ip: req.ip });
+    return this.aiService.generateCaption(body || {}, premium);
   }
 
   @Get('suggestions')
@@ -105,12 +105,14 @@ export class AIController {
   @ApiOperation({ summary: 'Get personalized place suggestions' })
   async getSuggestions(
     @CurrentUser() user: any,
+    @Req() req: any,
     @Query('interests') interests?: string,
   ) {
+    const { premium } = await this.aiService.assertQuotaAndCount({ userId: user.id, ip: req.ip });
     return this.aiService.suggestPlaces({
       visitedPlaceIds: user.visitedPlaceIds || [],
       favoriteIds: user.favoriteIds || [],
       interests: interests ? interests.split(',') : ['culture', 'food', 'nature'],
-    });
+    }, premium);
   }
 }

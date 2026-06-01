@@ -59,7 +59,7 @@ export declare class AIController {
         caption: string;
         mock?: boolean;
     }>;
-    getSuggestions(user: any, interests?: string): Promise<{
+    getSuggestions(user: any, req: any, interests?: string): Promise<{
         placeId: string;
         reason: string;
         score: number;

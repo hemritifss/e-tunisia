@@ -135,7 +135,7 @@ export class AIService {
    * their plan's `aiMessagesPerDay` cap; guests against a small per-IP allowance.
    * Fails OPEN if Redis is unavailable — AI is never blocked by an infra hiccup.
    */
-  async assertQuotaAndCount(identity: { userId?: string | null; ip?: string }): Promise<void> {
+  async assertQuotaAndCount(identity: { userId?: string | null; ip?: string }): Promise<{ plan: UserPlan; premium: boolean }> {
     let plan = UserPlan.FREE;
     let cap: number;
 
@@ -146,7 +146,9 @@ export class AIService {
       cap = GUEST_AI_DAILY;
     }
 
-    if (!Number.isFinite(cap)) return; // unlimited (Business)
+    // Paid users (Pro/Business) get routed to Claude; everyone else to the free model.
+    const result = { plan, premium: plan !== UserPlan.FREE };
+    if (!Number.isFinite(cap)) return result; // unlimited (Business)
 
     const day = new Date().toISOString().slice(0, 10); // UTC day bucket
     const subject = identity.userId || `ip:${identity.ip || 'unknown'}`;
@@ -157,7 +159,7 @@ export class AIService {
       used = await this.redis.increment(key);
       if (used === 1) await this.redis.expire(key, 60 * 60 * 26); // expire ~1 day after first use
     } catch {
-      return; // Redis down → don't block the feature
+      return result; // Redis down → don't block the feature
     }
 
     if (used > cap) {
@@ -171,6 +173,8 @@ export class AIService {
         scope: identity.userId ? 'user' : 'guest',
       });
     }
+
+    return result;
   }
 
   // ──────────────── Itinerary generation ────────────────
@@ -182,7 +186,7 @@ export class AIService {
     interests: string[];
     startLocation?: string;
     travelStyle?: string;
-  }): Promise<AIItinerary> {
+  }, premium = false): Promise<AIItinerary> {
     const placesResponse = await this.placesService.findAll({} as any);
     const places = placesResponse.data || [];
     const featuredPlaces = places.filter((p: any) => p.isFeatured || p.rating >= 4.0);
@@ -195,7 +199,8 @@ export class AIService {
 
     try {
       const result = await this.llm.complete({
-        model: this.llm.proModel,
+        premium,
+        heavy: true,
         system:
           'You are an expert Tunisian travel planner. Create detailed, authentic itineraries featuring hidden gems and local experiences. Return ONLY valid JSON matching the requested format.',
         messages: [{ role: 'user', content: prompt }],
@@ -216,6 +221,7 @@ export class AIService {
 
   async chatTravelPlanner(
     messages: ChatMessage[],
+    premium = false,
   ): Promise<{ reply: string; suggestions?: string[]; places?: GroundedPlace[] }> {
     if (!this.llm.live) {
       return this.generateMockChatResponse(messages);
@@ -277,7 +283,7 @@ export class AIService {
 
     try {
       const result = await this.llm.complete({
-        model: this.llm.defaultModel,
+        premium,
         system: CONCIERGE_SYSTEM,
         messages: convo,
         temperature: 0.7,
@@ -310,7 +316,7 @@ export class AIService {
     action: AssistAction | string;
     targetLang?: string;
     tone?: string;
-  }): Promise<{ text: string; mock?: boolean }> {
+  }, premium = false): Promise<{ text: string; mock?: boolean }> {
     const text = (input.text || '').trim();
     if (!text) return { text: '' };
     if (!this.llm.live) return { text, mock: true };
@@ -341,7 +347,7 @@ export class AIService {
 
     try {
       const result = await this.llm.complete({
-        model: this.llm.defaultModel,
+        premium,
         system: `You are a writing assistant for e-Tunisia, a Tunisian travel & social app. Users write in Tunisian derja, Arabic, French or English, often mixed.${input.tone ? ` Tone: ${input.tone}.` : ''} Never add commentary, quotes or labels — return only the resulting text.`,
         messages: [{ role: 'user', content: `${instruction}\n\n"""\n${text.slice(0, 3000)}\n"""` }],
         temperature: action === 'translate' ? 0.2 : 0.5,
@@ -358,7 +364,7 @@ export class AIService {
   // ──────────────── Reels caption generator (Phase 5) ────────────────
 
   /** Generate a short reel caption (+ hashtags) from optional notes and a location. */
-  async generateCaption(input: { topic?: string; location?: string }): Promise<{ caption: string; mock?: boolean }> {
+  async generateCaption(input: { topic?: string; location?: string }, premium = false): Promise<{ caption: string; mock?: boolean }> {
     const topic = (input.topic || '').trim();
     const loc = (input.location || '').trim();
 
@@ -370,7 +376,7 @@ export class AIService {
 
     try {
       const result = await this.llm.complete({
-        model: this.llm.defaultModel,
+        premium,
         system: CAPTION_SYSTEM,
         messages: [{ role: 'user', content: `Notes: ${topic || '(none)'}\nLocation: ${loc || '(none)'}` }],
         temperature: 0.9,
@@ -392,7 +398,7 @@ export class AIService {
    * into structured place filters via the LLM, then run them. Posts + users come from
    * the existing keyword index. Falls back to plain keyword search with no LLM.
    */
-  async smartSearch(query: string): Promise<{
+  async smartSearch(query: string, premium = false): Promise<{
     places: any[];
     posts: any[];
     users: any[];
@@ -412,7 +418,7 @@ export class AIService {
     let filters: any = {};
     try {
       const result = await this.llm.complete({
-        model: this.llm.defaultModel,
+        premium,
         system: SEARCH_PARSE_SYSTEM,
         messages: [{ role: 'user', content: q.slice(0, 300) }],
         temperature: 0,
@@ -471,8 +477,8 @@ export class AIService {
     if (!this.llm.live) return this.heuristicTags(text);
 
     try {
+      // Auto-tagging is high-volume + server-side → always the free model.
       const result = await this.llm.complete({
-        model: this.llm.defaultModel,
         system: AUTOTAG_SYSTEM,
         messages: [{ role: 'user', content: text.slice(0, 2000) }],
         temperature: 0,
@@ -523,7 +529,7 @@ export class AIService {
     visitedPlaceIds: string[];
     favoriteIds: string[];
     interests: string[];
-  }): Promise<Array<{ placeId: string; reason: string; score: number; place: any }>> {
+  }, premium = false): Promise<Array<{ placeId: string; reason: string; score: number; place: any }>> {
     const placesResponse = await this.placesService.findAll({} as any);
     const allPlaces = placesResponse.data || [];
 
@@ -563,7 +569,7 @@ export class AIService {
       }));
 
       const result = await this.llm.complete({
-        model: this.llm.defaultModel,
+        premium,
         system: RERANK_SYSTEM,
         messages: [{ role: 'user', content: JSON.stringify({ interests: userProfile.interests, candidates }) }],
         temperature: 0.3,

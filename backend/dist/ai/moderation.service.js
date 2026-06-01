@@ -44,7 +44,6 @@ let ModerationService = ModerationService_1 = class ModerationService {
             return this.heuristic(clean);
         try {
             const result = await this.llm.complete({
-                model: this.llm.defaultModel,
                 system: MODERATION_SYSTEM,
                 messages: [{ role: 'user', content: `Content to classify:\n"""\n${clean.slice(0, 4000)}\n"""` }],
                 temperature: 0,
