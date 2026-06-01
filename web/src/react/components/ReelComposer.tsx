@@ -202,9 +202,20 @@ export function ReelComposer({ onClose, onPosted }: Props) {
             {/* Details form */}
             <div className="p-5 md:border-l border-white/10 space-y-5">
               <div className="space-y-1.5">
-                <label className="text-xs font-medium text-white/60 flex items-center gap-1.5">
-                  <Sparkles size={13} /> Caption
-                </label>
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-medium text-white/60 flex items-center gap-1.5">
+                    <Sparkles size={13} /> Caption
+                  </label>
+                  <button
+                    type="button"
+                    onClick={generateCaption}
+                    disabled={genLoading}
+                    className="flex items-center gap-1 text-[11px] font-medium text-fuchsia-300 hover:text-fuchsia-200 disabled:opacity-50 transition-colors"
+                  >
+                    {genLoading ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
+                    {genLoading ? 'Writing…' : 'Generate'}
+                  </button>
+                </div>
                 <textarea
                   value={caption}
                   onChange={(e) => setCaption(e.target.value)}
