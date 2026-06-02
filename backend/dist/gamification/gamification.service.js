@@ -19,11 +19,14 @@ const typeorm_2 = require("typeorm");
 const badge_entity_1 = require("./badge.entity");
 const user_badge_entity_1 = require("./user-badge.entity");
 const user_entity_1 = require("../users/user.entity");
+const notifications_service_1 = require("../notifications/notifications.service");
+const notification_entity_1 = require("../notifications/notification.entity");
 let GamificationService = class GamificationService {
-    constructor(badgesRepo, userBadgesRepo, usersRepo) {
+    constructor(badgesRepo, userBadgesRepo, usersRepo, notifications) {
         this.badgesRepo = badgesRepo;
         this.userBadgesRepo = userBadgesRepo;
         this.usersRepo = usersRepo;
+        this.notifications = notifications;
     }
     async getAllBadges() {
         return this.badgesRepo.find({ order: { sortOrder: 'ASC' } });
@@ -107,6 +110,10 @@ let GamificationService = class GamificationService {
                     userId,
                     badgeId: badge.id,
                 }));
+                try {
+                    await this.notifications.create(userId, `${badge.icon || '🏅'} Badge unlocked: ${badge.name}`, badge.description || `You earned the "${badge.name}" badge.`, notification_entity_1.NotificationType.BADGE, { badge: badge.name, emoji: badge.icon, description: badge.description });
+                }
+                catch { }
             }
         }
     }
@@ -141,6 +148,7 @@ exports.GamificationService = GamificationService = __decorate([
     __param(2, (0, typeorm_1.InjectRepository)(user_entity_1.User)),
     __metadata("design:paramtypes", [typeorm_2.Repository,
         typeorm_2.Repository,
-        typeorm_2.Repository])
+        typeorm_2.Repository,
+        notifications_service_1.NotificationsService])
 ], GamificationService);
 //# sourceMappingURL=gamification.service.js.map

@@ -139,7 +139,17 @@ export default function AITravelPlanner() {
         },
         body: JSON.stringify(plannerPrefs),
       });
-      return res.json();
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        const e = data?.error ?? data;
+        const payload = e?.message && typeof e.message === 'object' ? e.message : e?.details ?? e;
+        const err: any = new Error(
+          (typeof e?.message === 'string' ? e.message : payload?.message) || 'Itinerary failed',
+        );
+        err.code = payload?.code;
+        throw err;
+      }
+      return data;
     },
   });
 
@@ -203,6 +213,10 @@ export default function AITravelPlanner() {
     try {
       const data = await itineraryMutation.mutateAsync();
       const itinerary = data.data || data;
+      if (!itinerary?.days?.length) {
+        showToast('Failed to generate itinerary', 'error');
+        return;
+      }
 
       const msg: Message = {
         id: `itinerary-${Date.now()}`,
@@ -214,7 +228,17 @@ export default function AITravelPlanner() {
       setMessages((prev) => [...prev, msg]);
       setShowPlanner(false);
       showToast('Itinerary generated!', 'success');
-    } catch {
+    } catch (err: any) {
+      if (err?.code === 'ai_quota_reached') {
+        setShowPlanner(false);
+        setMessages((prev) => [...prev, {
+          id: `quota-${Date.now()}`,
+          role: 'assistant',
+          content: err.message || 'You\'ve reached today\'s AI limit. Upgrade to keep planning!',
+          upgrade: true,
+        }]);
+        return;
+      }
       showToast('Failed to generate itinerary', 'error');
     }
   };
@@ -582,15 +606,33 @@ export default function AITravelPlanner() {
                         </div>
                         <p className="text-sm text-muted-foreground mb-3">{day.description}</p>
                         <div className="space-y-2">
-                          {day.places?.map((place: any) => (
-                            <div key={place.id} className="flex items-start gap-2 text-sm">
-                              <MapPin size={14} className="text-brand mt-0.5 shrink-0" />
-                              <div>
-                                <span className="font-medium">{place.name}</span>
-                                <span className="text-muted-foreground"> — {place.duration}</span>
+                          {day.places?.map((place: any) => {
+                            const isRealPlace =
+                              typeof place.id === 'string' &&
+                              /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(place.id);
+                            const inner = (
+                              <>
+                                <MapPin size={14} className="text-brand mt-0.5 shrink-0" />
+                                <div>
+                                  <span className="font-medium">{place.name}</span>
+                                  <span className="text-muted-foreground"> — {place.duration}</span>
+                                </div>
+                              </>
+                            );
+                            return isRealPlace ? (
+                              <a
+                                key={place.id}
+                                href={`#/place/${place.id}`}
+                                className="flex items-start gap-2 text-sm hover:text-brand transition-colors"
+                              >
+                                {inner}
+                              </a>
+                            ) : (
+                              <div key={place.id} className="flex items-start gap-2 text-sm">
+                                {inner}
                               </div>
-                            </div>
-                          ))}
+                            );
+                          })}
                         </div>
                         <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
                           <span className="flex items-center gap-1">

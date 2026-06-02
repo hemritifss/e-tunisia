@@ -2,7 +2,7 @@ import { AIService } from './ai.service';
 export declare class AIController {
     private readonly aiService;
     constructor(aiService: AIService);
-    generateItinerary(userId: string, req: any, preferences: {
+    generateItinerary(userId: string | null, req: any, preferences: {
         duration: number;
         budget: number;
         travelers: number;

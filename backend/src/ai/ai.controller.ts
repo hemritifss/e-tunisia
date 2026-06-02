@@ -20,10 +20,10 @@ export class AIController {
   constructor(private readonly aiService: AIService) {}
 
   @Post('itinerary')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(OptionalJwtAuthGuard)
   @ApiOperation({ summary: 'Generate AI-powered itinerary' })
   async generateItinerary(
-    @CurrentUser('id') userId: string,
+    @CurrentUser('id') userId: string | null,
     @Req() req: any,
     @Body()
     preferences: {

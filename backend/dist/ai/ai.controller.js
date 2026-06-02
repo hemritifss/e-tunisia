@@ -70,7 +70,7 @@ let AIController = class AIController {
 exports.AIController = AIController;
 __decorate([
     (0, common_1.Post)('itinerary'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.UseGuards)(optional_jwt_auth_guard_1.OptionalJwtAuthGuard),
     (0, swagger_1.ApiOperation)({ summary: 'Generate AI-powered itinerary' }),
     __param(0, (0, current_user_decorator_1.CurrentUser)('id')),
     __param(1, (0, common_1.Req)()),
