@@ -59,6 +59,22 @@ export declare class AIController {
         caption: string;
         mock?: boolean;
     }>;
+    surprise(userId: string | null, req: any): Promise<{
+        blurb: string;
+        places: import("./ai.service").GroundedPlace[];
+        mock?: boolean;
+    }>;
+    personality(user: any, req: any): Promise<{
+        type: string;
+        emoji: string;
+        description: string;
+        traits: string[];
+        mock?: boolean;
+    }>;
+    greeting(user: any): Promise<{
+        text: string;
+        cached?: boolean;
+    }>;
     getSuggestions(user: any, req: any, interests?: string): Promise<{
         placeId: string;
         reason: string;

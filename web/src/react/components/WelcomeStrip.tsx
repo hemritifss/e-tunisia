@@ -33,7 +33,21 @@ function greeting(): string {
 export function WelcomeStrip() {
     const user = useAuthStore((s) => s.user) as any;
     const [profile, setProfile] = useState<MiniProfile | null>(null);
+    const [aiGreeting, setAiGreeting] = useState<string>('');
     const isAnon = !user;
+
+    // Personalized AI greeting (cached server-side per day — cheap to fetch).
+    useEffect(() => {
+        if (!user) { setAiGreeting(''); return; }
+        let cancelled = false;
+        (async () => {
+            try {
+                const r: any = await api.aiGreeting();
+                if (!cancelled && r?.text) setAiGreeting(r.text);
+            } catch { /* keep the static sub */ }
+        })();
+        return () => { cancelled = true; };
+    }, [user?.id]);
 
     useEffect(() => {
         if (!user?.handle) { setProfile(null); return; }
@@ -90,7 +104,7 @@ export function WelcomeStrip() {
                         {level && <span className={`welcome-level welcome-level-${level.toLowerCase()}`}>{level}</span>}
                     </div>
                     <p className="welcome-strip-sub">
-                        Tunisia is waiting. Where are you headed next?
+                        {aiGreeting || 'Tunisia is waiting. Where are you headed next?'}
                     </p>
                 </div>
                 <div className="welcome-strip-actions">

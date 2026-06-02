@@ -89,6 +89,27 @@ export declare class AIService {
         caption: string;
         mock?: boolean;
     }>;
+    surpriseMe(premium?: boolean): Promise<{
+        blurb: string;
+        places: GroundedPlace[];
+        mock?: boolean;
+    }>;
+    travelPersonality(profile: {
+        interests?: string[];
+        visitedCount?: number;
+    }, premium?: boolean): Promise<{
+        type: string;
+        emoji: string;
+        description: string;
+        traits: string[];
+        mock?: boolean;
+    }>;
+    private mockPersonality;
+    greeting(userId: string, name?: string): Promise<{
+        text: string;
+        cached?: boolean;
+    }>;
+    private templatedGreeting;
     smartSearch(query: string, premium?: boolean): Promise<{
         places: any[];
         posts: any[];

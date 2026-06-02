@@ -100,6 +100,32 @@ export class AIController {
     return this.aiService.generateCaption(body || {}, premium);
   }
 
+  @Post('surprise')
+  @UseGuards(OptionalJwtAuthGuard)
+  @ApiOperation({ summary: 'One-tap spontaneous day plan' })
+  async surprise(@CurrentUser('id') userId: string | null, @Req() req: any) {
+    const { premium } = await this.aiService.assertQuotaAndCount({ userId, ip: req.ip });
+    return this.aiService.surpriseMe(premium);
+  }
+
+  @Get('personality')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Fun, shareable travel personality' })
+  async personality(@CurrentUser() user: any, @Req() req: any) {
+    const { premium } = await this.aiService.assertQuotaAndCount({ userId: user.id, ip: req.ip });
+    return this.aiService.travelPersonality(
+      { interests: user.interests || [], visitedCount: (user.visitedPlaceIds || []).length },
+      premium,
+    );
+  }
+
+  @Get('greeting')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Short personalized home greeting (cached daily)' })
+  async greeting(@CurrentUser() user: any) {
+    return this.aiService.greeting(user.id, user.fullName);
+  }
+
   @Get('suggestions')
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Get personalized place suggestions' })

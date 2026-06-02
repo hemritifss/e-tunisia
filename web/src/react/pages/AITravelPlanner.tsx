@@ -75,6 +75,7 @@ export default function AITravelPlanner() {
   ]);
   const [input, setInput] = useState('');
   const [showPlanner, setShowPlanner] = useState(false);
+  const [surprising, setSurprising] = useState(false);
   const [plannerPrefs, setPlannerPrefs] = useState({
     duration: 3,
     budget: 500,
@@ -222,6 +223,46 @@ export default function AITravelPlanner() {
     setInput(suggestion);
   };
 
+  // 🎲 Surprise me — a one-tap spontaneous day plan grounded in real places.
+  const handleSurprise = async () => {
+    if (surprising) return;
+    setSurprising(true);
+    try {
+      const token = localStorage.getItem('etunisia_token');
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/v1/ai/surprise`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body: '{}',
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        const e = data?.error ?? data;
+        const payload = e?.message && typeof e.message === 'object' ? e.message : e?.details ?? e;
+        if (payload?.code === 'ai_quota_reached') {
+          setMessages((prev) => [...prev, {
+            id: `quota-${Date.now()}`,
+            role: 'assistant',
+            content: payload.message || 'You\'ve reached today\'s AI limit. Upgrade to keep planning!',
+            upgrade: true,
+          }]);
+          return;
+        }
+        throw new Error('surprise failed');
+      }
+      const body = data.data || data;
+      setMessages((prev) => [...prev, {
+        id: `surprise-${Date.now()}`,
+        role: 'assistant',
+        content: `🎲 ${body.blurb || 'Here\'s a spontaneous idea for you!'}`,
+        places: body.places,
+      }]);
+    } catch {
+      showToast('Couldn\'t surprise you right now — try again!', 'error');
+    } finally {
+      setSurprising(false);
+    }
+  };
+
   // ─── Itinerary export (zero-dep: print-to-PDF via hidden iframe + share/clipboard) ───
   const itineraryToText = (it: any): string => {
     const lines: string[] = [it.title];
@@ -335,9 +376,17 @@ export default function AITravelPlanner() {
           <p className="text-xs text-muted-foreground">Powered by Claude</p>
         </div>
         <Button
-          variant="primary"
+          variant="outline"
           size="sm"
           className="ml-auto"
+          isLoading={surprising}
+          onClick={handleSurprise}
+        >
+          🎲 Surprise me
+        </Button>
+        <Button
+          variant="primary"
+          size="sm"
           leftIcon={<Compass size={14} />}
           onClick={() => setShowPlanner(!showPlanner)}
         >

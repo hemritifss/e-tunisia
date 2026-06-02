@@ -47,6 +47,17 @@ let AIController = class AIController {
         const { premium } = await this.aiService.assertQuotaAndCount({ userId, ip: req.ip });
         return this.aiService.generateCaption(body || {}, premium);
     }
+    async surprise(userId, req) {
+        const { premium } = await this.aiService.assertQuotaAndCount({ userId, ip: req.ip });
+        return this.aiService.surpriseMe(premium);
+    }
+    async personality(user, req) {
+        const { premium } = await this.aiService.assertQuotaAndCount({ userId: user.id, ip: req.ip });
+        return this.aiService.travelPersonality({ interests: user.interests || [], visitedCount: (user.visitedPlaceIds || []).length }, premium);
+    }
+    async greeting(user) {
+        return this.aiService.greeting(user.id, user.fullName);
+    }
     async getSuggestions(user, req, interests) {
         const { premium } = await this.aiService.assertQuotaAndCount({ userId: user.id, ip: req.ip });
         return this.aiService.suggestPlaces({
@@ -123,6 +134,35 @@ __decorate([
     __metadata("design:paramtypes", [String, Object, Object]),
     __metadata("design:returntype", Promise)
 ], AIController.prototype, "caption", null);
+__decorate([
+    (0, common_1.Post)('surprise'),
+    (0, common_1.UseGuards)(optional_jwt_auth_guard_1.OptionalJwtAuthGuard),
+    (0, swagger_1.ApiOperation)({ summary: 'One-tap spontaneous day plan' }),
+    __param(0, (0, current_user_decorator_1.CurrentUser)('id')),
+    __param(1, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
+], AIController.prototype, "surprise", null);
+__decorate([
+    (0, common_1.Get)('personality'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiOperation)({ summary: 'Fun, shareable travel personality' }),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", Promise)
+], AIController.prototype, "personality", null);
+__decorate([
+    (0, common_1.Get)('greeting'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiOperation)({ summary: 'Short personalized home greeting (cached daily)' }),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], AIController.prototype, "greeting", null);
 __decorate([
     (0, common_1.Get)('suggestions'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),

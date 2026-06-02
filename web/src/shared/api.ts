@@ -273,6 +273,9 @@ export const api = {
     fetchWithAuth(
       `/api/v1/ai/suggestions${interests && interests.length ? `?interests=${encodeURIComponent(interests.join(','))}` : ''}`,
     ),
+  aiSurprise: () => fetchWithAuth('/api/v1/ai/surprise', { method: 'POST', body: '{}' }),
+  aiPersonality: () => fetchWithAuth('/api/v1/ai/personality'),
+  aiGreeting: () => fetchWithAuth('/api/v1/ai/greeting'),
   votePost: (postId: string, direction: 'up' | 'down' | 'clear') =>
     fetchWithAuth(`/api/v1/posts/${postId}/vote`, { method: 'POST', body: JSON.stringify({ direction }) }),
   deletePost: (postId: string) =>

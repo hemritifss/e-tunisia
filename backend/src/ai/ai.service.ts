@@ -115,6 +115,12 @@ Input is JSON: {"interests":[...],"candidates":[{"id","name","city","category","
 Return ONLY a JSON array, best-first, of up to 10 items: [{"id":"<a candidate id>","reason":"<one short, personalized reason>"}].
 Use only ids that appear in candidates. Prefer strong interest/tag matches and higher ratings.`;
 
+const SURPRISE_SYSTEM = `You are e-Tunisia's spontaneous-day planner. Given 2-3 real places, write a short, fun, energetic single-day plan (2-3 sentences) weaving them together. Tunisian flavour welcome (a derja word like "yalla" is fine), mention the place names, end on an upbeat note. No lists, no hashtags, no quotes.`;
+
+const PERSONALITY_SYSTEM = `Given a Tunisian traveler's interests and how much they've explored, invent a fun, flattering "travel personality".
+Return ONLY JSON: {"type":"<2-3 word title, e.g. Coastal Wanderer>","emoji":"<one emoji>","description":"<2 warm second-person sentences>","traits":["<3 short adjectives>"]}.
+Keep it positive, playful and Tunisia-flavoured.`;
+
 @Injectable()
 export class AIService {
   private readonly logger = new Logger(AIService.name);
@@ -389,6 +395,136 @@ export class AIService {
       const base = topic || (loc ? `Exploring ${loc}` : 'A little Tunisia moment');
       return { caption: `${base} ✨\n#Tunisia #eTunisia #travel`, mock: true };
     }
+  }
+
+  // ──────────────── Nice-to-have delights ────────────────
+
+  /** One-tap spontaneous day plan from a few real places. */
+  async surpriseMe(premium = false): Promise<{ blurb: string; places: GroundedPlace[]; mock?: boolean }> {
+    const res = await this.placesService.findAll({ limit: 40 } as any);
+    const all = res.data || [];
+    const pool = all.filter((p: any) => p.isFeatured || (p.rating || 0) >= 4);
+    const source = pool.length >= 3 ? pool : all;
+    const picks = [...source].sort(() => Math.random() - 0.5).slice(0, 3);
+
+    const places: GroundedPlace[] = picks.map((p: any) => ({
+      id: p.id,
+      name: p.name,
+      city: p.city ?? null,
+      category: p.category?.name ?? (typeof p.category === 'string' ? p.category : null),
+      rating: p.rating ?? null,
+      description: (p.description || '').slice(0, 160),
+      url: `/#/place/${p.id}`,
+    }));
+
+    const fallbackBlurb = places.length
+      ? `Today's spontaneous plan: kick off at ${places[0].name}${places[0].city ? ` in ${places[0].city}` : ''}, then drift over to ${places.slice(1).map((p) => p.name).join(' and ')}. Yalla! 🎲`
+      : "Add a few places first and I'll surprise you with a plan!";
+
+    if (!this.llm.live || places.length === 0) {
+      return { blurb: fallbackBlurb, places, mock: !this.llm.live };
+    }
+
+    try {
+      const result = await this.llm.complete({
+        premium,
+        system: SURPRISE_SYSTEM,
+        messages: [{ role: 'user', content: `Weave these real places into one fun spontaneous Tunisia day: ${picks.map((p: any) => `${p.name} (${p.city})`).join('; ')}` }],
+        temperature: 1,
+        maxTokens: 220,
+      });
+      return { blurb: result.text.trim() || fallbackBlurb, places };
+    } catch (error: any) {
+      this.logger.warn(`Surprise-me failed: ${error.message}`);
+      return { blurb: fallbackBlurb, places, mock: true };
+    }
+  }
+
+  /** A fun, shareable "travel personality" from the user's interests + exploration. */
+  async travelPersonality(profile: { interests?: string[]; visitedCount?: number }, premium = false): Promise<{
+    type: string;
+    emoji: string;
+    description: string;
+    traits: string[];
+    mock?: boolean;
+  }> {
+    const interests = profile.interests || [];
+
+    if (!this.llm.live) return this.mockPersonality(interests);
+
+    try {
+      const result = await this.llm.complete({
+        premium,
+        system: PERSONALITY_SYSTEM,
+        messages: [{ role: 'user', content: JSON.stringify({ interests, placesVisited: profile.visitedCount || 0 }) }],
+        temperature: 0.85,
+        maxTokens: 250,
+      });
+      const m = result.text.match(/\{[\s\S]*\}/);
+      if (!m) return this.mockPersonality(interests);
+      const p = JSON.parse(m[0]);
+      return {
+        type: String(p.type || 'Tunisia Explorer').slice(0, 40),
+        emoji: String(p.emoji || '🌍').slice(0, 4),
+        description: String(p.description || '').slice(0, 300),
+        traits: Array.isArray(p.traits) ? p.traits.map((t: any) => String(t)).slice(0, 3) : [],
+      };
+    } catch (error: any) {
+      this.logger.warn(`Personality failed: ${error.message}`);
+      return this.mockPersonality(interests);
+    }
+  }
+
+  private mockPersonality(interests: string[]): { type: string; emoji: string; description: string; traits: string[]; mock: boolean } {
+    const map: Record<string, { type: string; emoji: string; description: string; traits: string[] }> = {
+      beaches: { type: 'Coastal Wanderer', emoji: '🌊', description: 'You chase the sound of the Mediterranean and the perfect golden hour. Sand between your toes is your happy place.', traits: ['relaxed', 'sun-seeker', 'free'] },
+      food: { type: 'Flavour Hunter', emoji: '🍽️', description: 'Your map is drawn in spices and street food. You travel stomach-first and never regret a single bite.', traits: ['curious', 'social', 'bold'] },
+      historical: { type: 'Medina Soul', emoji: '🏛️', description: 'Old stones whisper stories and you always stop to listen. History is your favourite travel companion.', traits: ['thoughtful', 'curious', 'grounded'] },
+      nature: { type: 'Sahara Dreamer', emoji: '🏜️', description: 'Wide horizons and quiet trails call your name. You always find yourself somewhere off the map.', traits: ['adventurous', 'calm', 'free'] },
+      culture: { type: 'Culture Collector', emoji: '🎭', description: "You read a place through its music, art and people. Every city leaves a mark on you.", traits: ['warm', 'open', 'curious'] },
+    };
+    const key = interests.map((i) => i.toLowerCase()).find((i) => map[i]) || 'historical';
+    return { ...map[key], mock: true };
+  }
+
+  /** A short personalized home greeting. Cached per user per day; always free + unmetered. */
+  async greeting(userId: string, name?: string): Promise<{ text: string; cached?: boolean }> {
+    const first = (name || '').split(' ')[0] || 'traveler';
+    const day = new Date().toISOString().slice(0, 10);
+    const key = `ai:greeting:${userId}:${day}`;
+
+    try {
+      const cached = await this.redis.get(key);
+      if (cached) return { text: cached, cached: true };
+    } catch { /* fall through to generate */ }
+
+    let text: string;
+    if (!this.llm.live) {
+      text = this.templatedGreeting(first);
+    } else {
+      try {
+        const hour = new Date().getHours();
+        const part = hour < 12 ? 'morning' : hour < 18 ? 'afternoon' : 'evening';
+        const r = await this.llm.complete({
+          system: "Write ONE short, warm welcome line (max 12 words) for a Tunisian travel app home screen. Use the person's first name, a touch of Tunisian derja is welcome, finish with one emoji. No quotes.",
+          messages: [{ role: 'user', content: `Name: ${first}. Time of day: ${part}.` }],
+          temperature: 1,
+          maxTokens: 40,
+        });
+        text = r.text.trim() || this.templatedGreeting(first);
+      } catch {
+        text = this.templatedGreeting(first);
+      }
+    }
+
+    try { await this.redis.set(key, text, 60 * 60 * 24); } catch { /* best-effort cache */ }
+    return { text };
+  }
+
+  private templatedGreeting(first: string): string {
+    const h = new Date().getHours();
+    const g = h < 12 ? 'Sbah el khir' : h < 18 ? 'Ahla w sahla' : 'Good evening';
+    return `${g}, ${first} — Tunisia is calling ☀️`;
   }
 
   // ──────────────── Natural-language search (Phase 3b) ────────────────

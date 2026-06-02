@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import * as api from '../../api';
 import { goTo } from '../../router';
+import { TravelPersonalityCard } from '../components/TravelPersonalityCard';
 
 // Migrated from vanilla pages/profile.ts — own profile (cover, identity, XP, stats, quick links).
 
@@ -138,6 +139,8 @@ export default function ProfilePage() {
         <div className="pp-stat"><div className="pp-stat-icon pp-stat-icon-level"><Flame /></div><strong>{level}</strong><span>Level</span></div>
         <div className="pp-stat"><div className="pp-stat-icon pp-stat-icon-tier"><TierIcon /></div><strong className="pp-stat-tier-label">{tier.label}</strong><span>Tier</span></div>
       </section>
+
+      <TravelPersonalityCard />
 
       {isPro && (
         <section className={`pp-pro-card${plan === 'business' ? ' is-business' : ''}`}>
