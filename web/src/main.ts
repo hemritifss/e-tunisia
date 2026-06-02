@@ -182,6 +182,7 @@ function getRoute(route: string): Route {
   const routes: Record<string, Route> = {
     '/': { render: () => '', init: () => {}, page: 'feed', isReact: true },
     '/explore': { render: () => '', init: () => {}, page: 'explore', isReact: true },
+    '/ai-planner': { render: () => '', init: () => {}, page: 'ai-planner', isReact: true },
     '/events': { render: () => '', init: () => {}, page: 'events', isReact: true },
     '/tips': { render: () => '', init: () => {}, page: 'tips', isReact: true },
     '/map': { render: () => '', init: () => {}, page: 'map', isReact: true },
