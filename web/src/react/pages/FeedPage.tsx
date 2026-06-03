@@ -68,6 +68,16 @@ function PostCard({ post }: { post: Post }) {
   });
   const showToast = useUIStore((s) => s.showToast);
 
+  const [repostedLocal, setRepostedLocal] = useState(() => {
+    try {
+      const map = JSON.parse(localStorage.getItem('etunisia_reposted_items') || '{}');
+      return !!map['post:' + post.id];
+    } catch {
+      return false;
+    }
+  });
+  const [repostCount, setRepostCount] = useState<number>((post as any).repostCount || 0);
+
   // AI "translate to read" — translates the body in place, with a toggle back to the original.
   const [translated, setTranslated] = useState<string | null>(null);
   const [showOriginal, setShowOriginal] = useState(false);
@@ -118,11 +128,32 @@ function PostCard({ post }: { post: Post }) {
 
   const handleRepost = async () => {
     if (!requireAuth('repost')) return;
+    const was = repostedLocal;
+    const persist = (on: boolean) => {
+      try {
+        const map = JSON.parse(localStorage.getItem('etunisia_reposted_items') || '{}');
+        if (on) map['post:' + post.id] = true; else delete map['post:' + post.id];
+        localStorage.setItem('etunisia_reposted_items', JSON.stringify(map));
+      } catch {}
+    };
+    // Optimistic toggle
+    setRepostedLocal(!was);
+    setRepostCount((c) => Math.max(0, c + (was ? -1 : 1)));
+    persist(!was);
     try {
-      await api.repostPost(post.id);
-      showToast('Reposted to your profile', 'success');
+      if (was) {
+        await api.undoRepost(post.id);
+        showToast('Repost removed', 'info');
+      } else {
+        await api.repostPost(post.id);
+        showToast('Reposted to your profile', 'success');
+      }
     } catch (err: any) {
-      showToast(err?.message || 'Repost failed', 'error');
+      // Revert on failure
+      setRepostedLocal(was);
+      setRepostCount((c) => Math.max(0, c + (was ? 1 : -1)));
+      persist(was);
+      showToast(err?.message || (was ? 'Could not undo repost' : 'Repost failed'), 'error');
     }
   };
 
@@ -269,9 +300,9 @@ function PostCard({ post }: { post: Post }) {
           <MessageCircle size={15} />
           <span>{formatNumber(post.commentCount)}</span>
         </button>
-        <button className="post-card-v2-action" onClick={handleRepost} aria-label="Repost">
+        <button className={`post-card-v2-action ${repostedLocal ? 'is-active' : ''}`} onClick={handleRepost} aria-label={repostedLocal ? 'Undo repost' : 'Repost'}>
           <Repeat size={15} />
-          <span>{formatNumber((post as any).repostCount || 0)}</span>
+          <span>{formatNumber(repostCount)}</span>
         </button>
         <button className="post-card-v2-action" onClick={handleShare} aria-label="Share">
           <Share2 size={15} />

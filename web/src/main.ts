@@ -58,6 +58,7 @@ const ProfileEditPage = React.lazy(() => import('./react/pages/ProfileEditPage')
 const HeroPage = React.lazy(() => import('./react/pages/HeroPage'));
 const AboutPage = React.lazy(() => import('./react/pages/AboutPage'));
 const PartnerPage = React.lazy(() => import('./react/pages/PartnerPage'));
+const LegalPage = React.lazy(() => import('./react/pages/LegalPage'));
 
 // Vanilla pages
 import { initCommandPalette } from './command-palette';
@@ -207,6 +208,8 @@ function getRoute(route: string): Route {
     '/owner':        { render: () => '', init: () => {}, page: 'profile', isReact: true },
     '/discover-trips': { render: () => '', init: () => {}, page: 'itineraries', isReact: true },
     '/forgot-password': { render: () => '', init: () => {}, page: '', isReact: true },
+    '/privacy':      { render: () => '', init: () => {}, page: 'hero', isReact: true },
+    '/terms':        { render: () => '', init: () => {}, page: 'hero', isReact: true },
   };
 
   return routes[path] || routes['/'];
@@ -370,6 +373,10 @@ function navigate() {
         currentUnmount = mountIsland(AboutPage, islandRoot);
       } else if (path === '/partner') {
         currentUnmount = mountIsland(PartnerPage, islandRoot);
+      } else if (path === '/privacy') {
+        currentUnmount = mountIsland(LegalPage, islandRoot, { kind: 'privacy' });
+      } else if (path === '/terms') {
+        currentUnmount = mountIsland(LegalPage, islandRoot, { kind: 'terms' });
       }
     }
   } else {
