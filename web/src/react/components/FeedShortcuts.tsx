@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import {
     Compass, Map, Bookmark, Trophy, Globe2, IdCard,
     Heart, Briefcase, Send, Calendar, Crown, Lightbulb, Award,
-    ChevronDown, ChevronUp, Clapperboard,
+    ChevronDown, ChevronUp, Clapperboard, Sparkles, Route, Layers,
 } from 'lucide-react';
 import { api, getImageUrl } from '../../shared/api';
 import { useAuthStore } from '../stores/auth-store';
@@ -32,6 +32,10 @@ const PRIMARY: ShortcutItem[] = [
     { id: 'reels',      icon: <Clapperboard size={18} />, label: 'Reels',    href: '#/reels' },
     { id: 'activity',   icon: <Globe2 size={18} />,   label: 'Following',    href: '#/activity' },
     { id: 'explore',    icon: <Compass size={18} />,  label: 'Explore',      href: '#/explore' },
+    { id: 'ai-planner', icon: <Sparkles size={18} />, label: 'AI Planner',   href: '#/ai-planner' },
+    { id: 'map',        icon: <Map size={18} />,      label: 'Map',          href: '#/map' },
+    { id: 'itineraries',icon: <Route size={18} />,    label: 'Itineraries',  href: '#/itineraries' },
+    { id: 'collections',icon: <Layers size={18} />,   label: 'Collections',  href: '#/collections' },
     { id: 'trips',      icon: <Map size={18} />,      label: 'Trips',        href: '#/discover-trips' },
     { id: 'saved',      icon: <Bookmark size={18} />, label: 'Saved Posts',  href: '#/saved' },
     { id: 'favorites',  icon: <Heart size={18} />,    label: 'Saved Places', href: '#/favorites' },
