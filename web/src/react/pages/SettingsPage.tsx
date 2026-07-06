@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Palette, Languages, Bell, Shield, User, Pencil, Trash2, UserCheck } from 'lucide-react';
+import { ArrowLeft, Palette, Languages, Bell, Shield, User, Pencil, Trash2, UserCheck, Crown } from 'lucide-react';
 import * as api from '../../api';
 import { showToast, isLoggedIn } from '../../ui-utils';
 import { goTo } from '../../router';
@@ -89,6 +89,79 @@ function BlockedList() {
   );
 }
 
+// Current subscription (from /subscriptions/my) + a manual (bank/cash) upgrade
+// request path via /subscriptions/upgrade. Card checkout still lives on /pro.
+function SubscriptionCard() {
+  const loggedIn = isLoggedIn();
+  const queryClient = useQueryClient();
+  const [busy, setBusy] = useState(false);
+  const { data: sub } = useQuery({
+    queryKey: ['my-subscription'],
+    queryFn: () => api.getMySubscription().catch(() => null),
+    enabled: loggedIn,
+  });
+
+  if (!loggedIn) {
+    return (
+      <div className="settings-item">
+        <div className="settings-item-text">
+          <strong>Not signed in</strong>
+          <span>Sign in to see your plan.</span>
+        </div>
+        <button className="btn btn-outline btn-sm" onClick={() => goTo('/login')}>Sign in</button>
+      </div>
+    );
+  }
+
+  const plan = String(sub?.plan || 'free');
+  const isPaid = plan !== 'free';
+  const status = sub?.status;
+  const expires = sub?.expiresAt ? new Date(sub.expiresAt).toLocaleDateString() : null;
+
+  const requestBankUpgrade = async () => {
+    setBusy(true);
+    try {
+      await api.upgradePlan('premium', 'bank');
+      showToast("Upgrade requested — we'll confirm your bank transfer shortly.");
+      queryClient.invalidateQueries({ queryKey: ['my-subscription'] });
+    } catch (e: any) {
+      showToast(e?.message || 'Could not submit request', { type: 'error' });
+    }
+    setBusy(false);
+  };
+
+  return (
+    <>
+      <div className="settings-item">
+        <div className="settings-item-text">
+          <strong style={{ textTransform: 'capitalize' }}>
+            {plan} plan{isPaid && status ? ` · ${status}` : ''}
+          </strong>
+          <span>
+            {isPaid
+              ? (expires ? `Renews / expires ${expires}` : 'Active subscription')
+              : 'You are on the free plan.'}
+          </span>
+        </div>
+        <button className="btn btn-primary btn-sm" onClick={() => goTo('/pro')}>
+          {isPaid ? 'Manage plan' : 'Upgrade'}
+        </button>
+      </div>
+      {!isPaid && (
+        <div className="settings-item">
+          <div className="settings-item-text">
+            <strong>Prefer bank transfer?</strong>
+            <span>Request a manual upgrade — our team confirms your payment offline.</span>
+          </div>
+          <button className="btn btn-outline btn-sm" disabled={busy} onClick={requestBankUpgrade}>
+            {busy ? 'Sending…' : 'Request upgrade'}
+          </button>
+        </div>
+      )}
+    </>
+  );
+}
+
 export default function SettingsPage() {
   const [dark, setDark] = useState(
     typeof document !== 'undefined' && document.documentElement.dataset.theme === 'dark',
@@ -125,6 +198,17 @@ export default function SettingsPage() {
           <p>Manage your account, appearance, and notifications.</p>
         </div>
       </header>
+
+      <section className="settings-group">
+        <header className="settings-group-head">
+          <span className="settings-group-icon" data-tint="gold"><Crown /></span>
+          <div>
+            <h2>Subscription</h2>
+            <p>Your plan and how it renews.</p>
+          </div>
+        </header>
+        <SubscriptionCard />
+      </section>
 
       <section className="settings-group">
         <header className="settings-group-head">

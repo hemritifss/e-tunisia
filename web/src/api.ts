@@ -282,6 +282,15 @@ export async function getCollections() {
   return api<any[]>('/collections');
 }
 
+// ── SPONSORS ─────────────────────────────────
+export async function getSponsors() {
+  return api<any[]>('/sponsors');
+}
+
+export async function trackSponsorClick(sponsorId: string) {
+  return api<void>(`/sponsors/${sponsorId}/click`, { method: 'POST' });
+}
+
 // ── ADS ──────────────────────────────────────
 export async function getAds(placement?: string) {
   const qs = placement ? `?placement=${placement}` : '';
@@ -359,10 +368,21 @@ export async function markAllNotificationsRead() {
   return api<void>('/notifications/read-all', { method: 'PATCH' });
 }
 
-// ── BILLING ──────────────────────────────────
+// ── SUBSCRIPTIONS / BILLING ──────────────────
+export async function getMySubscription() {
+  return api<any | null>('/subscriptions/my');
+}
+
 /** Effective plan + caps from the billing service. Used by the owner dashboard banner. */
 export async function getMyPlan() {
   return api<any>('/billing/me');
+}
+
+export async function upgradePlan(plan: string, paymentMethod: string, reference?: string) {
+  return api<void>('/subscriptions/upgrade', {
+    method: 'POST',
+    body: JSON.stringify({ plan, paymentMethod, ...(reference ? { reference } : {}) }),
+  });
 }
 
 // ── CONTACT ──────────────────────────────────

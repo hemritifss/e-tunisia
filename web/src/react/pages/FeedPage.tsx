@@ -42,6 +42,7 @@ import { PullToRefresh } from '../components/PullToRefresh';
 import { TunisiaNowPanel } from '../components/TunisiaNowPanel';
 import { PostImageCarousel } from '../components/PostImageCarousel';
 import { Reveal } from '../components/Reveal';
+import { SponsorsStrip } from '../components/SponsorsStrip';
 import { Plus, User as UserIcon, RefreshCcw, Users as UsersIcon, Sparkles, Compass } from 'lucide-react';
 import { useAuthStore as _useAuthStoreFeed } from '../stores/auth-store';
 import { requireAuth } from '../../ui-utils';
@@ -532,6 +533,7 @@ export default function FeedPage() {
             <Reveal delay={0.06}><DiscoverTrips /></Reveal>
             <Reveal delay={0.12}><TrendingHashtags /></Reveal>
             <Reveal delay={0.18}><SuggestedUsers /></Reveal>
+            <Reveal delay={0.24}><SponsorsStrip /></Reveal>
           </div>
 
       {/* Sort bar — segmented pill control with sliding refresh affordance */}

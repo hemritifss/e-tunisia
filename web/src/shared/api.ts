@@ -306,6 +306,10 @@ export const api = {
     }),
   getTripsByHandle: (handle: string) =>
     fetchWithAuth(`/api/v1/trips/by-handle/${encodeURIComponent(handle)}`),
+  saveTrip: (body: {
+    title?: string; travelers?: number; currency?: string; days?: number; isPublic?: boolean;
+    stops: { placeId: string; dayIndex?: number }[];
+  }) => fetchWithAuth('/api/v1/trips', { method: 'POST', body: JSON.stringify(body) }),
   getReviewsByHandle: (handle: string) =>
     fetchWithAuth(`/api/v1/reviews/by-handle/${encodeURIComponent(handle)}`),
   getSavesByHandle: (handle: string, params?: { page?: number; limit?: number }) => {
@@ -396,6 +400,10 @@ export const api = {
   // Collections
   getCollections: () => fetchWithAuth('/api/v1/collections'),
 
+  // Sponsors
+  getSponsors: () => fetchWithAuth('/api/v1/sponsors'),
+  clickSponsor: (id: string) => fetchWithAuth(`/api/v1/sponsors/${id}/click`, { method: 'POST' }),
+
   // Ads
   getAds: () => fetchWithAuth('/api/v1/ads'),
   trackAdImpression: (id: string) => fetchWithAuth(`/api/v1/ads/${id}/impression`, { method: 'POST' }),
@@ -414,6 +422,14 @@ export const api = {
   markNotificationRead: (id: string) =>
     fetchWithAuth(`/api/v1/notifications/${id}/read`, { method: 'PATCH' }),
   markAllRead: () => fetchWithAuth('/api/v1/notifications/read-all', { method: 'PATCH' }),
+
+  // Subscriptions
+  getMySubscription: () => fetchWithAuth('/api/v1/subscriptions/my'),
+  upgradePlan: (plan: string, paymentMethod: string) =>
+    fetchWithAuth('/api/v1/subscriptions/upgrade', {
+      method: 'POST',
+      body: JSON.stringify({ plan, paymentMethod }),
+    }),
 
   // Bookings
   createBooking: (data: {
