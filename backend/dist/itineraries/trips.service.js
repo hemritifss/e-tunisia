@@ -133,6 +133,8 @@ let TripsService = class TripsService {
                 placeName: place.name,
                 placeCity: place.city,
                 placeCover: place.coverImage || (place.images && place.images[0]) || null,
+                latitude: place.latitude != null ? Number(place.latitude) : null,
+                longitude: place.longitude != null ? Number(place.longitude) : null,
                 packageId: pkg?.id || null,
                 packageTitle: pkg?.title || null,
                 pricePerPerson: pkg?.pricePerPerson ?? null,

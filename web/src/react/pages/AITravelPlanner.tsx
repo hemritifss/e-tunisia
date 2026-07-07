@@ -19,11 +19,13 @@ import {
   Utensils,
   Car,
   Crown,
+  Luggage,
 } from 'lucide-react';
 import { Button } from '../components/Button';
 import { Card, CardContent } from '../components/Card';
 import { api } from '../../shared/api';
 import { useUIStore } from '../stores/ui-store';
+import { track } from '../../analytics';
 
 interface GroundedPlace {
   id: string;
@@ -45,6 +47,57 @@ interface Message {
   places?: GroundedPlace[];
   /** Render an Upgrade-to-Pro CTA (shown when the daily AI limit is hit). */
   upgrade?: boolean;
+  /** Reveal this reply word-by-word (fresh concierge replies feel alive; welcome/errors don't). */
+  stream?: boolean;
+}
+
+/** The concierge's human name — keep in sync with backend CONCIERGE_NAME. */
+const CONCIERGE_NAME = 'Skander';
+
+/** Three bouncing dots — the "Skander is typing…" indicator while we wait on the reply. */
+function TypingDots() {
+  return (
+    <span className="inline-flex items-center gap-1 py-1" aria-label={`${CONCIERGE_NAME} is typing`}>
+      {[0, 1, 2].map((i) => (
+        <span
+          key={i}
+          className="w-1.5 h-1.5 rounded-full bg-brand/60 animate-bounce"
+          style={{ animationDelay: `${i * 0.15}s`, animationDuration: '0.9s' }}
+        />
+      ))}
+    </span>
+  );
+}
+
+/**
+ * Reveals text word-by-word so a reply "types out" as you read it — the human,
+ * alive feel — instead of dumping the whole wall at once. Runs once per message.
+ */
+function StreamingText({ text, onTick }: { text: string; onTick?: () => void }) {
+  const [shown, setShown] = useState('');
+  useEffect(() => {
+    const tokens = text.split(/(\s+)/); // keep the whitespace so spacing survives
+    let i = 0;
+    setShown('');
+    const timer = setInterval(() => {
+      i += 1;
+      setShown(tokens.slice(0, i).join(''));
+      onTick?.();
+      if (i >= tokens.length) clearInterval(timer);
+    }, 26);
+    return () => clearInterval(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [text]);
+
+  return (
+    <>
+      {(shown || ' ').split('\n').map((line, i) => (
+        <p key={i} className={i > 0 ? 'mt-1' : ''}>
+          {line}
+        </p>
+      ))}
+    </>
+  );
 }
 
 interface ItineraryDay {
@@ -69,7 +122,7 @@ export default function AITravelPlanner() {
     {
       id: 'welcome',
       role: 'assistant',
-      content: `👋 Welcome to e-Tunisia AI Planner! I'm your personal travel concierge for discovering hidden Tunisia.\n\nTell me what you're looking for — "Plan a 5-day adventure for 2 people with a budget of 800 TND" or just ask me anything about Tunisia!`,
+      content: `3aslema! I'm ${CONCIERGE_NAME} 👋 — think of me as your friend in Tunisia who knows all the good spots, not just the touristy ones.\n\nTell me what you're after — a hidden beach, the best couscous, a 5-day plan — or just say what mood you're in. Yalla, where do we start?`,
       suggestions: ['Plan a 5-day trip', 'Best hidden beaches?', 'Food tour in Tunis?', 'Sahara desert experience?'],
     },
   ]);
@@ -182,6 +235,7 @@ export default function AITravelPlanner() {
         content: data.reply || data.data?.reply || 'I\'m thinking about that...',
         suggestions: data.suggestions || data.data?.suggestions,
         places: data.places || data.data?.places,
+        stream: true,
       };
 
       setMessages((prev) => [...prev, assistantMsg]);
@@ -227,6 +281,7 @@ export default function AITravelPlanner() {
 
       setMessages((prev) => [...prev, msg]);
       setShowPlanner(false);
+      track('trip_plan', { days: itinerary.duration });
       showToast('Itinerary generated!', 'success');
     } catch (err: any) {
       if (err?.code === 'ai_quota_reached') {
@@ -279,11 +334,44 @@ export default function AITravelPlanner() {
         role: 'assistant',
         content: `🎲 ${body.blurb || 'Here\'s a spontaneous idea for you!'}`,
         places: body.places,
+        stream: true,
       }]);
     } catch {
       showToast('Couldn\'t surprise you right now — try again!', 'error');
     } finally {
       setSurprising(false);
+    }
+  };
+
+  // 🧳 Save the generated itinerary into "My Trips" (only real DB places become stops).
+  const handleSaveTrip = async (it: any) => {
+    if (!it) return;
+    const uuidRe = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const stops: { placeId: string; dayIndex?: number }[] = [];
+    (it.days || []).forEach((d: any, di: number) => {
+      (d.places || []).forEach((p: any) => {
+        if (typeof p.id === 'string' && uuidRe.test(p.id)) {
+          stops.push({ placeId: p.id, dayIndex: typeof d.day === 'number' ? d.day - 1 : di });
+        }
+      });
+    });
+    try {
+      const r: any = await api.saveTrip({
+        title: it.title || 'My Tunisia trip',
+        travelers: plannerPrefs.travelers,
+        currency: it.currency || 'TND',
+        days: it.duration || (it.days?.length ?? 1),
+        isPublic: false,
+        stops,
+      });
+      const slug = r?.slug || r?.data?.slug;
+      showToast(
+        stops.length ? 'Saved to My Trips! 🧳' : 'Saved! (places will link once the AI grounds them)',
+        'success',
+      );
+      if (slug) window.location.hash = `#/trip/${slug}`;
+    } catch (err: any) {
+      showToast(err?.message || 'Could not save your trip — try again!', 'error');
     }
   };
 
@@ -396,8 +484,8 @@ export default function AITravelPlanner() {
           <Sparkles size={20} className="text-white" />
         </div>
         <div>
-          <h1 className="font-semibold">AI Travel Planner</h1>
-          <p className="text-xs text-muted-foreground">Powered by Claude</p>
+          <h1 className="font-semibold">{CONCIERGE_NAME}</h1>
+          <p className="text-xs text-muted-foreground">Your Tunisia concierge · powered by Claude</p>
         </div>
         <Button
           variant="outline"
@@ -541,11 +629,15 @@ export default function AITravelPlanner() {
                     : 'bg-brand text-white'
                 }`}
               >
-                {msg.content.split('\n').map((line, i) => (
-                  <p key={i} className={i > 0 ? 'mt-1' : ''}>
-                    {line}
-                  </p>
-                ))}
+                {msg.role === 'assistant' && msg.stream ? (
+                  <StreamingText text={msg.content} onTick={scrollToBottom} />
+                ) : (
+                  msg.content.split('\n').map((line, i) => (
+                    <p key={i} className={i > 0 ? 'mt-1' : ''}>
+                      {line}
+                    </p>
+                  ))
+                )}
               </div>
 
               {/* Suggestions */}
@@ -667,7 +759,15 @@ export default function AITravelPlanner() {
                     </div>
                   )}
 
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 flex-wrap">
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      leftIcon={<Luggage size={14} />}
+                      onClick={() => handleSaveTrip(msg.itinerary)}
+                    >
+                      Save to My Trips
+                    </Button>
                     <Button
                       variant="outline"
                       size="sm"
@@ -690,6 +790,23 @@ export default function AITravelPlanner() {
             </div>
           </motion.div>
         ))}
+
+        {/* "Skander is typing…" while we wait on a reply */}
+        {(chatMutation.isPending || surprising) && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex gap-3"
+          >
+            <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 bg-brand/10 text-brand">
+              <Bot size={16} />
+            </div>
+            <div className="inline-block px-4 py-2.5 rounded-2xl bg-surface-elevated border border-black/5 dark:border-white/5">
+              <TypingDots />
+            </div>
+          </motion.div>
+        )}
+
         <div ref={messagesEndRef} />
       </div>
 

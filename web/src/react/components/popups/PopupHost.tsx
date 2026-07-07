@@ -5,6 +5,10 @@ import { usePopupStore } from '../../stores/popup-store';
 import { CelebrationPopup } from './CelebrationPopup';
 import { TutorialPopup } from './TutorialPopup';
 import { DailyTaskPopup } from './DailyTaskPopup';
+import { BadgeUnlockedPopup } from './BadgeUnlockedPopup';
+import { LevelUpPopup } from './LevelUpPopup';
+import { WelcomeBackPopup } from './WelcomeBackPopup';
+import { StreakMilestonePopup } from './StreakMilestonePopup';
 import type { PopupItem } from '../../stores/popup-store';
 
 /** Whether scrim-click / Escape should be allowed to dismiss this kind. */
@@ -22,6 +26,14 @@ function renderPopup(item: PopupItem, onClose: () => void) {
       return <TutorialPopup item={item} onClose={onClose} />;
     case 'daily':
       return <DailyTaskPopup item={item} onClose={onClose} />;
+    case 'badge':
+      return <BadgeUnlockedPopup item={item} onClose={onClose} />;
+    case 'levelup':
+      return <LevelUpPopup item={item} onClose={onClose} />;
+    case 'welcome':
+      return <WelcomeBackPopup item={item} onClose={onClose} />;
+    case 'streak':
+      return <StreakMilestonePopup item={item} onClose={onClose} />;
     default:
       return null;
   }

@@ -1,3 +1,4 @@
+import '../../styles/messages-search.css';
 import React, { useEffect, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Edit, Mail, MessageCircle, Info, Send, XCircle } from 'lucide-react';

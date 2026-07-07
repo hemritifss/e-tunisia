@@ -47,6 +47,8 @@ import { MarketplaceModule } from './marketplace/marketplace.module';
 import { QueuesModule } from './queues/queues.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { EmailModule } from './email/email.module';
+import { I18nModule } from './i18n/i18n.module';
+import { RoutingModule } from './routing/routing.module';
 import { getDatabaseConfig } from './database/database.config';
 
 @Module({
@@ -110,6 +112,8 @@ import { getDatabaseConfig } from './database/database.config';
     MarketplaceModule,
     QueuesModule,
     AnalyticsModule,
+    I18nModule,
+    RoutingModule,
     EmailModule,
   ],
   providers: [

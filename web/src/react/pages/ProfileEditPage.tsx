@@ -1,3 +1,4 @@
+import '../../styles/profile-edit.css';
 import React, { useEffect, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, UserX, Edit3, Camera, Save, UserCircle, Globe2, ShieldCheck, Star, TrendingUp, Sprout } from 'lucide-react';

@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { goTo, absoluteUrl } from '../../router';
+import { goTo } from '../../router';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   MessageCircle,
@@ -15,7 +15,9 @@ import {
   Languages,
 } from 'lucide-react';
 import { openDonateModal } from '../../donate-modal';
-import { api } from '../../shared/api';
+import { api, ogShareUrl } from '../../shared/api';
+import { track } from '../../analytics';
+import { useT } from '../../i18n/useT';
 import type { Post } from '../../shared/types/api';
 import { Card, CardContent } from '../components/Card';
 import { Avatar } from '../components/Avatar';
@@ -49,13 +51,14 @@ import { requireAuth } from '../../ui-utils';
 
 type SortType = 'foryou' | 'hot' | 'new' | 'top' | 'following' | 'mine';
 
-const sortLabels: Record<SortType, { label: string; icon: React.ReactNode }> = {
-  foryou:    { label: 'For You',   icon: <Sparkles size={14} /> },
-  hot:       { label: 'Hot',       icon: <Flame size={14} /> },
-  new:       { label: 'New',       icon: <Clock size={14} /> },
-  top:       { label: 'Top',       icon: <TrendingUp size={14} /> },
-  following: { label: 'Following', icon: <UsersIcon size={14} /> },
-  mine:      { label: 'Mine',      icon: <UserIcon size={14} /> },
+// Labels resolve through i18n at render time (see FeedSortBar); only icons here.
+const sortIcons: Record<SortType, React.ReactNode> = {
+  foryou:    <Sparkles size={14} />,
+  hot:       <Flame size={14} />,
+  new:       <Clock size={14} />,
+  top:       <TrendingUp size={14} />,
+  following: <UsersIcon size={14} />,
+  mine:      <UserIcon size={14} />,
 };
 
 function PostCard({ post }: { post: Post }) {
@@ -112,7 +115,12 @@ function PostCard({ post }: { post: Post }) {
   };
 
   const handleShare = async () => {
-    const url = absoluteUrl(detailHash);
+    // Share the OG route (crawler-readable preview) — not the raw SPA URL.
+    const url =
+      (post as any).type === 'review' && (post as any).place?.id
+        ? ogShareUrl(`place/${encodeURIComponent((post as any).place.id)}`)
+        : ogShareUrl(`post/${encodeURIComponent(post.id)}`);
+    track('share', { kind: (post as any).type === 'review' ? 'place' : 'post' });
     if ((navigator as any).share) {
       try {
         await (navigator as any).share({ title: post.title, text: post.body?.slice(0, 100), url });
@@ -184,6 +192,7 @@ function PostCard({ post }: { post: Post }) {
         showToast('Removed from bookmarks', 'info');
       } else {
         await api.savePost(post.id);
+        track('save', { kind: 'post' });
         showToast('Saved to bookmarks', 'success');
       }
     } catch {
@@ -297,20 +306,20 @@ function PostCard({ post }: { post: Post }) {
               : (Number(post.upvotes) || 0)
           }
         />
-        <button className="post-card-v2-action" onClick={handleComment} aria-label="Comments">
+        <button className="post-card-v2-action pc-act-comment" onClick={handleComment} aria-label="Comments">
           <MessageCircle size={15} />
           <span>{formatNumber(post.commentCount)}</span>
         </button>
-        <button className={`post-card-v2-action ${repostedLocal ? 'is-active' : ''}`} onClick={handleRepost} aria-label={repostedLocal ? 'Undo repost' : 'Repost'}>
+        <button className={`post-card-v2-action pc-act-repost ${repostedLocal ? 'is-active' : ''}`} onClick={handleRepost} aria-label={repostedLocal ? 'Undo repost' : 'Repost'}>
           <Repeat size={15} />
           <span>{formatNumber(repostCount)}</span>
         </button>
-        <button className="post-card-v2-action" onClick={handleShare} aria-label="Share">
+        <button className="post-card-v2-action pc-act-share" onClick={handleShare} aria-label="Share">
           <Share2 size={15} />
           <span>Share</span>
         </button>
         <button
-          className={`post-card-v2-action ${isSavedLocal ? 'is-active' : ''}`}
+          className={`post-card-v2-action pc-act-save ${isSavedLocal ? 'is-active' : ''}`}
           onClick={handleSave}
           aria-label={isSavedLocal ? 'Unsave' : 'Save'}
         >
@@ -363,6 +372,7 @@ function FeedSortBar({
 }) {
   const railRef = useRef<HTMLDivElement | null>(null);
   const refreshBtnRef = useRef<HTMLButtonElement | null>(null);
+  const t = useT();
 
   useEffect(() => {
     const rail = railRef.current;
@@ -389,7 +399,7 @@ function FeedSortBar({
 
   return (
     <div ref={railRef} className="feed-sort-rail" role="tablist" aria-label="Feed sort">
-      {(Object.keys(sortLabels) as SortType[]).map((key) => {
+      {(Object.keys(sortIcons) as SortType[]).map((key) => {
         if ((key === 'mine' || key === 'following') && !isAuth) return null;
         const isActive = sort === key;
         return (
@@ -400,13 +410,13 @@ function FeedSortBar({
             onClick={() => onSort(key)}
             className={`feed-sort-pill${isActive ? ' is-active' : ''}`}
           >
-            {sortLabels[key].icon}
-            {sortLabels[key].label}
+            {sortIcons[key]}
+            {t(`sort.${key}`)}
           </button>
         );
       })}
       {total > 0 && (
-        <span className="feed-sort-meta" aria-live="polite">{total} posts</span>
+        <span className="feed-sort-meta" aria-live="polite">{total} {t('sort.posts')}</span>
       )}
       <button
         ref={refreshBtnRef}

@@ -33,6 +33,7 @@ import { formatNumber } from '../lib/utils';
 import { useAuthStore } from '../stores/auth-store';
 import { useUIStore } from '../stores/ui-store';
 import { PullToRefresh } from '../components/PullToRefresh';
+import { useCity } from '../lib/useCity';
 
 type ViewMode = 'grid' | 'list';
 
@@ -85,6 +86,7 @@ function PlaceCard({
   };
 
   const handleLike = (e: React.MouseEvent) => {
+    e.preventDefault();
     e.stopPropagation();
     if (!requireAuth('save places')) return;
     const next = !isLiked;
@@ -107,6 +109,11 @@ function PlaceCard({
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.3 }}
       >
+        <a
+          href={`#/place/${place.id}`}
+          className="block no-underline text-inherit rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+          aria-label={`View ${place.name}`}
+        >
         <Card hover className="flex gap-4">
           <div className="w-48 shrink-0">
             <CardImage
@@ -154,6 +161,7 @@ function PlaceCard({
             </div>
           </CardContent>
         </Card>
+        </a>
       </motion.div>
     );
   }
@@ -165,6 +173,11 @@ function PlaceCard({
       transition={{ duration: 0.3 }}
       className="group"
     >
+      <a
+        href={`#/place/${place.id}`}
+        className="block h-full no-underline text-inherit rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+        aria-label={`View ${place.name}`}
+      >
       <Card hover className="h-full flex flex-col">
         <div className="relative">
           <CardImage
@@ -206,6 +219,7 @@ function PlaceCard({
           </div>
         </CardContent>
       </Card>
+      </a>
     </motion.div>
   );
 }
@@ -270,6 +284,7 @@ export default function ExplorePage() {
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000]);
   const [minRating, setMinRating] = useState(0);
   const [verifiedOnly, setVerifiedOnly] = useState(false);
+  const globalCity = useCity(); // navbar city pill — filters the whole app
   const queryClient = useQueryClient();
   const observerRef = useRef<IntersectionObserver | null>(null);
   const loadMoreRef = useRef<HTMLDivElement>(null);
@@ -282,7 +297,7 @@ export default function ExplorePage() {
     isLoading,
     isError,
   } = useInfiniteQuery({
-    queryKey: ['places', activeCategory, searchQuery, priceRange, minRating, verifiedOnly],
+    queryKey: ['places', activeCategory, searchQuery, priceRange, minRating, verifiedOnly, globalCity],
     queryFn: async ({ pageParam = 1 }) => {
       const params: Record<string, string> = {
         page: String(pageParam),
@@ -292,6 +307,7 @@ export default function ExplorePage() {
       if (searchQuery) params.search = searchQuery;
       if (minRating > 0) params.minRating = String(minRating);
       if (verifiedOnly) params.verified = 'true';
+      if (globalCity) params.city = globalCity;
 
       try {
         const response = await api.getPlaces(params);

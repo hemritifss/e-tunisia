@@ -16,6 +16,9 @@ exports.AnalyticsController = void 0;
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
+const optional_jwt_auth_guard_1 = require("../auth/guards/optional-jwt-auth.guard");
+const admin_guard_1 = require("../admin/admin.guard");
+const current_user_decorator_1 = require("../common/decorators/current-user.decorator");
 const analytics_service_1 = require("./analytics.service");
 let AnalyticsController = class AnalyticsController {
     constructor(analyticsService) {
@@ -39,6 +42,14 @@ let AnalyticsController = class AnalyticsController {
     async trackEvent(type, userId) {
         await this.analyticsService.trackEvent(type, userId);
         return { tracked: true };
+    }
+    async ingestEvents(body, user) {
+        const batch = Array.isArray(body) ? body : body?.events || [];
+        const accepted = await this.analyticsService.ingestEvents(batch, user?.id || null);
+        return { accepted };
+    }
+    async eventsSummary(days) {
+        return this.analyticsService.eventsSummary(days ? Number(days) : 30);
     }
 };
 exports.AnalyticsController = AnalyticsController;
@@ -96,6 +107,26 @@ __decorate([
     __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", Promise)
 ], AnalyticsController.prototype, "trackEvent", null);
+__decorate([
+    (0, common_1.Post)('events'),
+    (0, common_1.UseGuards)(optional_jwt_auth_guard_1.OptionalJwtAuthGuard),
+    (0, swagger_1.ApiOperation)({ summary: 'Ingest a batch of product events (public, batched)' }),
+    __param(0, (0, common_1.Body)()),
+    __param(1, (0, current_user_decorator_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", Promise)
+], AnalyticsController.prototype, "ingestEvents", null);
+__decorate([
+    (0, common_1.Get)('events/summary'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, admin_guard_1.AdminGuard),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, swagger_1.ApiOperation)({ summary: 'Daily counts + uniques per event (admin)' }),
+    __param(0, (0, common_1.Query)('days')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], AnalyticsController.prototype, "eventsSummary", null);
 exports.AnalyticsController = AnalyticsController = __decorate([
     (0, swagger_1.ApiTags)('analytics'),
     (0, common_1.Controller)('analytics'),

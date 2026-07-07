@@ -1,8 +1,10 @@
+import '../../styles/auth.css';
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { User, Mail, Globe2, Lock, Eye, EyeOff, AlertCircle, Check, ArrowRight, UserPlus, LogIn, MapPin, Sparkles } from 'lucide-react';
 import * as api from '../../api';
 import { goTo, currentRoute, replace } from '../../router';
+import { track } from '../../analytics';
 
 // Split-screen auth: imagery/welcome panel + form, with an animated side-switch
 // between Sign in and Sign up (in-place, no full reload). Migrated from auth.ts.
@@ -114,6 +116,7 @@ export default function AuthPage() {
       const res: any = await api.register({ name: fullname.trim(), email: email.trim(), password, country: country.trim(), ref });
       if (res.accessToken) {
         localStorage.setItem('etunisia_token', res.accessToken);
+        track('signup', { referred: !!ref });
         goTo('/onboarding');
       }
     } catch (err: any) {

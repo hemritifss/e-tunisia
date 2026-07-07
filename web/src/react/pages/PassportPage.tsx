@@ -342,7 +342,16 @@ export default function PassportPage() {
                         {isAnon && (
                             <button className="btn primary" onClick={() => setSignupOpen(true)}>Claim your passport →</button>
                         )}
-                        <SharePassport handle={p.handle} fullName={p.fullName} />
+                        <SharePassport
+                            handle={p.handle}
+                            fullName={p.fullName}
+                            level={p.passportLevel}
+                            country={p.country}
+                            citiesVisited={p.stats?.citiesVisited}
+                            tripsPlanned={p.stats?.tripsPlanned}
+                            reviewsCount={p.stats?.reviewsCount}
+                            badgesCount={p.badges?.length}
+                        />
                     </div>
                 </div>
             </section>

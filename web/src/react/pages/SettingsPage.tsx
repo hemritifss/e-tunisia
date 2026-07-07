@@ -1,9 +1,12 @@
+import '../../styles/settings.css';
 import React, { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Palette, Languages, Bell, Shield, User, Pencil, Trash2, UserCheck, Crown } from 'lucide-react';
 import * as api from '../../api';
 import { showToast, isLoggedIn } from '../../ui-utils';
 import { goTo } from '../../router';
+import { getLocale, setLocale, LOCALES } from '../../i18n';
+import { useT } from '../../i18n/useT';
 
 // Migrated from vanilla pages/settings.ts — appearance/language/notifications
 // (mostly cosmetic), blocked-users list (fetch + unblock), delete account.
@@ -163,6 +166,8 @@ function SubscriptionCard() {
 }
 
 export default function SettingsPage() {
+  const t = useT();
+  const locale = getLocale();
   const [dark, setDark] = useState(
     typeof document !== 'undefined' && document.documentElement.dataset.theme === 'dark',
   );
@@ -235,18 +240,27 @@ export default function SettingsPage() {
         <header className="settings-group-head">
           <span className="settings-group-icon" data-tint="cyan"><Languages /></span>
           <div>
-            <h2>Language</h2>
-            <p>Localized content and UI.</p>
+            <h2>{t('settings.language')}</h2>
+            <p>{t('settings.languageHint')}</p>
           </div>
         </header>
         <div className="settings-item">
           <div className="settings-item-text">
-            <strong>Display language</strong>
-            <span>Choose your preferred language.</span>
+            <strong>{t('settings.language')}</strong>
+            <span>{LOCALES.find((l) => l.id === locale)?.label}</span>
           </div>
-          <select className="settings-select" aria-label="Display language" defaultValue="English">
-            <option>English</option>
-            <option>Français</option>
+          <select
+            className="settings-select"
+            aria-label="Display language"
+            value={locale}
+            onChange={async (e) => {
+              const ok = await setLocale(e.target.value);
+              if (!ok) showToast('Translation for this language is unavailable right now.', { type: 'error' });
+            }}
+          >
+            {LOCALES.map((l) => (
+              <option key={l.id} value={l.id}>{l.label}</option>
+            ))}
           </select>
         </div>
       </section>

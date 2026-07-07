@@ -13,6 +13,15 @@
   <meta property="og:image" content="/icon.png" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:image" content="/icon.png" />
+  <!-- Apply the saved theme BEFORE first paint: prevents the light-mode flash for
+       dark-theme users and stale light-theme paints on composited layers (fixed nav). -->
+  <script>
+    try {
+      var t = localStorage.getItem('theme')
+        || (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.dataset.theme = t;
+    } catch (e) {}
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Kufi+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
@@ -23,33 +32,17 @@
   <link rel="stylesheet" href="/src/styles/pages.css" />
   <link rel="stylesheet" href="/src/styles/animations.css" />
   <link rel="stylesheet" href="/src/styles/messenger.css" />
-  <link rel="stylesheet" href="/src/styles/landing.css" />
   <link rel="stylesheet" href="/src/styles/feed.css" />
   <link rel="stylesheet" href="/src/styles/mood.css" />
   <link rel="stylesheet" href="/src/styles/explore.css" />
   <link rel="stylesheet" href="/src/styles/nav.css" />
-  <link rel="stylesheet" href="/src/styles/profile.css" />
-  <link rel="stylesheet" href="/src/styles/user-profile.css" />
-  <link rel="stylesheet" href="/src/styles/events.css" />
-  <link rel="stylesheet" href="/src/styles/tips.css" />
   <link rel="stylesheet" href="/src/styles/passport.css" />
-  <link rel="stylesheet" href="/src/styles/place-detail.css" />
-  <link rel="stylesheet" href="/src/styles/leaderboard.css" />
-  <link rel="stylesheet" href="/src/styles/badges.css" />
-  <link rel="stylesheet" href="/src/styles/map.css" />
-  <link rel="stylesheet" href="/src/styles/itineraries.css" />
-  <link rel="stylesheet" href="/src/styles/collections.css" />
   <link rel="stylesheet" href="/src/styles/discover-trips.css" />
-  <link rel="stylesheet" href="/src/styles/settings.css" />
-  <link rel="stylesheet" href="/src/styles/profile-edit.css" />
   <link rel="stylesheet" href="/src/styles/premium.css" />
-  <link rel="stylesheet" href="/src/styles/auth.css" />
   <link rel="stylesheet" href="/src/styles/activity.css" />
   <link rel="stylesheet" href="/src/styles/notifications.css" />
-  <link rel="stylesheet" href="/src/styles/onboarding.css" />
   <link rel="stylesheet" href="/src/styles/utility-pages.css" />
   <link rel="stylesheet" href="/src/styles/sub-components.css" />
-  <link rel="stylesheet" href="/src/styles/messages-search.css" />
   <link rel="stylesheet" href="/src/styles/skeletons.css" />
   <link rel="stylesheet" href="/src/styles/popups.css" />
   <link rel="stylesheet" href="/src/styles/tailwind.css" />
@@ -63,20 +56,20 @@
           <span class="logo-text">e-Tunisia</span>
         </a>
         <div class="nav-links" id="nav-links">
-          <a href="#/" class="nav-link active" data-page="feed">Feed</a>
-          <a href="#/explore" class="nav-link" data-page="explore">Explore</a>
-          <a href="#/ai-planner" class="nav-link" data-page="ai-planner">AI Planner</a>
-          <a href="#/reels" class="nav-link" data-page="reels">Reels</a>
-          <a href="#/events" class="nav-link" data-page="events">Events</a>
-          <a href="#/tips" class="nav-link" data-page="tips">Tips</a>
-          <a href="#/map" class="nav-link" data-page="map">Map</a>
-          <a href="#/itineraries" class="nav-link" data-page="itineraries">Itineraries</a>
-          <a href="#/collections" class="nav-link" data-page="collections">Collections</a>
+          <a href="#/" class="nav-link active" data-page="feed" data-i18n="nav.feed">Feed</a>
+          <a href="#/explore" class="nav-link" data-page="explore" data-i18n="nav.explore">Explore</a>
+          <a href="#/ai-planner" class="nav-link" data-page="ai-planner" data-i18n="nav.aiPlanner">AI Planner</a>
+          <a href="#/reels" class="nav-link" data-page="reels" data-i18n="nav.reels">Reels</a>
+          <a href="#/events" class="nav-link" data-page="events" data-i18n="nav.events">Events</a>
+          <a href="#/tips" class="nav-link" data-page="tips" data-i18n="nav.tips">Tips</a>
+          <a href="#/map" class="nav-link" data-page="map" data-i18n="nav.map">Map</a>
+          <a href="#/itineraries" class="nav-link" data-page="itineraries" data-i18n="nav.itineraries">Itineraries</a>
+          <a href="#/collections" class="nav-link" data-page="collections" data-i18n="nav.collections">Collections</a>
         </div>
         <div class="nav-actions">
           <button class="nav-search-trigger" data-open-cmdk aria-label="Search anything (Ctrl+K)">
             <i class="lucide-search"></i>
-            <span class="nav-search-trigger-label">Search anything…</span>
+            <span class="nav-search-trigger-label" data-i18n="nav.search">Search anything…</span>
             <kbd class="nav-search-trigger-kbd">⌘K</kbd>
           </button>
           <button class="btn-icon nav-search-mobile" id="search-toggle" aria-label="Search">

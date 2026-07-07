@@ -5,15 +5,29 @@ import { Place } from '../places/place.entity';
 import { Booking } from '../bookings/booking.entity';
 import { Review } from '../reviews/review.entity';
 import { QueuesService } from '../queues/queues.service';
+import { AnalyticsEvent } from './analytics-event.entity';
+export interface IncomingEvent {
+    name: string;
+    props?: Record<string, unknown>;
+    anonId?: string;
+}
 export declare class AnalyticsService {
     private userRepo;
     private placeRepo;
     private bookingRepo;
     private reviewRepo;
+    private eventsRepo;
     private redisService;
     private queuesService;
     private readonly logger;
-    constructor(userRepo: Repository<User>, placeRepo: Repository<Place>, bookingRepo: Repository<Booking>, reviewRepo: Repository<Review>, redisService: RedisService, queuesService: QueuesService);
+    constructor(userRepo: Repository<User>, placeRepo: Repository<Place>, bookingRepo: Repository<Booking>, reviewRepo: Repository<Review>, eventsRepo: Repository<AnalyticsEvent>, redisService: RedisService, queuesService: QueuesService);
+    ingestEvents(batch: IncomingEvent[], userId: string | null): Promise<number>;
+    eventsSummary(days?: number): Promise<{
+        day: any;
+        name: any;
+        count: number;
+        uniques: number;
+    }[]>;
     getDashboardStats(): Promise<{
         users: {
             total: number;

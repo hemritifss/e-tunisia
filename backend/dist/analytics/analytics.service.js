@@ -23,15 +23,66 @@ const place_entity_1 = require("../places/place.entity");
 const booking_entity_1 = require("../bookings/booking.entity");
 const review_entity_1 = require("../reviews/review.entity");
 const queues_service_1 = require("../queues/queues.service");
+const analytics_event_entity_1 = require("./analytics-event.entity");
+const EVENT_NAME_RE = /^[a-z0-9_.:-]{1,64}$/i;
+const MAX_EVENT_BATCH = 20;
+const MAX_PROPS_JSON = 2048;
 let AnalyticsService = AnalyticsService_1 = class AnalyticsService {
-    constructor(userRepo, placeRepo, bookingRepo, reviewRepo, redisService, queuesService) {
+    constructor(userRepo, placeRepo, bookingRepo, reviewRepo, eventsRepo, redisService, queuesService) {
         this.userRepo = userRepo;
         this.placeRepo = placeRepo;
         this.bookingRepo = bookingRepo;
         this.reviewRepo = reviewRepo;
+        this.eventsRepo = eventsRepo;
         this.redisService = redisService;
         this.queuesService = queuesService;
         this.logger = new common_1.Logger(AnalyticsService_1.name);
+    }
+    async ingestEvents(batch, userId) {
+        const rows = (Array.isArray(batch) ? batch : [])
+            .slice(0, MAX_EVENT_BATCH)
+            .filter((e) => e && typeof e.name === 'string' && EVENT_NAME_RE.test(e.name))
+            .map((e) => {
+            let props = null;
+            if (e.props && typeof e.props === 'object') {
+                try {
+                    if (JSON.stringify(e.props).length <= MAX_PROPS_JSON)
+                        props = e.props;
+                }
+                catch { }
+            }
+            return this.eventsRepo.create({
+                name: e.name.toLowerCase(),
+                userId,
+                anonId: typeof e.anonId === 'string' ? e.anonId.slice(0, 64) : null,
+                props,
+            });
+        });
+        if (!rows.length)
+            return 0;
+        await this.eventsRepo.insert(rows);
+        for (const r of rows)
+            void this.trackEvent(r.name, r.userId || undefined);
+        return rows.length;
+    }
+    async eventsSummary(days = 30) {
+        const rows = await this.eventsRepo
+            .createQueryBuilder('e')
+            .select("date_trunc('day', e.createdAt)", 'day')
+            .addSelect('e.name', 'name')
+            .addSelect('COUNT(*)', 'count')
+            .addSelect('COUNT(DISTINCT COALESCE(e.userId, e.anonId))', 'uniques')
+            .where("e.createdAt > now() - make_interval(days => :days)", { days: Math.min(365, Math.max(1, days)) })
+            .groupBy('day')
+            .addGroupBy('e.name')
+            .orderBy('day', 'DESC')
+            .getRawMany();
+        return rows.map((r) => ({
+            day: r.day,
+            name: r.name,
+            count: Number(r.count),
+            uniques: Number(r.uniques),
+        }));
     }
     async getDashboardStats() {
         const today = new Date();
@@ -226,7 +277,9 @@ exports.AnalyticsService = AnalyticsService = AnalyticsService_1 = __decorate([
     __param(1, (0, typeorm_1.InjectRepository)(place_entity_1.Place)),
     __param(2, (0, typeorm_1.InjectRepository)(booking_entity_1.Booking)),
     __param(3, (0, typeorm_1.InjectRepository)(review_entity_1.Review)),
+    __param(4, (0, typeorm_1.InjectRepository)(analytics_event_entity_1.AnalyticsEvent)),
     __metadata("design:paramtypes", [typeorm_2.Repository,
+        typeorm_2.Repository,
         typeorm_2.Repository,
         typeorm_2.Repository,
         typeorm_2.Repository,

@@ -3,6 +3,8 @@ export interface TripStop {
     placeName?: string;
     placeCity?: string;
     placeCover?: string;
+    latitude?: number | null;
+    longitude?: number | null;
     packageId?: string | null;
     packageTitle?: string | null;
     pricePerPerson?: number | null;

@@ -1,3 +1,4 @@
+import '../../styles/tips.css';
 import React, { useEffect, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Sparkles, Landmark, Bus, Banknote, ShieldCheck, Utensils, Compass, Plus, X, Heart, Share2, Send } from 'lucide-react';

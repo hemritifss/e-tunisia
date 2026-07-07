@@ -5,9 +5,10 @@ import { UserBadge } from './user-badge.entity';
 import { User } from '../users/user.entity';
 import { GamificationService } from './gamification.service';
 import { GamificationController } from './gamification.controller';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([Badge, UserBadge, User])],
+    imports: [TypeOrmModule.forFeature([Badge, UserBadge, User]), NotificationsModule],
     controllers: [GamificationController],
     providers: [GamificationService],
     exports: [GamificationService],

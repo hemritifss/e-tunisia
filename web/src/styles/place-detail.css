@@ -529,6 +529,28 @@
     max-width: none;
     margin-inline: 0;
 }
+/* pages.css still paints .place-detail-info and .place-detail-reviews as bordered
+   cards with their own space-6 padding. In this two-column layout they're plain
+   sections inside .place-detail-main — the horizontal inset comes from
+   .place-detail-body's page padding — so that leftover card chrome rendered them as
+   bordered boxes whose text sat flush against the border (the "broken padding").
+   Strip the chrome; let the column + body padding own width/inset and the flex gap
+   own vertical rhythm. The review form, review items and booking aside keep their
+   own card padding. */
+.place-detail-page .place-detail-info,
+.place-detail-page .place-detail-reviews,
+.place-detail-page .place-detail-packages {
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    max-width: none;
+    margin: 0;
+    padding-inline: 0;
+}
+.place-detail-page .place-detail-review-form {
+    max-width: none;
+    margin: 0; /* keep its own card padding (space-5) */
+}
 .place-detail-main { min-width: 0; display: flex; flex-direction: column; gap: var(--space-8); }
 .place-detail-aside { order: -1; }
 

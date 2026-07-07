@@ -1,3 +1,4 @@
+import '../../styles/onboarding.css';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   Compass, Sparkles, Users, Award, ArrowRight, Camera, Check, UserPlus, UserCheck, PartyPopper,

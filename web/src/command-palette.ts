@@ -11,12 +11,14 @@ import { goTo } from './router';
 
 interface CommandItem {
     id: string;
-    section: 'page' | 'people' | 'places';
+    section: 'recent' | 'action' | 'page' | 'people' | 'places';
     icon: string;            // lucide-react icon name OR inline SVG markup; never emoji.
     title: string;
     subtitle?: string;
     href: string;
     avatar?: string | null;
+    /** Imperative commands (compose, theme toggle) run this instead of navigating. */
+    run?: () => void;
 }
 
 /**
@@ -41,6 +43,10 @@ const SVG: Record<string, string> = {
     settings:    '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>',
     search:      '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>',
     pin:         '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>',
+    plus:        '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>',
+    moon:        '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>',
+    sparkles:    '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>',
+    clock:       '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
 };
 
 const PAGE_SHORTCUTS: CommandItem[] = [
@@ -60,6 +66,61 @@ const PAGE_SHORTCUTS: CommandItem[] = [
     { id: 'p-profile',     section: 'page', icon: 'settings',  title: 'Edit profile',             href: '#/profile-edit' },
     { id: 'p-search',      section: 'page', icon: 'search',    title: 'Full search',              href: '#/search' },
 ];
+
+/** Imperative commands — the difference between a search box and a command palette. */
+function quickActions(): CommandItem[] {
+    const loggedIn = !!localStorage.getItem('etunisia_token');
+    const items: CommandItem[] = [];
+    if (loggedIn) {
+        items.push({
+            id: 'a-compose', section: 'action', icon: 'plus', title: 'Create a post',
+            subtitle: 'Share a place, tip, or photo', href: '#',
+            run: () => document.dispatchEvent(new CustomEvent('etunisia:open-post-modal')),
+        });
+    }
+    items.push({
+        id: 'a-ai', section: 'action', icon: 'sparkles', title: 'Plan a trip with AI',
+        subtitle: 'Generate a full itinerary', href: '#/ai-planner',
+    });
+    items.push({
+        id: 'a-theme', section: 'action', icon: 'moon', title: 'Toggle dark mode',
+        subtitle: 'Switch light / dark', href: '#',
+        run: () => document.getElementById('theme-toggle')?.click(),
+    });
+    return items;
+}
+
+function filterActions(q: string): CommandItem[] {
+    const all = quickActions();
+    if (!q) return all;
+    const lower = q.toLowerCase();
+    return all.filter((a) => (a.title + ' ' + (a.subtitle || '')).toLowerCase().includes(lower));
+}
+
+// ── Recents — the palette should remember where you go ────
+const RECENTS_KEY = 'etunisia_cmdk_recents';
+const RECENTS_MAX = 5;
+
+function readRecents(): CommandItem[] {
+    try {
+        const arr = JSON.parse(localStorage.getItem(RECENTS_KEY) || '[]');
+        if (!Array.isArray(arr)) return [];
+        return arr
+            .filter((r) => r && r.title && r.href)
+            .slice(0, RECENTS_MAX)
+            .map((r) => ({ ...r, section: 'recent' as const, run: undefined }));
+    } catch { return []; }
+}
+
+function pushRecent(item: CommandItem) {
+    // Actions are re-runnable from their own section; only destinations recur.
+    if (item.run || item.section === 'action') return;
+    try {
+        const entry = { id: item.id, icon: item.icon || 'clock', title: item.title, subtitle: item.subtitle, href: item.href, avatar: item.avatar ?? null };
+        const next = [entry, ...readRecents().filter((r) => r.id !== item.id)].slice(0, RECENTS_MAX);
+        localStorage.setItem(RECENTS_KEY, JSON.stringify(next));
+    } catch {}
+}
 
 function escapeHtml(s: string): string {
     return String(s ?? '')
@@ -118,6 +179,12 @@ function mountShell() {
 
 function ownHandle(): string | null {
     try {
+        // Zustand-persisted auth store: { state: { user: { handle } } }
+        const persisted = localStorage.getItem('etunisia-auth');
+        if (persisted) {
+            const h = JSON.parse(persisted)?.state?.user?.handle;
+            if (h) return h;
+        }
         const raw = localStorage.getItem('etunisia_user') || localStorage.getItem('auth_user');
         if (!raw) return null;
         const u = JSON.parse(raw);
@@ -176,15 +243,18 @@ async function fetchPlaces(q: string): Promise<CommandItem[]> {
 async function render(q: string) {
     if (!list) return;
     const trimmed = q.trim();
+    const recents = trimmed ? [] : readRecents();
+    const actions = filterActions(trimmed);
     const pages = filterPages(trimmed);
 
-    // Optimistic instant render of pages while the async fetches resolve.
+    // Optimistic instant render of local items while the async fetches resolve.
     activeIndex = 0;
-    lastItems = pages;
-    paint(pages, { peopleLoading: trimmed.length >= 2, placesLoading: trimmed.length >= 2 });
+    const local = [...recents, ...actions, ...pages];
+    lastItems = local;
+    paint(local, { peopleLoading: trimmed.length >= 2, placesLoading: trimmed.length >= 2 });
 
     const [people, places] = await Promise.all([fetchPeople(trimmed), fetchPlaces(trimmed)]);
-    lastItems = [...pages, ...people, ...places];
+    lastItems = [...local, ...people, ...places];
     paint(lastItems, { peopleLoading: false, placesLoading: false });
 }
 
@@ -216,14 +286,28 @@ function renderItem(item: CommandItem, idx: number): string {
 function paint(items: CommandItem[], state: { peopleLoading: boolean; placesLoading: boolean }) {
     if (!list) return;
 
-    const grouped = { page: [] as CommandItem[], people: [] as CommandItem[], places: [] as CommandItem[] };
+    const grouped = { recent: [] as CommandItem[], action: [] as CommandItem[], page: [] as CommandItem[], people: [] as CommandItem[], places: [] as CommandItem[] };
     items.forEach((i) => grouped[i.section].push(i));
 
-    const flat: CommandItem[] = [...grouped.page, ...grouped.people, ...grouped.places];
+    const flat: CommandItem[] = [...grouped.recent, ...grouped.action, ...grouped.page, ...grouped.people, ...grouped.places];
     lastItems = flat;
     if (activeIndex >= flat.length) activeIndex = Math.max(0, flat.length - 1);
 
     let html = '';
+    if (grouped.recent.length) {
+        html += sectionHeader('Recent');
+        grouped.recent.forEach((it) => {
+            const idx = flat.indexOf(it);
+            html += renderItem(it, idx);
+        });
+    }
+    if (grouped.action.length) {
+        html += sectionHeader('Actions');
+        grouped.action.forEach((it) => {
+            const idx = flat.indexOf(it);
+            html += renderItem(it, idx);
+        });
+    }
     if (grouped.page.length) {
         html += sectionHeader('Pages');
         grouped.page.forEach((it) => {
@@ -283,6 +367,12 @@ function move(delta: number) {
 function commit() {
     const item = lastItems[activeIndex];
     if (!item) return;
+    pushRecent(item);
+    if (item.run) {
+        close();
+        item.run();
+        return;
+    }
     const href = resolveHref(item);
     if (href && href !== '#') goTo(href);
     close();

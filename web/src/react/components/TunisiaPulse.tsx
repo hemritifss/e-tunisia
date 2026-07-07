@@ -18,6 +18,17 @@ function ago(iso: string): string {
     return `${Math.floor(h / 24)}d`;
 }
 
+/** Entries newer than this still justify the "right now" framing. */
+const FRESH_WINDOW_MS = 72 * 60 * 60 * 1000;
+
+function isFresh(e: Entry): boolean {
+    return Date.now() - new Date(e.createdAt).getTime() < FRESH_WINDOW_MS;
+}
+
+function shortDate(iso: string): string {
+    return new Date(iso).toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+}
+
 function summarize(e: Entry): string {
     const who = e.actor?.fullName?.split(' ')[0] || 'Someone';
     if (e.type === 'review' && e.target?.placeName) return `${who} reviewed ${e.target.placeName}`;
@@ -43,7 +54,13 @@ export function TunisiaPulse() {
         queryFn: () => api.getGlobalActivity(8),
         staleTime: 60_000,
     });
-    const entries: Entry[] = useMemo(() => Array.isArray(data) ? data : (data as any)?.data ?? [], [data]);
+    const allEntries: Entry[] = useMemo(() => Array.isArray(data) ? data : (data as any)?.data ?? [], [data]);
+    // Claiming "alive right now" over month-old events destroys trust. When
+    // nothing is fresh we reframe as "latest from the community" and show a
+    // date instead of a giant "38d ago" under a pulsing live dot.
+    const fresh = useMemo(() => allEntries.filter(isFresh), [allEntries]);
+    const live = fresh.length > 0;
+    const entries = live ? fresh : allEntries;
     const [idx, setIdx] = useState(0);
 
     useEffect(() => {
@@ -55,13 +72,13 @@ export function TunisiaPulse() {
     const current = entries[idx];
 
     return (
-        <section className="tunisia-pulse">
+        <section className={`tunisia-pulse${live ? '' : ' is-quiet'}`}>
             <div className="tunisia-pulse-dot">
                 <span className="tunisia-pulse-dot-core" />
-                <span className="tunisia-pulse-dot-ring" />
+                {live && <span className="tunisia-pulse-dot-ring" />}
             </div>
             <div className="tunisia-pulse-text">
-                <strong>Tunisia is alive right now</strong>
+                <strong>{live ? 'Tunisia is alive right now' : 'Latest from the community'}</strong>
                 {current ? (
                     <a
                         key={idx}
@@ -69,7 +86,9 @@ export function TunisiaPulse() {
                         href={current.actor.handle ? `#/u/${current.actor.handle}` : '#/activity'}
                     >
                         <span className="tunisia-pulse-summary-text">{summarize(current)}</span>
-                        <span className="tunisia-pulse-time">{ago(current.createdAt)} ago</span>
+                        <span className="tunisia-pulse-time">
+                            {live ? `${ago(current.createdAt)} ago` : shortDate(current.createdAt)}
+                        </span>
                     </a>
                 ) : (
                     <span className="tunisia-pulse-summary tunisia-pulse-summary-loading">

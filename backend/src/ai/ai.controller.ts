@@ -43,13 +43,22 @@ export class AIController {
   @UseGuards(OptionalJwtAuthGuard)
   @ApiOperation({ summary: 'Chat with the grounded AI travel concierge' })
   async chatPlanner(
-    @CurrentUser('id') userId: string | null,
+    @CurrentUser() user: any,
     @Req() req: any,
     @Body()
     { messages }: { messages: Array<{ role: 'user' | 'assistant'; content: string }> },
   ) {
-    const { premium } = await this.aiService.assertQuotaAndCount({ userId, ip: req.ip });
-    return this.aiService.chatTravelPlanner(messages, premium);
+    const { premium } = await this.aiService.assertQuotaAndCount({ userId: user?.id, ip: req.ip });
+    // Signed-in users get a concierge that knows their name, tastes and saved places.
+    const userCtx = user
+      ? {
+          fullName: user.fullName,
+          interests: user.interests,
+          favoriteIds: user.favoriteIds,
+          visitedPlaceIds: user.visitedPlaceIds,
+        }
+      : undefined;
+    return this.aiService.chatTravelPlanner(messages, premium, userCtx);
   }
 
   @Post('assist')

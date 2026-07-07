@@ -1,3 +1,4 @@
+import '../../styles/events.css';
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -7,6 +8,7 @@ import {
 import * as api from '../../api';
 import { events as mockEvents } from '../../data';
 import { isFlagged, toggleFlag, requireAuth } from '../../ui-utils';
+import { useCity } from '../lib/useCity';
 
 // Migrated from vanilla pages/events.ts — same classes, same api.getEvents +
 // mock fallback, same attend flow (local flag + optimistic + celebrate).
@@ -123,16 +125,20 @@ function Skeleton() {
 
 export default function EventsPage() {
   const [filter, setFilter] = useState('all');
+  const globalCity = useCity();
   const { data: allEvents, isLoading } = useQuery({
-    queryKey: ['events'],
+    queryKey: ['events', globalCity],
     queryFn: async () => {
       try {
-        const evs = await api.getEvents();
+        const evs = await api.getEvents(undefined, globalCity || undefined);
         if (evs?.length) return evs;
+        // A city filter with zero hits is a real answer — don't paper over it
+        // with mock events from other cities.
+        if (globalCity) return [];
       } catch {
         /* fall through */
       }
-      return mockEvents as any[];
+      return (globalCity ? [] : mockEvents) as any[];
     },
   });
 

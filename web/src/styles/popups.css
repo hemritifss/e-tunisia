@@ -256,10 +256,144 @@
 .popup-tutorial .popup-actions { flex-direction: row; }
 .popup-tutorial .popup-actions .popup-btn { flex: 1; }
 
+/* ---- Shared kicker chip (badge / level-up) ---- */
+.popup-badge-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin: 4px 0 2px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--terracotta);
+}
+
+/* ---- Badge unlocked ---- */
+.popup-badge-medal {
+  position: relative;
+  width: 84px;
+  height: 84px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  background: var(--gradient-gold);
+  box-shadow: var(--shadow-glow-gold);
+  margin-bottom: 4px;
+  animation: popup-pop 0.5s ease-out;
+}
+.popup-badge-emoji { font-size: 2.4rem; line-height: 1; }
+.popup-badge-ring {
+  position: absolute;
+  inset: -6px;
+  border-radius: var(--radius-full);
+  border: 2px dashed oklch(78% 0.17 80 / 0.6);
+  animation: popup-spin 9s linear infinite;
+}
+
+/* ---- Level up ---- */
+.popup-levelup-ring {
+  position: relative;
+  width: 76px;
+  height: 76px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  color: #fff;
+  background: var(--gradient-cta);
+  box-shadow: var(--shadow-glow);
+  margin-bottom: 4px;
+  animation: popup-pop 0.5s ease-out;
+}
+.popup-levelup-num {
+  position: absolute;
+  right: -4px;
+  bottom: -4px;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  background: var(--surface-elevated);
+  color: var(--terracotta);
+  border: 2px solid var(--surface-elevated);
+  box-shadow: var(--shadow-md);
+  font-size: 0.9rem;
+  font-weight: 900;
+}
+
+/* ---- Streak milestone ---- */
+.popup-streak-kicker { color: oklch(62% 0.2 25); }
+.popup-streak-flame {
+  position: relative;
+  width: 76px;
+  height: 76px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  color: #fff;
+  background: linear-gradient(135deg, oklch(72% 0.19 60), oklch(60% 0.21 25));
+  box-shadow: 0 8px 26px oklch(62% 0.2 25 / 0.4);
+  margin-bottom: 4px;
+  animation: popup-pop 0.5s ease-out;
+}
+.popup-streak-num {
+  position: absolute;
+  right: -4px;
+  bottom: -4px;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  background: var(--surface-elevated);
+  color: oklch(62% 0.2 25);
+  border: 2px solid var(--surface-elevated);
+  box-shadow: var(--shadow-md);
+  font-size: 0.9rem;
+  font-weight: 900;
+}
+.popup-streak-reward {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 14px;
+  padding: 8px 14px;
+  border-radius: var(--radius-full);
+  background: oklch(78% 0.17 80 / 0.14);
+  color: var(--gold);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+/* ---- Welcome back ---- */
+.popup-welcome-wave {
+  font-size: 3rem;
+  line-height: 1;
+  margin-bottom: 6px;
+  animation: popup-wave 1.6s ease-in-out 0.2s 2;
+  transform-origin: 70% 80%;
+}
+
 @keyframes popup-pop {
   0% { transform: scale(0.5); opacity: 0; }
   60% { transform: scale(1.12); }
   100% { transform: scale(1); opacity: 1; }
+}
+@keyframes popup-spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes popup-wave {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(18deg); }
+  75% { transform: rotate(-12deg); }
 }
 
 /* ---- Mobile: dock to the bottom as a sheet ---- */
@@ -274,6 +408,11 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .popup-celebrate-coin { animation: none; }
+  .popup-celebrate-coin,
+  .popup-badge-medal,
+  .popup-badge-ring,
+  .popup-levelup-ring,
+  .popup-streak-flame,
+  .popup-welcome-wave { animation: none; }
   .popup-task-fill { transition: none; }
 }

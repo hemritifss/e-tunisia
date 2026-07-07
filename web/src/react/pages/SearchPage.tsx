@@ -1,3 +1,4 @@
+import '../../styles/messages-search.css';
 import React, { useEffect, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Search, X, MapPin, Users, Sparkles, Check, BadgeCheck } from 'lucide-react';

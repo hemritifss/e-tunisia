@@ -205,6 +205,17 @@ export async function getCategories() {
   return api<any[]>('/categories');
 }
 
+// ── ROUTING (real roads via OSRM/Mapbox) ─────
+export async function getRoute(coords: [number, number][]) {
+  const path = coords.map((c) => c.join(',')).join(';');
+  return api<any>(`/routing/route?coords=${encodeURIComponent(path)}`);
+}
+
+export async function optimizeRoute(coords: [number, number][]) {
+  const path = coords.map((c) => c.join(',')).join(';');
+  return api<any>(`/routing/optimize?coords=${encodeURIComponent(path)}`);
+}
+
 // ── REVIEWS ──────────────────────────────────
 export async function getReviews(placeId: string) {
   return api<any[]>(`/reviews/place/${placeId}`);
@@ -263,9 +274,12 @@ export async function likeTip(tipId: string) {
 }
 
 // ── EVENTS ───────────────────────────────────
-export async function getEvents(category?: string) {
-  const qs = category ? `?category=${category}` : '';
-  return api<any[]>(`/events${qs}`);
+export async function getEvents(category?: string, city?: string) {
+  const params = new URLSearchParams();
+  if (category) params.set('category', category);
+  if (city) params.set('city', city);
+  const qs = params.toString();
+  return api<any[]>(`/events${qs ? `?${qs}` : ''}`);
 }
 
 export async function attendEvent(eventId: string) {

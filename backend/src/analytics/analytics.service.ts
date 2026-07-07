@@ -7,11 +7,22 @@ import { Place } from '../places/place.entity';
 import { Booking } from '../bookings/booking.entity';
 import { Review } from '../reviews/review.entity';
 import { QueuesService } from '../queues/queues.service';
+import { AnalyticsEvent } from './analytics-event.entity';
 
 interface TimeRange {
   start: Date;
   end: Date;
 }
+
+export interface IncomingEvent {
+  name: string;
+  props?: Record<string, unknown>;
+  anonId?: string;
+}
+
+const EVENT_NAME_RE = /^[a-z0-9_.:-]{1,64}$/i;
+const MAX_EVENT_BATCH = 20;
+const MAX_PROPS_JSON = 2048;
 
 @Injectable()
 export class AnalyticsService {
@@ -26,9 +37,62 @@ export class AnalyticsService {
     private bookingRepo: Repository<Booking>,
     @InjectRepository(Review)
     private reviewRepo: Repository<Review>,
+    @InjectRepository(AnalyticsEvent)
+    private eventsRepo: Repository<AnalyticsEvent>,
     private redisService: RedisService,
     private queuesService: QueuesService,
   ) {}
+
+  /**
+   * Durable event ingestion — the existing trackEvent() only feeds 24h Redis
+   * counters, which can't answer retention/funnel questions. This writes the
+   * permanent log. Malformed entries are silently dropped.
+   */
+  async ingestEvents(batch: IncomingEvent[], userId: string | null): Promise<number> {
+    const rows = (Array.isArray(batch) ? batch : [])
+      .slice(0, MAX_EVENT_BATCH)
+      .filter((e) => e && typeof e.name === 'string' && EVENT_NAME_RE.test(e.name))
+      .map((e) => {
+        let props: Record<string, unknown> | null = null;
+        if (e.props && typeof e.props === 'object') {
+          try {
+            if (JSON.stringify(e.props).length <= MAX_PROPS_JSON) props = e.props;
+          } catch { /* circular/unserializable — drop props, keep event */ }
+        }
+        return this.eventsRepo.create({
+          name: e.name.toLowerCase(),
+          userId,
+          anonId: typeof e.anonId === 'string' ? e.anonId.slice(0, 64) : null,
+          props,
+        });
+      });
+    if (!rows.length) return 0;
+    await this.eventsRepo.insert(rows);
+    // Keep the realtime Redis counters in sync too.
+    for (const r of rows) void this.trackEvent(r.name, r.userId || undefined);
+    return rows.length;
+  }
+
+  /** Daily count + unique actors per event name for the last N days. */
+  async eventsSummary(days = 30) {
+    const rows = await this.eventsRepo
+      .createQueryBuilder('e')
+      .select("date_trunc('day', e.createdAt)", 'day')
+      .addSelect('e.name', 'name')
+      .addSelect('COUNT(*)', 'count')
+      .addSelect('COUNT(DISTINCT COALESCE(e.userId, e.anonId))', 'uniques')
+      .where("e.createdAt > now() - make_interval(days => :days)", { days: Math.min(365, Math.max(1, days)) })
+      .groupBy('day')
+      .addGroupBy('e.name')
+      .orderBy('day', 'DESC')
+      .getRawMany();
+    return rows.map((r) => ({
+      day: r.day,
+      name: r.name,
+      count: Number(r.count),
+      uniques: Number(r.uniques),
+    }));
+  }
 
   async getDashboardStats(): Promise<{
     users: { total: number; newToday: number; activeToday: number };

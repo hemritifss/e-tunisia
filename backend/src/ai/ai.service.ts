@@ -67,17 +67,27 @@ const LANG_NAMES: Record<string, string> = {
 
 export type AssistAction = 'improve' | 'translate' | 'shorten' | 'expand';
 
-const CONCIERGE_SYSTEM = `You are e-Tunisia's AI travel concierge — an enthusiastic local who knows every hidden gem, restaurant, and secret beach in Tunisia.
+/** The concierge's human name — change here to rebrand the persona everywhere. */
+const CONCIERGE_NAME = 'Skander';
 
-GROUNDING — this is critical:
-- Before recommending ANY specific place, call the \`search_places\` tool to check e-Tunisia's real database.
-- Only name places that the tool actually returns. Never invent places, addresses, or prices.
-- If the database has nothing relevant, say so honestly and offer general guidance instead.
+const CONCIERGE_SYSTEM = `You are ${CONCIERGE_NAME} — a warm, funny Tunisian friend who happens to know every hidden gem, kahwa, secret beach and family restaurant in the country. You're chatting inside the e-Tunisia app. You are NOT a corporate chatbot; you talk like a real person texting a friend.
 
-STYLE:
-- Warm, concise (max 3 short paragraphs). Prices in TND.
-- You may mix in a little Tunisian derja when it feels natural.
-- End with a light question or next step to keep the conversation going.`;
+VOICE — this is what makes you feel human:
+- Relaxed, warm, a little playful. Short sentences. React to what they say ("ah, good pick!", "honestly? skip that one, too touristy").
+- MIRROR THE USER'S LANGUAGE. Derja in → derja out; French → French; Arabic → Arabic; English → English. If they mix, mix back.
+- Drop natural Tunisian derja when you're being casual (yasser, barcha, 3aslema, yalla, sahbi, behi, yezzi) — but never force it and never translate it in brackets.
+- No bullet-point brochures, no "Here are the top 5…". Give the tip like a friend would, in flowing sentences. Keep it to ~3-4 short sentences unless they ask for a full plan.
+- Never say you're an AI, a model, or "here to help". You're Skander.
+
+GROUNDING — non-negotiable:
+- Before naming ANY specific place, call the \`search_places\` tool to check e-Tunisia's real database.
+- Only mention places the tool actually returns. Never invent places, addresses or prices. Prices in TND.
+- If the database has nothing good, say so honestly and give general advice instead.
+
+ALWAYS finish your reply with ONE final line in EXACTLY this format (nothing after it):
+SUGGESTIONS: <what they'd tap next> | <another> | <another>
+- Three short follow-ups written FROM THE USER'S point of view (things THEY would ask/say next), based on what you just told them — never generic.
+- Same language as the conversation. No numbering, no quotes. This line is stripped before the user sees it, so don't mention it.`;
 
 const SEARCH_PARSE_SYSTEM = `You convert a traveler's natural-language search into structured filters for e-Tunisia's places database. The query may be in Tunisian derja, Arabic, French or English (often mixed).
 
@@ -228,9 +238,27 @@ export class AIService {
   async chatTravelPlanner(
     messages: ChatMessage[],
     premium = false,
+    userCtx?: { fullName?: string; interests?: string[]; favoriteIds?: string[]; visitedPlaceIds?: string[] },
   ): Promise<{ reply: string; suggestions?: string[]; places?: GroundedPlace[] }> {
     if (!this.llm.live) {
       return this.generateMockChatResponse(messages);
+    }
+
+    // Personalize the persona with who we're actually talking to (name, tastes,
+    // places they've already saved) so replies feel like they *know* the user.
+    let system = CONCIERGE_SYSTEM;
+    if (userCtx) {
+      let savedPlaces: string[] = [];
+      try {
+        const favs = (userCtx.favoriteIds || []).slice(0, 8);
+        if (favs.length) savedPlaces = (await this.placesService.getByIds(favs)).map((p) => p.name).filter(Boolean).slice(0, 6);
+      } catch { /* personalization is best-effort — never block the chat */ }
+      system += this.buildPersonaContext({
+        firstName: (userCtx.fullName || '').trim().split(/\s+/)[0] || undefined,
+        interests: userCtx.interests || [],
+        savedPlaces,
+        visitedCount: (userCtx.visitedPlaceIds || []).length,
+      });
     }
 
     // Collect the real places the model looked up so the UI can render them as cards.
@@ -290,24 +318,60 @@ export class AIService {
     try {
       const result = await this.llm.complete({
         premium,
-        system: CONCIERGE_SYSTEM,
+        system,
         messages: convo,
-        temperature: 0.7,
+        temperature: 0.8,
         maxTokens: 1024,
         tools,
         toolRunner,
         maxToolRounds: 3,
       });
 
+      // The model ends its reply with a hidden `SUGGESTIONS:` line — split the real
+      // follow-ups out of the visible text so the chips are contextual, not canned.
+      const { reply, suggestions } = this.splitSuggestions(result.text);
+
       return {
-        reply: result.text,
-        suggestions: this.extractSuggestions(result.text),
+        reply,
+        suggestions,
         places: [...referenced.values()].slice(0, 6),
       };
     } catch (error: any) {
       this.logger.error('AI chat failed:', error.message);
       return this.generateMockChatResponse(messages);
     }
+  }
+
+  /** Build the "who am I talking to" block appended to the concierge system prompt. */
+  private buildPersonaContext(profile: {
+    firstName?: string;
+    interests: string[];
+    savedPlaces: string[];
+    visitedCount: number;
+  }): string {
+    const bits: string[] = [];
+    if (profile.firstName) bits.push(`Their name is ${profile.firstName} — use it naturally now and then, not in every message.`);
+    if (profile.interests.length) bits.push(`They're into: ${profile.interests.join(', ')}. Lean your tips this way.`);
+    if (profile.savedPlaces.length) bits.push(`Places they've already saved/loved: ${profile.savedPlaces.join(', ')}. Reference these to make recommendations feel personal (e.g. "since you liked …").`);
+    if (profile.visitedCount) bits.push(`They've explored around ${profile.visitedCount} spot(s) so far — treat them as someone who already knows a bit of Tunisia.`);
+    if (!bits.length) return '';
+    return `\n\nWHO YOU'RE TALKING TO (never read this back verbatim, just let it shape you):\n- ${bits.join('\n- ')}`;
+  }
+
+  /**
+   * Split the model's reply from the trailing `SUGGESTIONS: a | b | c` line.
+   * Everything from the marker onward is stripped from the visible reply.
+   */
+  private splitSuggestions(text: string): { reply: string; suggestions: string[] } {
+    const raw = (text || '').trim();
+    const m = raw.match(/SUGGESTIONS?\s*:\s*(.+)\s*$/im);
+    if (!m || m.index === undefined) return { reply: raw, suggestions: [] };
+    const suggestions = m[1]
+      .split('|')
+      .map((s) => s.trim().replace(/^["'\-•\d.\)\s]+/, '').replace(/["']$/, '').trim())
+      .filter(Boolean)
+      .slice(0, 3);
+    return { reply: raw.slice(0, m.index).trim(), suggestions };
   }
 
   // ──────────────── Compose assist + translation (Phase 3) ────────────────
@@ -869,14 +933,4 @@ Return JSON with this exact structure:
     return 'Popular with locals';
   }
 
-  private extractSuggestions(_reply: string): string[] {
-    const commonQuestions = [
-      'How do I get there?',
-      'Best time to visit?',
-      'How much does it cost?',
-      'Where should I stay?',
-      'Local tips?',
-    ];
-    return commonQuestions.slice(0, 3);
-  }
 }

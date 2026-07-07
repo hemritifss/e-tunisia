@@ -1,3 +1,4 @@
+import '../../styles/user-profile.css';
 import React, { useEffect, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {

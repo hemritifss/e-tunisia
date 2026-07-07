@@ -13,6 +13,9 @@ export interface TripStop {
     placeName?: string;
     placeCity?: string;
     placeCover?: string;
+    /** Snapshotted for the route-on-map view; older trips resolve these client-side. */
+    latitude?: number | null;
+    longitude?: number | null;
     packageId?: string | null;
     packageTitle?: string | null;
     pricePerPerson?: number | null;

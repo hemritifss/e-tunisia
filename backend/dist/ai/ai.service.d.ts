@@ -68,11 +68,18 @@ export declare class AIService {
         startLocation?: string;
         travelStyle?: string;
     }, premium?: boolean): Promise<AIItinerary>;
-    chatTravelPlanner(messages: ChatMessage[], premium?: boolean): Promise<{
+    chatTravelPlanner(messages: ChatMessage[], premium?: boolean, userCtx?: {
+        fullName?: string;
+        interests?: string[];
+        favoriteIds?: string[];
+        visitedPlaceIds?: string[];
+    }): Promise<{
         reply: string;
         suggestions?: string[];
         places?: GroundedPlace[];
     }>;
+    private buildPersonaContext;
+    private splitSuggestions;
     assist(input: {
         text: string;
         action: AssistAction | string;
@@ -146,5 +153,4 @@ export declare class AIService {
     private generateMockItinerary;
     private generateMockChatResponse;
     private generateReason;
-    private extractSuggestions;
 }

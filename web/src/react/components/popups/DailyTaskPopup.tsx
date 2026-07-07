@@ -4,6 +4,7 @@ import { Flame, Check, Target, ArrowRight } from 'lucide-react';
 import * as api from '../../../api';
 import { goTo } from '../../../router';
 import { useUIStore } from '../../stores/ui-store';
+import { checkStreakMilestone } from './triggers';
 import type { PopupItem } from '../../stores/popup-store';
 
 interface Props {
@@ -45,6 +46,9 @@ export function DailyTaskPopup({ onClose }: Props) {
         const mult = d.multiplier > 1 ? ` · ${d.multiplier}× streak bonus` : '';
         const froze = d.freezeUsed ? ' ❄️ A freeze saved your streak!' : '';
         showToast(`+${d.pointsEarned || 0} Travel Dust${mult}${froze}`, 'success');
+        // A fresh check-in may have just crossed a streak milestone — celebrate
+        // it right after this popup is dismissed (queued behind the current one).
+        void checkStreakMilestone();
       }
       queryClient.invalidateQueries({ queryKey: ['streak'] });
     },

@@ -27,9 +27,17 @@ let AIController = class AIController {
         const { premium } = await this.aiService.assertQuotaAndCount({ userId, ip: req.ip });
         return this.aiService.generateItinerary(preferences, premium);
     }
-    async chatPlanner(userId, req, { messages }) {
-        const { premium } = await this.aiService.assertQuotaAndCount({ userId, ip: req.ip });
-        return this.aiService.chatTravelPlanner(messages, premium);
+    async chatPlanner(user, req, { messages }) {
+        const { premium } = await this.aiService.assertQuotaAndCount({ userId: user?.id, ip: req.ip });
+        const userCtx = user
+            ? {
+                fullName: user.fullName,
+                interests: user.interests,
+                favoriteIds: user.favoriteIds,
+                visitedPlaceIds: user.visitedPlaceIds,
+            }
+            : undefined;
+        return this.aiService.chatTravelPlanner(messages, premium, userCtx);
     }
     async assist(userId, req, body) {
         const { premium } = await this.aiService.assertQuotaAndCount({ userId, ip: req.ip });
@@ -83,11 +91,11 @@ __decorate([
     (0, common_1.Post)('chat'),
     (0, common_1.UseGuards)(optional_jwt_auth_guard_1.OptionalJwtAuthGuard),
     (0, swagger_1.ApiOperation)({ summary: 'Chat with the grounded AI travel concierge' }),
-    __param(0, (0, current_user_decorator_1.CurrentUser)('id')),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
     __param(1, (0, common_1.Req)()),
     __param(2, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object, Object]),
+    __metadata("design:paramtypes", [Object, Object, Object]),
     __metadata("design:returntype", Promise)
 ], AIController.prototype, "chatPlanner", null);
 __decorate([

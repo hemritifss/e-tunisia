@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Luggage, Send, Share2, Compass, Link as LinkIcon, Copy, X, Package, MapPin, SearchX, ShieldCheck, CheckCircle2 } from 'lucide-react';
+import { Luggage, Send, Share2, Compass, Link as LinkIcon, Copy, X, Package, MapPin, SearchX, ShieldCheck, CheckCircle2, PlaneLanding, PlaneTakeoff } from 'lucide-react';
 import * as api from '../../api';
 import * as cart from '../../trip-cart';
 import { showToast } from '../../ui-utils';
 import { currentPath, goTo, absoluteUrl, onRouteChange } from '../../router';
+import { TripRouteMap, TripDayChips } from '../components/TripRouteMap';
+import { useT } from '../../i18n/useT';
 
 // Migrated from vanilla pages/trip.ts — cart view (/trip) + saved view (/trip/:slug).
 
@@ -44,6 +46,7 @@ function StopCard({ stop, editable }: { stop: any; editable: boolean }) {
 }
 
 function DayBlocks({ stops, editable }: { stops: any[]; editable: boolean }) {
+  const t = useT();
   const byDay = new Map<number, any[]>();
   for (const s of stops) {
     const d = s.dayIndex || 0;
@@ -51,13 +54,20 @@ function DayBlocks({ stops, editable }: { stops: any[]; editable: boolean }) {
     byDay.get(d)!.push(s);
   }
   const days = [...byDay.keys()].sort((a, b) => a - b);
+  const last = days[days.length - 1];
   return (
     <div className="trip-days">
       {days.map((d) => (
-        <section className="trip-day" key={d}>
+        <section className="trip-day" key={d} id={`trip-day-${d}`}>
           <header className="trip-day-head">
             <span className="trip-day-num">{d + 1}</span>
-            <span className="trip-day-label">Day {d + 1}</span>
+            <span className="trip-day-label">{t('trip.day')} {d + 1}</span>
+            {d === days[0] && (
+              <span className="trip-day-tag trip-day-tag-arrival"><PlaneLanding size={13} /> {t('trip.arrival')}</span>
+            )}
+            {d === last && days.length > 1 && (
+              <span className="trip-day-tag trip-day-tag-departure"><PlaneTakeoff size={13} /> {t('trip.departure')}</span>
+            )}
           </header>
           <div className="trip-day-list">
             {byDay.get(d)!.map((s, i) => <StopCard key={(s.placeId || '') + (s.packageId || '') + i} stop={s} editable={editable} />)}
@@ -65,6 +75,34 @@ function DayBlocks({ stops, editable }: { stops: any[]; editable: boolean }) {
         </section>
       ))}
     </div>
+  );
+}
+
+/**
+ * "Your whole trip on the map" — day chips + route map, shared by the live
+ * cart and saved trips. Picking a day filters the route AND scrolls its plan
+ * into view, so the map and the day-by-day guide stay one experience.
+ */
+function TripMapSection({ stops, editable = false }: { stops: any[]; editable?: boolean }) {
+  const [activeDay, setActiveDay] = useState<number | null>(null);
+  const days = [...new Set(stops.map((s: any) => s.dayIndex || 0))].sort((a, b) => a - b);
+  if (!stops.length) return null;
+  const pick = (d: number | null) => {
+    setActiveDay(d);
+    if (d != null) {
+      document.getElementById(`trip-day-${d}`)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  };
+  return (
+    <section className="trip-map-section">
+      <TripDayChips days={days} active={activeDay} onPick={pick} />
+      <TripRouteMap
+        stops={stops}
+        activeDay={activeDay}
+        onStopClick={(placeId) => goTo(`/place/${placeId}`)}
+        onReorderDay={editable ? (day, order) => cart.reorderDay(day, order) : undefined}
+      />
+    </section>
   );
 }
 
@@ -221,6 +259,7 @@ function CartView() {
         </div>
       ) : (
         <>
+          <TripMapSection stops={state.stops} editable />
           <DayBlocks stops={state.stops} editable />
           {total.hasPriced && (
             <aside className="trip-summary">
@@ -307,6 +346,7 @@ function SavedTripView({ slug }: { slug: string }) {
         </div>
       </header>
 
+      <TripMapSection stops={trip.stops} />
       <DayBlocks stops={trip.stops} editable={false} />
 
       {hasPriced && (

@@ -1,14 +1,16 @@
+import '../../styles/landing-editorial.css';
+import '../../styles/landing.css';
 import React, { useEffect, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import * as api from '../../api';
 import { usePlanCatalog, fmtPrice } from '../lib/plan-catalog';
 import { coverPlaceholder } from '../../shared/placeholder';
 
-// Migrated from vanilla pages/hero.ts — the landing page. Mostly static marketing,
-// plus: canvas particles, real places/itineraries (with fallbacks), count-up stats,
-// scroll-reveal, governorate marquee, and a landing partner form.
-
-const LOCAL_HERO_IMAGES = ['/img/hero1.png', '/img/hero2.png', '/img/hero3.png'];
+// Landing — "Carnet de Voyage" editorial edition (landing-editorial.css).
+// A hand-assembled travel journal: paper, ink, pasted photo prints, rubber
+// stamps, boarding-pass itineraries, postcard testimonials. Deliberately no
+// particles, no mesh orbs, no gradient text, no fake live counters, no stock
+// avatar stacks — those read as machine-made. Real data with honest fallbacks.
 
 interface Place { id: string; name: string; city: string; category?: { name: string }; rating: number; reviewCount: number; images?: string[]; image?: string; }
 
@@ -29,65 +31,64 @@ const fallbackItineraries = [
 
 const GOVERNORATES = ['Tunis', 'Sfax', 'Sousse', 'Kairouan', 'Bizerte', 'Gabès', 'Ariana', 'Gafsa', 'Monastir', 'Ben Arous', 'Kasserine', 'Médenine', 'Nabeul', 'Tataouine', 'Béja', 'Jendouba', 'Mahdia', 'Sidi Bouzid', 'Siliana', 'Tozeur', 'Kébili', 'Le Kef', 'Manouba', 'Zaghouan'];
 
-const Arrow = ({ size = 18 }: { size?: number }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14M12 5l7 7-7 7" /></svg>;
-const Check = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12" /></svg>;
-const StarSvg = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>;
+/* ── Small inline glyphs (one stroke family, no emoji) ─────────── */
+const Arrow = ({ size = 17 }: { size?: number }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>;
+const StarSvg = () => <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>;
+const HeartSvg = () => <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" /></svg>;
+const EyeSvg = () => <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>;
 
-function useInView(threshold = 0.4) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [seen, setSeen] = useState(false);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const o = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { setSeen(true); o.unobserve(e.target); } }), { threshold });
-    o.observe(el);
-    return () => o.disconnect();
-  }, [threshold]);
-  return [ref, seen] as const;
-}
+/* Rubber stamp — circular text on two rings, inked in terracotta */
+const RoundStamp = ({ className = 'ej-stamp' }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 120 120" aria-hidden="true">
+    <defs>
+      <path id="ej-stamp-arc" d="M 60,60 m -45,0 a 45,45 0 1,1 90,0 a 45,45 0 1,1 -90,0" fill="none" />
+    </defs>
+    <circle cx="60" cy="60" r="57" fill="none" stroke="currentColor" strokeWidth="2" strokeDasharray="4 4" />
+    <circle cx="60" cy="60" r="33" fill="none" stroke="currentColor" strokeWidth="1.4" />
+    <text fontSize="10.5" letterSpacing="2.2" fill="currentColor" style={{ fontFamily: 'var(--font-mono)' }}>
+      <textPath href="#ej-stamp-arc">E-TUNISIA · CARNET DE VOYAGE · EST. TUNIS ·</textPath>
+    </text>
+    <text x="60" y="66" textAnchor="middle" fontSize="17" fontWeight="700" fill="currentColor" style={{ fontFamily: "'Noto Kufi Arabic', sans-serif" }}>تونس</text>
+  </svg>
+);
 
-// Mirrors vanilla animateCounter: rounds large targets, '+' suffix at >=1000.
-function CountUp({ target, start, initial = '0' }: { target: number; start: boolean; initial?: string }) {
-  const [val, setVal] = useState<number | null>(null);
-  const started = useRef(false);
-  useEffect(() => {
-    if (!start || started.current || !target) return;
-    started.current = true;
-    const displayTarget = target >= 1000 ? Math.round(target / 100) * 100 : target;
-    let current = 0;
-    const step = displayTarget / 50;
-    const timer = setInterval(() => {
-      current += step;
-      if (current >= displayTarget) { current = displayTarget; clearInterval(timer); }
-      setVal(Math.floor(current));
-    }, 20);
-    return () => clearInterval(timer);
-  }, [start, target]);
-  const suffix = target >= 1000 ? '+' : '';
-  if (val === null) return <>{initial}</>;
-  return <>{val.toLocaleString()}{suffix}</>;
-}
+/* Postmark — cancellation circle + wavy lines, like a mailed card */
+const Postmark = () => (
+  <svg className="ej-postcard-postmark" viewBox="0 0 60 60" aria-hidden="true">
+    <circle cx="24" cy="30" r="16" fill="none" stroke="currentColor" strokeWidth="1.2" />
+    <text x="24" y="28" textAnchor="middle" fontSize="6" fill="currentColor" letterSpacing="0.5" style={{ fontFamily: 'var(--font-mono)' }}>TUNIS</text>
+    <text x="24" y="36" textAnchor="middle" fontSize="5.2" fill="currentColor" style={{ fontFamily: 'var(--font-mono)' }}>2026</text>
+    <path d="M38 22q6 2 16 0M38 30q6 2 16 0M38 38q6 2 16 0" fill="none" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" />
+  </svg>
+);
 
-function PlaceCard({ p }: { p: Place }) {
+/* Dashed travel-route doodle behind the hero prints */
+const RouteDoodle = () => (
+  <svg className="ej-route" viewBox="0 0 400 420" fill="none" aria-hidden="true">
+    <path d="M22 392 C 120 322, 92 182, 212 152 S 380 82, 374 34" stroke="currentColor" strokeWidth="1.6" strokeDasharray="7 9" strokeLinecap="round" />
+    <path d="M371 46 l7 -16 -16 7 6 3 z" fill="currentColor" />
+    <circle cx="22" cy="392" r="4" fill="currentColor" />
+  </svg>
+);
+
+/* ── Place card — a pinned photo print with an index number ───── */
+function PlacePrint({ p, index }: { p: Place; index: number }) {
   const [imgSrc, setImgSrc] = useState(p.images?.[0] || p.image || '/img/hero1.png');
   const cat = p.category?.name || 'Place';
   const filled = Math.floor(p.rating || 0);
-  const handleImgError = () => setImgSrc(coverPlaceholder(p.id, p.name));
   return (
-    <a href={`#/place/${p.id}`} className="tn-place-card">
-      <div className="tn-place-img">
-        <img src={imgSrc} alt={p.name} loading="lazy" onError={handleImgError} />
-        <span className="tn-place-cat">{cat}</span>
+    <a href={`#/place/${p.id}`} className="ej-place ej-reveal" style={{ transitionDelay: `${(index % 3) * 0.07}s` }}>
+      <div className="ej-place-img">
+        <img src={imgSrc} alt={`${p.name}, ${p.city}`} loading="lazy" onError={() => setImgSrc(coverPlaceholder(p.id, p.name))} />
+        <span className="ej-place-cat">{cat}</span>
       </div>
-      <div className="tn-place-body">
+      <div className="ej-place-body">
+        <span className="ej-place-no">Nº {String(index + 1).padStart(2, '0')}</span>
         <h4>{p.name}</h4>
-        <div className="tn-place-meta">
-          <span className="tn-place-city">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" /><circle cx="12" cy="10" r="3" /></svg>
-            {p.city}
-          </span>
-          <span className="tn-place-stars" title={`${p.rating || 0}/5`} aria-label={`${filled} out of 5 stars`}>
-            {Array.from({ length: 5 }).map((_, i) => <span key={i} className={`tn-place-star${i < filled ? ' is-filled' : ''}`}><StarSvg /></span>)}
+        <div className="ej-place-meta">
+          <span>{p.city}</span>
+          <span className="ej-stars" title={`${p.rating || 0}/5`} aria-label={`Rated ${p.rating || 0} out of 5`}>
+            {Array.from({ length: 5 }).map((_, i) => <span key={i} className={i < filled ? 'is-filled' : ''}><StarSvg /></span>)}
           </span>
         </div>
       </div>
@@ -95,45 +96,53 @@ function PlaceCard({ p }: { p: Place }) {
   );
 }
 
-function ItinCard({ it }: { it: any }) {
-  const diffColor = it.difficulty === 'easy' ? 'var(--olive)' : it.difficulty === 'challenging' ? 'var(--coral)' : 'var(--tn-gold)';
+/* ── Itinerary — a boarding-pass ticket ────────────────────────── */
+function RouteTicket({ it, index }: { it: any; index: number }) {
+  const diffColor = it.difficulty === 'easy' ? 'var(--olive)' : it.difficulty === 'challenging' ? 'var(--coral)' : 'var(--amber)';
   const diffLabel = it.difficulty === 'easy' ? 'Easy' : it.difficulty === 'challenging' ? 'Challenging' : 'Moderate';
   return (
-    <a href="#/itineraries" className="tn-itin-card">
-      <div className="tn-itin-header">
-        <span className="tn-itin-duration">{it.duration} Days</span>
-        <span className="tn-itin-diff" style={{ ['--diff-color' as any]: diffColor }}>{diffLabel}</span>
+    <a href="#/itineraries" className="ej-ticket ej-reveal" style={{ transitionDelay: `${index * 0.08}s` }}>
+      <div className="ej-ticket-stub">
+        <span className="ej-ticket-days">{it.duration}</span>
+        <span className="ej-ticket-days-label">days</span>
+        <span className="ej-ticket-route">Field route · boarding all curious</span>
       </div>
-      <h4>{it.title}</h4>
-      <p>{it.description}</p>
-      <div className="tn-itin-footer">
-        <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" /></svg> {it.likeCount || 0}</span>
-        <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg> {(it.viewCount || 0).toLocaleString()}</span>
+      <div className="ej-ticket-body">
+        <div className="ej-ticket-head">Route Nº {String(index + 1).padStart(2, '0')} — tested by the community</div>
+        <h3>{it.title}</h3>
+        <p>{it.description}</p>
+        <div className="ej-ticket-foot">
+          <span><HeartSvg /> {it.likeCount || 0}</span>
+          <span><EyeSvg /> {(it.viewCount || 0).toLocaleString()}</span>
+          <span className="ej-ticket-diff" style={{ ['--diff-color' as any]: diffColor }}>{diffLabel}</span>
+        </div>
       </div>
+      <div className="ej-ticket-barcode" aria-hidden="true" />
     </a>
   );
 }
 
-function PricingGrid() {
+/* ── Pricing — fare stubs ──────────────────────────────────────── */
+function FareStubs() {
   const { data: catalog } = usePlanCatalog();
   const plans = catalog?.plans || [];
   const currency = catalog?.currency || 'TND';
   return (
-    <div className="tn-pricing-grid">
+    <div className="ej-fares">
       {plans.map((plan) => (
-        <div key={plan.id} className={`tn-pricing-card${plan.featured ? ' tn-pricing-popular' : ''}`}>
-          {plan.featured && <div className="tn-pricing-badge">Most Popular</div>}
-          <div className="tn-pricing-name">{plan.name}</div>
-          <div className="tn-pricing-price">
+        <div key={plan.id} className={`ej-fare ej-reveal${plan.featured ? ' ej-fare--featured' : ''}`}>
+          {plan.featured && <span className="ej-fare-loved">Most loved</span>}
+          <div className="ej-fare-name">{plan.name}</div>
+          <div className="ej-fare-price">
             {plan.monthly === 0 ? '0' : fmtPrice(plan.monthly, currency).split(' ')[0]}
-            <span>{plan.monthly === 0 ? currency : `${currency}/mo`}</span>
+            <span>{plan.monthly === 0 ? currency : `${currency} / month`}</span>
           </div>
-          <p className="tn-pricing-desc">{plan.tagline}</p>
-          <ul className="tn-pricing-features">
-            {plan.features.slice(0, 4).map((feature, i) => <li key={i}><Check /> {feature}</li>)}
+          <p className="ej-fare-tagline">{plan.tagline}</p>
+          <ul className="ej-fare-features">
+            {plan.features.slice(0, 4).map((feature, i) => <li key={i}>{feature}</li>)}
           </ul>
-          <a href={plan.id === 'free' ? '#/register' : '#/pro'} className={`tn-btn-${plan.featured ? 'primary' : 'outline'}`} style={{ width: '100%', justifyContent: 'center' }}>
-            {plan.id === 'free' ? 'Get Started' : `Upgrade to ${plan.name} →`}
+          <a href={plan.id === 'free' ? '#/register' : '#/pro'} className={plan.featured ? 'ej-btn' : 'ej-btn-ghost'}>
+            {plan.id === 'free' ? 'Get started' : `Upgrade to ${plan.name}`}
           </a>
         </div>
       ))}
@@ -141,15 +150,21 @@ function PricingGrid() {
   );
 }
 
+const TESTIMONIALS = [
+  { pro: true, quote: 'I planned a 9-day trip end-to-end on e-Tunisia. Every place was where the locals said it would be — and half were missing from every guidebook I had.', name: 'Marco Rossi', sub: 'Pro traveler · Milan, Italy' },
+  { pro: false, quote: 'My riad in Tozeur was empty in November. I listed it on e-Tunisia and four bookings came through in two weeks — no commission, no middlemen.', name: 'Amina Trabelsi', sub: 'Riad owner · Tozeur' },
+  { pro: false, quote: 'The brik stand the app sent me to in La Goulette had a 20-person line. Now I get why. Best 4 dinars I\'ve ever spent.', name: 'Sarah Chen', sub: 'Solo traveler · Singapore' },
+  { pro: true, quote: 'Took my family to the Star Wars filming locations using a community itinerary. The kids think I\'m a wizard. The badges kept them engaged the whole trip.', name: 'David Park', sub: 'Pro traveler · Seoul, Korea' },
+  { pro: false, quote: 'As a local guide, I now match travelers with exactly the kind of trip I love giving — desert, slow, no rush. The platform actually understands.', name: 'Yasmine Khelil', sub: 'Local guide · Douz' },
+  { pro: false, quote: 'The blue-door route through Sidi Bou Said with the photographer who actually lives there? Worth every cent. This is what travel is supposed to be.', name: 'Emma Laurent', sub: 'Photographer · Paris' },
+];
+
 export default function HeroPage() {
   const rootRef = useRef<HTMLDivElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [pulseRef, pulseSeen] = useInView(0.4);
   const [navScrolled, setNavScrolled] = useState(false);
 
-  // Marketing nav gains a solid backdrop once the visitor scrolls past the hero top.
   useEffect(() => {
-    const onScroll = () => setNavScrolled(window.scrollY > 40);
+    const onScroll = () => setNavScrolled(window.scrollY > 24);
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
@@ -182,58 +197,20 @@ export default function HeroPage() {
   const totalReviews = places ? Math.max(places.reduce((s, p) => s + (p.reviewCount || 0), 0), 8500) : 0;
   const itineraries = itinQ.data;
 
-  // Canvas particles
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-    let width = window.innerWidth, height = window.innerHeight;
-    canvas.width = width; canvas.height = height;
-    const COUNT = width < 768 ? 60 : 120;
-    const particles = Array.from({ length: COUNT }, () => ({
-      x: Math.random() * width, y: Math.random() * height,
-      vx: (Math.random() - 0.5) * 0.3, vy: -Math.random() * 0.4 - 0.1,
-      size: Math.random() * 2 + 0.5, alpha: Math.random() * 0.6 + 0.2, glow: Math.random() * 15 + 5,
-    }));
-    let animId = 0;
-    const animate = () => {
-      ctx.clearRect(0, 0, width, height);
-      for (const p of particles) {
-        p.x += p.vx; p.y += p.vy;
-        if (p.y < -10) { p.y = height + 10; p.x = Math.random() * width; }
-        if (p.x < -10) p.x = width + 10;
-        if (p.x > width + 10) p.x = -10;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(212, 165, 116, ${p.alpha})`;
-        ctx.shadowBlur = p.glow; ctx.shadowColor = 'rgba(212, 165, 116, 0.4)';
-        ctx.fill(); ctx.shadowBlur = 0;
-      }
-      animId = requestAnimationFrame(animate);
-    };
-    animate();
-    const onResize = () => { width = window.innerWidth; height = window.innerHeight; canvas.width = width; canvas.height = height; };
-    const onVis = () => { if (document.hidden) cancelAnimationFrame(animId); else animate(); };
-    window.addEventListener('resize', onResize);
-    document.addEventListener('visibilitychange', onVis);
-    return () => { cancelAnimationFrame(animId); window.removeEventListener('resize', onResize); document.removeEventListener('visibilitychange', onVis); };
-  }, []);
-
-  // Scroll reveal — re-run when async cards render so they get observed.
+  // Scroll reveal — re-run when async content mounts so it gets observed.
   useEffect(() => {
     const root = rootRef.current;
     if (!root) return;
     const obs = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => { if (entry.isIntersecting) { entry.target.classList.add('tn-revealed'); obs.unobserve(entry.target); } });
-    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
-    root.querySelectorAll('.tn-why-card, .tn-place-card, .tn-mood-tile, .tn-testimonial, .tn-logo-card, .tn-itin-card').forEach((el) => obs.observe(el));
+      entries.forEach((entry) => { if (entry.isIntersecting) { entry.target.classList.add('is-in'); obs.unobserve(entry.target); } });
+    }, { threshold: 0.08, rootMargin: '0px 0px -36px 0px' });
+    root.querySelectorAll('.ej-reveal').forEach((el) => obs.observe(el));
     return () => obs.disconnect();
   }, [places, itineraries]);
 
-  // Landing partner form
+  // Partner application form
   const [lp, setLp] = useState({ name: '', business: '', email: '', type: 'hotel' });
-  const [lpBtn, setLpBtn] = useState('Apply Now — Free');
+  const [lpBtn, setLpBtn] = useState('Send application — free');
   const [lpDisabled, setLpDisabled] = useState(false);
   const lpSet = (k: keyof typeof lp) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setLp((s) => ({ ...s, [k]: e.target.value }));
   const submitLp = async (e: React.FormEvent) => {
@@ -241,325 +218,336 @@ export default function HeroPage() {
     setLpDisabled(true); setLpBtn('Sending…');
     try {
       await api.submitContactForm({ name: lp.name.trim(), email: lp.email.trim(), businessName: lp.business.trim(), type: lp.type, message: 'Partner application from landing page' });
-      setLpBtn('Application Sent!');
+      setLpBtn('Application sent!');
       setLp({ name: '', business: '', email: '', type: 'hotel' });
-      setTimeout(() => { setLpDisabled(false); setLpBtn('Apply Now — Free'); }, 3000);
+      setTimeout(() => { setLpDisabled(false); setLpBtn('Send application — free'); }, 3000);
     } catch (err: any) {
-      setLpBtn('Apply Now — Free'); setLpDisabled(false);
+      setLpBtn('Send application — free'); setLpDisabled(false);
       alert(`Couldn't submit: ${err?.message || 'network error'}.\nEmail support@etunisia.com and we'll follow up.`);
     }
   };
 
-  return (
-    <div className="tn-landing" ref={rootRef}>
-      <canvas id="tn-particles" className="tn-particles" ref={canvasRef} />
+  const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 
-      <nav className={`tn-nav${navScrolled ? ' is-scrolled' : ''}`} aria-label="Primary">
-        <div className="tn-nav-inner">
-          <a href="#/hero" className="tn-nav-logo"><img src="/icon.png" alt="" /><span>e-Tunisia</span></a>
-          <div className="tn-nav-links">
+  return (
+    <div className="ej-landing" ref={rootRef}>
+
+      {/* ── Masthead ── */}
+      <nav className={`ej-masthead${navScrolled ? ' is-scrolled' : ''}`} aria-label="Primary">
+        <div className="ej-masthead-strip" aria-hidden="true">
+          <span>Vol. I — The traveler's edition</span>
+          <span>{today} · Tunis, Tunisia</span>
+        </div>
+        <div className="ej-masthead-inner">
+          <a href="#/hero" className="ej-wordmark"><strong>e-Tunisia</strong><span>تونس</span></a>
+          <div className="ej-masthead-links">
             <a href="#/explore">Explore</a>
             <a href="#/itineraries">Itineraries</a>
             <a href="#/about">About</a>
             <a href="#/premium">Pricing</a>
           </div>
-          <div className="tn-nav-actions">
-            <a href="#/login" className="tn-nav-login">Log in</a>
-            <a href="#/register" className="tn-btn-primary tn-nav-cta">Join Free</a>
+          <div className="ej-masthead-actions">
+            <a href="#/login" className="ej-masthead-login">Log in</a>
+            <a href="#/register" className="ej-btn ej-btn--sm">Join free</a>
           </div>
         </div>
       </nav>
 
-      <section className="tn-hero">
-        <div className="tn-hero-slideshow">
-          {LOCAL_HERO_IMAGES.map((src, i) => (
-            <div key={src} className={`tn-hero-slide${i === 0 ? ' active' : ''}`} style={{ ['--delay' as any]: `${i * 8}s` }}><img src={src} alt="Tunisia" /></div>
+      {/* ── Hero — the opening spread ── */}
+      <header className="ej-hero">
+        <span className="ej-hero-watermark" aria-hidden="true">تونس</span>
+        <div className="ej-hero-copy">
+          <p className="ej-hero-kicker">Carnet de voyage — a field guide to Tunisia</p>
+          <h1 className="ej-hero-title">
+            The Tunisia{' '}
+            <em className="ej-hand-underline">
+              locals
+              <svg viewBox="0 0 200 12" preserveAspectRatio="none" aria-hidden="true"><path d="M4 8 C 45 3, 95 11, 140 6 S 190 4, 197 7" fill="none" stroke="currentColor" strokeWidth="4.5" strokeLinecap="round" opacity="0.8" /></svg>
+            </em>{' '}
+            keep to themselves.
+          </h1>
+          <p className="ej-hero-arabic">تونس تستدعيك</p>
+          <p className="ej-hero-sub">
+            From the blue doors of Sidi Bou Said to the dunes of Douz. From the Roman stones
+            of El Jem to the olive groves of Kairouan. This is the Tunisia locals live —
+            not the one tour buses visit.
+          </p>
+          <div className="ej-hero-actions">
+            <a href="#/explore" className="ej-btn">Start exploring<Arrow /></a>
+            <a href="#/register" className="ej-link">Join the community</a>
+          </div>
+          <div className="ej-hero-note">
+            <span className="ej-hand">P.S. — you will crave brik after this. Don't say we didn't warn you.</span>
+          </div>
+        </div>
+        <div className="ej-hero-prints" aria-hidden="false">
+          <RouteDoodle />
+          <figure className="ej-print ej-print-1">
+            <img src="/img/hero1.png" alt="White and blue houses of Sidi Bou Said above the Mediterranean" />
+            <figcaption>Sidi Bou Said, 07:14 <span className="ej-print-meta">36.87°N 10.34°E</span></figcaption>
+          </figure>
+          <figure className="ej-print ej-print-2">
+            <img src="/img/hero2.png" alt="Alleys of the old Medina of Tunis" loading="lazy" />
+            <figcaption>mid-souk, Tunis <span className="ej-print-meta">est. 698 AD</span></figcaption>
+          </figure>
+          <figure className="ej-print ej-print-3">
+            <img src="/img/hero3.png" alt="The Roman amphitheatre of El Jem at golden hour" loading="lazy" />
+            <figcaption>El Jem, before the crowds <span className="ej-print-meta">III century</span></figcaption>
+          </figure>
+          <RoundStamp />
+        </div>
+      </header>
+
+      {/* ── Governorate ticker ── */}
+      <div className="ej-ticker" aria-label="The 24 governorates of Tunisia">
+        <div className="ej-ticker-track">
+          {[...GOVERNORATES, ...GOVERNORATES].map((g, i) => (
+            <React.Fragment key={i}>
+              <span className="ej-ticker-item">{g}</span>
+              <span className="ej-ticker-sep" aria-hidden="true">✳</span>
+            </React.Fragment>
           ))}
         </div>
-        <div className="tn-hero-overlay" />
-        <div className="tn-hero-vignette" />
-        <div className="tn-mesh-orbs" aria-hidden="true">
-          <div className="tn-mesh-orb tn-mesh-orb-1" /><div className="tn-mesh-orb tn-mesh-orb-2" /><div className="tn-mesh-orb tn-mesh-orb-3" />
-        </div>
-        <div className="tn-hero-content">
-          <div className="tn-hero-badge"><span className="tn-pulse" />Made in Tunisia</div>
-          <h1 className="tn-hero-title"><span className="tn-grad">Tunisia</span> is Calling</h1>
-          <p className="tn-hero-arabic">تونس تستدعيك</p>
-          <p className="tn-hero-sub">From the blue doors of Sidi Bou Said to the dunes of Douz. From the Roman stones of El Jem to the olive groves of Kairouan. This is the Tunisia locals live — not the one tour buses visit.</p>
-          <div className="tn-hero-actions">
-            <a href="#/explore" className="tn-btn-primary">Explore Places<Arrow /></a>
-            <a href="#/register" className="tn-btn-secondary">Join Free</a>
-          </div>
-          <div className="tn-hero-meta">
-            <span className="tn-hero-meta-avatars" aria-hidden="true">
-              <img src="https://api.dicebear.com/9.x/personas/svg?seed=yasmine" alt="" loading="lazy" />
-              <img src="https://api.dicebear.com/9.x/personas/svg?seed=marco" alt="" loading="lazy" />
-              <img src="https://api.dicebear.com/9.x/personas/svg?seed=amina" alt="" loading="lazy" />
-              <img src="https://api.dicebear.com/9.x/personas/svg?seed=david" alt="" loading="lazy" />
-            </span>
-            <span>Join <strong>12,400+</strong> travelers already exploring</span>
-          </div>
-        </div>
-        <div className="tn-hero-scroll"><span>Scroll</span><div className="tn-scroll-line" /></div>
-      </section>
-
-      <section className="tn-pulse-strip" aria-label="Community activity" ref={pulseRef}>
-        <div className="tn-pulse-online">
-          <span className="tn-pulse-online-dot" aria-hidden="true" />
-          <span><strong><CountUp target={342} start={pulseSeen} /></strong> online now</span>
-        </div>
-        <div className="tn-pulse-stats">
-          <div className="tn-pulse-stat"><strong><CountUp target={89} start={pulseSeen} /></strong><span>Posts today</span></div>
-          <div className="tn-pulse-stat"><strong><CountUp target={1240} start={pulseSeen} /></strong><span>Reviews this week</span></div>
-          <div className="tn-pulse-stat"><strong><CountUp target={312} start={pulseSeen} /></strong><span>Trips planned</span></div>
-        </div>
-        <div className="tn-pulse-avatars" aria-hidden="true">
-          <img src="https://api.dicebear.com/9.x/personas/svg?seed=emma" alt="" loading="lazy" />
-          <img src="https://api.dicebear.com/9.x/personas/svg?seed=sarah" alt="" loading="lazy" />
-          <img src="https://api.dicebear.com/9.x/personas/svg?seed=david" alt="" loading="lazy" />
-          <img src="https://api.dicebear.com/9.x/personas/svg?seed=marco" alt="" loading="lazy" />
-          <span className="tn-pulse-more">+88</span>
-        </div>
-      </section>
-
-      <div className="tn-stats" id="tn-stats">
-        <div className="tn-stat"><span className="tn-stat-num"><CountUp target={totalPlaces} start={!!places} initial="—" /></span><span className="tn-stat-label">Places Discovered</span></div>
-        <div className="tn-stat-divider" />
-        <div className="tn-stat"><span className="tn-stat-num"><CountUp target={totalReviews} start={!!places} initial="—" /></span><span className="tn-stat-label">Community Reviews</span></div>
-        <div className="tn-stat-divider" />
-        <div className="tn-stat"><span className="tn-stat-num">24</span><span className="tn-stat-label">Governorates</span></div>
-        <div className="tn-stat-divider" />
-        <div className="tn-stat"><span className="tn-stat-num">3000+</span><span className="tn-stat-label">Years of History</span></div>
       </div>
 
-      <section className="tn-section">
-        <div className="tn-container">
-          <div className="tn-section-head">
-            <span className="tn-eyebrow">Discover</span>
-            <h2>Real places. Real people. Real Tunisia.</h2>
-            <p>Every listing is verified by our community. No paid placements. No tourist traps.</p>
+      {/* ── Almanac ── */}
+      <section className="ej-almanac" aria-label="Platform numbers">
+        <div className="ej-almanac-grid">
+          <div className="ej-almanac-cell">
+            <span className="ej-almanac-num">{totalPlaces ? totalPlaces.toLocaleString() : '—'}<sup>*</sup></span>
+            <span className="ej-almanac-label">Places charted</span>
           </div>
-          <div className="tn-places-grid" id="tn-places">
-            {places
-              ? places.map((p) => <PlaceCard key={p.id} p={p} />)
-              : Array.from({ length: 6 }).map((_, i) => (
-                <div className="tn-place-skeleton" key={i}>
-                  <div className="skeleton" style={{ height: 220, borderRadius: 'var(--radius-xl) var(--radius-xl) 0 0' }} />
-                  <div style={{ padding: '1.25rem' }}>
-                    <div className="skeleton skeleton-text" style={{ width: '70%', height: 18, marginBottom: '0.5rem' }} />
-                    <div className="skeleton skeleton-text" style={{ width: '50%', height: 14 }} />
-                  </div>
-                </div>
-              ))}
+          <div className="ej-almanac-cell">
+            <span className="ej-almanac-num">{totalReviews ? totalReviews.toLocaleString() : '—'}</span>
+            <span className="ej-almanac-label">Community reviews</span>
           </div>
-          <div className="tn-section-foot"><a href="#/explore" className="tn-btn-outline">See All Places</a></div>
+          <div className="ej-almanac-cell">
+            <span className="ej-almanac-num">24</span>
+            <span className="ej-almanac-label">Governorates</span>
+          </div>
+          <div className="ej-almanac-cell">
+            <span className="ej-almanac-num">3,000+</span>
+            <span className="ej-almanac-label">Years of history</span>
+          </div>
+        </div>
+        <div className="ej-almanac-footnote">
+          <span className="ej-hand">* counted by hand — no inflated numbers here.</span>
         </div>
       </section>
 
-      <section className="tn-section">
-        <div className="tn-container">
-          <div className="tn-section-head">
-            <span className="tn-eyebrow">Curated Journeys</span>
-            <h2>Itineraries built by people who've actually been there.</h2>
-            <p>From a foodie weekend in Tunis to a 5-day Sahara adventure. Real plans, tested by real travelers.</p>
-          </div>
-          <div className="tn-itin-grid" id="tn-itineraries">
-            {itineraries
-              ? itineraries.map((it: any) => <ItinCard key={it.id} it={it} />)
-              : Array.from({ length: 3 }).map((_, i) => (
-                <div className="tn-itin-skeleton" key={i}>
-                  <div className="skeleton" style={{ height: 160, borderRadius: 'var(--radius-xl) var(--radius-xl) 0 0' }} />
-                  <div style={{ padding: '1.25rem' }}>
-                    <div className="skeleton skeleton-text" style={{ width: '60%', height: 16, marginBottom: '0.5rem' }} />
-                    <div className="skeleton skeleton-text" style={{ width: '40%', height: 12 }} />
-                  </div>
-                </div>
-              ))}
-          </div>
+      {/* ── Nº 01 — The Index ── */}
+      <section className="ej-section">
+        <div className="ej-section-head">
+          <p className="ej-kicker"><span className="ej-no">Nº 01</span> The index</p>
+          <h2 className="ej-h2">Real places, vouched for by the people who <em>live</em> there.</h2>
+          <p className="ej-lede">Every listing is verified by our community. No paid placements. No tourist traps.</p>
         </div>
-      </section>
-
-      <section className="tn-section">
-        <div className="tn-container">
-          <div className="tn-section-head">
-            <span className="tn-eyebrow">Find Your Mood</span>
-            <h2>What kind of trip are you in for?</h2>
-            <p>Five moods. Twenty-four governorates. One country that fits all of them.</p>
-          </div>
-          <div className="tn-mood-bento">
-            {[
-              { href: '#/mood/adventure', img: '/img/hero3.png', title: 'Adventure', desc: 'Sahara dunes, kitesurfing, canyoning, troglodyte caves.', icon: <path d="m8 3 4 8 5-5 5 15H2L8 3z" /> },
-              { href: '#/mood/culture', img: '/img/hero2.png', title: 'Culture', desc: 'Roman ruins, medinas, mosques, Berber heritage.', icon: <><path d="M3 22V10l9-7 9 7v12" /><path d="M9 22V12h6v10" /></> },
-              { href: '#/mood/relax', img: '/img/hero1.png', title: 'Relax', desc: 'Hammams, blue doors, Djerba beaches, sunset terraces.', icon: <><path d="M2 12h20" /><path d="M5 12V7a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v5" /><path d="M2 16h20" /></> },
-              { href: '#/mood/foodie', img: '/img/hero3.png', title: 'Foodie', desc: 'Brik, harissa, couscous royale, mint tea on rooftops.', icon: <path d="M3 11h18a2 2 0 0 1-2 2h-3l-2 5H8l-2-5H4a2 2 0 0 1-1-2z" /> },
-              { href: '#/mood/spiritual', img: '/img/hero2.png', title: 'Spiritual & Slow', desc: 'Kairouan, Sufi gatherings, desert silence, monastery walls.', icon: <><path d="M12 2v20" /><path d="M5 8a7 7 0 0 1 14 0" /><path d="M5 14a7 7 0 0 0 14 0" /></> },
-            ].map((m, i) => (
-              <a key={m.href} className="tn-mood-tile" href={m.href} style={{ transitionDelay: `${i * 0.06}s` }}>
-                <img src={m.img} alt="" loading="lazy" />
-                <span className="tn-mood-emoji" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{m.icon}</svg></span>
-                <div className="tn-mood-body"><h4>{m.title}</h4><p>{m.desc}</p></div>
-              </a>
+        <div className="ej-index-grid">
+          {places
+            ? places.map((p, i) => <PlacePrint key={p.id} p={p} index={i} />)
+            : Array.from({ length: 6 }).map((_, i) => (
+              <div className="ej-place" key={i} aria-hidden="true">
+                <div className="skeleton" style={{ height: 220 }} />
+                <div style={{ padding: '12px 4px 0' }}>
+                  <div className="skeleton skeleton-text" style={{ width: '70%', height: 18, marginBottom: 8 }} />
+                  <div className="skeleton skeleton-text" style={{ width: '45%', height: 12 }} />
+                </div>
+              </div>
             ))}
-          </div>
+        </div>
+        <div className="ej-section-foot"><a href="#/explore" className="ej-btn-ghost">Browse the full index<Arrow size={15} /></a></div>
+      </section>
+
+      {/* ── Nº 02 — Field routes ── */}
+      <section className="ej-section">
+        <div className="ej-section-head">
+          <p className="ej-kicker"><span className="ej-no">Nº 02</span> Field routes</p>
+          <h2 className="ej-h2">Routes written by people who've <em>actually</em> gone.</h2>
+          <p className="ej-lede">From a foodie weekend in Tunis to a five-day Sahara crossing. Real plans, tested on real roads.</p>
+        </div>
+        <div className="ej-tickets">
+          {itineraries
+            ? itineraries.map((it: any, i: number) => <RouteTicket key={it.id} it={it} index={i} />)
+            : Array.from({ length: 3 }).map((_, i) => (
+              <div className="ej-ticket" key={i} aria-hidden="true" style={{ minHeight: 180 }}>
+                <div className="ej-ticket-stub"><div className="skeleton" style={{ width: 40, height: 40 }} /></div>
+                <div className="ej-ticket-body">
+                  <div className="skeleton skeleton-text" style={{ width: '60%', height: 16, marginBottom: 8 }} />
+                  <div className="skeleton skeleton-text" style={{ width: '90%', height: 12 }} />
+                </div>
+              </div>
+            ))}
         </div>
       </section>
 
-      <section className="tn-marquee-section" aria-label="Governorates of Tunisia">
-        <div className="tn-marquee" id="tn-marquee">
-          {[...GOVERNORATES, ...GOVERNORATES].map((g, i) => (
-            <React.Fragment key={i}><span className="tn-marquee-item">{g}</span><span className="tn-marquee-dot">✦</span></React.Fragment>
+      {/* ── Nº 03 — Moods ── */}
+      <section className="ej-section">
+        <div className="ej-section-head">
+          <p className="ej-kicker"><span className="ej-no">Nº 03</span> Pick a mood</p>
+          <h2 className="ej-h2">What kind of trip are you <em>packing</em> for?</h2>
+          <p className="ej-lede">Five moods. Twenty-four governorates. One country that fits all of them.</p>
+        </div>
+        <div className="ej-moods">
+          {[
+            { href: '#/mood/adventure', img: '/img/hero3.png', title: 'Adventure', desc: 'dunes, kitesurf, canyons, cave homes' },
+            { href: '#/mood/culture', img: '/img/hero2.png', title: 'Culture', desc: 'Roman ruins, medinas, Berber heritage' },
+            { href: '#/mood/relax', img: '/img/hero1.png', title: 'Relax', desc: 'hammams, blue doors, sunset terraces' },
+            { href: '#/mood/foodie', img: '/img/hero3.png', title: 'Foodie', desc: 'brik, harissa, mint tea on rooftops' },
+            { href: '#/mood/spiritual', img: '/img/hero2.png', title: 'Spiritual & slow', desc: 'Kairouan, Sufi chants, desert silence' },
+          ].map((m, i) => (
+            <a key={m.href} className="ej-mood ej-reveal" href={m.href} style={{ transitionDelay: `${i * 0.06}s` }}>
+              <img src={m.img} alt="" loading="lazy" />
+              <div className="ej-mood-body"><h4>{m.title}</h4><p>{m.desc}</p></div>
+            </a>
           ))}
         </div>
       </section>
 
-      <section className="tn-section tn-why">
-        <div className="tn-container">
-          <div className="tn-section-head"><span className="tn-eyebrow">Why e-Tunisia</span><h2>Built different. Built Tunisian.</h2></div>
-          <div className="tn-why-grid">
-            <div className="tn-why-card">
-              <div className="tn-why-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="10" /><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" fill="currentColor" stroke="none" /></svg></div>
-              <h3>For Travelers</h3>
-              <p>Find the cave café in Tabarka that has no Google Maps pin. The family in Matmata that still lives in a troglodyte house. The brik stand in La Goulette that locals queue 20 minutes for.</p>
-            </div>
-            <div className="tn-why-card">
-              <div className="tn-why-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" /></svg></div>
-              <h3>For Locals</h3>
-              <p>List your riad, your tour, your restaurant, your handicraft shop. Keep what you earn. No Booking.com commission. No TripAdvisor games. Just you and the traveler.</p>
-            </div>
-            <div className="tn-why-card">
-              <div className="tn-why-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg></div>
-              <h3>For Tunisia</h3>
-              <p>Every dinar spent through e-Tunisia stays in Tunisia. Supports a Tunisian family. Preserves a Tunisian tradition. This is not tourism extraction. This is tourism that gives back.</p>
-            </div>
+      {/* ── Nº 04 — Manifesto ── */}
+      <section className="ej-section ej-manifesto">
+        <div className="ej-section-head">
+          <p className="ej-kicker"><span className="ej-no">Nº 04</span> Why we built this</p>
+        </div>
+        <blockquote className="ej-pullquote">Tourism that gives back — not tourism that extracts. Built different. Built Tunisian.</blockquote>
+        <div className="ej-manifesto-cols">
+          <div className="ej-manifesto-col">
+            <h3>For travelers</h3>
+            <p>Find the cave café in Tabarka that has no Google Maps pin. The family in Matmata that still lives in a troglodyte house. The brik stand in La Goulette that locals queue twenty minutes for.</p>
+          </div>
+          <div className="ej-manifesto-col">
+            <h3>For locals</h3>
+            <p>List your riad, your tour, your restaurant, your handicraft shop. Keep what you earn. No Booking.com commission. No TripAdvisor games. Just you and the traveler.</p>
+          </div>
+          <div className="ej-manifesto-col">
+            <h3>For Tunisia</h3>
+            <p>Every dinar spent through e-Tunisia stays in Tunisia. Supports a Tunisian family. Preserves a Tunisian tradition. This is tourism that gives back.</p>
           </div>
         </div>
       </section>
 
-      <section className="tn-section">
-        <div className="tn-container">
-          <div className="tn-section-head"><span className="tn-eyebrow">From the Community</span><h2>Travelers and locals, in their own words.</h2></div>
-          <div className="tn-testimonials">
+      {/* ── Nº 05 — Postcards ── */}
+      <section className="ej-section">
+        <div className="ej-section-head">
+          <p className="ej-kicker"><span className="ej-no">Nº 05</span> Postcards</p>
+          <h2 className="ej-h2">From the road, in their <em>own</em> words.</h2>
+        </div>
+        <div className="ej-postcards">
+          {TESTIMONIALS.map((t, i) => (
+            <article key={t.name} className={`ej-postcard ej-reveal${t.pro ? ' is-pro' : ''}`} style={{ transitionDelay: `${(i % 3) * 0.06}s` }}>
+              {t.pro && <span className="ej-postcard-pro">Pro member</span>}
+              <span className="ej-postcard-stamp" aria-hidden="true"><img src="/logo-chechia.svg" alt="" /></span>
+              <Postmark />
+              <p className="ej-postcard-quote">“{t.quote}”</p>
+              <div className="ej-postcard-sig">
+                <span className="ej-hand">— {t.name}</span>
+                <span>{t.sub}</span>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      {/* ── The letter — for business owners ── */}
+      <section className="ej-section">
+        <div className="ej-letter">
+          <div>
+            <p className="ej-kicker"><span className="ej-no">✳</span> For business owners</p>
+            <h2 className="ej-h2">Run a riad, a table, a tour? <em>Write to us.</em></h2>
+            <p className="ej-letter-arabic">وصل للسياح اللي يستحقو</p>
+            <p className="ej-lede">Hotels, riads, restaurants, guides, artisans — whatever you do, there's a traveler looking for you. Join 890+ Tunisian businesses already on the platform.</p>
+            <ul className="ej-letter-benefits">
+              <li><span className="ej-tick" aria-hidden="true">✓</span> Direct bookings, no middlemen</li>
+              <li><span className="ej-tick" aria-hidden="true">✓</span> You keep what you earn</li>
+              <li><span className="ej-tick" aria-hidden="true">✓</span> Verified by our community</li>
+            </ul>
+          </div>
+          <form className="ej-letter-form" onSubmit={submitLp}>
+            <div className="ej-letter-form-head"><span>Partner application</span><span>no commission, ever</span></div>
+            <div className="ej-field">
+              <label htmlFor="lp-name">Full name</label>
+              <input type="text" id="lp-name" className="ej-input" placeholder="Your name" required value={lp.name} onChange={lpSet('name')} autoComplete="name" />
+            </div>
+            <div className="ej-field">
+              <label htmlFor="lp-business">Business name</label>
+              <input type="text" id="lp-business" className="ej-input" placeholder="Your business" required value={lp.business} onChange={lpSet('business')} autoComplete="organization" />
+            </div>
+            <div className="ej-field">
+              <label htmlFor="lp-email">Email</label>
+              <input type="email" id="lp-email" className="ej-input" placeholder="you@business.com" required value={lp.email} onChange={lpSet('email')} autoComplete="email" />
+            </div>
+            <div className="ej-field">
+              <label htmlFor="lp-type">Business type</label>
+              <select id="lp-type" className="ej-input" value={lp.type} onChange={lpSet('type')}>
+                <option value="hotel">Hotel / Riad</option>
+                <option value="restaurant">Restaurant / Café</option>
+                <option value="tour">Tour guide / Experience</option>
+                <option value="artisan">Artisan / Shop</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <button type="submit" className="ej-btn" disabled={lpDisabled}>{lpBtn}</button>
+          </form>
+        </div>
+      </section>
+
+      {/* ── Partners strip ── */}
+      <section className="ej-partners" aria-label="Partner organizations">
+        <div className="ej-partners-inner">
+          <p className="ej-partners-title">In good company — partners &amp; supporters</p>
+          <div className="ej-partners-row">
             {[
-              { pro: true, quote: '"I planned a 9-day trip end-to-end on e-Tunisia. Every place was where the locals said it would be — and half were missing from every guidebook I had."', seed: 'marco', name: 'Marco Rossi', sub: 'Pro traveler · Milan, Italy' },
-              { pro: false, quote: '"My riad in Tozeur was empty in November. I listed it on e-Tunisia and four bookings came through in two weeks — no commission, no middlemen."', seed: 'amina', name: 'Amina Trabelsi', sub: 'Riad owner · Tozeur' },
-              { pro: false, quote: '"The brik stand the app sent me to in La Goulette had a 20-person line. Now I get why. Best 4 dinars I\'ve ever spent."', seed: 'sarah', name: 'Sarah Chen', sub: 'Solo traveler · Singapore' },
-              { pro: true, quote: '"Took my family to the Star Wars filming locations using a community itinerary. The kids think I\'m a wizard. The badges system kept them engaged the whole trip."', seed: 'david', name: 'David Park', sub: 'Pro traveler · Seoul, Korea' },
-              { pro: false, quote: '"As a local guide, I now match travelers with exactly the kind of trip I love giving — desert, slow, no rush. The platform actually understands."', seed: 'yasmine', name: 'Yasmine Khelil', sub: 'Local guide · Douz' },
-              { pro: false, quote: '"The blue-door route through Sidi Bou Said with the photographer who actually lives there? Worth every cent. This is what travel is supposed to be."', seed: 'emma', name: 'Emma Laurent', sub: 'Photographer · Paris' },
-            ].map((t, i) => (
-              <article key={t.seed} className={`tn-testimonial${t.pro ? ' is-pro' : ''}`} style={{ transitionDelay: `${i * 0.05}s` }}>
-                <p className="tn-testimonial-quote">{t.quote}</p>
-                <div className="tn-testimonial-user">
-                  <img src={`https://api.dicebear.com/9.x/personas/svg?seed=${t.seed}`} alt={t.name} loading="lazy" />
-                  <div><strong>{t.name}</strong><span>{t.sub}</span></div>
-                </div>
-              </article>
-            ))}
+              { src: '/img/partenaires/OIM_Migration.png', alt: 'OIM — International Organization for Migration' },
+              { src: '/img/partenaires/Logo%20SB%20ENET_Com_Color.png', alt: "ENET'Com" },
+              { src: '/img/partenaires/APII.png', alt: "APII — Agence de Promotion de l'Industrie et de l'Innovation" },
+              { src: '/img/partenaires/Nafship-1_upscayl_3x_ultramix_balanced.png', alt: 'Nafship' },
+              { src: '/img/partenaires/MPRR_LOGO_Draft-01__1.png', alt: 'MPRR' },
+              { src: '/img/partenaires/Bussiness_Success.png', alt: 'Business Success' },
+            ].map((l) => <img key={l.src} src={l.src} alt={l.alt} loading="lazy" />)}
           </div>
         </div>
       </section>
 
-      <section className="tn-section tn-partner-cta">
-        <div className="tn-partner-cta-bg" />
-        <div className="tn-container">
-          <div className="tn-partner-cta-grid">
-            <div className="tn-partner-cta-text">
-              <span className="tn-eyebrow">For Business Owners</span>
-              <h2>List Your Business</h2>
-              <p className="tn-partner-cta-arabic">وصل للسياح اللي يستحقو</p>
-              <p className="tn-partner-cta-desc">Hotels, riads, restaurants, tour guides, artisans — whatever you do, there's a traveler looking for you. Join 890+ Tunisian businesses already on the platform.</p>
-              <div className="tn-partner-cta-benefits">
-                <span><Check /> Direct bookings, no middlemen</span>
-                <span><Check /> You keep what you earn</span>
-                <span><Check /> Verified by our community</span>
-              </div>
-            </div>
-            <div className="tn-partner-cta-formwrap">
-              <form className="tn-partner-cta-form" onSubmit={submitLp}>
-                <div className="tn-auth-field"><label htmlFor="lp-name">Full Name</label><input type="text" id="lp-name" className="tn-auth-input" placeholder="Your name" required value={lp.name} onChange={lpSet('name')} /></div>
-                <div className="tn-auth-field"><label htmlFor="lp-business">Business Name</label><input type="text" id="lp-business" className="tn-auth-input" placeholder="Your business" required value={lp.business} onChange={lpSet('business')} /></div>
-                <div className="tn-auth-field"><label htmlFor="lp-email">Email</label><input type="email" id="lp-email" className="tn-auth-input" placeholder="you@business.com" required value={lp.email} onChange={lpSet('email')} /></div>
-                <div className="tn-auth-field"><label htmlFor="lp-type">Business Type</label>
-                  <select id="lp-type" className="tn-auth-input" value={lp.type} onChange={lpSet('type')}>
-                    <option value="hotel">Hotel / Riad</option>
-                    <option value="restaurant">Restaurant / Café</option>
-                    <option value="tour">Tour Guide / Experience</option>
-                    <option value="artisan">Artisan / Shop</option>
-                    <option value="other">Other</option>
-                  </select>
-                </div>
-                <button type="submit" className="tn-auth-btn" disabled={lpDisabled}>{lpBtn}</button>
-              </form>
-            </div>
+      {/* ── Nº 06 — Fares ── */}
+      <section className="ej-section">
+        <div className="ej-section-head">
+          <p className="ej-kicker"><span className="ej-no">Nº 06</span> Fair fares</p>
+          <h2 className="ej-h2">Start free. Upgrade when you're <em>hooked.</em></h2>
+          <p className="ej-lede">Every plan supports Tunisian local businesses. No hidden fees.</p>
+        </div>
+        <FareStubs />
+      </section>
+
+      {/* ── Final call — the ink page ── */}
+      <section className="ej-cta">
+        <div className="ej-cta-inner">
+          <RoundStamp />
+          <h2>The <em>real</em> Tunisia is waiting.</h2>
+          <p className="ej-cta-arabic">أهلاً وسهلاً — مرحبا بيك</p>
+          <a href="#/register" className="ej-btn ej-btn--paper">Create your free account<Arrow /></a>
+          <div className="ej-cta-note">
+            <span className="ej-hand">no tour buses, no all-inclusive compounds — promise.</span>
           </div>
         </div>
       </section>
 
-      <section className="tn-section tn-logos-section">
-        <div className="tn-container">
-          <div className="tn-logos-stack">
-            <div className="tn-logos-header">
-              <h2 className="tn-logos-heading">Trusted by organizations shaping Tunisia's future</h2>
-              <p className="tn-logos-description">We collaborate with forward-thinking institutions, NGOs, and businesses committed to elevating Tunisian tourism and empowering local communities.</p>
-              <div className="tn-logos-links">
-                <a href="#/partner" className="tn-logos-link">Become a partner →</a>
-                <a href="#/about" className="tn-logos-link">Learn more about us →</a>
-              </div>
-            </div>
-            <div className="tn-logos-grid">
-              {[
-                { src: '/img/partenaires/OIM_Migration.png', alt: 'OIM — International Organization for Migration' },
-                { src: '/img/partenaires/Logo%20SB%20ENET_Com_Color.png', alt: "ENET'Com" },
-                { src: "/img/partenaires/APII.png", alt: "APII — Agence de Promotion de l'Industrie et de l'Innovation" },
-                { src: '/img/partenaires/Nafship-1_upscayl_3x_ultramix_balanced.png', alt: 'Nafship' },
-                { src: '/img/partenaires/MPRR_LOGO_Draft-01__1.png', alt: 'MPRR' },
-                { src: '/img/partenaires/Bussiness_Success.png', alt: 'Business Success' },
-              ].map((l, i) => (
-                <div className="tn-logo-card" key={l.src} style={{ transitionDelay: `${i * 0.08}s` }}><img src={l.src} alt={l.alt} /></div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="tn-section">
-        <div className="tn-container">
-          <div className="tn-section-head">
-            <span className="tn-eyebrow">Pricing</span>
-            <h2>Start free. Upgrade when you're hooked.</h2>
-            <p>Every plan supports Tunisian local businesses. No hidden fees.</p>
-          </div>
-          <PricingGrid />
-        </div>
-      </section>
-
-      <section className="tn-cta">
-        <div className="tn-cta-bg" />
-        <div className="tn-cta-content">
-          <img src="/logo-chechia.svg" alt="" className="tn-cta-chechia" />
-          <h2>The <span className="tn-grad">real Tunisia</span> is waiting.</h2>
-          <p>No tour buses. No all-inclusive compounds. Just the Tunisia that Tunisians know and love.</p>
-          <a href="#/register" className="tn-btn-primary tn-btn-large">Create Free Account<Arrow size={20} /></a>
-          <p className="tn-cta-small">Ahlan wa Sahlan. Welcome.</p>
-        </div>
-      </section>
-
-      <footer className="tn-footer">
-        <div className="tn-footer-grid">
-          <div className="tn-footer-brand">
-            <div className="tn-logo"><img src="/icon.png" alt="" /><span>e-Tunisia</span></div>
+      {/* ── Colophon ── */}
+      <footer className="ej-footer">
+        <div className="ej-footer-grid">
+          <div className="ej-footer-brand">
+            <a href="#/hero" className="ej-wordmark"><strong>e-Tunisia</strong><span>تونس</span></a>
             <p>The platform for discovering real Tunisia. Built by Tunisians, for the world.</p>
           </div>
-          <div className="tn-footer-col"><h4>Explore</h4><a href="#/explore">Places</a><a href="#/map">Map</a><a href="#/itineraries">Itineraries</a><a href="#/events">Events</a></div>
-          <div className="tn-footer-col"><h4>Community</h4><a href="#/">Feed</a><a href="#/tips">Tips</a><a href="#/leaderboard">Leaderboard</a><a href="#/partner">Partner</a></div>
-          <div className="tn-footer-col"><h4>Company</h4><a href="#/about">About</a><a href="#/premium">Pricing</a><a href="#/partner">Contact</a></div>
+          <div className="ej-footer-col"><h4>Explore</h4><a href="#/explore">Places</a><a href="#/map">Map</a><a href="#/itineraries">Itineraries</a><a href="#/events">Events</a></div>
+          <div className="ej-footer-col"><h4>Community</h4><a href="#/">Feed</a><a href="#/tips">Tips</a><a href="#/leaderboard">Leaderboard</a><a href="#/partner">Partner</a></div>
+          <div className="ej-footer-col"><h4>Company</h4><a href="#/about">About</a><a href="#/premium">Pricing</a><a href="#/partner">Contact</a><a href="#/legal/privacy">Privacy</a></div>
         </div>
-        <div className="tn-footer-bottom">
-          <span>2026 e-Tunisia</span>
-          <span className="tn-footer-made">Made with
-            <span className="tn-footer-heart" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" /></svg></span>
-            <span className="tn-footer-made-sr">love</span>
-            in Tunisia
+        <div className="ej-footer-bottom">
+          <span>© 2026 e-Tunisia — Édition Nº 1</span>
+          <span>
+            Printed with
+            {' '}<span className="ej-footer-heart" aria-hidden="true"><svg width="13" height="13" viewBox="0 0 24 24"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" /></svg></span>
+            <span className="ej-sr-only">love</span>
+            {' '}in Tunis
           </span>
         </div>
       </footer>

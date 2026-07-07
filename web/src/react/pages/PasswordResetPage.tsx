@@ -1,3 +1,4 @@
+import '../../styles/auth.css';
 import React, { useState } from 'react';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import * as api from '../../api';

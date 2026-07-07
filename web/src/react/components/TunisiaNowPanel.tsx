@@ -2,8 +2,17 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api, getImageUrl } from '../../shared/api';
 import { TOPIC_BY_ID } from './endorsement-topics';
-import { Activity, Flame, Users, Sparkles } from 'lucide-react';
+import { Activity, Flame, Users, Sparkles, MapPin } from 'lucide-react';
 import { TierBadge } from './TierBadge';
+
+/** Thumb that degrades to the lettered/icon fallback instead of the browser's
+    broken-image glyph when the asset 404s — dead thumbs kill the rail's polish. */
+function RowThumb({ src, fallback }: { src?: string | null; fallback: React.ReactNode }) {
+    const [err, setErr] = useState(false);
+    useEffect(() => { setErr(false); }, [src]);
+    if (!src || err) return <span className="now-row-fallback">{fallback}</span>;
+    return <img src={getImageUrl(src)} alt="" loading="lazy" onError={() => setErr(true)} />;
+}
 
 /**
  * The single right-rail widget for the home feed. Instead of a stack of
@@ -65,9 +74,7 @@ function LiveTab() {
                 return (
                     <li key={i} className="now-row">
                         <a href={href}>
-                            {e.actor?.avatar
-                                ? <img src={getImageUrl(e.actor.avatar)} alt="" loading="lazy" />
-                                : <span className="now-row-fallback">{(s.who || '?').slice(0, 1).toUpperCase()}</span>}
+                            <RowThumb src={e.actor?.avatar} fallback={(s.who || '?').slice(0, 1).toUpperCase()} />
                             <div className="now-row-text">
                                 <strong>{s.who}</strong>
                                 <span><em>{s.verb}</em> {s.what}</span>
@@ -102,9 +109,7 @@ function TrendingTab() {
             {places.slice(0, 5).map((p, i) => (
                 <li key={p.id || i} className="now-row">
                     <a href={`#/place/${p.id}`}>
-                        {p.coverImage || (p.images && p.images[0])
-                            ? <img src={getImageUrl(p.coverImage || p.images[0])} alt="" loading="lazy" />
-                            : <span className="now-row-fallback">📍</span>}
+                        <RowThumb src={p.coverImage || (p.images && p.images[0])} fallback={<MapPin size={14} />} />
                         <div className="now-row-text">
                             <strong>{p.name}</strong>
                             <span>{p.city || ''}{p.rating ? ` · ★ ${Number(p.rating).toFixed(1)}` : ''}</span>
@@ -140,9 +145,7 @@ function PeopleTab() {
                 return (
                     <li key={u.id || i} className="now-row">
                         <a href={href}>
-                            {u.avatar
-                                ? <img src={getImageUrl(u.avatar)} alt="" loading="lazy" />
-                                : <span className="now-row-fallback">{(u.fullName || '?').slice(0, 1).toUpperCase()}</span>}
+                            <RowThumb src={u.avatar} fallback={(u.fullName || '?').slice(0, 1).toUpperCase()} />
                             <div className="now-row-text">
                                 <strong>{u.fullName}<TierBadge plan={u.plan} role={u.role} size="xs" /></strong>
                                 <span>{u.handle ? `@${u.handle}` : (u.country || '')}</span>

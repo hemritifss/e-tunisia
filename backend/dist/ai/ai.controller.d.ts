@@ -10,7 +10,7 @@ export declare class AIController {
         startLocation?: string;
         travelStyle?: string;
     }): Promise<import("./ai.service").AIItinerary>;
-    chatPlanner(userId: string | null, req: any, { messages }: {
+    chatPlanner(user: any, req: any, { messages }: {
         messages: Array<{
             role: 'user' | 'assistant';
             content: string;

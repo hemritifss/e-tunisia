@@ -711,3 +711,16 @@
 .map-traveler-link:hover {
   text-decoration: underline;
 }
+
+/* Loading chip while the real catalog streams in */
+.map-loading-chip {
+    position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%);
+    z-index: 500;
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 7px 14px; border-radius: 999px;
+    background: var(--surface-elevated);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    font-size: 0.82rem; font-weight: 500;
+    box-shadow: var(--shadow-md);
+}

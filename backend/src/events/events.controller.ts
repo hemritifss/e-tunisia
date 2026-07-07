@@ -10,8 +10,8 @@ export class EventsController {
 
     @Get()
     @ApiOperation({ summary: 'Get all events' })
-    findAll(@Query('category') category?: string) {
-        return this.eventsService.findAll(category);
+    findAll(@Query('category') category?: string, @Query('city') city?: string) {
+        return this.eventsService.findAll(category, city);
     }
 
     @Get('upcoming')

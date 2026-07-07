@@ -3,7 +3,7 @@
    Next-gen OKLCH + Neon + Glass + Motion system
    ============================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Kufi+Arabic:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Kufi+Arabic:wght@300;400;500;600;700&family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Caveat:wght@400;500;600;700&display=swap');
 
 :root {
   /* ── Brand Colors (OKLCH perceptual) ── */
@@ -96,6 +96,22 @@
   --tn-ochre:           var(--gold);
   --tn-gold:            var(--gold);
 
+  /* ── Editorial paper & ink (carnet-de-voyage surfaces) ── */
+  --paper:              oklch(96.8% 0.013 85);   /* warm cream page */
+  --paper-warm:         oklch(94.2% 0.022 82);   /* aged card stock */
+  --paper-print:        oklch(99% 0.004 85);     /* white photo matte */
+  --paper-deep:         oklch(22% 0.028 50);     /* ink-dipped sections */
+  --ink:                oklch(23% 0.022 55);     /* body ink */
+  --ink-soft:           oklch(38% 0.018 55);
+  --ink-faint:          oklch(50% 0.015 58);
+  --ink-on-deep:        oklch(93.5% 0.018 85);
+  --rule:               oklch(23% 0.022 55 / 0.16);  /* hairline rules */
+  --rule-strong:        oklch(23% 0.022 55 / 0.52);
+  --tape:               oklch(86% 0.055 85 / 0.55);  /* masking tape */
+  --stamp-ink:          oklch(50% 0.15 30);          /* rubber-stamp red */
+  --paper-shadow:       0 1px 2px oklch(28% 0.03 55 / 0.1), 0 10px 26px -10px oklch(28% 0.03 55 / 0.22);
+  --paper-shadow-lift:  0 2px 4px oklch(28% 0.03 55 / 0.1), 0 22px 44px -14px oklch(28% 0.03 55 / 0.3);
+
   /* ── Semantic ── */
   --success:            oklch(57% 0.15 155);
   --success-light:      oklch(93% 0.03 155);
@@ -116,6 +132,9 @@
   --font-display:       'Outfit', 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
   --font-sans:          'Inter', 'Noto Kufi Arabic', system-ui, -apple-system, sans-serif;
   --font-mono:          'JetBrains Mono', 'Fira Code', monospace;
+  /* Editorial layer — marketing/storytelling surfaces (landing, campaigns) */
+  --font-editorial:     'Fraunces', 'Georgia', 'Times New Roman', serif;
+  --font-hand:          'Caveat', 'Bradley Hand', 'Segoe Script', cursive;
 
   --text-xs:            0.6875rem;
   --text-sm:            0.8125rem;
@@ -250,6 +269,22 @@
   --neon-blue:          0 0 20px oklch(68% 0.2 240 / 0.7), 0 0 50px oklch(68% 0.2 240 / 0.4);
   --neon-gold:          0 0 20px oklch(82% 0.2 80 / 0.7), 0 0 50px oklch(82% 0.2 80 / 0.4);
   --neon-violet:        0 0 20px oklch(68% 0.24 290 / 0.7), 0 0 50px oklch(68% 0.24 290 / 0.4);
+
+  /* Editorial paper & ink — night edition */
+  --paper:              oklch(14.5% 0.012 60);
+  --paper-warm:         oklch(18% 0.016 65);
+  --paper-print:        oklch(21% 0.014 70);
+  --paper-deep:         oklch(10.5% 0.014 55);
+  --ink:                oklch(90% 0.015 85);
+  --ink-soft:           oklch(72% 0.012 82);
+  --ink-faint:          oklch(57% 0.01 80);
+  --ink-on-deep:        oklch(92% 0.016 85);
+  --rule:               oklch(90% 0.015 85 / 0.14);
+  --rule-strong:        oklch(90% 0.015 85 / 0.45);
+  --tape:               oklch(42% 0.04 80 / 0.55);
+  --stamp-ink:          oklch(66% 0.16 30);
+  --paper-shadow:       0 1px 2px oklch(0% 0 0 / 0.45), 0 12px 28px -10px oklch(0% 0 0 / 0.55);
+  --paper-shadow-lift:  0 2px 4px oklch(0% 0 0 / 0.45), 0 24px 48px -14px oklch(0% 0 0 / 0.65);
 }
 
 /* ── RTL ── */

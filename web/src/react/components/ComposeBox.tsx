@@ -1,6 +1,7 @@
 import React from 'react';
 import { Image as ImageIcon, MapPin, Smile, Sparkles } from 'lucide-react';
 import { Avatar } from './Avatar';
+import { useT } from '../../i18n/useT';
 
 interface Props {
   user: { fullName?: string; avatar?: string | null; handle?: string | null } | null;
@@ -14,9 +15,12 @@ interface Props {
  * 'etunisia:open-post-modal' event so the modal handles the actual form.
  */
 export function ComposeBox({ user }: Props) {
+  const t = useT();
   const open = (detail?: any) =>
     document.dispatchEvent(new CustomEvent('etunisia:open-post-modal', { detail }));
-  const firstName = (user?.fullName || 'there').split(' ')[0];
+  // Only personalize when we actually know the name — "What's on your mind, there?"
+  // with a bold fallback reads broken while the profile is still hydrating.
+  const firstName = user?.fullName?.trim() ? user.fullName.trim().split(' ')[0] : null;
 
   return (
     <section className="compose-v2" aria-label="Create a post">
@@ -29,9 +33,15 @@ export function ComposeBox({ user }: Props) {
           <Avatar src={user?.avatar || undefined} fallback={user?.fullName} size="md" />
         </a>
         <button className="compose-v2-trigger" onClick={() => open()}>
-          <span>What's on your mind, </span>
-          <strong>{firstName}</strong>
-          <span>?</span>
+          {firstName ? (
+            <>
+              <span>{t('compose.prompt')}, </span>
+              <strong>{firstName}</strong>
+              <span>?</span>
+            </>
+          ) : (
+            <span>{t('compose.prompt')}?</span>
+          )}
           <Sparkles size={14} className="compose-v2-sparkle" />
         </button>
       </div>
@@ -42,21 +52,21 @@ export function ComposeBox({ user }: Props) {
           onClick={() => open({ focusPhotos: true })}
         >
           <ImageIcon size={16} />
-          <span>Photo</span>
+          <span>{t('compose.photo')}</span>
         </button>
         <button
           className="compose-v2-chip compose-v2-chip-location"
           onClick={() => open({ focusLocation: true })}
         >
           <MapPin size={16} />
-          <span>Check in</span>
+          <span>{t('compose.checkin')}</span>
         </button>
         <button
           className="compose-v2-chip compose-v2-chip-mood"
           onClick={() => open({ focusFeeling: true })}
         >
           <Smile size={16} />
-          <span>Feeling</span>
+          <span>{t('compose.feeling')}</span>
         </button>
       </div>
     </section>

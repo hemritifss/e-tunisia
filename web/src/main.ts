@@ -7,6 +7,10 @@ import React from 'react';
 import { mountIsland, unmountAllIslands } from './react/lib/islands';
 import { showToast } from './ui-utils';
 import { goTo, replace, currentRoute, onRouteChange, normalizeLegacyHash, beforeLeave, restoreScroll } from './router';
+import { useAuthStore } from './react/stores/auth-store';
+import { initAnalytics } from './analytics';
+import { initI18n } from './i18n';
+import { initCityFilter } from './city-filter';
 
 function esc(v: unknown): string {
   const s = String(v ?? '');
@@ -447,6 +451,30 @@ async function hydrateCurrentUser() {
       ? apiService.getImageUrl(avatarPath, 'avatar')
       : `https://api.dicebear.com/9.x/thumbs/svg?seed=${encodeURIComponent(seed)}`;
     const level = me.level != null ? `Level ${me.level} Explorer` : (me.role === 'admin' ? 'Admin' : 'Explorer');
+
+    // Keep the React islands' auth store in sync. WelcomeStrip, ComposeBox and
+    // friends read the user from it — with a token-only session (legacy login,
+    // partially cleared storage) they'd otherwise render as anonymous: marketing
+    // hero for a logged-in user, "What's on your mind, there?", "?" avatar.
+    try {
+      const store = useAuthStore.getState();
+      if (!store.token) store.setToken(localStorage.getItem('etunisia_token'));
+      if (!store.user || (store.user as any).id !== me.id) {
+        store.setUser({
+          id: me.id,
+          fullName: name,
+          email: me.email || '',
+          avatar: avatarPath || undefined,
+          role: me.role || 'user',
+          plan: me.plan || 'free',
+          points: me.points ?? 0,
+          level: me.level ?? 1,
+          favoriteIds: me.favoriteIds || [],
+          visitedPlaceIds: me.visitedPlaceIds || [],
+          ...(me.handle ? { handle: me.handle } : {}),
+        } as any);
+      }
+    } catch { /* store sync is best-effort */ }
 
     document.querySelectorAll<HTMLElement>('[data-user-name]').forEach(el => { el.textContent = name; });
     document.querySelectorAll<HTMLElement>('[data-user-level]').forEach(el => { el.textContent = level; });
@@ -1445,6 +1473,8 @@ function init() {
   normalizeLegacyHash();
 
   initTheme();
+  initI18n(); // before first paint of chrome — stamps <html lang/dir>, translates [data-i18n]
+  initCityFilter(); // global city pill in the navbar
   initToasts();
   initSearch();
   initNotifications();
@@ -1484,6 +1514,8 @@ function init() {
   mountMessengerGlobals();
   // Wire interactive popups (tip celebration, first-run tutorial, daily nudge)
   initPopupTriggers();
+  // First-party product analytics (session_start, post_create, + call sites)
+  initAnalytics();
 
   onRouteChange(navigate);
   navigate();

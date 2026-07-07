@@ -1,92 +1,80 @@
-# Landing page (`#/hero`)
+# Landing page (`#/hero`) — "Carnet de Voyage" editorial edition
 
-> Page-level overrides to `design-system/MASTER.md` for the unauthenticated landing experience. Anything not listed here inherits from MASTER.
+> Page-level overrides to `design-system/MASTER.md` for the unauthenticated landing.
+> Anything not listed here inherits from MASTER.
+> **Supersedes the previous Cinematic/Aurora landing spec** (mesh orbs, particles, pulse strip,
+> gradient headlines) — that layer read as machine-generated and was retired from this page.
+> The legacy `.tn-landing` system is **still used by Partner/About** (`partner-v3`, `about-v3`) — keep it.
 
 ## Style layer (deviation)
 
-This page uses **MASTER §2b — Cinematic / Aurora Mesh** as its base layer (dark mesh-gradient background, atmospheric glow), not Nature Distilled. The reason: a landing page is brand-statement chrome, not a content surface. Nature Distilled is reserved for feed/explore/passport where dense content needs quiet surfaces. Below the fold, individual sections (Discover, Itineraries, Why, Testimonials, Pricing) drop back to Nature-Distilled cards on the standard `--bg-secondary` background — the cinematic treatment is the hero alone.
+**Editorial travel journal** — hand-assembled, print-inspired (Editorial Grid/Magazine × Nature
+Distilled, validated via ui-ux-pro-max). Warm paper surfaces, ink typography, photos treated as
+pasted prints, travel ephemera (stamps, tickets, postcards) as the component language.
 
-## Section order
+- **Surfaces:** paper/ink tokens in `tokens.css` — `--paper`, `--paper-warm`, `--paper-print`,
+  `--paper-deep` (ink sections), `--ink`, `--ink-soft`, `--ink-faint`, `--ink-on-deep`,
+  `--rule`, `--rule-strong` (hairlines), `--tape`, `--stamp-ink`, `--paper-shadow(-lift)`.
+  Both themes defined; dark mode is a "night edition", not an inversion.
+- **Film grain** overlay on the page root (inline SVG turbulence, ~5% multiply light / 3.5% screen dark).
+  Don't remove — it's what kills the flat digital look.
+- **Typography:** `--font-editorial` (Fraunces; optical sizing on; weights 420–640; italic accents
+  in terracotta) for display · `--font-mono` (uppercase, letter-spaced) for kickers "Nº 0X", captions,
+  data · `--font-hand` (Caveat) for margin notes, photo captions, signatures, footnotes · Inter body.
+  Arabic (Noto Kufi) is a first-class design element: hero watermark, stamp center, section accents.
+- **Buttons:** letterpress — solid fill, 1.5px ink border, hard offset shadow `3px 3px 0 var(--ink)`,
+  hover lifts (−2px, bigger shadow), press sinks. No glow, no gradients, no pills.
 
-1. **Hero** — slideshow + canvas particles + 3 floating mesh orbs + headline (gradient on "Tunisia") + Arabic accent + CTA pair + social-proof avatar stack.
-2. **Live Pulse strip** — overlapping the hero/below-fold seam (`margin-top: -space-12` desktop). Tabular-num counters animate up on scroll-into-view. Always rendered even pre-auth.
-3. **Stats** (existing) — refined with mesh-gradient background + gradient-text numbers.
-4. **Discover places** (existing) — refined with hover-shine and lift.
-5. **Itineraries** (existing).
-6. **Mood Bento** — 5-tile asymmetric grid linking to `#/mood/<slug>` routes. The 1st tile is 3×2, two are 3×1, two are 1×1, and the 5th spans the full row. On mobile collapses to 2 columns.
-7. **Governorate Marquee** — kinetic typography strip cycling 24 governorate names with gold `✦` separators. Pauses on hover. Disabled (wraps + stops) under `prefers-reduced-motion`.
-8. **Why** (existing) — refined with gradient borders.
-9. **Testimonials** — 6 community quotes in a glass-card grid; 2 are Pro-styled.
-10. **Partner CTA** (existing).
-11. **Logos** (existing).
-12. **Pricing** (existing) — popular card gets Pro flair (gold gradient border + glow).
-13. **Final CTA** (existing) — refined with mesh background + gradient headline.
-14. **Footer** (existing).
+## Component language (artifacts, not cards)
 
-## Override-specific rules
+| Content | Artifact |
+|---|---|
+| Hero photos | Rotated photo prints: white matte, masking tape, Caveat caption + mono meta, rubber stamp overlap, dashed route doodle |
+| Places ("Nº 01 The Index") | Pinned prints with staggered offsets, sticker category label, `Nº 0X` index, serif name, mono city + stars |
+| Itineraries ("Nº 02 Field routes") | Boarding-pass tickets: stub + dashed perforation + punched notches + vertical mono route + barcode strip + stamped difficulty |
+| Moods ("Nº 03") | Postcards with tape, italic serif title, handwritten description |
+| Why ("Nº 04") | Typographic manifesto: pull-quote with oversized terracotta quote mark, 3 hairline columns, drop caps — **no icon boxes** |
+| Testimonials ("Nº 05") | Postcards: chechia postage stamp + circular postmark + Caveat signature + mono byline — **no avatars** |
+| Partner form | "The letter": tape-cornered paper card, mono labels, underline-only inputs |
+| Pricing ("Nº 06") | Fare stubs with top perforation; featured = terracotta border + rotated "MOST LOVED" stamp |
+| Stats | "Almanac": hairline-ruled row, mono tabular numerals, handwritten footnote — **static, honest numbers, no count-up** |
+| Final CTA | Ink page (`--paper-deep`), cream serif headline, faint stamp, paper button |
+| Nav | Masthead: date strip ("Vol. I — … · date · Tunis"), serif wordmark + Arabic, mono small-caps links |
 
-### Hero
-- **Headline gradient** uses `.tn-grad` — animated linear gradient (gold → terracotta-light → gold) cycling 6s. Apply to one or two words max — never the entire headline.
-- **Arabic accent line** uses Noto Kufi Arabic at 85% opacity on `oklch(85% 0.06 80)` — warm parchment, not stark white.
-- **Mesh orbs** (3) sit at `z-index: 1` below the slideshow overlay (`z-index: 2`) but above the slideshow itself. Sizes: 520px / 460px / 380px. Filter: 80px blur. Opacity 0.4–0.55. 18s float animation with staggered delays.
-- **Hero meta avatar stack** uses dicebear placeholders — replace with real user avatars when an authenticated public-stats endpoint exists.
+## Rotation etiquette
 
-### Live Pulse strip
-- **Position:** `z-index: 3`, `margin-top: -space-12` on desktop (overlaps hero by ~6rem), `-space-8` on mobile.
-- **Layout:** 3-column grid (online indicator · stats · avatar stack) on desktop; single-column stacked + centered on mobile.
-- **Counters:** `font-variant-numeric: tabular-nums` to prevent layout shift mid-animation. Animation triggered only when `intersectionRatio ≥ 0.4`.
-- **Online dot:** breathing animation (1.8s) on a `--success` core with expanding `oklch(57% 0.15 155 / 0.x)` ring. Disabled under `prefers-reduced-motion`.
+Tilts (±0.4°–4°) live in `--tilt` per nth-child and use the CSS `rotate` property so
+translate-based reveals stay independent. Hover straightens to 0°. Reduced motion keeps the
+tilt but freezes transitions.
 
-### Mood Bento
-- **Grid:** 6 cols × 200px rows desktop, 2 cols × 180px mobile. Asymmetric span: `3-3-2-1-6` desktop, `2-2-1-1-2` mobile.
-- **Tiles:** image fills tile, dark-gradient overlay bottom-half, body text bottom-left, icon top-right in a glass pill.
-- **Hover:** tile lifts `-4px`, scales `1.01`, image scales `1.06`. Spring easing.
-- **Linking:** routes to `#/mood/<slug>`. If a slug has no MoodPage match yet, the page should fall through to `#/explore?mood=<slug>` — but that fallback is the router's job, not this page's.
+## Banned on this page (AI tells)
 
-### Governorate Marquee
-- **Stroke text:** `-webkit-text-stroke: 1.5px var(--text-tertiary)` with `color: transparent`. On hover/active, both flip to `--accent`. This is the *only* place in the app where we use `-webkit-text-stroke` — don't generalize it.
-- **Loop:** doubled list, scrolls `0% → -50%` over 60s. Hovering the section pauses the animation. `prefers-reduced-motion` removes the animation and wraps items.
-- **Separator:** gold `✦` (filled), font-size matches the items, no stroke.
-
-### Testimonials
-- **Reuse the `.is-pro` convention** from MASTER §12 → Pro flair: gradient gold border + ribbon + avatar ring. **Don't invent** `.tn-testimonial-premium` or similar.
-- **Decorative quote mark** is a CSS-only `\201C` glyph at `opacity: 0.08` — purely decorative, hidden from screen readers because it's a CSS pseudo-element.
-- **Stagger:** 50ms per tile on scroll-reveal.
-
-### Pricing (refresh)
-- **Popular card** now uses MASTER's Pro-flair pattern: padding-box surface + gold gradient border-box. The "Most Popular" badge is gold gradient text on display font.
-- Other cards stay neutral — the contrast is what makes "popular" pop.
-
-### Final CTA
-- Background: `--gradient-hero` + `--gradient-dark-mesh` overlay.
-- **One word gets the gradient** ("real Tunisia"), not the whole headline.
-
-## Motion budget for this page
-
-The landing has more motion than any other surface in the app. To keep it from feeling chaotic:
-- **Continuous loops:** at most 4 simultaneously (mesh orbs, marquee, particle canvas, hero slideshow). Counters and shine are one-shot, not loops.
-- **Trigger budget per fold:** no more than 2 hero-grade animations visible at once. The mesh orbs + slideshow share the hero; below the fold each section gets at most one moving thing.
-- **Reduced-motion:** disables marquee, orb float, gradient text, place-card shine, presence pulse. Particle canvas remains (it's gentle and atmospheric — if a user truly hates motion they can also stop the particle init via a `data-still` flag, but that's a future improvement).
+Canvas particles · floating mesh orbs · gradient text · pill announcement badges · animated
+count-up stats · dicebear/stock avatar stacks · glassmorphism chrome · neon glows ·
+icon-in-gradient-box feature cards · fake "online now" counters.
 
 ## Accessibility
 
-- All decorative SVGs and gradients are `aria-hidden="true"`.
-- The Live Pulse strip is `aria-label="Community activity"` — counters are read as their final number, not the animated values.
-- Testimonial cards are real `<article>` elements with quote + cite-style user block.
-- Mood tiles are `<a>` not `<button>` — they're navigation.
-- Marquee items are unlabeled decorative text; the section as a whole is `aria-label="Governorates of Tunisia"`.
+- Decorative SVGs (stamp, postmark, route, underline) are `aria-hidden`.
+- Star rows carry `aria-label="Rated X out of 5"`.
+- Focus-visible: 3px `--mediterranean` outline on all interactives.
+- `prefers-reduced-motion`: ticker stops and wraps; reveals render instantly; hover physics off.
+- Contrast: `--ink` on `--paper` ≈ 12:1; `--ink-faint` reserved for ≤11px mono labels only;
+  explicit `color` on headings over `--paper-deep` (global `h2` color rule beats inheritance — QA-verified bug).
 
-## Anti-patterns specific to this page
+## Gotchas (learned in QA)
 
-- Don't add a fifth continuous-loop animation. The page already runs at the motion budget ceiling.
-- Don't tokenize `-webkit-text-stroke` — it's a one-off here.
-- Don't replace the mesh orbs with a CSS background image — the orbs are the cheapest way to get atmospheric depth at 60fps.
-- Don't show the Live Pulse strip with `0` values while data loads — if a real backend endpoint hooks up later, render static placeholder numbers first, then animate on scroll (the current implementation does this).
-- Don't extend the gradient-headline pattern to body text. It's reserved for hero/CTA headlines.
-- Don't reuse `.tn-*` classes outside this landing — they're page-scoped chrome, not a shared system.
+- Global `h2 { color }` from base styles overrides inherited section color — always set explicit
+  heading color on ink sections.
+- Don't style `.ej-postcard-sig span` broadly — it out-specifies `.ej-hand`; use `:not(.ej-hand)`.
+- `.ej-reveal` holds content at opacity 0 until observed → full-page screenshots show "empty"
+  sections; expected.
+- The PWA service worker keeps serving old hashed chunks after a rebuild — unregister SW before
+  visual verification.
 
 ## Files
 
-- Markup: [web/src/pages/hero.ts](../../web/src/pages/hero.ts)
-- Refinement styles: [web/src/styles/landing.css](../../web/src/styles/landing.css) (loaded after `pages.css`)
-- Original styles: `web/src/styles/pages.css` lines 7830–8500 (kept intact as the foundation `landing.css` builds on)
+- Markup: [web/src/react/pages/HeroPage.tsx](../../web/src/react/pages/HeroPage.tsx) (namespace `.ej-*`)
+- Styles: [web/src/styles/landing-editorial.css](../../web/src/styles/landing-editorial.css) (self-contained; linked in `web/index.html` after `landing.css`)
+- Tokens: paper/ink + `--font-editorial`/`--font-hand` in [web/src/styles/tokens.css](../../web/src/styles/tokens.css) (Fraunces + Caveat added to the Google Fonts import)
+- Legacy (Partner/About only): `web/src/styles/landing.css` + `pages.css` `.tn-*`

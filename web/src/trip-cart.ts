@@ -147,6 +147,26 @@ export function moveStopToDay(placeId: string, packageId: string | null, dayInde
   return s;
 }
 
+/**
+ * Re-sequence one day's stops (route optimizer). `order[i]` is the new
+ * position of that day's i-th stop. The overall array is rebuilt grouped by
+ * day so the day-block rendering order stays stable.
+ */
+export function reorderDay(dayIndex: number, order: number[]) {
+  const s = readState();
+  const dayStops = s.stops.filter(x => (x.dayIndex || 0) === dayIndex);
+  if (order.length !== dayStops.length || dayStops.length < 2) return s;
+  const reordered: CartStop[] = new Array(dayStops.length);
+  order.forEach((pos, i) => { reordered[pos] = dayStops[i]; });
+  if (reordered.some(x => !x)) return s; // malformed permutation — refuse
+  const days = [...new Set(s.stops.map(x => x.dayIndex || 0))].sort((a, b) => a - b);
+  s.stops = days.flatMap(d =>
+    d === dayIndex ? reordered : s.stops.filter(x => (x.dayIndex || 0) === d),
+  );
+  writeState(s);
+  return s;
+}
+
 /** Total cost respecting party size; only sums stops that have a package with a price. */
 export function calcTotal(state: CartState): { amount: number; currency: string; hasPriced: boolean } {
   const currency = state.currency || 'TND';

@@ -1,3 +1,4 @@
+import '../../styles/leaderboard.css';
 import React, { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Trophy, Globe, Building2, Check, Sparkles, BadgeCheck } from 'lucide-react';

@@ -10,7 +10,14 @@ import { create } from 'zustand';
  * PopupHost, and (optionally) an enqueue call in triggers.ts.
  */
 
-export type PopupKind = 'celebration' | 'tutorial' | 'daily';
+export type PopupKind =
+  | 'celebration'
+  | 'tutorial'
+  | 'daily'
+  | 'badge'
+  | 'levelup'
+  | 'welcome'
+  | 'streak';
 
 export interface PopupItem {
   /** Stable id — auto-generated when omitted. */

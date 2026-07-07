@@ -1,3 +1,4 @@
+import '../../styles/collections.css';
 import React, { useCallback, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useQuery } from '@tanstack/react-query';

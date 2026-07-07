@@ -213,10 +213,20 @@
     box-shadow: var(--shadow-sm);
     overflow: hidden;
     transition: box-shadow var(--duration-normal) var(--ease-out),
+                border-color var(--duration-normal) var(--ease-out),
                 transform var(--duration-normal) var(--ease-spring);
 }
 .post-card-v2:hover {
     box-shadow: var(--shadow-md);
+}
+/* Dark cards get a hairline top highlight — the "machined edge" that separates
+   surfaces when shadows stop reading against a near-black page. */
+[data-theme="dark"] .post-card-v2 {
+    box-shadow: var(--shadow-sm), inset 0 1px 0 oklch(100% 0 0 / 0.05);
+}
+[data-theme="dark"] .post-card-v2:hover {
+    box-shadow: var(--shadow-md), inset 0 1px 0 oklch(100% 0 0 / 0.07);
+    border-color: oklch(32% 0.014 260);
 }
 .post-card-v2-head {
     display: flex;
@@ -364,7 +374,39 @@
 .post-card-v2-action.is-active { color: var(--accent); }
 .post-card-v2-action.is-active svg { fill: var(--accent); }
 .post-card-v2-action:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
-.post-card-v2-tip:hover { color: var(--gold); }
+
+/* Per-action identity: each action owns a hue, revealed on hover/active.
+   Tinted wash + colored icon reads intentional; six identical gray buttons
+   read template. Icon gets a tiny spring lift so the row feels alive. */
+.post-card-v2-action svg {
+    transition: transform var(--duration-fast) var(--ease-spring);
+}
+.post-card-v2-action:hover svg { transform: translateY(-1px) scale(1.12); }
+
+.pc-act-comment:hover {
+    color: var(--mediterranean);
+    background: color-mix(in oklab, var(--mediterranean) 10%, transparent);
+}
+.pc-act-repost:hover {
+    color: var(--success);
+    background: color-mix(in oklab, var(--success) 10%, transparent);
+}
+.pc-act-repost.is-active { color: var(--success); }
+.pc-act-repost.is-active svg { fill: none; stroke: var(--success); }
+.pc-act-share:hover {
+    color: var(--violet);
+    background: color-mix(in oklab, var(--violet) 10%, transparent);
+}
+.pc-act-save:hover {
+    color: var(--gold);
+    background: color-mix(in oklab, var(--gold) 12%, transparent);
+}
+.pc-act-save.is-active { color: var(--gold); }
+.pc-act-save.is-active svg { fill: var(--gold); stroke: var(--gold); }
+.post-card-v2-tip:hover {
+    color: var(--gold);
+    background: color-mix(in oklab, var(--gold) 12%, transparent);
+}
 .post-card-v2-tip:hover svg { color: var(--gold); }
 
 /* Reaction picker host (kept compact) */

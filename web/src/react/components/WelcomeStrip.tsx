@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { api, getImageUrl } from '../../shared/api';
 import { useAuthStore } from '../stores/auth-store';
-import { Compass, MapPin, Sparkles, ArrowRight } from 'lucide-react';
+import { Compass, MapPin, Sparkles, ArrowRight, Stamp, Route, PenLine } from 'lucide-react';
+import { useT } from '../../i18n/useT';
 
 interface MiniProfile {
     handle: string | null;
@@ -31,6 +32,7 @@ function greeting(): string {
  *   single primary CTA. Tunisia visual identity, not generic.
  */
 export function WelcomeStrip() {
+    const t = useT();
     const user = useAuthStore((s) => s.user) as any;
     const [profile, setProfile] = useState<MiniProfile | null>(null);
     const [aiGreeting, setAiGreeting] = useState<string>('');
@@ -118,15 +120,40 @@ export function WelcomeStrip() {
             </div>
 
             {stats && (
-                <div className="welcome-strip-stats">
-                    <a href={ownHref} className="welcome-stat"><strong>{stats.citiesVisited}</strong><span>Cities</span></a>
-                    <a href={ownHref} className="welcome-stat"><strong>{stats.tripsPlanned}</strong><span>Trips</span></a>
-                    <a href={ownHref} className="welcome-stat"><strong>{stats.reviewsCount}</strong><span>Reviews</span></a>
-                    <a href={ownHref} className="welcome-stat welcome-stat-badges"><strong>{profile?.badges?.length || 0}</strong><span>Badges</span></a>
-                    <a href={ownHref} className="welcome-stat-link">
-                        Your travel profile <ArrowRight size={14} />
-                    </a>
-                </div>
+                (stats.citiesVisited || stats.tripsPlanned || stats.reviewsCount || profile?.badges?.length)
+                    ? (
+                        <div className="welcome-strip-stats">
+                            <a href={ownHref} className="welcome-stat"><strong>{stats.citiesVisited}</strong><span>Cities</span></a>
+                            <a href={ownHref} className="welcome-stat"><strong>{stats.tripsPlanned}</strong><span>Trips</span></a>
+                            <a href={ownHref} className="welcome-stat"><strong>{stats.reviewsCount}</strong><span>Reviews</span></a>
+                            <a href={ownHref} className="welcome-stat welcome-stat-badges"><strong>{profile?.badges?.length || 0}</strong><span>Badges</span></a>
+                            <a href={ownHref} className="welcome-stat-link">
+                                Your travel profile <ArrowRight size={14} />
+                            </a>
+                        </div>
+                    ) : (
+                        /* A row of zeros is a morgue — brand-new explorers get their
+                           first missions instead. Each completes in one tap-flow and
+                           starts the passport loop. */
+                        <div className="welcome-strip-missions">
+                            <span className="welcome-missions-label">{t('missions.label')}</span>
+                            <a className="welcome-mission" href="#/explore">
+                                <Stamp size={15} />
+                                <span>{t('missions.visit')}</span>
+                                <ArrowRight size={13} />
+                            </a>
+                            <a className="welcome-mission" href="#/ai-planner">
+                                <Route size={15} />
+                                <span>{t('missions.plan')}</span>
+                                <ArrowRight size={13} />
+                            </a>
+                            <a className="welcome-mission" href="#/explore">
+                                <PenLine size={15} />
+                                <span>{t('missions.review')}</span>
+                                <ArrowRight size={13} />
+                            </a>
+                        </div>
+                    )
             )}
         </section>
     );

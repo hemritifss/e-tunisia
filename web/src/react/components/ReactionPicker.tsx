@@ -1,8 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { ThumbsUp } from 'lucide-react';
 import { api } from '../../shared/api';
 import { useAuthStore } from '../stores/auth-store';
 import { goTo } from '../../router';
 import { RollingNumber } from './RollingNumber';
+import { track } from '../../analytics';
 
 export type ReactionType =
   | 'like' | 'love' | 'celebrate' | 'insightful' | 'laugh' | 'wow' | 'support';
@@ -84,6 +86,7 @@ export function ReactionPicker({
     setMine(type);
     try {
       const res: any = await api.reactToPost(postId, type);
+      if (type) track('react', { type });
       if (res && typeof res.total === 'number') {
         setTotal(res.total);
         setBreakdown(res.breakdown || {});
@@ -116,7 +119,8 @@ export function ReactionPicker({
         aria-label={triggerLabel}
       >
         <span className="reaction-trigger-icon" aria-hidden="true">
-          {current ? current.emoji : '👍'}
+          {/* SVG outline until the user picks — emoji is reserved for a chosen reaction */}
+          {current ? current.emoji : <ThumbsUp size={15} strokeWidth={2} />}
         </span>
         <span className="reaction-trigger-label">{triggerLabel}</span>
         {total > 0 && <RollingNumber value={total} className="reaction-trigger-count" />}

@@ -7,6 +7,7 @@
         "start:dev": "nest start --watch",
         "start:prod": "node dist/main",
         "seed": "ts-node src/seeds/seed.ts",
+        "seed:gems": "ts-node src/seeds/seed-gems.ts",
         "typeorm": "ts-node ./node_modules/typeorm/cli.js -d src/database/data-source.ts",
         "migration:generate": "npm run typeorm migration:generate",
         "migration:run": "npm run typeorm migration:run",

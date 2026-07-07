@@ -5,6 +5,17 @@ import { goTo } from '../router';
 const RAW = (import.meta.env.VITE_API_URL ?? '').replace(/\/+$/, '');
 const API_BASE = RAW.replace(/\/api\/v\d+$/, ''); // '' when same-origin
 
+/**
+ * Share URLs must go through the backend's crawler-visible OG routes —
+ * WhatsApp/Facebook/X never run JS, so SPA URLs preview as a blank generic
+ * card. These pages carry real OG meta and instantly redirect humans to the
+ * pretty in-app URL. Kinds: 'u/<handle>' | 'place/<id>' | 'post/<id>'.
+ */
+export function ogShareUrl(path: string): string {
+  const origin = API_BASE || (typeof location !== 'undefined' ? location.origin : '');
+  return `${origin}/api/v1/og/${path}`;
+}
+
 class ApiError extends Error {
   constructor(
     public status: number,
