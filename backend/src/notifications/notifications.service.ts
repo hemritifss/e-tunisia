@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Notification, NotificationType } from './notification.entity';
 import { EventsGateway } from '../websocket/websocket.gateway';
 import { QueuesService } from '../queues/queues.service';
+import { PushService } from '../push/push.service';
 
 @Injectable()
 export class NotificationsService {
@@ -11,10 +12,23 @@ export class NotificationsService {
         @InjectRepository(Notification)
         private notifRepo: Repository<Notification>,
         private queuesService: QueuesService,
+        @Optional() private push?: PushService,
         @Optional()
         @Inject(forwardRef(() => EventsGateway))
         private gateway?: EventsGateway,
     ) {}
+
+    /** Where a notification of this type should open in the app. */
+    private deepLink(type: NotificationType, data?: any): string {
+        switch (type) {
+            case NotificationType.FOLLOW: return data?.fromUserId ? `/user/${data.fromUserId}` : '/activity';
+            case NotificationType.EVENT: return data?.eventId ? `/events` : '/events';
+            case NotificationType.BADGE: return '/profile';
+            case NotificationType.COMMENT:
+            case NotificationType.MENTION: return data?.postId ? `/post/${data.postId}` : '/feed';
+            default: return '/';
+        }
+    }
 
     async findByUser(userId: string) {
         return this.notifRepo.find({
@@ -49,6 +63,11 @@ export class NotificationsService {
         }));
         // Push live via WebSocket (best-effort)
         try { this.gateway?.broadcastNotification(userId, saved); } catch {}
+        // Web push, respecting the per-user daily budget (best-effort). This is why
+        // new-follower etc. now reach the user even when the tab is closed.
+        this.push?.sendToUserBudgeted(userId, {
+            title, body, url: this.deepLink(type, data),
+        }).catch(() => { /* never let push break the write */ });
         return saved;
     }
 

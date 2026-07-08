@@ -82,10 +82,10 @@ export class NotificationProcessor extends WorkerHost {
       }),
     );
 
-    // Send push notification if requested
+    // Send push notification if requested (respecting the per-user daily budget).
     if (data.push !== false) {
       try {
-        await this.pushService.sendToUser(data.userId, {
+        await this.pushService.sendToUserBudgeted(data.userId, {
           title: data.title,
           body: data.body,
           icon: '/icon-192x192.png',

@@ -5,12 +5,14 @@ import { NotificationsService } from './notifications.service';
 import { NotificationsController } from './notifications.controller';
 import { WebSocketModule } from '../websocket/websocket.module';
 import { QueuesModule } from '../queues/queues.module';
+import { PushModule } from '../push/push.module';
 
 @Module({
     imports: [
         TypeOrmModule.forFeature([Notification]),
         forwardRef(() => WebSocketModule),
         QueuesModule,
+        PushModule,
     ],
     controllers: [NotificationsController],
     providers: [NotificationsService],

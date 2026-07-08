@@ -14,6 +14,7 @@ const notifications_service_1 = require("./notifications.service");
 const notifications_controller_1 = require("./notifications.controller");
 const websocket_module_1 = require("../websocket/websocket.module");
 const queues_module_1 = require("../queues/queues.module");
+const push_module_1 = require("../push/push.module");
 let NotificationsModule = class NotificationsModule {
 };
 exports.NotificationsModule = NotificationsModule;
@@ -23,6 +24,7 @@ exports.NotificationsModule = NotificationsModule = __decorate([
             typeorm_1.TypeOrmModule.forFeature([notification_entity_1.Notification]),
             (0, common_1.forwardRef)(() => websocket_module_1.WebSocketModule),
             queues_module_1.QueuesModule,
+            push_module_1.PushModule,
         ],
         controllers: [notifications_controller_1.NotificationsController],
         providers: [notifications_service_1.NotificationsService],

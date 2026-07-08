@@ -6,22 +6,21 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.PushModule = void 0;
+exports.ScheduledModule = void 0;
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
-const push_subscription_entity_1 = require("./push-subscription.entity");
-const push_service_1 = require("./push.service");
-const push_controller_1 = require("./push.controller");
+const streak_entity_1 = require("../challenges/streak.entity");
+const notifications_module_1 = require("../notifications/notifications.module");
 const redis_module_1 = require("../redis/redis.module");
-let PushModule = class PushModule {
+const scheduled_tasks_service_1 = require("./scheduled-tasks.service");
+let ScheduledModule = class ScheduledModule {
 };
-exports.PushModule = PushModule;
-exports.PushModule = PushModule = __decorate([
+exports.ScheduledModule = ScheduledModule;
+exports.ScheduledModule = ScheduledModule = __decorate([
     (0, common_1.Module)({
-        imports: [typeorm_1.TypeOrmModule.forFeature([push_subscription_entity_1.PushSubscription]), redis_module_1.RedisModule],
-        controllers: [push_controller_1.PushController],
-        providers: [push_service_1.PushService],
-        exports: [push_service_1.PushService],
+        imports: [typeorm_1.TypeOrmModule.forFeature([streak_entity_1.UserStreak]), notifications_module_1.NotificationsModule, redis_module_1.RedisModule],
+        providers: [scheduled_tasks_service_1.ScheduledTasksService],
+        exports: [scheduled_tasks_service_1.ScheduledTasksService],
     })
-], PushModule);
-//# sourceMappingURL=push.module.js.map
+], ScheduledModule);
+//# sourceMappingURL=scheduled.module.js.map

@@ -19,11 +19,23 @@ const typeorm_2 = require("typeorm");
 const notification_entity_1 = require("./notification.entity");
 const websocket_gateway_1 = require("../websocket/websocket.gateway");
 const queues_service_1 = require("../queues/queues.service");
+const push_service_1 = require("../push/push.service");
 let NotificationsService = class NotificationsService {
-    constructor(notifRepo, queuesService, gateway) {
+    constructor(notifRepo, queuesService, push, gateway) {
         this.notifRepo = notifRepo;
         this.queuesService = queuesService;
+        this.push = push;
         this.gateway = gateway;
+    }
+    deepLink(type, data) {
+        switch (type) {
+            case notification_entity_1.NotificationType.FOLLOW: return data?.fromUserId ? `/user/${data.fromUserId}` : '/activity';
+            case notification_entity_1.NotificationType.EVENT: return data?.eventId ? `/events` : '/events';
+            case notification_entity_1.NotificationType.BADGE: return '/profile';
+            case notification_entity_1.NotificationType.COMMENT:
+            case notification_entity_1.NotificationType.MENTION: return data?.postId ? `/post/${data.postId}` : '/feed';
+            default: return '/';
+        }
     }
     async findByUser(userId) {
         return this.notifRepo.find({
@@ -57,6 +69,9 @@ let NotificationsService = class NotificationsService {
             this.gateway?.broadcastNotification(userId, saved);
         }
         catch { }
+        this.push?.sendToUserBudgeted(userId, {
+            title, body, url: this.deepLink(type, data),
+        }).catch(() => { });
         return saved;
     }
     async createBulk(userIds, title, body, type, data) {
@@ -101,9 +116,11 @@ exports.NotificationsService = NotificationsService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(notification_entity_1.Notification)),
     __param(2, (0, common_1.Optional)()),
-    __param(2, (0, common_1.Inject)((0, common_1.forwardRef)(() => websocket_gateway_1.EventsGateway))),
+    __param(3, (0, common_1.Optional)()),
+    __param(3, (0, common_1.Inject)((0, common_1.forwardRef)(() => websocket_gateway_1.EventsGateway))),
     __metadata("design:paramtypes", [typeorm_2.Repository,
         queues_service_1.QueuesService,
+        push_service_1.PushService,
         websocket_gateway_1.EventsGateway])
 ], NotificationsService);
 //# sourceMappingURL=notifications.service.js.map
