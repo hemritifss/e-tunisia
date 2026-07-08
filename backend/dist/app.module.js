@@ -56,6 +56,7 @@ const marketplace_module_1 = require("./marketplace/marketplace.module");
 const queues_module_1 = require("./queues/queues.module");
 const analytics_module_1 = require("./analytics/analytics.module");
 const email_module_1 = require("./email/email.module");
+const digest_module_1 = require("./digest/digest.module");
 const scheduled_module_1 = require("./scheduled/scheduled.module");
 const i18n_module_1 = require("./i18n/i18n.module");
 const routing_module_1 = require("./routing/routing.module");
@@ -128,6 +129,7 @@ exports.AppModule = AppModule = __decorate([
             i18n_module_1.I18nModule,
             routing_module_1.RoutingModule,
             email_module_1.EmailModule,
+            digest_module_1.DigestModule,
             scheduled_module_1.ScheduledModule,
         ],
         providers: [
