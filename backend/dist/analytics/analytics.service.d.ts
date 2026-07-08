@@ -4,6 +4,7 @@ import { User } from '../users/user.entity';
 import { Place } from '../places/place.entity';
 import { Booking } from '../bookings/booking.entity';
 import { Review } from '../reviews/review.entity';
+import { Post } from '../posts/post.entity';
 import { QueuesService } from '../queues/queues.service';
 import { AnalyticsEvent } from './analytics-event.entity';
 export interface IncomingEvent {
@@ -17,10 +18,11 @@ export declare class AnalyticsService {
     private bookingRepo;
     private reviewRepo;
     private eventsRepo;
+    private postRepo;
     private redisService;
     private queuesService;
     private readonly logger;
-    constructor(userRepo: Repository<User>, placeRepo: Repository<Place>, bookingRepo: Repository<Booking>, reviewRepo: Repository<Review>, eventsRepo: Repository<AnalyticsEvent>, redisService: RedisService, queuesService: QueuesService);
+    constructor(userRepo: Repository<User>, placeRepo: Repository<Place>, bookingRepo: Repository<Booking>, reviewRepo: Repository<Review>, eventsRepo: Repository<AnalyticsEvent>, postRepo: Repository<Post>, redisService: RedisService, queuesService: QueuesService);
     ingestEvents(batch: IncomingEvent[], userId: string | null): Promise<number>;
     eventsSummary(days?: number): Promise<{
         day: any;
@@ -68,6 +70,8 @@ export declare class AnalyticsService {
         d7: number;
         d30: number;
     }>;
+    private retentionForHorizon;
+    getGrowthOverview(): Promise<any>;
     trackEvent(eventType: string, userId?: string, metadata?: Record<string, unknown>): Promise<void>;
     private trackEventSync;
     getRealtimeStats(): Promise<{

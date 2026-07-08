@@ -67,4 +67,5 @@ export declare class AnalyticsController {
         count: number;
         uniques: number;
     }[]>;
+    growth(): Promise<any>;
 }

@@ -22,18 +22,20 @@ const user_entity_1 = require("../users/user.entity");
 const place_entity_1 = require("../places/place.entity");
 const booking_entity_1 = require("../bookings/booking.entity");
 const review_entity_1 = require("../reviews/review.entity");
+const post_entity_1 = require("../posts/post.entity");
 const queues_service_1 = require("../queues/queues.service");
 const analytics_event_entity_1 = require("./analytics-event.entity");
 const EVENT_NAME_RE = /^[a-z0-9_.:-]{1,64}$/i;
 const MAX_EVENT_BATCH = 20;
 const MAX_PROPS_JSON = 2048;
 let AnalyticsService = AnalyticsService_1 = class AnalyticsService {
-    constructor(userRepo, placeRepo, bookingRepo, reviewRepo, eventsRepo, redisService, queuesService) {
+    constructor(userRepo, placeRepo, bookingRepo, reviewRepo, eventsRepo, postRepo, redisService, queuesService) {
         this.userRepo = userRepo;
         this.placeRepo = placeRepo;
         this.bookingRepo = bookingRepo;
         this.reviewRepo = reviewRepo;
         this.eventsRepo = eventsRepo;
+        this.postRepo = postRepo;
         this.redisService = redisService;
         this.queuesService = queuesService;
         this.logger = new common_1.Logger(AnalyticsService_1.name);
@@ -95,7 +97,7 @@ let AnalyticsService = AnalyticsService_1 = class AnalyticsService {
         const cached = await this.redisService.getJson(cacheKey);
         if (cached)
             return cached;
-        const [totalUsers, newUsersToday, totalPlaces, featuredPlaces, newPlacesWeek, totalBookings, todayBookings, totalRevenue, totalReviews,] = await Promise.all([
+        const [totalUsers, newUsersToday, totalPlaces, featuredPlaces, newPlacesWeek, totalBookings, todayBookings, totalRevenue, totalReviews, totalPosts, activeToday,] = await Promise.all([
             this.userRepo.count(),
             this.userRepo.count({ where: { createdAt: (0, typeorm_2.Between)(today, new Date()) } }),
             this.placeRepo.count(),
@@ -105,12 +107,16 @@ let AnalyticsService = AnalyticsService_1 = class AnalyticsService {
             this.bookingRepo.count({ where: { createdAt: (0, typeorm_2.Between)(today, new Date()) } }),
             this.getTotalRevenue(),
             this.reviewRepo.count(),
+            this.postRepo.count(),
+            this.eventsRepo
+                .query(`SELECT count(DISTINCT COALESCE("userId"::text, "anonId"))::int AS n FROM analytics_events WHERE "createdAt" > now() - interval '1 day'`)
+                .then((r) => r?.[0]?.n || 0),
         ]);
         const stats = {
             users: {
                 total: totalUsers,
                 newToday: newUsersToday,
-                activeToday: Math.floor(totalUsers * 0.15),
+                activeToday,
             },
             places: {
                 total: totalPlaces,
@@ -124,8 +130,8 @@ let AnalyticsService = AnalyticsService_1 = class AnalyticsService {
             },
             engagement: {
                 reviews: totalReviews,
-                posts: Math.floor(totalUsers * 2.5),
-                avgSession: 8.5,
+                posts: totalPosts,
+                avgSession: 0,
             },
         };
         await this.redisService.setJson(cacheKey, stats, 300);
@@ -193,10 +199,64 @@ let AnalyticsService = AnalyticsService_1 = class AnalyticsService {
         }));
     }
     async getUserRetention() {
+        const [d1, d7, d30] = await Promise.all([
+            this.retentionForHorizon(1),
+            this.retentionForHorizon(7),
+            this.retentionForHorizon(30),
+        ]);
+        return { d1, d7, d30 };
+    }
+    async retentionForHorizon(n) {
+        const rows = await this.eventsRepo.query(`WITH cohort AS (
+         SELECT id, date_trunc('day', "createdAt") AS signup_day
+         FROM users
+         WHERE "createdAt" <= now() - make_interval(days => $1)
+           AND "createdAt" >= now() - make_interval(days => $1 + 60)
+       )
+       SELECT
+         count(*)::int AS cohort,
+         count(*) FILTER (WHERE EXISTS (
+           SELECT 1 FROM analytics_events e
+           WHERE e."userId" = c.id
+             AND date_trunc('day', e."createdAt") = c.signup_day + make_interval(days => $1)
+         ))::int AS retained
+       FROM cohort c`, [n]);
+        const r = rows?.[0] || { cohort: 0, retained: 0 };
+        return r.cohort > 0 ? Math.round((r.retained / r.cohort) * 100) : 0;
+    }
+    async getGrowthOverview() {
+        const distinctActors = (days) => this.eventsRepo
+            .query(`SELECT count(DISTINCT COALESCE("userId"::text, "anonId"))::int AS n
+             FROM analytics_events
+            WHERE "createdAt" > now() - make_interval(days => $1)`, [days])
+            .then((r) => r?.[0]?.n || 0);
+        const [dau, wau, mau, totalUsers, newToday, newWeek, posts, reviews, places, postedRows, signupSeries, retention,] = await Promise.all([
+            distinctActors(1),
+            distinctActors(7),
+            distinctActors(30),
+            this.userRepo.count(),
+            this.userRepo.query(`SELECT count(*)::int AS n FROM users WHERE "createdAt" > now() - interval '1 day'`).then((r) => r?.[0]?.n || 0),
+            this.userRepo.query(`SELECT count(*)::int AS n FROM users WHERE "createdAt" > now() - interval '7 days'`).then((r) => r?.[0]?.n || 0),
+            this.postRepo.count(),
+            this.reviewRepo.count(),
+            this.placeRepo.count(),
+            this.postRepo.query(`SELECT count(DISTINCT "authorId")::int AS n FROM posts`).then((r) => r?.[0]?.n || 0),
+            this.userRepo.query(`SELECT to_char(date_trunc('day', "createdAt"), 'YYYY-MM-DD') AS day, count(*)::int AS count
+           FROM users WHERE "createdAt" > now() - interval '14 days'
+          GROUP BY 1 ORDER BY 1`),
+            this.getUserRetention(),
+        ]);
+        const posted = postedRows || 0;
         return {
-            d1: 65,
-            d7: 35,
-            d30: 18,
+            activeUsers: { dau, wau, mau },
+            signups: { total: totalUsers, today: newToday, thisWeek: newWeek, series: signupSeries },
+            content: { posts, reviews, places },
+            funnel: {
+                signups: totalUsers,
+                posted,
+                conversionPct: totalUsers > 0 ? Math.round((posted / totalUsers) * 1000) / 10 : 0,
+            },
+            retention,
         };
     }
     async trackEvent(eventType, userId, metadata) {
@@ -278,7 +338,9 @@ exports.AnalyticsService = AnalyticsService = AnalyticsService_1 = __decorate([
     __param(2, (0, typeorm_1.InjectRepository)(booking_entity_1.Booking)),
     __param(3, (0, typeorm_1.InjectRepository)(review_entity_1.Review)),
     __param(4, (0, typeorm_1.InjectRepository)(analytics_event_entity_1.AnalyticsEvent)),
+    __param(5, (0, typeorm_1.InjectRepository)(post_entity_1.Post)),
     __metadata("design:paramtypes", [typeorm_2.Repository,
+        typeorm_2.Repository,
         typeorm_2.Repository,
         typeorm_2.Repository,
         typeorm_2.Repository,

@@ -6,6 +6,7 @@ import { User } from '../users/user.entity';
 import { Place } from '../places/place.entity';
 import { Booking } from '../bookings/booking.entity';
 import { Review } from '../reviews/review.entity';
+import { Post } from '../posts/post.entity';
 import { QueuesService } from '../queues/queues.service';
 import { AnalyticsEvent } from './analytics-event.entity';
 
@@ -39,6 +40,8 @@ export class AnalyticsService {
     private reviewRepo: Repository<Review>,
     @InjectRepository(AnalyticsEvent)
     private eventsRepo: Repository<AnalyticsEvent>,
+    @InjectRepository(Post)
+    private postRepo: Repository<Post>,
     private redisService: RedisService,
     private queuesService: QueuesService,
   ) {}
@@ -121,6 +124,8 @@ export class AnalyticsService {
       todayBookings,
       totalRevenue,
       totalReviews,
+      totalPosts,
+      activeToday,
     ] = await Promise.all([
       this.userRepo.count(),
       this.userRepo.count({ where: { createdAt: Between(today, new Date()) } }),
@@ -131,13 +136,18 @@ export class AnalyticsService {
       this.bookingRepo.count({ where: { createdAt: Between(today, new Date()) } }),
       this.getTotalRevenue(),
       this.reviewRepo.count(),
+      this.postRepo.count(),
+      // Real active-today = distinct actors in product events over the last 24h.
+      this.eventsRepo
+        .query(`SELECT count(DISTINCT COALESCE("userId"::text, "anonId"))::int AS n FROM analytics_events WHERE "createdAt" > now() - interval '1 day'`)
+        .then((r: any) => r?.[0]?.n || 0),
     ]);
 
     const stats = {
       users: {
         total: totalUsers,
         newToday: newUsersToday,
-        activeToday: Math.floor(totalUsers * 0.15), // Estimated
+        activeToday, // real: distinct actors in the last 24h
       },
       places: {
         total: totalPlaces,
@@ -151,8 +161,8 @@ export class AnalyticsService {
       },
       engagement: {
         reviews: totalReviews,
-        posts: Math.floor(totalUsers * 2.5), // Estimated
-        avgSession: 8.5, // Minutes, estimated
+        posts: totalPosts, // real count
+        avgSession: 0, // not tracked yet — never fabricate
       },
     };
 
@@ -245,16 +255,95 @@ export class AnalyticsService {
     }));
   }
 
-  async getUserRetention(): Promise<{
-    d1: number;
-    d7: number;
-    d30: number;
-  }> {
-    // Simplified retention calculation
+  /**
+   * REAL D1/D7/D30 retention (percentages), computed from signup day + product
+   * events. For horizon N: of users who signed up ≥N and ≤N+60 days ago (a rolling
+   * recent cohort with a fair chance to return), the share that produced any event
+   * on the calendar day exactly N days after signup. Users who predate event
+   * tracking simply read as not-retained — an honest floor, never a fabricated %.
+   */
+  async getUserRetention(): Promise<{ d1: number; d7: number; d30: number }> {
+    const [d1, d7, d30] = await Promise.all([
+      this.retentionForHorizon(1),
+      this.retentionForHorizon(7),
+      this.retentionForHorizon(30),
+    ]);
+    return { d1, d7, d30 };
+  }
+
+  private async retentionForHorizon(n: number): Promise<number> {
+    const rows = await this.eventsRepo.query(
+      `WITH cohort AS (
+         SELECT id, date_trunc('day', "createdAt") AS signup_day
+         FROM users
+         WHERE "createdAt" <= now() - make_interval(days => $1)
+           AND "createdAt" >= now() - make_interval(days => $1 + 60)
+       )
+       SELECT
+         count(*)::int AS cohort,
+         count(*) FILTER (WHERE EXISTS (
+           SELECT 1 FROM analytics_events e
+           WHERE e."userId" = c.id
+             AND date_trunc('day', e."createdAt") = c.signup_day + make_interval(days => $1)
+         ))::int AS retained
+       FROM cohort c`,
+      [n],
+    );
+    const r = rows?.[0] || { cohort: 0, retained: 0 };
+    return r.cohort > 0 ? Math.round((r.retained / r.cohort) * 100) : 0;
+  }
+
+  /**
+   * Real growth overview for the admin dashboard — every number derived from the
+   * database, nothing estimated. DAU/WAU/MAU from product events, signups from
+   * users, a signup→first-post funnel, and real content counts.
+   */
+  async getGrowthOverview(): Promise<any> {
+    const distinctActors = (days: number) =>
+      this.eventsRepo
+        .query(
+          `SELECT count(DISTINCT COALESCE("userId"::text, "anonId"))::int AS n
+             FROM analytics_events
+            WHERE "createdAt" > now() - make_interval(days => $1)`,
+          [days],
+        )
+        .then((r: any) => r?.[0]?.n || 0);
+
+    const [
+      dau, wau, mau,
+      totalUsers, newToday, newWeek,
+      posts, reviews, places,
+      postedRows, signupSeries, retention,
+    ] = await Promise.all([
+      distinctActors(1),
+      distinctActors(7),
+      distinctActors(30),
+      this.userRepo.count(),
+      this.userRepo.query(`SELECT count(*)::int AS n FROM users WHERE "createdAt" > now() - interval '1 day'`).then((r: any) => r?.[0]?.n || 0),
+      this.userRepo.query(`SELECT count(*)::int AS n FROM users WHERE "createdAt" > now() - interval '7 days'`).then((r: any) => r?.[0]?.n || 0),
+      this.postRepo.count(),
+      this.reviewRepo.count(),
+      this.placeRepo.count(),
+      this.postRepo.query(`SELECT count(DISTINCT "authorId")::int AS n FROM posts`).then((r: any) => r?.[0]?.n || 0),
+      this.userRepo.query(
+        `SELECT to_char(date_trunc('day', "createdAt"), 'YYYY-MM-DD') AS day, count(*)::int AS count
+           FROM users WHERE "createdAt" > now() - interval '14 days'
+          GROUP BY 1 ORDER BY 1`,
+      ),
+      this.getUserRetention(),
+    ]);
+
+    const posted = postedRows || 0;
     return {
-      d1: 65,
-      d7: 35,
-      d30: 18,
+      activeUsers: { dau, wau, mau },
+      signups: { total: totalUsers, today: newToday, thisWeek: newWeek, series: signupSeries },
+      content: { posts, reviews, places },
+      funnel: {
+        signups: totalUsers,
+        posted,
+        conversionPct: totalUsers > 0 ? Math.round((posted / totalUsers) * 1000) / 10 : 0,
+      },
+      retention,
     };
   }
 

@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import AdminQueue, { AdminLocked, QueueConfig } from './admin/AdminQueue';
 import { adminGet, adminMutate, ADMIN_FORBIDDEN } from './admin/admin-api';
+import { GrowthDashboard } from './admin/GrowthDashboard';
 
 interface PlatformStats { users?: number; places?: number; reviews?: number; subscriptions?: number; pendingPlaces?: number; [k: string]: any }
 interface Analytics { mrr: number; arr: number; activeSubscriptions: number; pendingSubscriptions: number; conversionRate: number; paidUsers: number; byPlan: Record<string, { count: number; revenue: number }>; }
@@ -129,6 +130,7 @@ function buildQueues(isSuperAdmin: boolean): Record<string, QueueConfig> {
 
 const SUBNAV: { key: string; label: string; icon: React.ReactNode }[] = [
     { key: '', label: 'Overview', icon: <LayoutDashboard size={15} /> },
+    { key: 'growth', label: 'Growth', icon: <TrendingUp size={15} /> },
     { key: 'users', label: 'Users', icon: <Users size={15} /> },
     { key: 'places', label: 'Places', icon: <MapPin size={15} /> },
     { key: 'reviews', label: 'Reviews', icon: <MessageSquare size={15} /> },
@@ -222,14 +224,15 @@ export default function AdminPage() {
     const { data: me } = useQuery({ queryKey: ['admin-me'], queryFn: () => adminGet<{ isSuperAdmin?: boolean }>('/admin/me'), staleTime: 5 * 60_000 });
     const isSuperAdmin = !!(me && me !== ADMIN_FORBIDDEN && (me as any).isSuperAdmin);
     const sub = currentSub();
-    const config = sub ? buildQueues(isSuperAdmin)[sub] : null;
+    const config = sub && sub !== 'growth' ? buildQueues(isSuperAdmin)[sub] : null;
+    const isGrowth = sub === 'growth';
 
     return (
         <main className="admin-page">
             <header className="admin-header">
                 <span className="admin-kicker"><Shield size={12} /> Admin</span>
-                <h1>{config ? config.title : 'Platform supervision'}</h1>
-                <p>{config ? config.subtitle : 'Keep e-Tunisia honest, fast, and welcoming.'}</p>
+                <h1>{config ? config.title : isGrowth ? 'Growth analytics' : 'Platform supervision'}</h1>
+                <p>{config ? config.subtitle : isGrowth ? 'Real DAU/WAU, retention, and the signup → first-post funnel.' : 'Keep e-Tunisia honest, fast, and welcoming.'}</p>
                 <nav className="admin-subnav">
                     {SUBNAV.map((n) => (
                         <a key={n.key} href={`#/admin${n.key ? `/${n.key}` : ''}`} className={sub === n.key ? 'active' : ''}>
@@ -239,7 +242,7 @@ export default function AdminPage() {
                 </nav>
             </header>
 
-            {config ? <AdminQueue config={config} /> : <Hub />}
+            {config ? <AdminQueue config={config} /> : isGrowth ? <GrowthDashboard /> : <Hub />}
         </main>
     );
 }

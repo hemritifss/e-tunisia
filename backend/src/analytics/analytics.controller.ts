@@ -81,4 +81,12 @@ export class AnalyticsController {
   async eventsSummary(@Query('days') days?: string) {
     return this.analyticsService.eventsSummary(days ? Number(days) : 30);
   }
+
+  @Get('growth')
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Real growth overview: DAU/WAU/MAU, signups, funnel, retention (admin)' })
+  async growth() {
+    return this.analyticsService.getGrowthOverview();
+  }
 }

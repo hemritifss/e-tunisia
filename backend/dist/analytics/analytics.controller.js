@@ -51,6 +51,9 @@ let AnalyticsController = class AnalyticsController {
     async eventsSummary(days) {
         return this.analyticsService.eventsSummary(days ? Number(days) : 30);
     }
+    async growth() {
+        return this.analyticsService.getGrowthOverview();
+    }
 };
 exports.AnalyticsController = AnalyticsController;
 __decorate([
@@ -127,6 +130,15 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], AnalyticsController.prototype, "eventsSummary", null);
+__decorate([
+    (0, common_1.Get)('growth'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, admin_guard_1.AdminGuard),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, swagger_1.ApiOperation)({ summary: 'Real growth overview: DAU/WAU/MAU, signups, funnel, retention (admin)' }),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], AnalyticsController.prototype, "growth", null);
 exports.AnalyticsController = AnalyticsController = __decorate([
     (0, swagger_1.ApiTags)('analytics'),
     (0, common_1.Controller)('analytics'),
