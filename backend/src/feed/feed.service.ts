@@ -104,10 +104,33 @@ export class FeedService {
             });
         }
 
+        // Hydrate posts with REAL reaction + save counts so ranking reflects the
+        // primary engagement signals — without this the reaction/save score terms
+        // are always 0 (posts.list omits them). Also hands the frontend true
+        // reaction totals/breakdowns instead of falling back to legacy upvotes.
+        const postIds = merged.filter((m: any) => (m.type ?? 'post') === 'post').map((m: any) => m.id);
+        if (postIds.length) {
+            const [reactionMap, saveMap] = await Promise.all([
+                this.posts.aggregateBulk(postIds, opts.userId),
+                this.posts.saveCountsBulk(postIds),
+            ]);
+            for (const m of merged as any[]) {
+                if ((m.type ?? 'post') !== 'post') continue;
+                const agg = reactionMap[m.id];
+                if (agg) {
+                    m.reactions = { total: agg.total, breakdown: agg.breakdown };
+                    m.myReaction = agg.mine;
+                    m.reactionsCount = agg.total;
+                }
+                m.savesCount = saveMap[m.id] || 0;
+            }
+        }
+
         // Engagement-weighted score with time decay — the "Hot" / "For You" ranking.
-        //   score = (upvotes - downvotes) + 1.2*comments + 0.6*saves + 0.4*reactions
-        //   weighted by an age-decay factor: half-weight at ~36h, near zero past 14d.
-        // For 'top', no time decay — pure quality over the window.
+        //   score = 3*reactions + 5*comments + 7*saves + 4*reposts (roadmap 1.1 weights),
+        //   + a small legacy upvote term, + a rating baseline so quality reviews (which
+        //   have no reaction system) still surface. Weighted by age-decay: half-weight
+        //   at ~36h, near zero past 14d. For 'top', no time decay — pure quality.
         const HALF_LIFE_HOURS = 36;
         const decay = (createdAt: any): number => {
             const ageHours = (Date.now() - new Date(createdAt).getTime()) / 3_600_000;
@@ -115,12 +138,14 @@ export class FeedService {
             return Math.pow(0.5, ageHours / HALF_LIFE_HOURS);
         };
         const engagement = (a: any): number =>
-            (a.upvotes || 0)
-            - (a.downvotes || 0)
-            + 1.2 * (a.commentCount || 0)
-            + 0.6 * (a.savesCount || a.saveCount || 0)
-            + 0.4 * (a.reactionsCount || a.reactionCount || 0)
-            + 0.8 * (a.repostCount || 0);
+            3 * (a.reactionsCount || 0)
+            + 5 * (a.commentCount || 0)
+            + 7 * (a.savesCount || 0)
+            + 4 * (a.repostCount || 0)
+            + 0.5 * ((a.upvotes || 0) - (a.downvotes || 0))
+            // Reviews carry no reaction data — let their real star rating keep quality
+            // ones in the ranked mix (3★→1 … 5★→3) instead of sinking to zero.
+            + (a.type === 'review' ? Math.max(0, (Number(a.rating) || 0) - 2) : 0);
         const hotScore = (a: any): number => engagement(a) * decay(a.createdAt);
 
         // Freshness boost: content < 1h gets extra visibility (real-time pulse)
@@ -137,6 +162,7 @@ export class FeedService {
         // surface higher. Falls back to plain hot when the viewer is anonymous.
         const viewerInterests = new Set<string>();
         const viewerCities = new Set<string>();
+        const followedAuthors = new Set<string>();
         if (sort === 'foryou' && opts.userId) {
             const u = await this.users.findOne({ where: { id: opts.userId }, select: ['interests'] as any });
             for (const it of (u?.interests || [])) viewerInterests.add(String(it).toLowerCase());
@@ -146,6 +172,11 @@ export class FeedService {
                 .where('v.userId = :id AND v.city IS NOT NULL', { id: opts.userId })
                 .getRawMany();
             for (const r of visitRows) viewerCities.add(String(r.city).toLowerCase());
+            // Author affinity: strongly surface content from people the viewer follows.
+            const followRows = await this.follows.find({
+                where: { followerId: opts.userId }, select: { followingId: true },
+            });
+            for (const r of followRows) followedAuthors.add((r as any).followingId);
         }
         const tierBoost = (a: any): number => {
             const author = a.author || a.user;
@@ -171,8 +202,13 @@ export class FeedService {
             }
             return 1 + 0.25 * Math.min(matches, 2); // up to +50%
         };
+        // Author-affinity: followed authors get a strong, recency-decayed lift so the
+        // people you follow reliably surface (roadmap 1.1 weights affinity heavily).
+        const affinityBonus = (a: any): number =>
+            followedAuthors.size && followedAuthors.has(a.authorId) ? 6 * decay(a.createdAt) : 0;
         // +0.5 floor so brand-new, zero-engagement posts still differentiate by tier/interest.
-        const forYouScore = (a: any): number => (hotScore(a) + 0.5) * tierBoost(a) * interestBoost(a) * freshnessBoost(a);
+        const forYouScore = (a: any): number =>
+            (hotScore(a) + 0.5 + affinityBonus(a)) * tierBoost(a) * interestBoost(a) * freshnessBoost(a);
 
         if (sort === 'foryou') {
             merged.sort((a: any, b: any) => {
@@ -216,15 +252,25 @@ export class FeedService {
         const offset = (page - 1) * limit;
         let pageItems = merged.slice(offset, offset + limit);
 
-        // Inject sponsored ads — one every 4 items. Try 'feed' placement first, fall back to 'home'.
+        // ── Inject ads + discovery into the page ─────────────────────────────
+        // Ads land every 4 items; discovery cards (quality places the viewer hasn't
+        // visited) roughly 1 in 7, offset so the two never collide on a slot.
+        // Discovery is the ~15% exploration injection that drives the gem/contribution
+        // flywheel; it's skipped on the pure-chronological 'new' ("Recent") view.
         const feedAds = await this.ads.findActive('feed').catch(() => [] as any[]);
         const homeAds = (feedAds && feedAds.length) ? feedAds : await this.ads.findActive('home').catch(() => [] as any[]);
         const adPool = (homeAds || []).filter((a: any) => a.isActive);
-        if (adPool.length > 0) {
+        const discoveryPool = sort === 'new' ? [] : await this.buildDiscoveryPool(opts.userId);
+
+        if (adPool.length > 0 || discoveryPool.length > 0) {
             const out: any[] = [];
+            // Rotate the pool by page so deeper pages surface different gems, and never
+            // repeat a gem within a page.
+            let dCursor = discoveryPool.length ? ((page - 1) * 2) % discoveryPool.length : 0;
+            const usedGems = new Set<string>();
             for (let i = 0; i < pageItems.length; i++) {
                 out.push(pageItems[i]);
-                if ((i + 1) % 4 === 0) {
+                if (adPool.length > 0 && (i + 1) % 4 === 0) {
                     const ad = adPool[Math.floor(Math.random() * adPool.length)];
                     // House ads (our own promos) point at internal routes and are
                     // labeled honestly — never "Sponsored". Paid partners use https.
@@ -242,6 +288,17 @@ export class FeedService {
                         isHouse,
                         createdAt: new Date().toISOString(),
                     });
+                } else if (discoveryPool.length > 0 && (i + 1) % 7 === 3) {
+                    let picked: any = null;
+                    for (let t = 0; t < discoveryPool.length; t++) {
+                        const cand = discoveryPool[dCursor % discoveryPool.length];
+                        dCursor++;
+                        if (!usedGems.has(cand.id)) { picked = cand; break; }
+                    }
+                    if (picked) {
+                        usedGems.add(picked.id);
+                        out.push(this.discoveryItem(picked, page, i));
+                    }
                 }
             }
             pageItems = out;
@@ -251,6 +308,46 @@ export class FeedService {
         return {
             data: pageItems,
             meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
+        };
+    }
+
+    /**
+     * Pool of quality places to surface as in-feed discovery — highly-rated spots
+     * the viewer hasn't already checked into. Empty on a platform with no rated
+     * places yet (we never fabricate discovery). Rated ≥4 keeps it "worth it".
+     */
+    private async buildDiscoveryPool(userId?: string): Promise<any[]> {
+        const res: any = await this.places
+            .findAll({ sortBy: 'rating', order: 'DESC', minRating: 4, limit: 40 } as any)
+            .catch(() => ({ data: [] as any[] }));
+        let pool: any[] = res?.data || [];
+        if (userId && pool.length) {
+            const visited = await this.placeVisits
+                .find({ where: { userId }, select: { placeId: true } })
+                .catch(() => [] as any[]);
+            const seen = new Set(visited.map((v: any) => v.placeId));
+            pool = pool.filter((p) => !seen.has(p.id));
+        }
+        return pool;
+    }
+
+    /** Shape a place as a feed 'discovery' card item. */
+    private discoveryItem(p: any, page: number, i: number) {
+        return {
+            id: `discovery-${p.id}-${page}-${i}`,
+            type: 'discovery' as const,
+            place: {
+                id: p.id,
+                name: p.name,
+                slug: p.slug,
+                city: p.city,
+                governorate: p.governorate,
+                coverImage: p.coverImage || (Array.isArray(p.images) ? p.images[0] : null) || null,
+                rating: Number(p.rating) || 0,
+                reviewCount: p.reviewCount || 0,
+                category: p.category?.name || (typeof p.category === 'string' ? p.category : null),
+            },
+            createdAt: new Date().toISOString(),
         };
     }
 

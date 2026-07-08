@@ -238,6 +238,21 @@ export class PostsService {
         return { data, meta: { page, limit, total, totalPages: Math.ceil(total / limit) } };
     }
 
+    /** Bulk save COUNT per post id — used by the feed to rank on real save signal. */
+    async saveCountsBulk(postIds: string[]): Promise<Record<string, number>> {
+        const out: Record<string, number> = {};
+        for (const id of postIds) out[id] = 0;
+        if (postIds.length === 0) return out;
+        const rows = await this.savedRepo.createQueryBuilder('s')
+            .select('s.postId', 'postId')
+            .addSelect('COUNT(*)', 'c')
+            .where('s.postId IN (:...ids)', { ids: postIds })
+            .groupBy('s.postId')
+            .getRawMany();
+        for (const r of rows) out[r.postId] = Number(r.c) || 0;
+        return out;
+    }
+
     /** Bulk lookup: which of these post ids has the viewer saved? */
     async savedBulk(postIds: string[], viewerId?: string): Promise<Record<string, boolean>> {
         const out: Record<string, boolean> = {};

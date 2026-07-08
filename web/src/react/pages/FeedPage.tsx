@@ -44,6 +44,7 @@ import { PullToRefresh } from '../components/PullToRefresh';
 import { TunisiaNowPanel } from '../components/TunisiaNowPanel';
 import { PostImageCarousel } from '../components/PostImageCarousel';
 import { StarRating } from '../components/StarRating';
+import { DiscoveryCard } from '../components/DiscoveryCard';
 import { Reveal } from '../components/Reveal';
 import { SponsorsStrip } from '../components/SponsorsStrip';
 import { Plus, User as UserIcon, RefreshCcw, Users as UsersIcon, Sparkles, Compass } from 'lucide-react';
@@ -627,7 +628,9 @@ export default function FeedPage() {
             allItems.map((item: any) =>
               item.type === 'ad'
                 ? <AdCard key={item.id} ad={item} />
-                : <PostCard key={item.id} post={item} />
+                : item.type === 'discovery'
+                  ? <DiscoveryCard key={item.id} item={item} />
+                  : <PostCard key={item.id} post={item} />
             )
           )}
         </AnimatePresence>

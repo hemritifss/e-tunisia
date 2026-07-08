@@ -37,6 +37,8 @@ export declare class FeedService {
             totalPages: number;
         };
     }>;
+    private buildDiscoveryPool;
+    private discoveryItem;
     trendingHashtags(limit?: number): Promise<{
         tag: string;
         display: string;

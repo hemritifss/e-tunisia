@@ -144,6 +144,7 @@ export declare class PostsService {
             totalPages: number;
         };
     }>;
+    saveCountsBulk(postIds: string[]): Promise<Record<string, number>>;
     savedBulk(postIds: string[], viewerId?: string): Promise<Record<string, boolean>>;
     react(postId: string, userId: string, type: ReactionType | null): Promise<{
         total: number;

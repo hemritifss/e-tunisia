@@ -216,6 +216,22 @@ let PostsService = class PostsService {
         }).filter(Boolean);
         return { data, meta: { page, limit, total, totalPages: Math.ceil(total / limit) } };
     }
+    async saveCountsBulk(postIds) {
+        const out = {};
+        for (const id of postIds)
+            out[id] = 0;
+        if (postIds.length === 0)
+            return out;
+        const rows = await this.savedRepo.createQueryBuilder('s')
+            .select('s.postId', 'postId')
+            .addSelect('COUNT(*)', 'c')
+            .where('s.postId IN (:...ids)', { ids: postIds })
+            .groupBy('s.postId')
+            .getRawMany();
+        for (const r of rows)
+            out[r.postId] = Number(r.c) || 0;
+        return out;
+    }
     async savedBulk(postIds, viewerId) {
         const out = {};
         for (const id of postIds)

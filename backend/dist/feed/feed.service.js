@@ -86,6 +86,24 @@ let FeedService = class FeedService {
                 return hay.includes(needle);
             });
         }
+        const postIds = merged.filter((m) => (m.type ?? 'post') === 'post').map((m) => m.id);
+        if (postIds.length) {
+            const [reactionMap, saveMap] = await Promise.all([
+                this.posts.aggregateBulk(postIds, opts.userId),
+                this.posts.saveCountsBulk(postIds),
+            ]);
+            for (const m of merged) {
+                if ((m.type ?? 'post') !== 'post')
+                    continue;
+                const agg = reactionMap[m.id];
+                if (agg) {
+                    m.reactions = { total: agg.total, breakdown: agg.breakdown };
+                    m.myReaction = agg.mine;
+                    m.reactionsCount = agg.total;
+                }
+                m.savesCount = saveMap[m.id] || 0;
+            }
+        }
         const HALF_LIFE_HOURS = 36;
         const decay = (createdAt) => {
             const ageHours = (Date.now() - new Date(createdAt).getTime()) / 3_600_000;
@@ -93,12 +111,12 @@ let FeedService = class FeedService {
                 return 1;
             return Math.pow(0.5, ageHours / HALF_LIFE_HOURS);
         };
-        const engagement = (a) => (a.upvotes || 0)
-            - (a.downvotes || 0)
-            + 1.2 * (a.commentCount || 0)
-            + 0.6 * (a.savesCount || a.saveCount || 0)
-            + 0.4 * (a.reactionsCount || a.reactionCount || 0)
-            + 0.8 * (a.repostCount || 0);
+        const engagement = (a) => 3 * (a.reactionsCount || 0)
+            + 5 * (a.commentCount || 0)
+            + 7 * (a.savesCount || 0)
+            + 4 * (a.repostCount || 0)
+            + 0.5 * ((a.upvotes || 0) - (a.downvotes || 0))
+            + (a.type === 'review' ? Math.max(0, (Number(a.rating) || 0) - 2) : 0);
         const hotScore = (a) => engagement(a) * decay(a.createdAt);
         const freshnessBoost = (a) => {
             const ageHours = (Date.now() - new Date(a.createdAt).getTime()) / 3_600_000;
@@ -110,6 +128,7 @@ let FeedService = class FeedService {
         };
         const viewerInterests = new Set();
         const viewerCities = new Set();
+        const followedAuthors = new Set();
         if (sort === 'foryou' && opts.userId) {
             const u = await this.users.findOne({ where: { id: opts.userId }, select: ['interests'] });
             for (const it of (u?.interests || []))
@@ -120,6 +139,11 @@ let FeedService = class FeedService {
                 .getRawMany();
             for (const r of visitRows)
                 viewerCities.add(String(r.city).toLowerCase());
+            const followRows = await this.follows.find({
+                where: { followerId: opts.userId }, select: { followingId: true },
+            });
+            for (const r of followRows)
+                followedAuthors.add(r.followingId);
         }
         const tierBoost = (a) => {
             const author = a.author || a.user;
@@ -148,7 +172,8 @@ let FeedService = class FeedService {
             }
             return 1 + 0.25 * Math.min(matches, 2);
         };
-        const forYouScore = (a) => (hotScore(a) + 0.5) * tierBoost(a) * interestBoost(a) * freshnessBoost(a);
+        const affinityBonus = (a) => followedAuthors.size && followedAuthors.has(a.authorId) ? 6 * decay(a.createdAt) : 0;
+        const forYouScore = (a) => (hotScore(a) + 0.5 + affinityBonus(a)) * tierBoost(a) * interestBoost(a) * freshnessBoost(a);
         if (sort === 'foryou') {
             merged.sort((a, b) => {
                 const sb = forYouScore(b);
@@ -201,11 +226,14 @@ let FeedService = class FeedService {
         const feedAds = await this.ads.findActive('feed').catch(() => []);
         const homeAds = (feedAds && feedAds.length) ? feedAds : await this.ads.findActive('home').catch(() => []);
         const adPool = (homeAds || []).filter((a) => a.isActive);
-        if (adPool.length > 0) {
+        const discoveryPool = sort === 'new' ? [] : await this.buildDiscoveryPool(opts.userId);
+        if (adPool.length > 0 || discoveryPool.length > 0) {
             const out = [];
+            let dCursor = discoveryPool.length ? ((page - 1) * 2) % discoveryPool.length : 0;
+            const usedGems = new Set();
             for (let i = 0; i < pageItems.length; i++) {
                 out.push(pageItems[i]);
-                if ((i + 1) % 4 === 0) {
+                if (adPool.length > 0 && (i + 1) % 4 === 0) {
                     const ad = adPool[Math.floor(Math.random() * adPool.length)];
                     const isHouse = !/^https?:\/\//i.test(ad.targetUrl || '');
                     out.push({
@@ -222,6 +250,21 @@ let FeedService = class FeedService {
                         createdAt: new Date().toISOString(),
                     });
                 }
+                else if (discoveryPool.length > 0 && (i + 1) % 7 === 3) {
+                    let picked = null;
+                    for (let t = 0; t < discoveryPool.length; t++) {
+                        const cand = discoveryPool[dCursor % discoveryPool.length];
+                        dCursor++;
+                        if (!usedGems.has(cand.id)) {
+                            picked = cand;
+                            break;
+                        }
+                    }
+                    if (picked) {
+                        usedGems.add(picked.id);
+                        out.push(this.discoveryItem(picked, page, i));
+                    }
+                }
             }
             pageItems = out;
         }
@@ -229,6 +272,38 @@ let FeedService = class FeedService {
         return {
             data: pageItems,
             meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
+        };
+    }
+    async buildDiscoveryPool(userId) {
+        const res = await this.places
+            .findAll({ sortBy: 'rating', order: 'DESC', minRating: 4, limit: 40 })
+            .catch(() => ({ data: [] }));
+        let pool = res?.data || [];
+        if (userId && pool.length) {
+            const visited = await this.placeVisits
+                .find({ where: { userId }, select: { placeId: true } })
+                .catch(() => []);
+            const seen = new Set(visited.map((v) => v.placeId));
+            pool = pool.filter((p) => !seen.has(p.id));
+        }
+        return pool;
+    }
+    discoveryItem(p, page, i) {
+        return {
+            id: `discovery-${p.id}-${page}-${i}`,
+            type: 'discovery',
+            place: {
+                id: p.id,
+                name: p.name,
+                slug: p.slug,
+                city: p.city,
+                governorate: p.governorate,
+                coverImage: p.coverImage || (Array.isArray(p.images) ? p.images[0] : null) || null,
+                rating: Number(p.rating) || 0,
+                reviewCount: p.reviewCount || 0,
+                category: p.category?.name || (typeof p.category === 'string' ? p.category : null),
+            },
+            createdAt: new Date().toISOString(),
         };
     }
     async trendingHashtags(limit = 8) {
