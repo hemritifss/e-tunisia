@@ -10,6 +10,7 @@ import { goTo, replace, currentRoute, onRouteChange, normalizeLegacyHash, before
 import { useAuthStore } from './react/stores/auth-store';
 import { initAnalytics } from './analytics';
 import { initI18n } from './i18n';
+import './referral'; // capture ?ref from the landing URL for the referral loop
 import { initCityFilter } from './city-filter';
 
 function esc(v: unknown): string {

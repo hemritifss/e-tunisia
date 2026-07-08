@@ -1,0 +1,42 @@
+/* Referral dashboard tiles (Tier 1.7 v2). Supplements .credits-referral in pages.css. */
+
+.credits-referral-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-3);
+    margin: var(--space-3) 0;
+}
+.credits-referral-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    padding: var(--space-3);
+    border-radius: var(--radius-lg);
+    background: var(--surface-hover);
+}
+.credits-referral-stat-icon {
+    display: inline-flex;
+    color: var(--accent);
+    margin-bottom: 2px;
+}
+.credits-referral-stat strong {
+    font-size: var(--text-xl);
+    font-weight: 700;
+    color: var(--text-primary);
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+}
+.credits-referral-stat span {
+    font-size: var(--text-xs);
+    color: var(--text-secondary);
+}
+
+/* The row now holds link + Copy + Share — let it wrap cleanly on narrow screens. */
+.credits-referral-row { flex-wrap: wrap; }
+.credits-referral-row .input { flex: 1 1 200px; min-width: 0; }
+
+@media (max-width: 520px) {
+    .credits-referral-stats-grid { gap: var(--space-2); }
+    .credits-referral-stat { padding: var(--space-2); }
+}

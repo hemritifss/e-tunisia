@@ -52,12 +52,16 @@ export class OgController {
         const handle = (rawHandle || '').toLowerCase();
         const user = await this.users.findOne({ where: { handle } }).catch(() => null);
         const name = user?.fullName || `@${handle}`;
+        // Carry a referral handle through to the SPA so a shared passport card that
+        // was a referral link still credits the referrer once the visitor signs up.
+        const ref = typeof req.query.ref === 'string' ? req.query.ref.trim().toLowerCase() : '';
+        const refQs = ref ? `?ref=${encodeURIComponent(ref)}` : '';
         res.send(renderOgHtml({
             title: `${name} — Tunisia Travel Passport`,
             description: (user as any)?.bio
                 || `Follow ${name}'s journey across Tunisia — stamps, reviews and trips on e-Tunisia.`,
             image: `${this.apiOrigin(req)}/api/v1/users/by-handle/${encodeURIComponent(handle)}/og.png`,
-            canonical: `${this.webOrigin()}/u/${encodeURIComponent(handle)}`,
+            canonical: `${this.webOrigin()}/u/${encodeURIComponent(handle)}${refQs}`,
             largeCard: true,
         }));
     }

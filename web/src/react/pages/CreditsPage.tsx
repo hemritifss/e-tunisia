@@ -1,10 +1,13 @@
+import '../../styles/referral.css';
 import React from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   ArrowLeft, Coins, PlusCircle, HeartHandshake, Gift, Copy, Inbox,
   MinusCircle, Send, Percent, RotateCcw, UserPlus, Sparkles, Circle, Crown,
+  Share2, Users2, CheckCircle2,
 } from 'lucide-react';
 import * as api from '../../api';
+import { ogShareUrl } from '../../shared/api';
 import { showToast } from '../../ui-utils';
 import { openDonateModal } from '../../donate-modal';
 import { openTopupModal } from '../../topup-modal';
@@ -96,14 +99,32 @@ export default function CreditsPage() {
     showToast('Referral link copied — share it!');
   };
 
+  // Share the passport card (rich OG preview) carrying the ref, so a single share
+  // is both a beautiful artifact and a working referral link.
+  const passportRefLink = handle
+    ? `${ogShareUrl(`u/${encodeURIComponent(handle)}`)}?ref=${encodeURIComponent(handle)}`
+    : '';
+  const shareRef = async () => {
+    const url = passportRefLink || refLink;
+    const shareData = {
+      title: 'Join me on e-Tunisia',
+      text: 'Plan your Tunisia trip in 5 minutes — join with my link and we both get 10 TND credit.',
+      url,
+    };
+    if ((navigator as any).share) {
+      try { await (navigator as any).share(shareData); return; } catch { /* cancelled / unsupported */ }
+    }
+    try { await navigator.clipboard.writeText(url); showToast('Share link copied!'); }
+    catch { showToast('Could not share right now.', { type: 'error' }); }
+  };
+
   const txs: any[] = Array.isArray(me?.recent) ? me!.recent : [];
-  const refStatsText = (() => {
-    if (!refStats) return '';
-    const parts: string[] = [];
-    if (refStats.released) parts.push(`${refStats.released} reward${refStats.released === 1 ? '' : 's'} earned`);
-    if (refStats.pending) parts.push(`${refStats.pending} pending (paid when they top up)`);
-    return parts.join(' · ');
-  })();
+  // Referral dashboard figures.
+  const rewardTnd = Number(refStats?.rewardTnd ?? 10);
+  const converted = Number(refStats?.released ?? 0);
+  const pendingRef = Number(refStats?.pending ?? 0);
+  const invited = converted + pendingRef;
+  const creditsEarned = converted * rewardTnd;
 
   return (
     <div className="credits-page page-enter" data-design="sleek">
@@ -150,13 +171,32 @@ export default function CreditsPage() {
         <section className="credits-referral">
           <div className="credits-referral-head">
             <h2><Gift /> Refer &amp; earn</h2>
-            <p>Give 10 TND, get 10 TND. Share your link — when a friend joins, you both get credit.</p>
+            <p>Give {rewardTnd} TND, get {rewardTnd} TND. Share your passport — when a friend joins, you both get credit.</p>
           </div>
+
+          <div className="credits-referral-stats-grid">
+            <div className="credits-referral-stat">
+              <span className="credits-referral-stat-icon"><Users2 size={18} /></span>
+              <strong>{invited}</strong><span>Invited</span>
+            </div>
+            <div className="credits-referral-stat">
+              <span className="credits-referral-stat-icon"><CheckCircle2 size={18} /></span>
+              <strong>{converted}</strong><span>Joined</span>
+            </div>
+            <div className="credits-referral-stat">
+              <span className="credits-referral-stat-icon"><Coins size={18} /></span>
+              <strong>{fmt(creditsEarned)}</strong><span>TND earned</span>
+            </div>
+          </div>
+
           <div className="credits-referral-row">
             <input className="input" type="text" readOnly aria-label="Your referral link" value={refLink} />
-            <button className="btn btn-primary" type="button" onClick={copyRef}><Copy /> Copy</button>
+            <button className="btn btn-outline" type="button" onClick={copyRef}><Copy /> Copy</button>
+            <button className="btn btn-primary" type="button" onClick={shareRef}><Share2 /> Share passport</button>
           </div>
-          {refStatsText && <p className="credits-referral-stats">{refStatsText}</p>}
+          {pendingRef > 0 && (
+            <p className="credits-referral-stats">{pendingRef} pending — released once they’re active.</p>
+          )}
         </section>
       )}
 

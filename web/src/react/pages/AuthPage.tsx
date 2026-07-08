@@ -5,6 +5,7 @@ import { User, Mail, Globe2, Lock, Eye, EyeOff, AlertCircle, Check, ArrowRight, 
 import * as api from '../../api';
 import { goTo, currentRoute, replace } from '../../router';
 import { track } from '../../analytics';
+import { getStoredRef, clearStoredRef } from '../../referral';
 
 // Split-screen auth: imagery/welcome panel + form, with an animated side-switch
 // between Sign in and Sign up (in-place, no full reload). Migrated from auth.ts.
@@ -111,11 +112,14 @@ export default function AuthPage() {
     if (password.length < 6) { setError('Password must be at least 6 characters.'); return; }
     setBusy(true);
     const refQs = currentRoute().includes('?') ? currentRoute().split('?')[1] : '';
-    const ref = new URLSearchParams(refQs).get('ref') || undefined;
+    // Prefer the ref in the URL; fall back to one stashed from an earlier referral
+    // link (e.g. a shared passport card the visitor opened before signing up).
+    const ref = (new URLSearchParams(refQs).get('ref') || getStoredRef()) || undefined;
     try {
       const res: any = await api.register({ name: fullname.trim(), email: email.trim(), password, country: country.trim(), ref });
       if (res.accessToken) {
         localStorage.setItem('etunisia_token', res.accessToken);
+        clearStoredRef();
         track('signup', { referred: !!ref });
         goTo('/onboarding');
       }

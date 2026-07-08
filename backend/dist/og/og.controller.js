@@ -47,12 +47,14 @@ let OgController = class OgController {
         const handle = (rawHandle || '').toLowerCase();
         const user = await this.users.findOne({ where: { handle } }).catch(() => null);
         const name = user?.fullName || `@${handle}`;
+        const ref = typeof req.query.ref === 'string' ? req.query.ref.trim().toLowerCase() : '';
+        const refQs = ref ? `?ref=${encodeURIComponent(ref)}` : '';
         res.send(renderOgHtml({
             title: `${name} — Tunisia Travel Passport`,
             description: user?.bio
                 || `Follow ${name}'s journey across Tunisia — stamps, reviews and trips on e-Tunisia.`,
             image: `${this.apiOrigin(req)}/api/v1/users/by-handle/${encodeURIComponent(handle)}/og.png`,
-            canonical: `${this.webOrigin()}/u/${encodeURIComponent(handle)}`,
+            canonical: `${this.webOrigin()}/u/${encodeURIComponent(handle)}${refQs}`,
             largeCard: true,
         }));
     }
