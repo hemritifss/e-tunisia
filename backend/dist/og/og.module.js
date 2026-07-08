@@ -14,12 +14,13 @@ const og_controller_1 = require("./og.controller");
 const user_entity_1 = require("../users/user.entity");
 const place_entity_1 = require("../places/place.entity");
 const post_entity_1 = require("../posts/post.entity");
+const trip_plan_entity_1 = require("../itineraries/trip-plan.entity");
 let OgModule = class OgModule {
 };
 exports.OgModule = OgModule;
 exports.OgModule = OgModule = __decorate([
     (0, common_1.Module)({
-        imports: [typeorm_1.TypeOrmModule.forFeature([user_entity_1.User, place_entity_1.Place, post_entity_1.Post])],
+        imports: [typeorm_1.TypeOrmModule.forFeature([user_entity_1.User, place_entity_1.Place, post_entity_1.Post, trip_plan_entity_1.TripPlan])],
         controllers: [og_controller_1.OgController],
         providers: [og_service_1.OgService],
         exports: [og_service_1.OgService],

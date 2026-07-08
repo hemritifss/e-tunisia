@@ -6,7 +6,6 @@ import {
   Tag, Sparkles, MapPin, Clock, Users, Check, Plus, CalendarX, RotateCcw,
 } from 'lucide-react';
 import * as api from '../../api';
-import { events as mockEvents } from '../../data';
 import { isFlagged, toggleFlag, requireAuth } from '../../ui-utils';
 import { useCity } from '../lib/useCity';
 
@@ -129,16 +128,14 @@ export default function EventsPage() {
   const { data: allEvents, isLoading } = useQuery({
     queryKey: ['events', globalCity],
     queryFn: async () => {
+      // No mock fallback: an empty result is a real answer and must show the
+      // empty state, never fabricated demo events.
       try {
         const evs = await api.getEvents(undefined, globalCity || undefined);
-        if (evs?.length) return evs;
-        // A city filter with zero hits is a real answer — don't paper over it
-        // with mock events from other cities.
-        if (globalCity) return [];
+        return (evs?.length ? evs : []) as any[];
       } catch {
-        /* fall through */
+        return [] as any[];
       }
-      return (globalCity ? [] : mockEvents) as any[];
     },
   });
 

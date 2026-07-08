@@ -1,6 +1,7 @@
 // VITE_API_URL accepts either a full URL or empty (= same-origin, recommended).
 // Endpoints below include /api/v1, so we strip it from the env if user added one.
 import { goTo } from '../router';
+import { brandPlaceholder, type PlaceholderContext } from './placeholder';
 
 const RAW = (import.meta.env.VITE_API_URL ?? '').replace(/\/+$/, '');
 const API_BASE = RAW.replace(/\/api\/v\d+$/, ''); // '' when same-origin
@@ -9,7 +10,7 @@ const API_BASE = RAW.replace(/\/api\/v\d+$/, ''); // '' when same-origin
  * Share URLs must go through the backend's crawler-visible OG routes —
  * WhatsApp/Facebook/X never run JS, so SPA URLs preview as a blank generic
  * card. These pages carry real OG meta and instantly redirect humans to the
- * pretty in-app URL. Kinds: 'u/<handle>' | 'place/<id>' | 'post/<id>'.
+ * pretty in-app URL. Kinds: 'u/<handle>' | 'place/<id>' | 'post/<id>' | 'trip/<slug>'.
  */
 export function ogShareUrl(path: string): string {
   const origin = API_BASE || (typeof location !== 'undefined' ? location.origin : '');
@@ -521,8 +522,11 @@ export async function uploadMedia(file: File, folder = 'uploads'): Promise<strin
   return url;
 }
 
-export function getImageUrl(path?: string | null): string {
-  if (!path) return '';
+export function getImageUrl(path?: string | null, context?: PlaceholderContext): string {
+  // When we know the content kind but have no image, return a branded placeholder
+  // instead of an empty src (broken <img>). Callers that pass no context keep the
+  // old '' behaviour, so existing conditional-render/empty-state logic is untouched.
+  if (!path) return context ? brandPlaceholder(context) : '';
   if (path.startsWith('http')) return path;
   if (path.startsWith('/uploads')) return `${API_BASE}${path}`;
   return path;

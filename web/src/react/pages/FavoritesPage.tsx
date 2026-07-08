@@ -2,7 +2,6 @@ import React from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Heart, MapPin, Star, Compass } from 'lucide-react';
 import * as api from '../../api';
-import { places as mockPlaces } from '../../data';
 import { toggleFlag, isFlagged } from '../../ui-utils';
 
 // Migrated from vanilla pages/favorites.ts — same classes, same data merge
@@ -40,9 +39,7 @@ async function loadFavorites(): Promise<any[]> {
       /* ignore */
     }
   }
-  if (saved.length === 0 && serverIds.length === 0 && localIds.length === 0) {
-    saved = (mockPlaces as any[]).filter((p) => p.saved);
-  }
+  // No mock fallback: a user with nothing saved sees the real empty state.
   return saved;
 }
 

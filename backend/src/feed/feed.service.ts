@@ -226,16 +226,20 @@ export class FeedService {
                 out.push(pageItems[i]);
                 if ((i + 1) % 4 === 0) {
                     const ad = adPool[Math.floor(Math.random() * adPool.length)];
+                    // House ads (our own promos) point at internal routes and are
+                    // labeled honestly — never "Sponsored". Paid partners use https.
+                    const isHouse = !/^https?:\/\//i.test(ad.targetUrl || '');
                     out.push({
                         id: `ad-${ad.id}-${page}-${i}`,
                         type: 'ad' as const,
                         adId: ad.id,
                         title: ad.title,
                         body: ad.description,
-                        cta: 'Learn More',
+                        cta: isHouse ? 'Open' : 'Learn More',
                         ctaUrl: ad.targetUrl,
                         images: ad.imageUrl ? [ad.imageUrl] : [],
                         sponsor: ad.advertiserName || 'Sponsored',
+                        isHouse,
                         createdAt: new Date().toISOString(),
                     });
                 }

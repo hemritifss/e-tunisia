@@ -3,7 +3,6 @@ import React, { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Trophy, Globe, Building2, Check, Sparkles, BadgeCheck } from 'lucide-react';
 import * as api from '../../api';
-import { leaderboard as mockLeaderboard } from '../../data';
 
 // Migrated from the vanilla pages/leaderboard.ts — same markup classes, same
 // data calls + mock fallback, same data-user-* attrs (drive the right-click
@@ -147,13 +146,13 @@ function Empty({ message }: { message: string }) {
 }
 
 async function fetchGlobal(): Promise<any[]> {
+  // No mock fallback: an empty leaderboard shows the real empty state.
   try {
     const leaders = await api.getLeaderboard(20);
-    if (leaders?.length) return leaders;
+    return leaders?.length ? leaders : [];
   } catch {
-    /* fall through to mock */
+    return [];
   }
-  return mockLeaderboard as any[];
 }
 
 async function fetchCities(): Promise<string[]> {

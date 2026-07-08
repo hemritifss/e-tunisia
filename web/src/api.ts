@@ -8,6 +8,7 @@
 //   "https://abc.ngrok-free.app"           → /api/v1 is appended
 //   "https://abc.ngrok-free.app/api/v1"    → used as-is
 import { goTo } from './router';
+import { brandPlaceholder } from './shared/placeholder';
 
 const RAW_BASE = (import.meta.env?.VITE_API_URL ?? '').replace(/\/+$/, '');
 const BASE_URL = !RAW_BASE
@@ -111,14 +112,8 @@ export async function googleLogin(credential: string) {
 
 export function getImageUrl(path: string | null | undefined, context?: 'place' | 'post' | 'event' | 'itinerary' | 'avatar'): string {
   if (!path) {
-    switch (context) {
-      case 'place': return 'https://images.unsplash.com/photo-1689742855019-a09e208930e8?w=600&q=80';
-      case 'post': return 'https://images.unsplash.com/photo-1522881451255-f59ad836fdfb?auto=format&fit=crop&w=600&q=80';
-      case 'event': return 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=600&q=80';
-      case 'itinerary': return 'https://images.unsplash.com/photo-1611094184403-df84cdcc7523?w=600&q=80';
-      case 'avatar': return 'https://api.dicebear.com/9.x/thumbs/svg?seed=user';
-      default: return 'https://images.unsplash.com/photo-1680600855512-441b69ef3d18?w=600&q=80';
-    }
+    // Branded, self-contained placeholder — never random stock scenery.
+    return brandPlaceholder(context);
   }
   if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('data:')) {
     return path;
@@ -130,7 +125,7 @@ export function getImageUrl(path: string | null | undefined, context?: 'place' |
 }
 
 export async function requestPasswordReset(email: string) {
-  const res = await fetch(`${API_BASE}/api/v1/auth/forgot-password`, {
+  const res = await fetch(`${BASE_URL}/auth/forgot-password`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email }),
@@ -141,7 +136,7 @@ export async function requestPasswordReset(email: string) {
 }
 
 export async function resetPassword(token: string, password: string) {
-  const res = await fetch(`${API_BASE}/api/v1/auth/reset-password`, {
+  const res = await fetch(`${BASE_URL}/auth/reset-password`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ token, password }),

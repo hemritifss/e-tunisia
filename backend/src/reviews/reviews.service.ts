@@ -148,9 +148,12 @@ export class ReviewsService {
                 fullName: r.user.fullName,
                 avatar: r.user.avatar || null,
             } : null,
-            upvotes: 5 + Math.floor((Number(r.rating) || 4) * 12) + (r.id.charCodeAt(0) % 40),
-            downvotes: r.id.charCodeAt(2) % 4,
-            commentCount: r.id.charCodeAt(1) % 25,
+            // Reviews are shaped as feed cards but have no reaction/comment system
+            // of their own — the honest engagement signal is the star rating above.
+            // Never fabricate counts (previously derived from id.charCodeAt()).
+            upvotes: 0,
+            downvotes: 0,
+            commentCount: 0,
             createdAt: r.createdAt,
         }));
 

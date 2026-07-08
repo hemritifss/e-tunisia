@@ -207,16 +207,18 @@ let FeedService = class FeedService {
                 out.push(pageItems[i]);
                 if ((i + 1) % 4 === 0) {
                     const ad = adPool[Math.floor(Math.random() * adPool.length)];
+                    const isHouse = !/^https?:\/\//i.test(ad.targetUrl || '');
                     out.push({
                         id: `ad-${ad.id}-${page}-${i}`,
                         type: 'ad',
                         adId: ad.id,
                         title: ad.title,
                         body: ad.description,
-                        cta: 'Learn More',
+                        cta: isHouse ? 'Open' : 'Learn More',
                         ctaUrl: ad.targetUrl,
                         images: ad.imageUrl ? [ad.imageUrl] : [],
                         sponsor: ad.advertiserName || 'Sponsored',
+                        isHouse,
                         createdAt: new Date().toISOString(),
                     });
                 }

@@ -6,6 +6,7 @@ import { Repository } from 'typeorm';
 import { User } from '../users/user.entity';
 import { Place } from '../places/place.entity';
 import { Post } from '../posts/post.entity';
+import { TripPlan } from '../itineraries/trip-plan.entity';
 
 /**
  * Crawler-visible link previews.
@@ -25,6 +26,7 @@ export class OgController {
         @InjectRepository(User) private readonly users: Repository<User>,
         @InjectRepository(Place) private readonly places: Repository<Place>,
         @InjectRepository(Post) private readonly posts: Repository<Post>,
+        @InjectRepository(TripPlan) private readonly trips: Repository<TripPlan>,
     ) {}
 
     private webOrigin(): string {
@@ -87,6 +89,34 @@ export class OgController {
             image: this.absolutize(post?.images?.[0] || post?.author?.avatar, req),
             canonical: `${this.webOrigin()}/post/${encodeURIComponent(id)}`,
             largeCard: !!post?.images?.length,
+        }));
+    }
+
+    @Get('trip/:slug')
+    @Header('Content-Type', 'text/html; charset=utf-8')
+    @Header('Cache-Control', 'public, max-age=3600, stale-while-revalidate=86400')
+    async trip(@Param('slug') slug: string, @Req() req: Request, @Res() res: Response) {
+        const trip = await this.trips.findOne({ where: { slug } }).catch(() => null);
+        const stops = Array.isArray(trip?.stops) ? trip!.stops : [];
+        const stopCount = stops.length;
+        const days = trip?.days || 1;
+        // Prefer a real stop cover for the preview image; fall back to the first city.
+        const cover = stops.map((s) => s.placeCover).find(Boolean) || null;
+        const cities = Array.from(new Set(stops.map((s) => s.placeCity).filter(Boolean)));
+        const citiesLabel = cities.slice(0, 3).join(', ');
+        const parts = [
+            `${stopCount} ${stopCount === 1 ? 'stop' : 'stops'}`,
+            `${days} ${days === 1 ? 'day' : 'days'}`,
+        ];
+        if (citiesLabel) parts.push(citiesLabel);
+        res.send(renderOgHtml({
+            title: trip ? `${trip.title} — a Tunisia trip` : 'Plan your Tunisia trip',
+            description: trip
+                ? `${parts.join(' · ')}. See the route, drive times and stops on e-Tunisia.`
+                : 'Build a day-by-day Tunisia itinerary with real road routes — free on e-Tunisia.',
+            image: this.absolutize(cover, req),
+            canonical: `${this.webOrigin()}/trip/${encodeURIComponent(slug)}`,
+            largeCard: !!cover,
         }));
     }
 }

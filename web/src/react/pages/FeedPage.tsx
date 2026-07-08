@@ -43,6 +43,7 @@ import { TierBadge } from '../components/TierBadge';
 import { PullToRefresh } from '../components/PullToRefresh';
 import { TunisiaNowPanel } from '../components/TunisiaNowPanel';
 import { PostImageCarousel } from '../components/PostImageCarousel';
+import { StarRating } from '../components/StarRating';
 import { Reveal } from '../components/Reveal';
 import { SponsorsStrip } from '../components/SponsorsStrip';
 import { Plus, User as UserIcon, RefreshCcw, Users as UsersIcon, Sparkles, Compass } from 'lucide-react';
@@ -217,6 +218,12 @@ function PostCard({ post }: { post: Post }) {
   const isProAuthor = authorPlan === 'premium' || authorPlan === 'business' || authorPlan === 'admin';
   const images: string[] = Array.isArray(post.images) ? post.images.filter(Boolean) : [];
 
+  // Reviews are shaped as feed cards but have no reaction/comment system of their
+  // own — the honest engagement signal is the star rating. Render review cards with
+  // a rating-first action row instead of the (server-side broken) react/comment/repost.
+  const isReview = (post as any).type === 'review';
+  const reviewRating = Number((post as any).rating) || 0;
+
   return (
     <motion.article
       className={`post-card-v2${isProAuthor ? ' is-pro' : ''}`}
@@ -257,6 +264,11 @@ function PostCard({ post }: { post: Post }) {
 
       <a className="post-card-v2-content" href={detailHash}>
         {post.title && <h3 className="post-card-v2-title">{post.title}</h3>}
+        {isReview && reviewRating > 0 && (
+          <div className="post-card-v2-review-rating" aria-label={`Rated ${reviewRating} out of 5`}>
+            <StarRating rating={reviewRating} size={15} />
+          </div>
+        )}
         {post.body && <p className="post-card-v2-body">{displayBody}</p>}
       </a>
       {post.body && post.body.trim().length > 0 && (
@@ -296,24 +308,34 @@ function PostCard({ post }: { post: Post }) {
       )}
 
       <footer className="post-card-v2-actions">
-        <ReactionPicker
-          postId={post.id}
-          initialMine={(post as any).myReaction || null}
-          initialBreakdown={(post as any).reactions?.breakdown || {}}
-          initialTotal={
-            typeof (post as any).reactions?.total === 'number'
-              ? (post as any).reactions.total
-              : (Number(post.upvotes) || 0)
-          }
-        />
-        <button className="post-card-v2-action pc-act-comment" onClick={handleComment} aria-label="Comments">
-          <MessageCircle size={15} />
-          <span>{formatNumber(post.commentCount)}</span>
-        </button>
-        <button className={`post-card-v2-action pc-act-repost ${repostedLocal ? 'is-active' : ''}`} onClick={handleRepost} aria-label={repostedLocal ? 'Undo repost' : 'Repost'}>
-          <Repeat size={15} />
-          <span>{formatNumber(repostCount)}</span>
-        </button>
+        {!isReview && (
+          <>
+            <ReactionPicker
+              postId={post.id}
+              initialMine={(post as any).myReaction || null}
+              initialBreakdown={(post as any).reactions?.breakdown || {}}
+              initialTotal={
+                typeof (post as any).reactions?.total === 'number'
+                  ? (post as any).reactions.total
+                  : (Number(post.upvotes) || 0)
+              }
+            />
+            <button className="post-card-v2-action pc-act-comment" onClick={handleComment} aria-label="Comments">
+              <MessageCircle size={15} />
+              <span>{formatNumber(post.commentCount)}</span>
+            </button>
+            <button className={`post-card-v2-action pc-act-repost ${repostedLocal ? 'is-active' : ''}`} onClick={handleRepost} aria-label={repostedLocal ? 'Undo repost' : 'Repost'}>
+              <Repeat size={15} />
+              <span>{formatNumber(repostCount)}</span>
+            </button>
+          </>
+        )}
+        {isReview && (
+          <a className="post-card-v2-action pc-act-review" href={detailHash} aria-label="Read review on place page">
+            <MapPin size={15} />
+            <span>Visit place</span>
+          </a>
+        )}
         <button className="post-card-v2-action pc-act-share" onClick={handleShare} aria-label="Share">
           <Share2 size={15} />
           <span>Share</span>

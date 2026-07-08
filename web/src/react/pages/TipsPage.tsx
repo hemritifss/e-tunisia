@@ -3,7 +3,6 @@ import React, { useEffect, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Sparkles, Landmark, Bus, Banknote, ShieldCheck, Utensils, Compass, Plus, X, Heart, Share2, Send } from 'lucide-react';
 import * as api from '../../api';
-import { tips as mockTips } from '../../data';
 import { shareUrl, isFlagged, toggleFlag, requireAuth } from '../../ui-utils';
 import { absoluteUrl } from '../../router';
 
@@ -128,13 +127,13 @@ export default function TipsPage() {
   const { data: allTips } = useQuery({
     queryKey: ['tips'],
     queryFn: async () => {
+      // No mock fallback: show the real empty state when there are no tips yet.
       try {
         const t = await api.getTips();
-        if (t?.length) return t;
+        return (t?.length ? t : []) as any[];
       } catch {
-        /* fall through */
+        return [] as any[];
       }
-      return mockTips as any[];
     },
   });
 

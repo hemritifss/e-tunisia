@@ -1,5 +1,6 @@
 import { Repository } from 'typeorm';
 import { Ad } from './ad.entity';
+export declare const HOUSE_ADVERTISER = "e-Tunisia";
 export declare class AdsService {
     private adsRepo;
     constructor(adsRepo: Repository<Ad>);
@@ -15,4 +16,6 @@ export declare class AdsService {
     trackClick(id: string): Promise<Ad>;
     getStats(): Promise<any>;
     seed(): Promise<void>;
+    private static readonly GLYPHS;
+    private static houseBanner;
 }

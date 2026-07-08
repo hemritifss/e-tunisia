@@ -145,9 +145,9 @@ let ReviewsService = ReviewsService_1 = class ReviewsService {
                 fullName: r.user.fullName,
                 avatar: r.user.avatar || null,
             } : null,
-            upvotes: 5 + Math.floor((Number(r.rating) || 4) * 12) + (r.id.charCodeAt(0) % 40),
-            downvotes: r.id.charCodeAt(2) % 4,
-            commentCount: r.id.charCodeAt(1) % 25,
+            upvotes: 0,
+            downvotes: 0,
+            commentCount: 0,
             createdAt: r.createdAt,
         }));
         return {

@@ -6,7 +6,6 @@ import {
   Landmark, Utensils, MessageCircle, Compass, Flame, Users, BookOpen, Heart,
   Calendar, Map, Tag, TrendingUp, Lock, CircleCheckBig,
 } from 'lucide-react';
-import { badges as mockBadges } from '../../data';
 import * as api from '../../api';
 
 // Migrated from vanilla pages/badges.ts — gamification surface.
@@ -49,11 +48,12 @@ export default function BadgesPage() {
   const { data: badges = [], isLoading } = useQuery({
     queryKey: ['all-badges'],
     queryFn: async () => {
+      // No mock fallback: never show fabricated "earned" badges. Real catalog or empty.
       try {
         const b = await api.getAllBadges();
-        return b?.length ? b : (mockBadges as any[]);
+        return (b?.length ? b : []) as any[];
       } catch {
-        return mockBadges as any[];
+        return [] as any[];
       }
     },
   });

@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Luggage, Send, Share2, Compass, Link as LinkIcon, Copy, X, Package, MapPin, SearchX, ShieldCheck, CheckCircle2, PlaneLanding, PlaneTakeoff } from 'lucide-react';
 import * as api from '../../api';
+import { ogShareUrl } from '../../shared/api';
 import * as cart from '../../trip-cart';
 import { showToast } from '../../ui-utils';
 import { currentPath, goTo, absoluteUrl, onRouteChange } from '../../router';
@@ -223,7 +224,8 @@ function CartView() {
     setSavingBtn(true);
     try {
       const trip = await api.saveTrip(serialize(state));
-      const url = absoluteUrl(`/trip/${trip.slug}`);
+      // Copy the crawler-visible OG link (rich preview), not the raw SPA URL.
+      const url = ogShareUrl(`trip/${trip.slug}`);
       try { await navigator.clipboard.writeText(url); } catch { /* ignore */ }
       showToast('Trip saved - link copied');
       goTo(`/trip/${trip.slug}`);
@@ -323,7 +325,9 @@ function SavedTripView({ slug }: { slug: string }) {
   };
 
   const copyLink = async () => {
-    try { await navigator.clipboard.writeText(location.href); showToast('Link copied'); }
+    // Share the OG route so WhatsApp/Facebook/X render a rich preview card.
+    const url = ogShareUrl(`trip/${trip.slug}`);
+    try { await navigator.clipboard.writeText(url); showToast('Link copied'); }
     catch { showToast('Could not copy', { type: 'error' }); }
   };
 

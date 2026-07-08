@@ -20,12 +20,14 @@ const typeorm_2 = require("typeorm");
 const user_entity_1 = require("../users/user.entity");
 const place_entity_1 = require("../places/place.entity");
 const post_entity_1 = require("../posts/post.entity");
+const trip_plan_entity_1 = require("../itineraries/trip-plan.entity");
 let OgController = class OgController {
-    constructor(config, users, places, posts) {
+    constructor(config, users, places, posts, trips) {
         this.config = config;
         this.users = users;
         this.places = places;
         this.posts = posts;
+        this.trips = trips;
     }
     webOrigin() {
         return (this.config.get('FRONTEND_URL') || 'http://localhost:5173').replace(/\/+$/, '');
@@ -76,6 +78,30 @@ let OgController = class OgController {
             largeCard: !!post?.images?.length,
         }));
     }
+    async trip(slug, req, res) {
+        const trip = await this.trips.findOne({ where: { slug } }).catch(() => null);
+        const stops = Array.isArray(trip?.stops) ? trip.stops : [];
+        const stopCount = stops.length;
+        const days = trip?.days || 1;
+        const cover = stops.map((s) => s.placeCover).find(Boolean) || null;
+        const cities = Array.from(new Set(stops.map((s) => s.placeCity).filter(Boolean)));
+        const citiesLabel = cities.slice(0, 3).join(', ');
+        const parts = [
+            `${stopCount} ${stopCount === 1 ? 'stop' : 'stops'}`,
+            `${days} ${days === 1 ? 'day' : 'days'}`,
+        ];
+        if (citiesLabel)
+            parts.push(citiesLabel);
+        res.send(renderOgHtml({
+            title: trip ? `${trip.title} — a Tunisia trip` : 'Plan your Tunisia trip',
+            description: trip
+                ? `${parts.join(' · ')}. See the route, drive times and stops on e-Tunisia.`
+                : 'Build a day-by-day Tunisia itinerary with real road routes — free on e-Tunisia.',
+            image: this.absolutize(cover, req),
+            canonical: `${this.webOrigin()}/trip/${encodeURIComponent(slug)}`,
+            largeCard: !!cover,
+        }));
+    }
 };
 exports.OgController = OgController;
 __decorate([
@@ -111,12 +137,25 @@ __decorate([
     __metadata("design:paramtypes", [String, Object, Object]),
     __metadata("design:returntype", Promise)
 ], OgController.prototype, "post", null);
+__decorate([
+    (0, common_1.Get)('trip/:slug'),
+    (0, common_1.Header)('Content-Type', 'text/html; charset=utf-8'),
+    (0, common_1.Header)('Cache-Control', 'public, max-age=3600, stale-while-revalidate=86400'),
+    __param(0, (0, common_1.Param)('slug')),
+    __param(1, (0, common_1.Req)()),
+    __param(2, (0, common_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object, Object]),
+    __metadata("design:returntype", Promise)
+], OgController.prototype, "trip", null);
 exports.OgController = OgController = __decorate([
     (0, common_1.Controller)('og'),
     __param(1, (0, typeorm_1.InjectRepository)(user_entity_1.User)),
     __param(2, (0, typeorm_1.InjectRepository)(place_entity_1.Place)),
     __param(3, (0, typeorm_1.InjectRepository)(post_entity_1.Post)),
+    __param(4, (0, typeorm_1.InjectRepository)(trip_plan_entity_1.TripPlan)),
     __metadata("design:paramtypes", [config_1.ConfigService,
+        typeorm_2.Repository,
         typeorm_2.Repository,
         typeorm_2.Repository,
         typeorm_2.Repository])

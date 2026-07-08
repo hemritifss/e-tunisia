@@ -9,20 +9,14 @@ import {
   CornerDownRight, Trash2, MessageSquareReply, X, CheckCircle2,
 } from 'lucide-react';
 import * as apiService from '../../api';
-import { places as mockPlaces } from '../../data';
 import { shareUrl, toggleSaved, isSaved, showToast } from '../../ui-utils';
 import * as tripCart from '../../trip-cart';
 import { Reveal } from '../components/Reveal';
+import { KontHouniButton } from '../components/KontHouniButton';
 import { currentPath, query as routeQuery, absoluteUrl, onRouteChange } from '../../router';
 import { addVisitedCity, isAnonymous } from '../../passport-draft';
 
 // Migrated from vanilla pages/place-detail.ts.
-
-const mockComments = [
-  { author: 'Sarah M.', avatar: 'https://api.dicebear.com/9.x/thumbs/svg?seed=Sarah', text: 'Absolutely stunning place! The views are breathtaking.', rating: 5, timeAgo: '2d ago' },
-  { author: 'Karim B.', avatar: 'https://api.dicebear.com/9.x/thumbs/svg?seed=Karim', text: 'Great historical site. Would recommend visiting early morning to avoid crowds.', rating: 4, timeAgo: '5d ago' },
-  { author: 'Leila T.', avatar: 'https://api.dicebear.com/9.x/thumbs/svg?seed=Leila', text: 'Beautiful architecture and rich history. The guide was very knowledgeable.', rating: 5, timeAgo: '1w ago' },
-];
 
 function placeIdFromPath(): string {
   // Capture the full id incl. hyphens (UUIDs) — \w+ would truncate at the first '-'.
@@ -309,14 +303,16 @@ export default function PlaceDetailPage() {
         const p = await apiService.getPlace(placeId);
         if (p) return p;
       } catch { /* fall through */ }
-      return mockPlaces.find((p) => p.id === placeId) || { name: 'Place Not Found', description: 'This place could not be loaded.', category: '', location: '', rating: 0, reviewCount: 0 };
+      // No mock fallback: an unloadable place shows an honest "not found" state,
+      // never fabricated place content.
+      return { name: 'Place Not Found', description: 'This place could not be loaded.', category: '', location: '', rating: 0, reviewCount: 0 };
     },
   });
   const place = placeQ.data;
 
   const reviewsQ = useQuery({
     queryKey: ['reviews', placeId],
-    queryFn: () => apiService.getReviews(placeId).catch(() => mockComments as any[]),
+    queryFn: () => apiService.getReviews(placeId).catch(() => [] as any[]),
   });
   const reviews = reviewsQ.data ?? [];
 
@@ -436,7 +432,10 @@ export default function PlaceDetailPage() {
           <div className="place-detail-info">
             <div className="place-detail-category">{cat}</div>
             <h1 className="place-detail-name">{place.name}</h1>
-            <div className="place-detail-location"><MapPin /> {place.location || place.city || ''}</div>
+            <div className="place-detail-location">
+              <MapPin /> {place.location || place.city || ''}
+              <KontHouniButton placeId={placeId} />
+            </div>
             <div className="place-detail-rating">
               <div className="place-detail-stars"><Stars rating={Math.round(ratingValue)} /></div>
               <span className="place-detail-rating-value">{ratingValue.toFixed(1)}</span>
