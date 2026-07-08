@@ -4,6 +4,8 @@ export declare class Post {
     title: string;
     body: string;
     category: string;
+    kind: string | null;
+    meta: Record<string, any> | null;
     location: string;
     placeId: string;
     images: string[];

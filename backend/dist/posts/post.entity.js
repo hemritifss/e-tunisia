@@ -35,6 +35,14 @@ __decorate([
 __decorate([
     (0, typeorm_1.Column)({ nullable: true }),
     __metadata("design:type", String)
+], Post.prototype, "kind", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'simple-json', nullable: true }),
+    __metadata("design:type", Object)
+], Post.prototype, "meta", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
 ], Post.prototype, "location", void 0);
 __decorate([
     (0, typeorm_1.Column)({ nullable: true }),

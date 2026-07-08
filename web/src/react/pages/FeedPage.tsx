@@ -13,6 +13,7 @@ import {
   Coins,
   Repeat,
   Languages,
+  Award,
 } from 'lucide-react';
 import { openDonateModal } from '../../donate-modal';
 import { api, ogShareUrl } from '../../shared/api';
@@ -225,9 +226,16 @@ function PostCard({ post }: { post: Post }) {
   const isReview = (post as any).type === 'review';
   const reviewRating = Number((post as any).rating) || 0;
 
+  // Auto-generated achievement cards (badge/level earned) — celebratory styling,
+  // still reactable/commentable by others (they're real posts).
+  const isAchievement = (post as any).kind === 'achievement';
+  const achievementMeta = (post as any).meta || null;
+  const achievementBadges: Array<{ label: string; description?: string }> =
+    Array.isArray(achievementMeta?.badges) ? achievementMeta.badges : [];
+
   return (
     <motion.article
-      className={`post-card-v2${isProAuthor ? ' is-pro' : ''}`}
+      className={`post-card-v2${isProAuthor ? ' is-pro' : ''}${isAchievement ? ' is-achievement' : ''}`}
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
@@ -263,15 +271,34 @@ function PostCard({ post }: { post: Post }) {
         )}
       </header>
 
-      <a className="post-card-v2-content" href={detailHash}>
-        {post.title && <h3 className="post-card-v2-title">{post.title}</h3>}
-        {isReview && reviewRating > 0 && (
-          <div className="post-card-v2-review-rating" aria-label={`Rated ${reviewRating} out of 5`}>
-            <StarRating rating={reviewRating} size={15} />
+      {isAchievement ? (
+        <div className="post-card-v2-achievement">
+          <div className="pc-achv-medal" aria-hidden="true"><Award size={22} /></div>
+          <div className="pc-achv-body">
+            <h3 className="pc-achv-title">{post.title}</h3>
+            {achievementBadges.length > 0 && (
+              <ul className="pc-achv-badges">
+                {achievementBadges.map((b, i) => (
+                  <li key={i} className="pc-achv-badge">{b.label}</li>
+                ))}
+              </ul>
+            )}
+            {typeof achievementMeta?.points === 'number' && achievementMeta.points > 0 && (
+              <span className="pc-achv-xp">+{achievementMeta.points} XP</span>
+            )}
           </div>
-        )}
-        {post.body && <p className="post-card-v2-body">{displayBody}</p>}
-      </a>
+        </div>
+      ) : (
+        <a className="post-card-v2-content" href={detailHash}>
+          {post.title && <h3 className="post-card-v2-title">{post.title}</h3>}
+          {isReview && reviewRating > 0 && (
+            <div className="post-card-v2-review-rating" aria-label={`Rated ${reviewRating} out of 5`}>
+              <StarRating rating={reviewRating} size={15} />
+            </div>
+          )}
+          {post.body && <p className="post-card-v2-body">{displayBody}</p>}
+        </a>
+      )}
       {post.body && post.body.trim().length > 0 && (
         <button
           type="button"

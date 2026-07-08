@@ -10,13 +10,14 @@ exports.BadgesModule = void 0;
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const user_entity_1 = require("../users/user.entity");
+const post_entity_1 = require("../posts/post.entity");
 const badges_service_1 = require("./badges.service");
 let BadgesModule = class BadgesModule {
 };
 exports.BadgesModule = BadgesModule;
 exports.BadgesModule = BadgesModule = __decorate([
     (0, common_1.Module)({
-        imports: [typeorm_1.TypeOrmModule.forFeature([user_entity_1.User])],
+        imports: [typeorm_1.TypeOrmModule.forFeature([user_entity_1.User, post_entity_1.Post])],
         providers: [badges_service_1.BadgesService],
         exports: [badges_service_1.BadgesService],
     })

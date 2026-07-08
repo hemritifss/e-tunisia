@@ -562,6 +562,8 @@ export class PostsService {
             commentCount: p.commentCount,
             viewCount: p.viewCount,
             isPinned: p.isPinned,
+            kind: p.kind || null,
+            meta: p.meta || null,
             createdAt: p.createdAt,
         }));
 

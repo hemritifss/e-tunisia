@@ -19,6 +19,18 @@ export class Post {
     @Index()
     category: string;
 
+    /**
+     * Post variant. Default null = a normal user post. 'achievement' = an
+     * auto-generated celebratory card (badge/level earned) that others can react
+     * to — turns private dopamine into social proof, right in the feed.
+     */
+    @Column({ nullable: true })
+    kind: string | null;
+
+    /** Structured payload for non-plain kinds (e.g. achievement badge details). */
+    @Column({ type: 'simple-json', nullable: true })
+    meta: Record<string, any> | null;
+
     @Column({ nullable: true })
     location: string;
 

@@ -502,6 +502,8 @@ let PostsService = class PostsService {
             commentCount: p.commentCount,
             viewCount: p.viewCount,
             isPinned: p.isPinned,
+            kind: p.kind || null,
+            meta: p.meta || null,
             createdAt: p.createdAt,
         }));
         return { data, meta: { page, limit, total, totalPages: Math.ceil(total / limit) } };
