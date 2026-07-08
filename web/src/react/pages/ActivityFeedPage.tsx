@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api, getImageUrl } from '../../shared/api';
 import { goTo } from '../../router';
+import { usePopupStore } from '../stores/popup-store';
 import {
     Star,
     Compass,
@@ -23,6 +24,7 @@ import {
     Gem,
     Mountain,
     BellOff,
+    PartyPopper,
     type LucideIcon,
 } from 'lucide-react';
 import { TOPIC_BY_ID } from '../components/endorsement-topics';
@@ -232,6 +234,16 @@ export default function ActivityFeedPage() {
         staleTime: 60_000,
     });
 
+    // Moments that overflowed the popup interrupt budget land here as unread.
+    const missed = usePopupStore((s) => s.missed);
+    const markMissedRead = usePopupStore((s) => s.markMissedRead);
+    const unreadMissed = missed.filter((m) => !m.read);
+    useEffect(() => {
+        if (!unreadMissed.length) return;
+        const t = setTimeout(() => markMissedRead(), 1600);
+        return () => clearTimeout(t);
+    }, [unreadMissed.length, markMissedRead]);
+
     const entries: Entry[] = Array.isArray(data) ? data : (data as any)?.data ?? [];
 
     return (
@@ -269,6 +281,22 @@ export default function ActivityFeedPage() {
                     </button>
                 </div>
             </header>
+
+            {unreadMissed.length > 0 && (
+                <section className="activity-missed" aria-label="Moments you missed">
+                    <div className="activity-missed-head">
+                        <PartyPopper size={14} /> While you were away
+                    </div>
+                    <ul className="activity-missed-list">
+                        {unreadMissed.slice(0, 6).map((m) => (
+                            <li key={m.id} className="activity-missed-item">
+                                <span className="activity-missed-dot" aria-hidden="true" />
+                                <span className="activity-missed-text">{m.summary}</span>
+                            </li>
+                        ))}
+                    </ul>
+                </section>
+            )}
 
             {isLoading && (
                 <div className="activity-skel" role="status" aria-label="Loading activity">
