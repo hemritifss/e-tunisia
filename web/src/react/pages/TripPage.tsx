@@ -9,6 +9,8 @@ import { showToast } from '../../ui-utils';
 import { currentPath, goTo, absoluteUrl, onRouteChange } from '../../router';
 import { TripRouteMap, TripDayChips } from '../components/TripRouteMap';
 import { WeatherBadge } from '../components/WeatherBadge';
+import { useCurrency } from '../lib/useCurrency';
+import { formatMoney } from '../../currency';
 import { useT } from '../../i18n/useT';
 
 // Migrated from vanilla pages/trip.ts — cart view (/trip) + saved view (/trip/:slug).
@@ -18,7 +20,12 @@ function slugFromPath(): string | null {
   return m && m[1] ? m[1] : null;
 }
 
-const fmtPrice = (n: number, currency: string) => `${(Math.round(n) || 0).toLocaleString()} ${currency || 'TND'}`;
+// TND amounts flip to the visitor's chosen display currency; a non-TND source
+// currency (rare) is shown as stored.
+const fmtPrice = (n: number, currency: string) =>
+  currency && currency !== 'TND'
+    ? `${(Math.round(n) || 0).toLocaleString()} ${currency}`
+    : formatMoney(n);
 
 function StopCard({ stop, editable }: { stop: any; editable: boolean }) {
   return (
@@ -40,7 +47,7 @@ function StopCard({ stop, editable }: { stop: any; editable: boolean }) {
         {stop.packageTitle && <div className="trip-stop-pkg"><Package /> <span> {stop.packageTitle}</span></div>}
         {stop.placeCity && <div className="trip-stop-meta"><MapPin /> <span> {stop.placeCity}</span></div>}
         {typeof stop.pricePerPerson === 'number' && stop.pricePerPerson > 0 && (
-          <div className="trip-stop-price"><strong>{stop.pricePerPerson} {stop.currency || 'TND'}</strong> / person</div>
+          <div className="trip-stop-price"><strong>{fmtPrice(stop.pricePerPerson, stop.currency)}</strong> / person</div>
         )}
       </div>
     </article>
@@ -379,6 +386,7 @@ function SavedTripView({ slug }: { slug: string }) {
 
 export default function TripPage() {
   const [slug, setSlug] = useState(slugFromPath());
+  useCurrency(); // re-render the whole trip view when the display currency changes
   useEffect(() => onRouteChange(() => setSlug(slugFromPath())), []);
   return slug ? <SavedTripView slug={slug} /> : <CartView />;
 }
