@@ -2,7 +2,8 @@ import { User } from '../users/user.entity';
 export declare enum SubStatus {
     ACTIVE = "active",
     EXPIRED = "expired",
-    CANCELLED = "cancelled"
+    CANCELLED = "cancelled",
+    PENDING = "pending"
 }
 export declare class Subscription {
     id: string;

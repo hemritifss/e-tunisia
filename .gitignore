@@ -33,3 +33,10 @@ build/
 web/.claude/
 .vercel
 .env*.local
+
+# QA / verification artifacts (screenshots + Playwright MCP output)
+.playwright-mcp/
+/*.jpeg
+/*.jpg
+web/*.jpeg
+web/*.jpg

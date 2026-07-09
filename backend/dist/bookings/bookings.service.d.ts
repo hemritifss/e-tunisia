@@ -4,12 +4,14 @@ import { InventoryItem } from '../inventory/inventory.entity';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { ConfigService } from '@nestjs/config';
 import { RedisService } from '../redis/redis.service';
+import { QueuesService } from '../queues/queues.service';
 export declare class BookingsService {
     private bookingRepo;
     private inventoryRepo;
     private configService;
     private redisService;
-    constructor(bookingRepo: Repository<Booking>, inventoryRepo: Repository<InventoryItem>, configService: ConfigService, redisService: RedisService);
+    private queuesService;
+    constructor(bookingRepo: Repository<Booking>, inventoryRepo: Repository<InventoryItem>, configService: ConfigService, redisService: RedisService, queuesService: QueuesService);
     create(userId: string, dto: CreateBookingDto): Promise<Booking>;
     findByUser(userId: string): Promise<Booking[]>;
     findByPlace(placeId: string): Promise<Booking[]>;
@@ -23,6 +25,34 @@ export declare class BookingsService {
         totalBookings: number;
         totalPlatformFees: number;
         totalHostPayouts: number;
+    }>;
+    getOwnerEarnings(ownerId: string): Promise<{
+        summary: {
+            bookings: number;
+            grossTnd: number;
+            commissionTnd: number;
+            netTnd: number;
+            owedTnd: number;
+            paidOutTnd: number;
+        };
+        entries: {
+            id: any;
+            placeId: any;
+            placeName: any;
+            currency: any;
+            grossTnd: number;
+            commissionTnd: number;
+            netTnd: number;
+            status: any;
+            checkIn: any;
+            settled: boolean;
+            payoutSettledAt: any;
+            createdAt: any;
+        }[];
+    }>;
+    settlePayout(bookingId: string): Promise<{
+        id: string;
+        payoutSettledAt: Date;
     }>;
     private checkAvailability;
     private getPlatformFeePercent;

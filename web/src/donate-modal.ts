@@ -17,6 +17,15 @@ interface OpenOpts {
 
 const PRESETS = [5, 10, 20, 50];
 
+// Mirrors backend GIFT_CATALOG (server is authoritative on price). Emojis are product content.
+const GIFTS = [
+  { id: 'jasmine', label: 'Jasmine', emoji: '🌼', price: 1 },
+  { id: 'mint_tea', label: 'Mint Tea', emoji: '🍵', price: 3 },
+  { id: 'dates', label: 'Box of Dates', emoji: '🌴', price: 5 },
+  { id: 'carpet', label: 'Kairouan Carpet', emoji: '🧶', price: 15 },
+  { id: 'camel', label: 'Camel', emoji: '🐪', price: 50 },
+];
+
 export function openDonateModal(opts: OpenOpts) {
   if (!requireAuth('donate credits')) return;
 
@@ -45,6 +54,14 @@ export function openDonateModal(opts: OpenOpts) {
           <h3>${recipientName}</h3>
         </div>
       </div>
+
+      ${isPlatform ? '' : `
+      <div class="donate-modal-section">
+        <label class="donate-modal-label">Send a gift</label>
+        <div class="donate-gifts">
+          ${GIFTS.map(g => `<button type="button" class="donate-gift" data-gift="${g.id}" title="${g.label} · ${g.price} TND"><span class="donate-gift-emoji">${g.emoji}</span><span class="donate-gift-price">${g.price} TND</span></button>`).join('')}
+        </div>
+      </div>`}
 
       <div class="donate-modal-section">
         <label class="donate-modal-label">Amount (TND)</label>
@@ -106,6 +123,27 @@ export function openDonateModal(opts: OpenOpts) {
     });
   });
   amtInput.addEventListener('input', refreshState);
+
+  // Gift quick-picks — send a catalog-priced gift directly (a donation under the hood).
+  modal.querySelectorAll<HTMLButtonElement>('.donate-gift').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      if (!opts.toUserId) return;
+      const giftId = btn.dataset.gift!;
+      modal.querySelectorAll('.donate-gift').forEach(b => (b as HTMLButtonElement).disabled = true);
+      btn.classList.add('selected');
+      try {
+        await api.sendGift(opts.toUserId, giftId, !!anonInput?.checked);
+        const g = GIFTS.find(x => x.id === giftId);
+        showToast(`Sent ${g?.emoji || ''} ${g?.label || 'gift'} to ${recipientName}`);
+        close();
+        opts.onSuccess?.();
+      } catch (err: any) {
+        modal.querySelectorAll('.donate-gift').forEach(b => (b as HTMLButtonElement).disabled = false);
+        btn.classList.remove('selected');
+        showToast(err?.message || 'Could not send gift', { type: 'error' });
+      }
+    });
+  });
 
   const close = () => {
     modal.classList.remove('open');

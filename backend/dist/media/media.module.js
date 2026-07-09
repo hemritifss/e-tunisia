@@ -10,12 +10,13 @@ exports.MediaModule = void 0;
 const common_1 = require("@nestjs/common");
 const media_controller_1 = require("./media.controller");
 const storage_module_1 = require("../storage/storage.module");
+const queues_module_1 = require("../queues/queues.module");
 let MediaModule = class MediaModule {
 };
 exports.MediaModule = MediaModule;
 exports.MediaModule = MediaModule = __decorate([
     (0, common_1.Module)({
-        imports: [storage_module_1.StorageModule],
+        imports: [storage_module_1.StorageModule, queues_module_1.QueuesModule],
         controllers: [media_controller_1.MediaController],
     })
 ], MediaModule);

@@ -6,6 +6,7 @@ import {
   UpdateDateColumn,
   ManyToOne,
   JoinColumn,
+  Index,
 } from 'typeorm';
 import { Place } from '../places/place.entity';
 import { User } from '../users/user.entity';
@@ -30,6 +31,7 @@ export class Booking {
   id: string;
 
   @Column()
+  @Index()
   userId: string;
 
   @ManyToOne(() => User, (user) => user.id, { onDelete: 'CASCADE' })
@@ -37,6 +39,7 @@ export class Booking {
   user: User;
 
   @Column()
+  @Index()
   placeId: string;
 
   @ManyToOne(() => Place, (place) => place.id, { onDelete: 'CASCADE' })
@@ -44,6 +47,7 @@ export class Booking {
   place: Place;
 
   @Column()
+  @Index()
   itemId: string;
 
   @ManyToOne(() => InventoryItem, (item) => item.id, { onDelete: 'CASCADE' })
@@ -107,6 +111,11 @@ export class Booking {
 
   @Column({ nullable: true })
   paymentMethod: string;
+
+  /** When the host was manually paid their hostPayout for this booking (Tier 2.6
+   *  payout ledger). Null = still owed. Nullable so synchronize adds it cleanly. */
+  @Column({ type: 'timestamp', nullable: true })
+  payoutSettledAt: Date | null;
 
   @Column({ type: 'simple-enum', enum: ['flexible', 'moderate', 'strict'], default: 'moderate' })
   cancellationPolicy: 'flexible' | 'moderate' | 'strict';

@@ -28,6 +28,9 @@ let JwtStrategy = class JwtStrategy extends (0, passport_1.PassportStrategy)(pas
         if (!user || !user.isActive) {
             throw new common_1.UnauthorizedException();
         }
+        if (payload.tv !== undefined && payload.tv !== user.tokenVersion) {
+            throw new common_1.UnauthorizedException('Token has been invalidated. Please log in again.');
+        }
         return { id: payload.sub, email: payload.email, role: payload.role };
     }
 };

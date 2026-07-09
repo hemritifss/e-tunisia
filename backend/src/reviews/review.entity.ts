@@ -1,6 +1,6 @@
 import {
     Entity, PrimaryGeneratedColumn, Column,
-    CreateDateColumn, ManyToOne, JoinColumn,
+    CreateDateColumn, ManyToOne, JoinColumn, Index,
 } from 'typeorm';
 import { User } from '../users/user.entity';
 import { Place } from '../places/place.entity';
@@ -32,6 +32,20 @@ export class Review {
 
     @Column()
     placeId: string;
+
+    /** When set, this review is verified as coming from a real booked inquiry.
+     *  We snapshot the inquiry id so even if the inquiry row is later closed,
+     *  the verified badge stays. */
+    @Column({ nullable: true })
+    @Index()
+    verifiedInquiryId: string | null;
+
+    /** Inline host reply — Airbnb-style. Owner of the place can post one reply. */
+    @Column('text', { nullable: true })
+    hostReply: string | null;
+
+    @Column({ type: 'timestamptz', nullable: true })
+    hostRepliedAt: Date | null;
 
     @CreateDateColumn()
     createdAt: Date;

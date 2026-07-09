@@ -4,6 +4,8 @@
 // survive a page refresh until backend per-user tracking is in.
 // ============================================
 
+import { goTo } from './router';
+
 const SAVED_KEY = 'etunisia_saved_items'; // legacy bookmarks/saves namespace
 const FLAGS_KEY = 'etunisia_flags';       // generic boolean flags ("event:abc:attend", "tip:xyz:like", etc.)
 const VOTES_KEY = 'etunisia_votes';       // post-id → 'up'|'down'
@@ -78,13 +80,19 @@ export function isLoggedIn(): boolean {
 export function requireAuth(action = 'do this'): boolean {
   if (isLoggedIn()) return true;
   showToast(`Sign in to ${action}`, { type: 'info' });
-  setTimeout(() => { location.hash = '#/login'; }, 700);
+  setTimeout(() => { goTo('/login'); }, 700);
   return false;
 }
 
 let toastTimer: number | null = null;
 
 export function showToast(message: string, opts: { type?: 'success' | 'info' | 'error' } = {}) {
+  // Prefer the richer, consistent global toast layer (toasts.ts) when mounted.
+  const globalToast = (window as any).showToast as ((m: string, t?: string) => void) | undefined;
+  if (typeof globalToast === 'function') {
+    globalToast(message, opts.type || 'success');
+    return;
+  }
   let toast = document.getElementById('ui-toast');
   if (!toast) {
     toast = document.createElement('div');
@@ -117,7 +125,7 @@ export function linkifyHashtagsAndMentions(text: string): string {
   // Link hashtags (Unicode letter ranges so Arabic / French chars work)
   let out = esc.replace(
     /#([\p{L}\p{N}_]{1,40})/gu,
-    (_, tag) => `<a class="hashtag-link" href="#/search?hashtag=${encodeURIComponent(tag)}">#${tag}</a>`,
+    (_, tag) => `<a class="hashtag-link" href="#/tag/${encodeURIComponent(tag)}">#${tag}</a>`,
   );
   // Link mentions: @first.last style — opens search for now since name→id resolution lives server-side later
   out = out.replace(

@@ -23,6 +23,7 @@ __decorate([
 ], Booking.prototype, "id", void 0);
 __decorate([
     (0, typeorm_1.Column)(),
+    (0, typeorm_1.Index)(),
     __metadata("design:type", String)
 ], Booking.prototype, "userId", void 0);
 __decorate([
@@ -32,6 +33,7 @@ __decorate([
 ], Booking.prototype, "user", void 0);
 __decorate([
     (0, typeorm_1.Column)(),
+    (0, typeorm_1.Index)(),
     __metadata("design:type", String)
 ], Booking.prototype, "placeId", void 0);
 __decorate([
@@ -41,6 +43,7 @@ __decorate([
 ], Booking.prototype, "place", void 0);
 __decorate([
     (0, typeorm_1.Column)(),
+    (0, typeorm_1.Index)(),
     __metadata("design:type", String)
 ], Booking.prototype, "itemId", void 0);
 __decorate([
@@ -123,6 +126,10 @@ __decorate([
     (0, typeorm_1.Column)({ nullable: true }),
     __metadata("design:type", String)
 ], Booking.prototype, "paymentMethod", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'timestamp', nullable: true }),
+    __metadata("design:type", Date)
+], Booking.prototype, "payoutSettledAt", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'simple-enum', enum: ['flexible', 'moderate', 'strict'], default: 'moderate' }),
     __metadata("design:type", String)

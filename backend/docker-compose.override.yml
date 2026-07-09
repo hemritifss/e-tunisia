@@ -1,0 +1,14 @@
+# TEMP (QA only): boot the API with TypeORM synchronize OFF to stop the
+# auto-sync crash-loop on an already-correct schema (it tries
+# `ALTER TABLE follows ADD followingId varchar NOT NULL` and dies on existing
+# null rows). synchronize is `NODE_ENV === 'development'`, so we set NODE_ENV
+# to "staging": isDev=false => synchronize:false, while staying out of
+# "production" so main.ts env-validation fail-fast (process.exit) doesn't fire.
+# The DB schema is already correct. Safe to delete to restore default dev behavior.
+services:
+  api:
+    environment:
+      - NODE_ENV=staging
+      # Dev server may land on a non-5173 port; allow any localhost port so
+      # write requests (POST/PUT) aren't CORS-rejected during QA.
+      - ALLOWED_ORIGINS=http://localhost:*,https://*.vercel.app,https://*.ngrok-free.app,https://*.ngrok.app,https://*.ngrok.io

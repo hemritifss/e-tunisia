@@ -17,6 +17,7 @@ const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const class_validator_1 = require("class-validator");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
+const public_decorator_1 = require("../common/decorators/public.decorator");
 const credits_service_1 = require("./credits.service");
 const donation_entity_1 = require("./donation.entity");
 class DepositDto {
@@ -60,6 +61,21 @@ __decorate([
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", Boolean)
 ], DonateDto.prototype, "isAnonymous", void 0);
+class GiftDto {
+}
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.MaxLength)(40),
+    __metadata("design:type", String)
+], GiftDto.prototype, "giftId", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], GiftDto.prototype, "toUserId", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Boolean)
+], GiftDto.prototype, "isAnonymous", void 0);
 let CreditsController = class CreditsController {
     constructor(credits) {
         this.credits = credits;
@@ -69,6 +85,13 @@ let CreditsController = class CreditsController {
     }
     deposit(req, body) {
         return this.credits.deposit(req.user.id, body.amount, body.note);
+    }
+    topupFlouci(req, body) {
+        return this.credits.createFlouciTopup(req.user.id, body.amount);
+    }
+    async topupFlouciReturn(paymentId, res) {
+        const url = await this.credits.handleFlouciTopupReturn(paymentId);
+        res.redirect(url);
     }
     donate(req, body) {
         return this.credits.donate(req.user.id, {
@@ -88,6 +111,15 @@ let CreditsController = class CreditsController {
     leaderboard(limit) {
         return this.credits.leaderboard(limit ? Number(limit) : 10);
     }
+    gifts() {
+        return this.credits.listGifts();
+    }
+    sendGift(req, body) {
+        return this.credits.sendGift(req.user.id, body.giftId, body.toUserId, !!body.isAnonymous);
+    }
+    referralStats(req) {
+        return this.credits.referralStats(req.user.id);
+    }
 };
 exports.CreditsController = CreditsController;
 __decorate([
@@ -104,13 +136,34 @@ __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.Post)('deposit'),
-    (0, swagger_1.ApiOperation)({ summary: 'Top up credits (mock — no real payment yet)' }),
+    (0, swagger_1.ApiOperation)({ summary: 'Top up credits (mock — instant, no real payment)' }),
     __param(0, (0, common_1.Request)()),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object, DepositDto]),
     __metadata("design:returntype", void 0)
 ], CreditsController.prototype, "deposit", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.Post)('topup/flouci'),
+    (0, swagger_1.ApiOperation)({ summary: 'Start a Flouci (TND) wallet top-up — returns { url, mock }' }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, DepositDto]),
+    __metadata("design:returntype", void 0)
+], CreditsController.prototype, "topupFlouci", null);
+__decorate([
+    (0, public_decorator_1.Public)(),
+    (0, common_1.Get)('topup/flouci/return'),
+    (0, swagger_1.ApiOperation)({ summary: 'Flouci top-up return (server-verified redirect)' }),
+    __param(0, (0, common_1.Query)('payment_id')),
+    __param(1, (0, common_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
+], CreditsController.prototype, "topupFlouciReturn", null);
 __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, swagger_1.ApiBearerAuth)(),
@@ -150,6 +203,34 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], CreditsController.prototype, "leaderboard", null);
+__decorate([
+    (0, common_1.Get)('gifts'),
+    (0, swagger_1.ApiOperation)({ summary: 'Virtual gift catalog' }),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], CreditsController.prototype, "gifts", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.Post)('gift'),
+    (0, swagger_1.ApiOperation)({ summary: 'Send a virtual gift to a user (a catalog-priced donation)' }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, GiftDto]),
+    __metadata("design:returntype", void 0)
+], CreditsController.prototype, "sendGift", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.Get)('referral-stats'),
+    (0, swagger_1.ApiOperation)({ summary: 'My referral counts (released + pending)' }),
+    __param(0, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], CreditsController.prototype, "referralStats", null);
 exports.CreditsController = CreditsController = __decorate([
     (0, swagger_1.ApiTags)('credits'),
     (0, common_1.Controller)('credits'),

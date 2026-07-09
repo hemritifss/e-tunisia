@@ -6,6 +6,22 @@
   <title>e-Tunisia - Discover Tunisia Together</title>
   <link rel="icon" type="image/png" href="/icon.png" />
   <meta name="description" content="A community-driven platform to discover, share, and explore the beauty of Tunisia" />
+  <!-- Default Open Graph + Twitter Card (per-passport pages override these client-side) -->
+  <meta property="og:title" content="e-Tunisia — Discover Tunisia Together" />
+  <meta property="og:description" content="🇹🇳 Plan your Tunisia journey. Share trips. Earn badges. Join the community." />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="/icon.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="/icon.png" />
+  <!-- Apply the saved theme BEFORE first paint: prevents the light-mode flash for
+       dark-theme users and stale light-theme paints on composited layers (fixed nav). -->
+  <script>
+    try {
+      var t = localStorage.getItem('theme')
+        || (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.dataset.theme = t;
+    } catch (e) {}
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Kufi+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
@@ -15,6 +31,20 @@
   <link rel="stylesheet" href="/src/styles/components.css" />
   <link rel="stylesheet" href="/src/styles/pages.css" />
   <link rel="stylesheet" href="/src/styles/animations.css" />
+  <link rel="stylesheet" href="/src/styles/messenger.css" />
+  <link rel="stylesheet" href="/src/styles/feed.css" />
+  <link rel="stylesheet" href="/src/styles/mood.css" />
+  <link rel="stylesheet" href="/src/styles/explore.css" />
+  <link rel="stylesheet" href="/src/styles/nav.css" />
+  <link rel="stylesheet" href="/src/styles/passport.css" />
+  <link rel="stylesheet" href="/src/styles/discover-trips.css" />
+  <link rel="stylesheet" href="/src/styles/premium.css" />
+  <link rel="stylesheet" href="/src/styles/activity.css" />
+  <link rel="stylesheet" href="/src/styles/notifications.css" />
+  <link rel="stylesheet" href="/src/styles/utility-pages.css" />
+  <link rel="stylesheet" href="/src/styles/sub-components.css" />
+  <link rel="stylesheet" href="/src/styles/skeletons.css" />
+  <link rel="stylesheet" href="/src/styles/popups.css" />
   <link rel="stylesheet" href="/src/styles/tailwind.css" />
 </head>
 <body>
@@ -26,16 +56,23 @@
           <span class="logo-text">e-Tunisia</span>
         </a>
         <div class="nav-links" id="nav-links">
-          <a href="#/" class="nav-link active" data-page="feed">Feed</a>
-          <a href="#/explore" class="nav-link" data-page="explore">Explore</a>
-          <a href="#/events" class="nav-link" data-page="events">Events</a>
-          <a href="#/tips" class="nav-link" data-page="tips">Tips</a>
-          <a href="#/map" class="nav-link" data-page="map">Map</a>
-          <a href="#/itineraries" class="nav-link" data-page="itineraries">Itineraries</a>
-          <a href="#/collections" class="nav-link" data-page="collections">Collections</a>
+          <a href="#/" class="nav-link active" data-page="feed" data-i18n="nav.feed">Feed</a>
+          <a href="#/explore" class="nav-link" data-page="explore" data-i18n="nav.explore">Explore</a>
+          <a href="#/ai-planner" class="nav-link" data-page="ai-planner" data-i18n="nav.aiPlanner">AI Planner</a>
+          <a href="#/reels" class="nav-link" data-page="reels" data-i18n="nav.reels">Reels</a>
+          <a href="#/events" class="nav-link" data-page="events" data-i18n="nav.events">Events</a>
+          <a href="#/tips" class="nav-link" data-page="tips" data-i18n="nav.tips">Tips</a>
+          <a href="#/map" class="nav-link" data-page="map" data-i18n="nav.map">Map</a>
+          <a href="#/itineraries" class="nav-link" data-page="itineraries" data-i18n="nav.itineraries">Itineraries</a>
+          <a href="#/collections" class="nav-link" data-page="collections" data-i18n="nav.collections">Collections</a>
         </div>
         <div class="nav-actions">
-          <button class="btn-icon" id="search-toggle" aria-label="Search">
+          <button class="nav-search-trigger" data-open-cmdk aria-label="Search anything (Ctrl+K)">
+            <i class="lucide-search"></i>
+            <span class="nav-search-trigger-label" data-i18n="nav.search">Search anything…</span>
+            <kbd class="nav-search-trigger-kbd">⌘K</kbd>
+          </button>
+          <button class="btn-icon nav-search-mobile" id="search-toggle" aria-label="Search">
             <i class="lucide-search"></i>
           </button>
           <button class="btn-icon" id="notif-toggle" aria-label="Notifications">
@@ -54,13 +91,35 @@
                 <strong data-user-name>Guest</strong>
                 <span class="text-muted" data-user-level>Welcome</span>
               </div>
-              <div class="dropdown-divider"></div>
+
+              <div class="dropdown-section">Profile</div>
               <a href="#/profile" class="dropdown-item"><i class="lucide-user"></i> Profile</a>
+              <a href="#/u/me" class="dropdown-item" data-passport-link><i class="lucide-id-card"></i> My Passport</a>
+              <a href="#/activity" class="dropdown-item"><i class="lucide-rss"></i> Following Activity</a>
               <a href="#/messages" class="dropdown-item"><i class="lucide-message-circle"></i> Messages</a>
-              <a href="#/credits" class="dropdown-item"><i class="lucide-coins"></i> Credits &amp; Donations</a>
+
+              <div class="dropdown-section">Discover</div>
+              <a href="#/ai-planner" class="dropdown-item"><i class="lucide-sparkles"></i> AI Planner</a>
+              <a href="#/map" class="dropdown-item"><i class="lucide-map"></i> Map</a>
+              <a href="#/itineraries" class="dropdown-item"><i class="lucide-route"></i> Itineraries</a>
+              <a href="#/collections" class="dropdown-item"><i class="lucide-layers"></i> Collections</a>
+
+              <div class="dropdown-section">Library</div>
               <a href="#/favorites" class="dropdown-item"><i class="lucide-heart"></i> Saved Places</a>
+              <a href="#/saved" class="dropdown-item"><i class="lucide-bookmark"></i> Saved Posts</a>
+              <a href="#/trip" class="dropdown-item"><i class="lucide-luggage"></i> My Trip</a>
+              <a href="#/discover-trips" class="dropdown-item"><i class="lucide-compass"></i> Discover Trips</a>
+
+              <div class="dropdown-section">Achievements</div>
+              <a href="#/challenges" class="dropdown-item"><i class="lucide-flame"></i> Daily Tasks</a>
               <a href="#/badges" class="dropdown-item"><i class="lucide-award"></i> Badges</a>
               <a href="#/leaderboard" class="dropdown-item"><i class="lucide-trophy"></i> Leaderboard</a>
+              <a href="#/credits" class="dropdown-item"><i class="lucide-coins"></i> Credits &amp; Donations</a>
+
+              <div class="dropdown-section">Business</div>
+              <a href="#/inquiries" class="dropdown-item"><i class="lucide-send"></i> My Inquiries</a>
+              <a href="#/owner" class="dropdown-item"><i class="lucide-briefcase"></i> Owner Dashboard</a>
+
               <div class="dropdown-divider"></div>
               <a href="#/settings" class="dropdown-item"><i class="lucide-settings"></i> Settings</a>
               <button class="dropdown-item text-danger" id="logout-btn"><i class="lucide-log-out"></i> Log out</button>
@@ -92,6 +151,8 @@
         <div class="mobile-menu-section-label">Navigation</div>
         <a href="#/" class="mobile-menu-item" data-page="feed"><i class="lucide-home"></i> Feed</a>
         <a href="#/explore" class="mobile-menu-item" data-page="explore"><i class="lucide-compass"></i> Explore</a>
+        <a href="#/ai-planner" class="mobile-menu-item" data-page="ai-planner"><i class="lucide-sparkles"></i> AI Planner</a>
+        <a href="#/reels" class="mobile-menu-item" data-page="reels"><i class="lucide-clapperboard"></i> Reels</a>
         <a href="#/events" class="mobile-menu-item" data-page="events"><i class="lucide-calendar"></i> Events</a>
         <a href="#/tips" class="mobile-menu-item" data-page="tips"><i class="lucide-lightbulb"></i> Tips</a>
         <a href="#/map" class="mobile-menu-item" data-page="map"><i class="lucide-map"></i> Map</a>
@@ -113,8 +174,16 @@
       <div class="mobile-menu-section">
         <div class="mobile-menu-section-label">Account</div>
         <a href="#/profile" class="mobile-menu-item"><i class="lucide-user"></i> Profile</a>
+        <a href="#/u/me" class="mobile-menu-item" data-passport-link><i class="lucide-id-card"></i> My Passport</a>
+        <a href="#/activity" class="mobile-menu-item"><i class="lucide-rss"></i> Following Activity</a>
         <a href="#/credits" class="mobile-menu-item"><i class="lucide-coins"></i> Credits &amp; Donations</a>
         <a href="#/favorites" class="mobile-menu-item"><i class="lucide-heart"></i> Saved Places</a>
+        <a href="#/saved" class="mobile-menu-item"><i class="lucide-bookmark"></i> Saved Posts</a>
+        <a href="#/trip" class="mobile-menu-item"><i class="lucide-luggage"></i> My Trip</a>
+        <a href="#/discover-trips" class="mobile-menu-item"><i class="lucide-compass"></i> Discover Trips</a>
+        <a href="#/inquiries" class="mobile-menu-item"><i class="lucide-send"></i> My Inquiries</a>
+        <a href="#/owner" class="mobile-menu-item"><i class="lucide-briefcase"></i> Owner Dashboard</a>
+        <a href="#/challenges" class="mobile-menu-item"><i class="lucide-flame"></i> Daily Tasks</a>
         <a href="#/badges" class="mobile-menu-item"><i class="lucide-award"></i> Badges</a>
         <a href="#/leaderboard" class="mobile-menu-item"><i class="lucide-trophy"></i> Leaderboard</a>
         <a href="#/premium" class="mobile-menu-item"><i class="lucide-crown"></i> Go Premium</a>
@@ -229,6 +298,16 @@
         <input type="text" class="post-modal-input" id="post-modal-title" placeholder="Give your post a title..." maxlength="200" />
         <textarea class="post-modal-textarea" id="post-modal-body-input" placeholder="What's on your mind about Tunisia? Share an experience, tip, or question..."></textarea>
 
+        <!-- AI compose assist (Phase 3) -->
+        <div class="post-modal-ai" id="post-modal-ai">
+          <span class="post-modal-ai-label"><i class="lucide-sparkles"></i> AI</span>
+          <button type="button" class="post-modal-ai-btn" data-ai-action="improve" title="Fix spelling & flow">Improve</button>
+          <button type="button" class="post-modal-ai-btn" data-ai-action="translate" data-ai-lang="fr" title="Translate to French">FR</button>
+          <button type="button" class="post-modal-ai-btn" data-ai-action="translate" data-ai-lang="ar" title="Translate to Arabic">عربي</button>
+          <button type="button" class="post-modal-ai-btn" data-ai-action="translate" data-ai-lang="en" title="Translate to English">EN</button>
+          <span class="post-modal-ai-status" id="post-modal-ai-status"></span>
+        </div>
+
         <!-- Tag / Category selector -->
         <div class="post-modal-section">
           <label class="post-modal-section-label">Category</label>
@@ -260,7 +339,7 @@
         <!-- Photo upload area -->
         <div class="post-modal-section">
           <div class="post-modal-photo-area" id="post-modal-photo-area">
-            <input type="file" id="post-modal-file-input" accept="image/*" multiple style="display:none" />
+            <input type="file" id="post-modal-file-input" accept="image/*,video/*" multiple style="display:none" />
             <button class="post-modal-photo-btn" id="post-modal-photo-btn">
               <i class="lucide-camera"></i>
               <span>Add Photos</span>
@@ -348,19 +427,18 @@
     <nav class="mobile-nav" id="mobile-nav">
       <a href="#/" class="mobile-nav-item active" data-page="feed">
         <i class="lucide-home"></i>
-        <span>Feed</span>
+        <span>Home</span>
       </a>
       <a href="#/explore" class="mobile-nav-item" data-page="explore">
         <i class="lucide-compass"></i>
         <span>Explore</span>
       </a>
-      <a href="#/events" class="mobile-nav-item" data-page="events">
-        <i class="lucide-calendar"></i>
-        <span>Events</span>
-      </a>
-      <a href="#/favorites" class="mobile-nav-item" data-page="favorites">
-        <i class="lucide-heart"></i>
-        <span>Saved</span>
+      <button type="button" class="mobile-nav-create" id="mobile-nav-create" aria-label="Create post">
+        <i class="lucide-plus"></i>
+      </button>
+      <a href="#/reels" class="mobile-nav-item" data-page="reels">
+        <i class="lucide-clapperboard"></i>
+        <span>Reels</span>
       </a>
       <a href="#/profile" class="mobile-nav-item" data-page="profile">
         <i class="lucide-user"></i>

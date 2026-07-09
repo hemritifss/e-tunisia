@@ -6,5 +6,8 @@ export declare class Comment {
     authorId: string;
     body: string;
     upvotes: number;
+    parentId: string | null;
+    likeCount: number;
+    replyCount: number;
     createdAt: Date;
 }

@@ -10,12 +10,20 @@ export class EventsService {
         private eventsRepo: Repository<Event>,
     ) {}
 
-    async findAll(category?: string) {
+    async findAll(category?: string, city?: string) {
         const qb = this.eventsRepo
             .createQueryBuilder('event')
             .leftJoinAndSelect('event.place', 'place')
             .leftJoinAndSelect('event.organizer', 'organizer')
             .where('event.isActive = :active', { active: true });
+
+        if (city) {
+            // City comes from the linked place when available, else the free-text location.
+            qb.andWhere('(place.city ILIKE :city OR event.location ILIKE :cityLike)', {
+                city,
+                cityLike: `%${city}%`,
+            });
+        }
 
         if (category) {
             qb.andWhere('event.category = :category', { category });

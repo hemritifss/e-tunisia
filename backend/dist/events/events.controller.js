@@ -21,8 +21,8 @@ let EventsController = class EventsController {
     constructor(eventsService) {
         this.eventsService = eventsService;
     }
-    findAll(category) {
-        return this.eventsService.findAll(category);
+    findAll(category, city) {
+        return this.eventsService.findAll(category, city);
     }
     getUpcoming() {
         return this.eventsService.findUpcoming();
@@ -42,8 +42,9 @@ __decorate([
     (0, common_1.Get)(),
     (0, swagger_1.ApiOperation)({ summary: 'Get all events' }),
     __param(0, (0, common_1.Query)('category')),
+    __param(1, (0, common_1.Query)('city')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", void 0)
 ], EventsController.prototype, "findAll", null);
 __decorate([

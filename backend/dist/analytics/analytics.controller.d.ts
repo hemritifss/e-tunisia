@@ -1,4 +1,4 @@
-import { AnalyticsService } from './analytics.service';
+import { AnalyticsService, IncomingEvent } from './analytics.service';
 export declare class AnalyticsController {
     private readonly analyticsService;
     constructor(analyticsService: AnalyticsService);
@@ -54,4 +54,18 @@ export declare class AnalyticsController {
     trackEvent(type: string, userId?: string): Promise<{
         tracked: boolean;
     }>;
+    ingestEvents(body: {
+        events?: IncomingEvent[];
+    } | IncomingEvent[], user?: {
+        id?: string;
+    }): Promise<{
+        accepted: number;
+    }>;
+    eventsSummary(days?: string): Promise<{
+        day: any;
+        name: any;
+        count: number;
+        uniques: number;
+    }[]>;
+    growth(): Promise<any>;
 }

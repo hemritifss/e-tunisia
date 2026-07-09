@@ -4,7 +4,7 @@ import {
 } from 'typeorm';
 import { User } from '../users/user.entity';
 
-export enum SubStatus { ACTIVE = 'active', EXPIRED = 'expired', CANCELLED = 'cancelled' }
+export enum SubStatus { ACTIVE = 'active', EXPIRED = 'expired', CANCELLED = 'cancelled', PENDING = 'pending' }
 
 @Entity('subscriptions')
 export class Subscription {

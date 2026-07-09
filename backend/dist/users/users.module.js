@@ -10,17 +10,32 @@ exports.UsersModule = void 0;
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const user_entity_1 = require("./user.entity");
+const follow_entity_1 = require("./follow.entity");
+const endorsement_entity_1 = require("./endorsement.entity");
+const review_entity_1 = require("../reviews/review.entity");
+const place_entity_1 = require("../places/place.entity");
+const trip_plan_entity_1 = require("../itineraries/trip-plan.entity");
+const saved_post_entity_1 = require("../posts/saved-post.entity");
+const passport_view_entity_1 = require("./passport-view.entity");
+const place_visit_entity_1 = require("./place-visit.entity");
 const users_service_1 = require("./users.service");
+const follows_service_1 = require("./follows.service");
+const endorsements_service_1 = require("./endorsements.service");
+const activity_service_1 = require("./activity.service");
 const users_controller_1 = require("./users.controller");
+const badges_module_1 = require("../badges/badges.module");
+const og_module_1 = require("../og/og.module");
+const notifications_module_1 = require("../notifications/notifications.module");
+const gamification_module_1 = require("../gamification/gamification.module");
 let UsersModule = class UsersModule {
 };
 exports.UsersModule = UsersModule;
 exports.UsersModule = UsersModule = __decorate([
     (0, common_1.Module)({
-        imports: [typeorm_1.TypeOrmModule.forFeature([user_entity_1.User])],
-        providers: [users_service_1.UsersService],
+        imports: [typeorm_1.TypeOrmModule.forFeature([user_entity_1.User, follow_entity_1.Follow, endorsement_entity_1.Endorsement, review_entity_1.Review, place_entity_1.Place, trip_plan_entity_1.TripPlan, saved_post_entity_1.SavedPost, passport_view_entity_1.PassportView, place_visit_entity_1.PlaceVisit]), badges_module_1.BadgesModule, og_module_1.OgModule, notifications_module_1.NotificationsModule, gamification_module_1.GamificationModule],
+        providers: [users_service_1.UsersService, follows_service_1.FollowsService, endorsements_service_1.EndorsementsService, activity_service_1.ActivityService],
         controllers: [users_controller_1.UsersController],
-        exports: [users_service_1.UsersService],
+        exports: [users_service_1.UsersService, follows_service_1.FollowsService, endorsements_service_1.EndorsementsService, activity_service_1.ActivityService],
     })
 ], UsersModule);
 //# sourceMappingURL=users.module.js.map

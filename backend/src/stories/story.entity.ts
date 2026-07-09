@@ -30,6 +30,11 @@ export class Story {
     @Column({ default: true })
     isActive: boolean;
 
+    /** Pinned to the author's profile ("My Tunisia Journey") — persists past 24h expiry. */
+    @Column({ default: false })
+    @Index()
+    isHighlight: boolean;
+
     @CreateDateColumn()
     createdAt: Date;
 

@@ -11,6 +11,9 @@ export enum CreditTxKind {
     DONATION_IN = 'donation_in',   // user received a donation
     PLATFORM_FEE = 'platform_fee', // commission going to platform account
     REFUND = 'refund',
+    BOOST = 'boost',               // paid to promote a place listing
+    REFERRAL = 'referral',         // give-10-get-10 referral reward
+    SUBSCRIPTION = 'subscription', // paid a Pro/Business subscription from the wallet
 }
 
 @Entity('credit_transactions')
@@ -26,7 +29,10 @@ export class CreditTransaction {
     @Index()
     userId: string;
 
-    @Column({ type: 'simple-enum', enum: CreditTxKind })
+    // Stored as varchar (not simple-enum): on Postgres, TypeORM's simple-enum
+    // produces a phantom diff every sync → ALTER crash-loop. Kind is validated
+    // in code; varchar avoids the churn while keeping the TS enum type.
+    @Column({ type: 'varchar', length: 32, nullable: true })
     @Index()
     kind: CreditTxKind;
 

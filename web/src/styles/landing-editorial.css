@@ -1,0 +1,1458 @@
+/* ============================================================
+   LANDING — "CARNET DE VOYAGE" EDITORIAL EDITION
+   A hand-assembled travel journal: warm paper, ink typography,
+   pasted photo prints, rubber stamps, ticket stubs, postcards.
+   Namespace: .ej-*  (editorial journal) — self-contained; the
+   legacy .tn-landing system remains for Partner/About pages.
+   All colors/typography come from tokens.css.
+   ============================================================ */
+
+/* Full-bleed: cancel the app shell gutters for this page */
+.react-island-shell:has(.ej-landing) {
+    max-width: none;
+    padding: 0;
+}
+
+.ej-landing {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    overflow-x: clip;
+    position: relative;
+}
+
+/* Film grain over the whole page — kills the flat digital look.
+   Pure CSS SVG turbulence; zero network cost. */
+.ej-landing::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.6'/></svg>");
+    background-size: 180px 180px;
+    mix-blend-mode: multiply;
+    opacity: 0.05;
+}
+[data-theme="dark"] .ej-landing::after {
+    mix-blend-mode: screen;
+    opacity: 0.035;
+}
+
+.ej-landing ::selection {
+    background: var(--terracotta);
+    color: var(--paper-print);
+}
+
+/* ── Shared type helpers ──────────────────────────────────── */
+.ej-kicker {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-3);
+}
+.ej-kicker .ej-no { color: var(--terracotta); font-weight: 700; }
+.ej-kicker::after {
+    content: '';
+    flex: 1;
+    align-self: center;
+    border-top: 1px solid var(--rule);
+}
+
+.ej-h2 {
+    font-family: var(--font-editorial);
+    font-optical-sizing: auto;
+    font-size: clamp(1.9rem, 3.8vw, 3.05rem);
+    font-weight: 550;
+    line-height: 1.08;
+    letter-spacing: -0.015em;
+    color: var(--ink);
+    margin: var(--space-4) 0 var(--space-3);
+    max-width: 22ch;
+    text-wrap: balance;
+}
+.ej-h2 em {
+    font-style: italic;
+    font-weight: 480;
+    color: var(--terracotta);
+}
+.ej-lede {
+    color: var(--ink-soft);
+    font-size: var(--text-lg);
+    line-height: var(--leading-relaxed);
+    max-width: 58ch;
+    margin: 0;
+}
+
+.ej-hand {
+    font-family: var(--font-hand);
+    font-size: 1.35rem;
+    line-height: 1.25;
+    color: var(--ink-soft);
+    font-weight: 500;
+}
+
+/* Hand-drawn underline for one word in a headline */
+.ej-hand-underline {
+    position: relative;
+    white-space: nowrap;
+}
+.ej-hand-underline svg {
+    position: absolute;
+    left: -2%;
+    bottom: -0.12em;
+    width: 104%;
+    height: 0.22em;
+    color: var(--terracotta);
+    pointer-events: none;
+}
+
+/* ── Buttons — letterpress, not glow ─────────────────────── */
+.ej-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: 48px;
+    padding: 12px 24px;
+    background: var(--accent);
+    color: var(--accent-text);
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    text-decoration: none;
+    border: 1.5px solid var(--ink);
+    border-radius: var(--radius-sm);
+    box-shadow: 3px 3px 0 var(--ink);
+    cursor: pointer;
+    transition: transform var(--duration-fast) var(--ease-out),
+                box-shadow var(--duration-fast) var(--ease-out),
+                background var(--duration-fast) var(--ease-out);
+}
+.ej-btn:hover {
+    background: var(--accent-hover);
+    transform: translate(-2px, -2px);
+    box-shadow: 5px 5px 0 var(--ink);
+}
+.ej-btn:active {
+    transform: translate(1px, 1px);
+    box-shadow: 2px 2px 0 var(--ink);
+}
+.ej-btn--paper {
+    background: var(--paper-print);
+    color: var(--ink);
+}
+.ej-btn--paper:hover { background: var(--paper-warm); }
+.ej-btn--sm { min-height: 40px; padding: 8px 18px; font-size: var(--text-sm); }
+
+.ej-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--ink);
+    font-weight: 600;
+    font-size: var(--text-base);
+    text-decoration: underline;
+    text-decoration-color: var(--rule-strong);
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 5px;
+    transition: text-decoration-color var(--duration-fast) var(--ease-out),
+                color var(--duration-fast) var(--ease-out);
+}
+.ej-link:hover { color: var(--terracotta); text-decoration-color: var(--terracotta); }
+
+.ej-landing a:focus-visible,
+.ej-landing button:focus-visible,
+.ej-landing input:focus-visible,
+.ej-landing select:focus-visible {
+    outline: 3px solid var(--mediterranean);
+    outline-offset: 2px;
+    border-radius: 2px;
+}
+
+/* ── Masthead ─────────────────────────────────────────────── */
+.ej-masthead {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: var(--z-overlay);
+    background: color-mix(in oklab, var(--paper) 92%, transparent);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-bottom: 1px solid transparent;
+    transition: border-color var(--duration-normal) var(--ease-out),
+                box-shadow var(--duration-normal) var(--ease-out);
+}
+.ej-masthead.is-scrolled {
+    border-bottom-color: var(--rule);
+    box-shadow: 0 1px 0 var(--rule);
+}
+.ej-masthead-strip {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-4);
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 6px var(--space-6);
+    border-bottom: 1px solid var(--rule);
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+}
+.ej-masthead-inner {
+    max-width: 1240px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: var(--space-6);
+    padding: var(--space-3) var(--space-6);
+}
+.ej-wordmark {
+    display: inline-flex;
+    align-items: baseline;
+    gap: var(--space-2);
+    text-decoration: none;
+    color: var(--ink);
+}
+.ej-wordmark strong {
+    font-family: var(--font-editorial);
+    font-optical-sizing: auto;
+    font-size: 1.45rem;
+    font-weight: 640;
+    letter-spacing: -0.02em;
+    line-height: 1;
+}
+.ej-wordmark span {
+    font-family: 'Noto Kufi Arabic', var(--font-sans);
+    font-size: 0.85rem;
+    color: var(--terracotta);
+    font-weight: 600;
+}
+.ej-masthead-links {
+    display: flex;
+    align-items: center;
+    gap: var(--space-5);
+    margin-left: auto;
+}
+.ej-masthead-links a {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    text-decoration: none;
+    padding: 6px 2px;
+    border-bottom: 1.5px solid transparent;
+    transition: color var(--duration-fast) var(--ease-out),
+                border-color var(--duration-fast) var(--ease-out);
+}
+.ej-masthead-links a:hover {
+    color: var(--ink);
+    border-bottom-color: var(--terracotta);
+}
+.ej-masthead-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+}
+.ej-masthead-login {
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--ink);
+    text-decoration: underline;
+    text-decoration-color: var(--rule-strong);
+    text-underline-offset: 4px;
+}
+.ej-masthead-login:hover { text-decoration-color: var(--terracotta); }
+
+/* ── Hero — the journal's opening spread ─────────────────── */
+.ej-hero {
+    position: relative;
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: clamp(7.5rem, 14vh, 10.5rem) var(--space-6) var(--space-16);
+    display: grid;
+    grid-template-columns: minmax(0, 1.04fr) minmax(0, 0.96fr);
+    gap: clamp(var(--space-8), 5vw, var(--space-16));
+    align-items: center;
+    min-height: 92dvh;
+}
+/* Faint Arabic watermark — like a letterpress ghost on the page */
+.ej-hero-watermark {
+    position: absolute;
+    top: 12%;
+    right: -2%;
+    font-family: 'Noto Kufi Arabic', var(--font-sans);
+    font-size: clamp(9rem, 22vw, 19rem);
+    font-weight: 700;
+    line-height: 1;
+    color: var(--ink);
+    opacity: 0.045;
+    pointer-events: none;
+    user-select: none;
+    z-index: 0;
+}
+.ej-hero-copy { position: relative; z-index: 1; }
+.ej-hero-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-3);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: var(--space-5);
+}
+.ej-hero-kicker::before {
+    content: '';
+    width: 34px;
+    border-top: 1.5px solid var(--terracotta);
+}
+.ej-hero-title {
+    font-family: var(--font-editorial);
+    font-optical-sizing: auto;
+    font-size: clamp(2.85rem, 6.6vw, 5.3rem);
+    font-weight: 560;
+    line-height: 1.01;
+    letter-spacing: -0.022em;
+    color: var(--ink);
+    margin: 0 0 var(--space-4);
+    text-wrap: balance;
+}
+.ej-hero-title em {
+    font-style: italic;
+    font-weight: 460;
+    color: var(--terracotta);
+}
+.ej-hero-arabic {
+    font-family: 'Noto Kufi Arabic', var(--font-sans);
+    font-size: clamp(1.2rem, 2.3vw, 1.6rem);
+    font-weight: 500;
+    color: var(--ink-soft);
+    margin: 0 0 var(--space-5);
+}
+.ej-hero-sub {
+    color: var(--ink-soft);
+    font-size: clamp(1rem, 1.35vw, 1.125rem);
+    line-height: var(--leading-relaxed);
+    max-width: 54ch;
+    margin: 0 0 var(--space-8);
+}
+.ej-hero-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-6);
+    flex-wrap: wrap;
+}
+.ej-hero-note {
+    margin-top: var(--space-6);
+    rotate: -1.4deg;
+    display: inline-block;
+    color: var(--ink-soft);
+}
+.ej-hero-note .ej-hand { font-size: 1.45rem; }
+
+/* Photo prints — pasted, taped, captioned */
+.ej-hero-prints {
+    position: relative;
+    height: clamp(420px, 46vw, 600px);
+    z-index: 1;
+}
+.ej-print {
+    position: absolute;
+    background: var(--paper-print);
+    border: 1px solid var(--rule);
+    padding: 10px 10px 12px;
+    box-shadow: var(--paper-shadow);
+    width: min(62%, 340px);
+    transition: rotate var(--duration-normal) var(--ease-spring),
+                box-shadow var(--duration-normal) var(--ease-out),
+                z-index 0s;
+}
+.ej-print img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    filter: saturate(0.86) contrast(1.02);
+    border-radius: 1px;
+}
+.ej-print figcaption {
+    padding-top: 9px;
+    font-family: var(--font-hand);
+    font-size: 1.2rem;
+    line-height: 1.1;
+    color: var(--ink-soft);
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: var(--space-2);
+}
+.ej-print figcaption .ej-print-meta {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+}
+.ej-print::before {
+    /* masking tape */
+    content: '';
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    translate: -50% 0;
+    rotate: -3deg;
+    width: 92px;
+    height: 26px;
+    background: var(--tape);
+    box-shadow: 0 1px 2px oklch(0% 0 0 / 0.06);
+    backdrop-filter: blur(1px);
+}
+.ej-print-1 { top: 4%;  left: 0;    rotate: -4.2deg; z-index: 3; }
+.ej-print-2 { top: 0;   right: 2%;  rotate: 2.8deg;  z-index: 2; width: min(52%, 290px); }
+.ej-print-3 { bottom: 0; left: 22%; rotate: -1.2deg; z-index: 4; width: min(56%, 305px); }
+.ej-print:hover { rotate: 0deg; box-shadow: var(--paper-shadow-lift); z-index: 9; }
+
+/* Rubber stamp overlapping the prints */
+.ej-stamp {
+    position: absolute;
+    z-index: 5;
+    width: clamp(96px, 10vw, 132px);
+    height: auto;
+    color: var(--stamp-ink);
+    opacity: 0.85;
+    rotate: -14deg;
+    mix-blend-mode: multiply;
+    pointer-events: none;
+}
+[data-theme="dark"] .ej-stamp { mix-blend-mode: screen; }
+.ej-hero-prints .ej-stamp { right: -2%; bottom: 14%; }
+
+/* Dashed route doodle behind prints */
+.ej-route {
+    position: absolute;
+    inset: -6% -4%;
+    width: 108%;
+    height: 112%;
+    color: var(--ink-faint);
+    opacity: 0.5;
+    z-index: 0;
+    pointer-events: none;
+}
+
+/* ── Governorate ticker — inked band, slightly askew ─────── */
+.ej-ticker {
+    background: var(--paper-deep);
+    color: var(--ink-on-deep);
+    rotate: -0.7deg;
+    width: 103%;
+    margin: var(--space-4) -1.5% var(--space-16);
+    overflow: hidden;
+    border-top: 1px solid var(--rule-strong);
+    border-bottom: 1px solid var(--rule-strong);
+}
+.ej-ticker-track {
+    display: flex;
+    align-items: center;
+    gap: var(--space-6);
+    width: max-content;
+    padding: 11px 0;
+    animation: ej-ticker-scroll 70s linear infinite;
+}
+.ej-ticker:hover .ej-ticker-track { animation-play-state: paused; }
+@keyframes ej-ticker-scroll {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+}
+.ej-ticker-item {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    font-weight: 500;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+.ej-ticker-sep { color: var(--gold); font-size: 0.85rem; }
+
+/* ── Almanac — honest numbers, footnoted by hand ─────────── */
+.ej-almanac {
+    max-width: 1240px;
+    margin: 0 auto var(--space-20);
+    padding: 0 var(--space-6);
+}
+.ej-almanac-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border-top: 1.5px solid var(--rule-strong);
+    border-bottom: 1px solid var(--rule);
+}
+.ej-almanac-cell {
+    padding: var(--space-6) var(--space-5);
+    border-left: 1px solid var(--rule);
+}
+.ej-almanac-cell:first-child { border-left: none; padding-left: 0; }
+.ej-almanac-num {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: clamp(1.7rem, 3vw, 2.4rem);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink);
+    line-height: 1.1;
+}
+.ej-almanac-num sup {
+    font-size: 0.5em;
+    color: var(--terracotta);
+    margin-left: 2px;
+}
+.ej-almanac-label {
+    display: block;
+    margin-top: var(--space-2);
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+}
+.ej-almanac-footnote {
+    margin-top: var(--space-3);
+    text-align: right;
+    rotate: -0.6deg;
+}
+.ej-almanac-footnote .ej-hand { font-size: 1.2rem; color: var(--ink-faint); }
+
+/* ── Section scaffolding ─────────────────────────────────── */
+.ej-section {
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: var(--space-16) var(--space-6);
+}
+.ej-section-head { margin-bottom: var(--space-10); }
+.ej-section-head .ej-lede { margin-top: var(--space-2); }
+
+/* ── The Index — places as pinned photo prints ───────────── */
+.ej-index-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-10) var(--space-8);
+}
+.ej-place {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    background: var(--paper-print);
+    border: 1px solid var(--rule);
+    padding: 10px 10px 14px;
+    box-shadow: var(--paper-shadow);
+    rotate: var(--tilt, 0deg);
+    transition: rotate var(--duration-normal) var(--ease-spring),
+                box-shadow var(--duration-normal) var(--ease-out),
+                translate var(--duration-normal) var(--ease-out);
+}
+.ej-place:nth-child(3n+1) { --tilt: -1.3deg; }
+.ej-place:nth-child(3n+2) { --tilt: 0.9deg; margin-top: var(--space-8); }
+.ej-place:nth-child(3n)   { --tilt: -0.5deg; margin-top: var(--space-4); }
+.ej-place:hover {
+    rotate: 0deg;
+    translate: 0 -6px;
+    box-shadow: var(--paper-shadow-lift);
+}
+.ej-place-img {
+    position: relative;
+    overflow: hidden;
+}
+.ej-place-img img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    filter: saturate(0.88) contrast(1.02);
+    transition: scale var(--duration-slow) var(--ease-out);
+}
+.ej-place:hover .ej-place-img img { scale: 1.04; }
+.ej-place-cat {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    rotate: -5deg;
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink);
+    background: color-mix(in oklab, var(--paper-print) 88%, transparent);
+    border: 1px solid var(--ink);
+    padding: 3px 8px;
+}
+.ej-place-body { padding: 12px 4px 0; }
+.ej-place-no {
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.16em;
+    color: var(--terracotta);
+    font-weight: 700;
+}
+.ej-place-body h4 {
+    font-family: var(--font-editorial);
+    font-optical-sizing: auto;
+    font-size: 1.3rem;
+    font-weight: 580;
+    letter-spacing: -0.01em;
+    line-height: 1.15;
+    margin: 4px 0 6px;
+    color: var(--ink);
+}
+.ej-place-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-3);
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+}
+.ej-place-meta .ej-stars { display: inline-flex; gap: 1px; color: var(--rule-strong); }
+.ej-place-meta .ej-stars .is-filled { color: var(--gold); }
+.ej-place-meta .ej-stars .is-filled svg { fill: var(--gold); }
+.ej-section-foot {
+    margin-top: var(--space-12);
+    display: flex;
+    justify-content: center;
+}
+
+/* ── Field routes — boarding-pass tickets ────────────────── */
+.ej-tickets {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-6);
+}
+.ej-ticket {
+    position: relative;
+    display: grid;
+    grid-template-columns: 86px 1fr 26px;
+    text-decoration: none;
+    color: inherit;
+    background: var(--paper-print);
+    border: 1px solid var(--rule-strong);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--paper-shadow);
+    overflow: hidden;
+    rotate: var(--tilt, 0deg);
+    transition: rotate var(--duration-normal) var(--ease-spring),
+                translate var(--duration-normal) var(--ease-out),
+                box-shadow var(--duration-normal) var(--ease-out);
+}
+.ej-ticket:nth-child(2) { --tilt: 0.7deg; }
+.ej-ticket:nth-child(3) { --tilt: -0.7deg; }
+.ej-ticket:hover { rotate: 0deg; translate: 0 -5px; box-shadow: var(--paper-shadow-lift); }
+.ej-ticket-stub {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    padding: var(--space-5) var(--space-2);
+    border-right: 1.5px dashed var(--rule-strong);
+    background: var(--paper-warm);
+}
+/* punched holes on the perforation line */
+.ej-ticket-stub::before,
+.ej-ticket-stub::after {
+    content: '';
+    position: absolute;
+    right: -8px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    z-index: 1;
+}
+.ej-ticket-stub::before { top: -8px; }
+.ej-ticket-stub::after  { bottom: -8px; }
+.ej-ticket-days {
+    font-family: var(--font-mono);
+    font-size: 1.9rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--terracotta);
+    font-variant-numeric: tabular-nums;
+}
+.ej-ticket-days-label {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+}
+.ej-ticket-route {
+    margin-top: var(--space-3);
+    font-family: var(--font-mono);
+    font-size: 0.56rem;
+    letter-spacing: 0.14em;
+    color: var(--ink-faint);
+    writing-mode: vertical-rl;
+    text-transform: uppercase;
+}
+.ej-ticket-body { padding: var(--space-5); display: flex; flex-direction: column; gap: var(--space-2); }
+.ej-ticket-head {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 6px;
+}
+.ej-ticket-body h3 {
+    font-family: var(--font-editorial);
+    font-optical-sizing: auto;
+    font-size: 1.28rem;
+    font-weight: 580;
+    line-height: 1.16;
+    letter-spacing: -0.01em;
+    margin: 2px 0;
+    color: var(--ink);
+}
+.ej-ticket-body p {
+    font-size: var(--text-sm);
+    line-height: var(--leading-normal);
+    color: var(--ink-soft);
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.ej-ticket-foot {
+    margin-top: auto;
+    padding-top: var(--space-3);
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    color: var(--ink-faint);
+    font-variant-numeric: tabular-nums;
+}
+.ej-ticket-foot svg { vertical-align: -2px; margin-right: 3px; }
+.ej-ticket-diff {
+    margin-left: auto;
+    rotate: -3deg;
+    font-weight: 700;
+    font-size: 0.6rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--diff-color, var(--stamp-ink));
+    border: 1.5px solid currentColor;
+    padding: 2px 7px;
+    border-radius: 2px;
+    opacity: 0.9;
+}
+.ej-ticket-barcode {
+    background: repeating-linear-gradient(
+        180deg,
+        var(--ink) 0 2px,
+        transparent 2px 5px,
+        var(--ink) 5px 6px,
+        transparent 6px 10px
+    );
+    opacity: 0.65;
+    margin: var(--space-4) 8px;
+    width: 8px;
+    justify-self: center;
+}
+
+/* ── Moods — a rack of postcards ─────────────────────────── */
+.ej-moods {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: var(--space-6) var(--space-5);
+}
+.ej-mood {
+    grid-column: span 2;
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    background: var(--paper-print);
+    border: 1px solid var(--rule);
+    padding: 9px 9px 12px;
+    box-shadow: var(--paper-shadow);
+    rotate: var(--tilt, 0deg);
+    position: relative;
+    transition: rotate var(--duration-normal) var(--ease-spring),
+                translate var(--duration-normal) var(--ease-out),
+                box-shadow var(--duration-normal) var(--ease-out);
+}
+.ej-mood:nth-child(1) { --tilt: -1.6deg; }
+.ej-mood:nth-child(2) { --tilt: 1.1deg; margin-top: var(--space-5); }
+.ej-mood:nth-child(3) { --tilt: -0.6deg; }
+.ej-mood:nth-child(4) { --tilt: 1.4deg; grid-column: 2 / span 2; }
+.ej-mood:nth-child(5) { --tilt: -1deg; grid-column: span 2; margin-top: calc(-1 * var(--space-3)); }
+.ej-mood:hover { rotate: 0deg; translate: 0 -5px; box-shadow: var(--paper-shadow-lift); }
+.ej-mood::before {
+    content: '';
+    position: absolute;
+    top: -11px;
+    left: 50%;
+    translate: -50% 0;
+    rotate: 2.5deg;
+    width: 76px;
+    height: 22px;
+    background: var(--tape);
+    box-shadow: 0 1px 2px oklch(0% 0 0 / 0.06);
+}
+.ej-mood img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 3 / 2;
+    object-fit: cover;
+    filter: saturate(0.88) contrast(1.02);
+}
+.ej-mood-body { padding: 10px 4px 0; }
+.ej-mood-body h4 {
+    font-family: var(--font-editorial);
+    font-optical-sizing: auto;
+    font-style: italic;
+    font-size: 1.35rem;
+    font-weight: 520;
+    margin: 0 0 2px;
+    color: var(--ink);
+}
+.ej-mood-body p {
+    font-family: var(--font-hand);
+    font-size: 1.18rem;
+    line-height: 1.2;
+    color: var(--ink-soft);
+    margin: 0;
+}
+
+/* ── Manifesto — typographic, no cards, no icons ─────────── */
+.ej-manifesto { border-top: 1.5px solid var(--rule-strong); }
+.ej-pullquote {
+    font-family: var(--font-editorial);
+    font-optical-sizing: auto;
+    font-style: italic;
+    font-size: clamp(1.5rem, 3vw, 2.3rem);
+    font-weight: 480;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    max-width: 30ch;
+    margin: 0 0 var(--space-12);
+    position: relative;
+    padding-left: var(--space-8);
+}
+.ej-pullquote::before {
+    content: '\201C';
+    position: absolute;
+    left: -6px;
+    top: -0.28em;
+    font-size: 2.6em;
+    font-style: normal;
+    color: var(--terracotta);
+    line-height: 1;
+}
+.ej-manifesto-cols {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+}
+.ej-manifesto-col {
+    padding: 0 var(--space-8);
+    border-left: 1px solid var(--rule);
+}
+.ej-manifesto-col:first-child { padding-left: 0; border-left: none; }
+.ej-manifesto-col h3 {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--terracotta);
+    margin: 0 0 var(--space-4);
+}
+.ej-manifesto-col p {
+    font-size: var(--text-base);
+    line-height: var(--leading-relaxed);
+    color: var(--ink-soft);
+    margin: 0;
+}
+.ej-manifesto-col p::first-letter {
+    font-family: var(--font-editorial);
+    font-size: 3.1em;
+    font-weight: 560;
+    float: left;
+    line-height: 0.82;
+    padding: 4px 8px 0 0;
+    color: var(--ink);
+}
+
+/* ── Postcards — testimonials without stock avatars ──────── */
+.ej-postcards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-8) var(--space-6);
+}
+.ej-postcard {
+    position: relative;
+    background: var(--paper-print);
+    border: 1px solid var(--rule);
+    padding: var(--space-6);
+    box-shadow: var(--paper-shadow);
+    rotate: var(--tilt, 0deg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    transition: rotate var(--duration-normal) var(--ease-spring),
+                box-shadow var(--duration-normal) var(--ease-out);
+}
+.ej-postcard:nth-child(3n+1) { --tilt: -1.1deg; }
+.ej-postcard:nth-child(3n+2) { --tilt: 0.8deg; margin-top: var(--space-4); }
+.ej-postcard:nth-child(3n)   { --tilt: -0.4deg; }
+.ej-postcard:hover { rotate: 0deg; box-shadow: var(--paper-shadow-lift); }
+/* postage stamp corner */
+.ej-postcard-stamp {
+    position: absolute;
+    top: var(--space-4);
+    right: var(--space-4);
+    width: 42px;
+    height: 50px;
+    border: 1px solid var(--rule-strong);
+    outline: 3px dashed color-mix(in oklab, var(--rule-strong) 55%, transparent);
+    outline-offset: -6px;
+    display: grid;
+    place-items: center;
+    font-family: var(--font-mono);
+    font-size: 0.5rem;
+    letter-spacing: 0.08em;
+    color: var(--ink-faint);
+    background: var(--paper-warm);
+    rotate: 3deg;
+}
+.ej-postcard-stamp img { width: 22px; height: 22px; object-fit: contain; }
+/* circular postmark over the stamp */
+.ej-postcard-postmark {
+    position: absolute;
+    top: var(--space-3);
+    right: 40px;
+    width: 52px;
+    height: 52px;
+    color: var(--ink-faint);
+    opacity: 0.8;
+    rotate: -8deg;
+    pointer-events: none;
+}
+.ej-postcard-quote {
+    font-family: var(--font-editorial);
+    font-optical-sizing: auto;
+    font-size: 1.02rem;
+    font-weight: 420;
+    line-height: 1.55;
+    color: var(--ink);
+    margin: var(--space-4) 0 0;
+    padding-right: 52px;
+}
+.ej-postcard-sig {
+    margin-top: auto;
+    border-top: 1px solid var(--rule);
+    padding-top: var(--space-3);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.ej-postcard-sig .ej-hand {
+    font-size: 1.45rem;
+    color: var(--ink);
+    rotate: -1deg;
+    display: inline-block;
+}
+.ej-postcard-sig span:not(.ej-hand) {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+}
+.ej-postcard.is-pro .ej-postcard-pro {
+    position: absolute;
+    top: var(--space-4);
+    left: var(--space-4);
+    rotate: -6deg;
+    font-family: var(--font-mono);
+    font-size: 0.56rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    color: var(--gold);
+    border: 1.5px solid var(--gold);
+    padding: 2px 7px;
+    border-radius: 2px;
+    text-transform: uppercase;
+}
+
+/* ── The letter — partner application ────────────────────── */
+.ej-letter {
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+    gap: clamp(var(--space-8), 5vw, var(--space-16));
+    align-items: start;
+}
+.ej-letter-benefits {
+    list-style: none;
+    padding: 0;
+    margin: var(--space-6) 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+.ej-letter-benefits li {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-3);
+    font-size: var(--text-base);
+    color: var(--ink-soft);
+}
+.ej-letter-benefits .ej-tick {
+    font-family: var(--font-hand);
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--olive);
+    line-height: 1;
+}
+.ej-letter-arabic {
+    font-family: 'Noto Kufi Arabic', var(--font-sans);
+    color: var(--ink-soft);
+    font-size: 1.15rem;
+    margin: var(--space-2) 0 var(--space-4);
+}
+.ej-letter-form {
+    position: relative;
+    background: var(--paper-warm);
+    border: 1px solid var(--rule-strong);
+    padding: var(--space-8);
+    box-shadow: var(--paper-shadow);
+    rotate: 0.6deg;
+}
+.ej-letter-form::before {
+    content: '';
+    position: absolute;
+    top: -12px;
+    right: 36px;
+    rotate: 4deg;
+    width: 86px;
+    height: 24px;
+    background: var(--tape);
+    box-shadow: 0 1px 2px oklch(0% 0 0 / 0.06);
+}
+.ej-letter-form-head {
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    border-bottom: 1px solid var(--rule-strong);
+    padding-bottom: var(--space-3);
+    margin-bottom: var(--space-6);
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-3);
+}
+.ej-field { margin-bottom: var(--space-5); }
+.ej-field label {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: 6px;
+}
+.ej-input {
+    width: 100%;
+    min-height: 44px;
+    background: transparent;
+    border: none;
+    border-bottom: 1.5px solid var(--rule-strong);
+    border-radius: 0;
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    color: var(--ink);
+    padding: 8px 2px;
+    transition: border-color var(--duration-fast) var(--ease-out);
+}
+.ej-input::placeholder { color: var(--ink-faint); }
+.ej-input:focus {
+    outline: none;
+    border-bottom-color: var(--terracotta);
+}
+select.ej-input { cursor: pointer; }
+select.ej-input option { color: var(--text-primary); background: var(--surface); }
+.ej-letter-form .ej-btn { width: 100%; justify-content: center; margin-top: var(--space-2); }
+.ej-letter-form .ej-btn:disabled {
+    opacity: 0.6;
+    cursor: default;
+    transform: none;
+    box-shadow: 3px 3px 0 var(--ink);
+}
+
+/* ── Partners — quiet colophon strip ─────────────────────── */
+.ej-partners {
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    padding: var(--space-10) var(--space-6);
+}
+.ej-partners-inner { max-width: 1240px; margin: 0 auto; }
+.ej-partners-title {
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 0 0 var(--space-8);
+}
+.ej-partners-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-10);
+}
+.ej-partners-row img {
+    height: 44px;
+    width: auto;
+    max-width: 130px;
+    object-fit: contain;
+    filter: grayscale(1) contrast(0.92);
+    opacity: 0.6;
+    transition: filter var(--duration-normal) var(--ease-out),
+                opacity var(--duration-normal) var(--ease-out);
+}
+.ej-partners-row img:hover { filter: none; opacity: 1; }
+[data-theme="dark"] .ej-partners-row img { filter: grayscale(1) invert(0.85); opacity: 0.55; }
+[data-theme="dark"] .ej-partners-row img:hover { filter: invert(0.9); opacity: 0.9; }
+
+/* ── Fares — pricing as ticket stubs ─────────────────────── */
+.ej-fares {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-6);
+    align-items: stretch;
+}
+.ej-fare {
+    position: relative;
+    background: var(--paper-print);
+    border: 1.5px solid var(--rule-strong);
+    border-radius: var(--radius-sm);
+    padding: var(--space-8) var(--space-6) var(--space-6);
+    box-shadow: var(--paper-shadow);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+/* perforation along the top */
+.ej-fare::before {
+    content: '';
+    position: absolute;
+    top: 14px;
+    left: 10px;
+    right: 10px;
+    border-top: 1.5px dashed var(--rule);
+}
+.ej-fare--featured {
+    border-color: var(--terracotta);
+    border-width: 2px;
+    box-shadow: var(--paper-shadow-lift);
+    rotate: -0.5deg;
+}
+.ej-fare-loved {
+    position: absolute;
+    top: -14px;
+    right: 18px;
+    rotate: 6deg;
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--stamp-ink);
+    border: 2px solid var(--stamp-ink);
+    border-radius: 3px;
+    padding: 4px 9px;
+    background: var(--paper-print);
+    opacity: 0.95;
+}
+.ej-fare-name {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-top: var(--space-2);
+}
+.ej-fare-price {
+    font-family: var(--font-editorial);
+    font-optical-sizing: auto;
+    font-size: 2.7rem;
+    font-weight: 560;
+    line-height: 1;
+    color: var(--ink);
+    letter-spacing: -0.02em;
+}
+.ej-fare-price span {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    color: var(--ink-faint);
+    margin-left: 6px;
+}
+.ej-fare-tagline { color: var(--ink-soft); font-size: var(--text-sm); margin: 0; line-height: var(--leading-normal); }
+.ej-fare-features {
+    list-style: none;
+    margin: 0;
+    padding: var(--space-4) 0 0;
+    border-top: 1px solid var(--rule);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+.ej-fare-features li {
+    display: flex;
+    gap: var(--space-2);
+    align-items: baseline;
+    font-size: var(--text-sm);
+    color: var(--ink-soft);
+    line-height: var(--leading-normal);
+}
+.ej-fare-features li::before {
+    content: '—';
+    color: var(--terracotta);
+    flex: 0 0 auto;
+}
+.ej-fare .ej-btn,
+.ej-fare .ej-btn-ghost { margin-top: auto; justify-content: center; width: 100%; }
+.ej-btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: 48px;
+    padding: 12px 24px;
+    background: transparent;
+    color: var(--ink);
+    font-weight: 600;
+    font-size: var(--text-base);
+    text-decoration: none;
+    border: 1.5px solid var(--rule-strong);
+    border-radius: var(--radius-sm);
+    transition: border-color var(--duration-fast) var(--ease-out),
+                background var(--duration-fast) var(--ease-out);
+}
+.ej-btn-ghost:hover { border-color: var(--ink); background: var(--paper-warm); }
+
+/* ── Final call — the ink page ───────────────────────────── */
+.ej-cta {
+    background: var(--paper-deep);
+    color: var(--ink-on-deep);
+    margin-top: var(--space-20);
+    padding: clamp(var(--space-16), 12vw, var(--space-32)) var(--space-6);
+    position: relative;
+    overflow: hidden;
+}
+.ej-cta-inner {
+    max-width: 880px;
+    margin: 0 auto;
+    text-align: center;
+    position: relative;
+}
+.ej-cta .ej-stamp {
+    position: absolute;
+    top: -56px;
+    right: -2%;
+    color: var(--ink-on-deep);
+    opacity: 0.24;
+    mix-blend-mode: normal;
+    rotate: 10deg;
+}
+.ej-cta h2 {
+    font-family: var(--font-editorial);
+    font-optical-sizing: auto;
+    font-size: clamp(2.3rem, 5.4vw, 4.2rem);
+    font-weight: 540;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    /* explicit — global h2 { color: var(--text-primary) } would win over inheritance */
+    color: var(--ink-on-deep);
+    margin: 0 0 var(--space-4);
+    text-wrap: balance;
+}
+.ej-cta h2 em { font-style: italic; font-weight: 440; color: var(--gold); }
+.ej-cta-arabic {
+    font-family: 'Noto Kufi Arabic', var(--font-sans);
+    font-size: clamp(1.1rem, 2vw, 1.4rem);
+    color: color-mix(in oklab, var(--ink-on-deep) 78%, transparent);
+    margin: 0 0 var(--space-8);
+}
+.ej-cta .ej-btn {
+    border-color: var(--ink-on-deep);
+    box-shadow: 3px 3px 0 color-mix(in oklab, var(--ink-on-deep) 55%, transparent);
+}
+.ej-cta-note {
+    margin-top: var(--space-6);
+    rotate: -1.2deg;
+    display: block;
+}
+.ej-cta-note .ej-hand { color: color-mix(in oklab, var(--ink-on-deep) 82%, transparent); font-size: 1.4rem; }
+
+/* ── Colophon — footer ───────────────────────────────────── */
+.ej-footer {
+    border-top: 4px double var(--rule-strong);
+    padding: var(--space-12) var(--space-6) var(--space-8);
+}
+.ej-footer-grid {
+    max-width: 1240px;
+    margin: 0 auto var(--space-10);
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: var(--space-8);
+}
+.ej-footer-brand .ej-wordmark strong { font-size: 1.6rem; }
+.ej-footer-brand p {
+    color: var(--ink-soft);
+    font-size: var(--text-sm);
+    line-height: var(--leading-relaxed);
+    max-width: 30ch;
+    margin: var(--space-3) 0 0;
+}
+.ej-footer-col h4 {
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 0 0 var(--space-4);
+}
+.ej-footer-col a {
+    display: block;
+    color: var(--ink-soft);
+    font-size: var(--text-sm);
+    text-decoration: none;
+    padding: 4px 0;
+    transition: color var(--duration-fast) var(--ease-out);
+}
+.ej-footer-col a:hover { color: var(--terracotta); }
+.ej-footer-bottom {
+    max-width: 1240px;
+    margin: 0 auto;
+    border-top: 1px solid var(--rule);
+    padding-top: var(--space-5);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-4);
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    flex-wrap: wrap;
+}
+.ej-footer-heart { color: var(--terracotta); display: inline-grid; place-items: center; vertical-align: -3px; }
+.ej-footer-heart svg { fill: var(--terracotta); width: 13px; height: 13px; }
+.ej-sr-only {
+    position: absolute;
+    width: 1px; height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+/* ── Scroll reveal — quiet, like turning a page ──────────── */
+.ej-reveal {
+    opacity: 0;
+    translate: 0 22px;
+    transition: opacity 0.65s var(--ease-out), translate 0.65s var(--ease-out);
+}
+.ej-reveal.is-in { opacity: 1; translate: 0 0; }
+
+/* Skeletons on paper */
+.ej-landing .skeleton { background: var(--paper-warm); }
+
+/* ── Reduced motion ──────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+    .ej-ticker-track { animation: none; flex-wrap: wrap; width: auto; padding-inline: var(--space-4); }
+    .ej-reveal { opacity: 1; translate: none; transition: none; }
+    .ej-print, .ej-place, .ej-mood, .ej-postcard, .ej-ticket, .ej-btn { transition: none; }
+    .ej-print:hover, .ej-place:hover, .ej-mood:hover, .ej-postcard:hover, .ej-ticket:hover { rotate: var(--tilt, 0deg); translate: none; }
+}
+
+/* ── Responsive ──────────────────────────────────────────── */
+@media (max-width: 1024px) {
+    .ej-index-grid { grid-template-columns: repeat(2, 1fr); }
+    .ej-place:nth-child(n) { margin-top: 0; }
+    .ej-place:nth-child(even) { margin-top: var(--space-6); }
+    .ej-tickets { grid-template-columns: 1fr; max-width: 640px; margin-inline: auto; }
+    .ej-postcards { grid-template-columns: repeat(2, 1fr); }
+    .ej-fares { grid-template-columns: 1fr; max-width: 480px; margin-inline: auto; }
+    .ej-moods { grid-template-columns: repeat(2, 1fr); }
+    .ej-mood:nth-child(n) { grid-column: auto; margin-top: 0; }
+    .ej-manifesto-cols { grid-template-columns: 1fr; gap: var(--space-8); }
+    .ej-manifesto-col { border-left: none; padding: 0; border-top: 1px solid var(--rule); padding-top: var(--space-6); }
+    .ej-manifesto-col:first-child { border-top: none; padding-top: 0; }
+}
+
+@media (max-width: 860px) {
+    .ej-hero {
+        grid-template-columns: 1fr;
+        gap: var(--space-12);
+        min-height: auto;
+        padding-top: 7.5rem;
+    }
+    .ej-hero-prints { height: 460px; max-width: 480px; }
+    .ej-letter { grid-template-columns: 1fr; }
+    .ej-letter-form { rotate: 0deg; }
+    .ej-almanac-grid { grid-template-columns: repeat(2, 1fr); }
+    .ej-almanac-cell:nth-child(3) { border-left: none; padding-left: 0; }
+    .ej-almanac-cell:nth-child(n+3) { border-top: 1px solid var(--rule); }
+    .ej-footer-grid { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 640px) {
+    .ej-masthead-strip { display: none; }
+    .ej-masthead-links { display: none; }
+    .ej-masthead-actions { margin-left: auto; }
+    .ej-hero { padding-top: 6rem; padding-bottom: var(--space-10); }
+    .ej-hero-watermark { font-size: 8.5rem; top: 2%; }
+    .ej-hero-prints { height: 400px; }
+    .ej-print { width: 68%; }
+    .ej-print-2 { width: 56%; }
+    .ej-print-3 { width: 60%; left: 12%; }
+    .ej-index-grid { grid-template-columns: 1fr; gap: var(--space-8); }
+    .ej-place:nth-child(n) { margin-top: 0; }
+    .ej-postcards { grid-template-columns: 1fr; }
+    .ej-postcard:nth-child(n) { margin-top: 0; }
+    .ej-moods { grid-template-columns: 1fr; }
+    .ej-section { padding: var(--space-12) var(--space-5); }
+    .ej-almanac-grid { grid-template-columns: 1fr 1fr; }
+    .ej-footer-grid { grid-template-columns: 1fr; gap: var(--space-6); }
+    .ej-footer-bottom { flex-direction: column; align-items: flex-start; }
+    .ej-ticket { grid-template-columns: 72px 1fr 20px; }
+    .ej-cta .ej-stamp { display: none; }
+}

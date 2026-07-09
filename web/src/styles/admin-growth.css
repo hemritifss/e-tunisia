@@ -1,0 +1,102 @@
+/* Growth analytics dashboard (admin) — self-contained; reuses .admin-stat/.admin-section. */
+
+.admin-growth-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-4);
+    margin-bottom: var(--space-4);
+}
+@media (max-width: 720px) {
+    .admin-growth-grid { grid-template-columns: 1fr; }
+}
+
+.admin-stats-compact { margin: 0; }
+
+.admin-growth-chart {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* Retention bars */
+.admin-growth-ret { display: flex; flex-direction: column; gap: var(--space-3); }
+.admin-growth-ret-row { display: flex; align-items: center; gap: var(--space-3); }
+.admin-growth-ret-label {
+    flex: 0 0 2.5rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    font-size: var(--text-sm);
+}
+.admin-growth-ret-track {
+    flex: 1 1 auto;
+    height: 10px;
+    border-radius: var(--radius-full);
+    background: var(--surface-hover);
+    overflow: hidden;
+}
+.admin-growth-ret-fill {
+    height: 100%;
+    border-radius: var(--radius-full);
+    background: linear-gradient(90deg, var(--mediterranean), var(--terracotta));
+    transition: width var(--duration-slow, 0.6s) var(--ease-out, ease);
+}
+.admin-growth-ret-val {
+    flex: 0 0 3rem;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.admin-growth-note {
+    margin: var(--space-2) 0 0;
+    color: var(--text-tertiary);
+    font-size: var(--text-xs);
+}
+
+/* Funnel */
+.admin-growth-funnel {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    flex-wrap: wrap;
+}
+.admin-growth-funnel-step {
+    display: flex;
+    flex-direction: column;
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-lg);
+    background: var(--surface-hover);
+    min-width: 120px;
+}
+.admin-growth-funnel-step strong { font-size: var(--text-2xl); color: var(--text-primary); font-variant-numeric: tabular-nums; }
+.admin-growth-funnel-step span { font-size: var(--text-xs); color: var(--text-secondary); }
+.admin-growth-funnel-arrow { font-weight: 700; color: var(--accent); font-size: var(--text-lg); }
+
+/* Events table */
+.admin-growth-events { width: 100%; border-collapse: collapse; }
+.admin-growth-events th {
+    text-align: left;
+    font-size: var(--text-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-tertiary);
+    padding: var(--space-2) var(--space-2);
+    border-bottom: 1px solid var(--border);
+}
+.admin-growth-events td {
+    padding: var(--space-2) var(--space-2);
+    border-bottom: 1px solid var(--border-light, var(--border));
+    vertical-align: middle;
+}
+.admin-growth-ev-name { font-weight: 600; color: var(--text-primary); font-family: var(--font-mono, monospace); font-size: var(--text-sm); }
+.admin-growth-ev-count { font-variant-numeric: tabular-nums; color: var(--text-secondary); }
+.admin-spark { width: 120px; height: 28px; display: block; }
+
+.admin-growth-events th:nth-child(2), .admin-growth-ev-count { text-align: right; }
+.admin-growth-events th:last-child { text-align: right; }
+.admin-growth-events td:last-child { text-align: right; }
+
+/* Forbidden */
+.admin-locked { text-align: center; padding: var(--space-6) var(--space-4); }
+.admin-locked-icon { color: var(--text-tertiary); margin-bottom: var(--space-2); }

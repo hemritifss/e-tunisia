@@ -14,6 +14,7 @@ export interface ErrorResponse {
   error: string;
   timestamp: string;
   path: string;
+  requestId: string;
   details?: Record<string, unknown>;
 }
 
@@ -36,12 +37,15 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         ? exception.message
         : 'Internal server error';
 
+    const requestId = (request as any).id || 'no-id';
+
     const errorResponse: ErrorResponse = {
       statusCode: status,
       message,
       error: HttpStatus[status] || 'Unknown Error',
       timestamp: new Date().toISOString(),
       path: request.url,
+      requestId,
     };
 
     if (exception instanceof HttpException) {
@@ -55,7 +59,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     }
 
     this.logger.error(
-      `${request.method} ${request.url} → ${status}: ${message}`,
+      `[${requestId}] ${request.method} ${request.url} → ${status}: ${message}`,
       exception instanceof Error ? exception.stack : undefined,
     );
 

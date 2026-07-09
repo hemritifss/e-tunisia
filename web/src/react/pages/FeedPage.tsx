@@ -1,9 +1,8 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { goTo } from '../../router';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  ArrowBigUp,
-  ArrowBigDown,
   MessageCircle,
   Share2,
   Bookmark,
@@ -11,11 +10,15 @@ import {
   Clock,
   TrendingUp,
   Flame,
-  Navigation,
   Coins,
+  Repeat,
+  Languages,
+  Award,
 } from 'lucide-react';
 import { openDonateModal } from '../../donate-modal';
-import { api } from '../../shared/api';
+import { api, ogShareUrl } from '../../shared/api';
+import { track } from '../../analytics';
+import { useT } from '../../i18n/useT';
 import type { Post } from '../../shared/types/api';
 import { Card, CardContent } from '../components/Card';
 import { Avatar } from '../components/Avatar';
@@ -29,40 +32,39 @@ import { StoriesStrip } from '../components/StoriesStrip';
 import { AdCard } from '../components/AdCard';
 import { ComposeBox } from '../components/ComposeBox';
 import { SuggestedUsers } from '../components/SuggestedUsers';
-import { Plus, User as UserIcon, RefreshCcw, Users as UsersIcon } from 'lucide-react';
+import { TrendingHashtags } from '../components/TrendingHashtags';
+import { ReactionPicker, REACTIONS } from '../components/ReactionPicker';
+import { OnboardingBanner } from '../components/OnboardingBanner';
+import { FeaturedPlaces } from '../components/FeaturedPlaces';
+import { DiscoverTrips } from '../components/DiscoverTrips';
+import { WelcomeStrip } from '../components/WelcomeStrip';
+import { TunisiaPulse } from '../components/TunisiaPulse';
+import { MoodCompass } from '../components/MoodCompass';
+import { TierBadge } from '../components/TierBadge';
+import { PullToRefresh } from '../components/PullToRefresh';
+import { TunisiaNowPanel } from '../components/TunisiaNowPanel';
+import { PostImageCarousel } from '../components/PostImageCarousel';
+import { StarRating } from '../components/StarRating';
+import { DiscoveryCard } from '../components/DiscoveryCard';
+import { Reveal } from '../components/Reveal';
+import { SponsorsStrip } from '../components/SponsorsStrip';
+import { Plus, User as UserIcon, RefreshCcw, Users as UsersIcon, Sparkles, Compass } from 'lucide-react';
 import { useAuthStore as _useAuthStoreFeed } from '../stores/auth-store';
 import { requireAuth } from '../../ui-utils';
 
-type SortType = 'hot' | 'new' | 'top' | 'following' | 'mine';
+type SortType = 'foryou' | 'hot' | 'new' | 'top' | 'following' | 'mine';
 
-const sortLabels: Record<SortType, { label: string; icon: React.ReactNode }> = {
-  hot:       { label: 'Hot',       icon: <Flame size={14} /> },
-  new:       { label: 'New',       icon: <Clock size={14} /> },
-  top:       { label: 'Top',       icon: <TrendingUp size={14} /> },
-  following: { label: 'Following', icon: <UsersIcon size={14} /> },
-  mine:      { label: 'Mine',      icon: <UserIcon size={14} /> },
+// Labels resolve through i18n at render time (see FeedSortBar); only icons here.
+const sortIcons: Record<SortType, React.ReactNode> = {
+  foryou:    <Sparkles size={14} />,
+  hot:       <Flame size={14} />,
+  new:       <Clock size={14} />,
+  top:       <TrendingUp size={14} />,
+  following: <UsersIcon size={14} />,
+  mine:      <UserIcon size={14} />,
 };
 
-function PostCard({
-  post,
-  onVote,
-}: {
-  post: Post;
-  onVote: (id: string, direction: 'up' | 'down') => void;
-}) {
-  // Restore prior vote from localStorage so the UI survives a refresh.
-  const initialVote: 'up' | 'down' | null = (() => {
-    try {
-      const map = JSON.parse(localStorage.getItem('etunisia_votes') || '{}');
-      const v = map[post.id];
-      return v === 'up' || v === 'down' ? v : null;
-    } catch { return null; }
-  })();
-  const [voteState, setVoteState] = useState<'up' | 'down' | null>(initialVote);
-  const baseScore = (Number(post.upvotes) || 0) - (Number(post.downvotes) || 0);
-  const [localScore, setLocalScore] = useState(
-    baseScore + (initialVote === 'up' ? 1 : initialVote === 'down' ? -1 : 0),
-  );
+function PostCard({ post }: { post: Post }) {
   const [isSavedLocal, setIsSavedLocal] = useState(() => {
     try {
       const map = JSON.parse(localStorage.getItem('etunisia_saved_items') || '{}');
@@ -73,32 +75,37 @@ function PostCard({
   });
   const showToast = useUIStore((s) => s.showToast);
 
-  const persistVote = (v: 'up' | 'down' | null) => {
+  const [repostedLocal, setRepostedLocal] = useState(() => {
     try {
-      const map = JSON.parse(localStorage.getItem('etunisia_votes') || '{}');
-      if (!v) delete map[post.id]; else map[post.id] = v;
-      localStorage.setItem('etunisia_votes', JSON.stringify(map));
-    } catch {}
-  };
-
-  const handleVote = (direction: 'up' | 'down') => {
-    if (!requireAuth('vote on posts')) return;
-    if (voteState === direction) {
-      setVoteState(null);
-      setLocalScore((prev) => (direction === 'up' ? prev - 1 : prev + 1));
-      persistVote(null);
-    } else {
-      const oldVote = voteState;
-      setVoteState(direction);
-      if (oldVote) {
-        setLocalScore((prev) => (direction === 'up' ? prev + 2 : prev - 2));
-      } else {
-        setLocalScore((prev) => (direction === 'up' ? prev + 1 : prev - 1));
-      }
-      persistVote(direction);
+      const map = JSON.parse(localStorage.getItem('etunisia_reposted_items') || '{}');
+      return !!map['post:' + post.id];
+    } catch {
+      return false;
     }
-    onVote(post.id, direction);
+  });
+  const [repostCount, setRepostCount] = useState<number>((post as any).repostCount || 0);
+
+  // AI "translate to read" — translates the body in place, with a toggle back to the original.
+  const [translated, setTranslated] = useState<string | null>(null);
+  const [showOriginal, setShowOriginal] = useState(false);
+  const [translating, setTranslating] = useState(false);
+  const handleTranslate = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (translated) { setShowOriginal((v) => !v); return; }
+    if (!post.body?.trim()) return;
+    setTranslating(true);
+    try {
+      const r: any = await api.aiAssist({ text: post.body, action: 'translate', targetLang: 'en' });
+      if (r?.mock) showToast('Translation needs AI to be configured.', 'info');
+      else if (r?.text) { setTranslated(r.text); setShowOriginal(false); }
+    } catch (err: any) {
+      showToast(err?.message || 'Could not translate right now.', 'error');
+    } finally {
+      setTranslating(false);
+    }
   };
+  const displayBody = translated && !showOriginal ? translated : post.body;
 
   // For review items, navigate to the underlying place; for real posts, the post itself.
   const detailHash =
@@ -107,11 +114,16 @@ function PostCard({
       : `#/post/${post.id}`;
 
   const handleComment = () => {
-    location.hash = detailHash;
+    goTo(detailHash);
   };
 
   const handleShare = async () => {
-    const url = `${location.origin}${location.pathname}${detailHash}`;
+    // Share the OG route (crawler-readable preview) — not the raw SPA URL.
+    const url =
+      (post as any).type === 'review' && (post as any).place?.id
+        ? ogShareUrl(`place/${encodeURIComponent((post as any).place.id)}`)
+        : ogShareUrl(`post/${encodeURIComponent(post.id)}`);
+    track('share', { kind: (post as any).type === 'review' ? 'place' : 'post' });
     if ((navigator as any).share) {
       try {
         await (navigator as any).share({ title: post.title, text: post.body?.slice(0, 100), url });
@@ -126,184 +138,351 @@ function PostCard({
     }
   };
 
-  const handleSave = () => {
+  const handleRepost = async () => {
+    if (!requireAuth('repost')) return;
+    const was = repostedLocal;
+    const persist = (on: boolean) => {
+      try {
+        const map = JSON.parse(localStorage.getItem('etunisia_reposted_items') || '{}');
+        if (on) map['post:' + post.id] = true; else delete map['post:' + post.id];
+        localStorage.setItem('etunisia_reposted_items', JSON.stringify(map));
+      } catch {}
+    };
+    // Optimistic toggle
+    setRepostedLocal(!was);
+    setRepostCount((c) => Math.max(0, c + (was ? -1 : 1)));
+    persist(!was);
+    try {
+      if (was) {
+        await api.undoRepost(post.id);
+        showToast('Repost removed', 'info');
+      } else {
+        await api.repostPost(post.id);
+        showToast('Reposted to your profile', 'success');
+      }
+    } catch (err: any) {
+      // Revert on failure
+      setRepostedLocal(was);
+      setRepostCount((c) => Math.max(0, c + (was ? 1 : -1)));
+      persist(was);
+      showToast(err?.message || (was ? 'Could not undo repost' : 'Repost failed'), 'error');
+    }
+  };
+
+  const handleSave = async () => {
     if (!requireAuth('save posts')) return;
+    // Only real posts can be persisted server-side. Reviews/ads fall back to local-only.
+    const canPersist = (post as any).type === 'post' || !(post as any).type;
+    const key = 'post:' + post.id;
+    const wasSaved = isSavedLocal;
+    // Optimistic flip
+    setIsSavedLocal(!wasSaved);
     try {
       const map = JSON.parse(localStorage.getItem('etunisia_saved_items') || '{}');
-      const key = 'post:' + post.id;
-      if (map[key]) {
-        delete map[key];
-        localStorage.setItem('etunisia_saved_items', JSON.stringify(map));
-        setIsSavedLocal(false);
+      if (wasSaved) delete map[key];
+      else map[key] = true;
+      localStorage.setItem('etunisia_saved_items', JSON.stringify(map));
+    } catch {}
+
+    if (!canPersist) {
+      showToast(wasSaved ? 'Removed from bookmarks' : 'Saved to bookmarks', wasSaved ? 'info' : 'success');
+      return;
+    }
+
+    try {
+      if (wasSaved) {
+        await api.unsavePost(post.id);
         showToast('Removed from bookmarks', 'info');
       } else {
-        map[key] = true;
-        localStorage.setItem('etunisia_saved_items', JSON.stringify(map));
-        setIsSavedLocal(true);
+        await api.savePost(post.id);
+        track('save', { kind: 'post' });
         showToast('Saved to bookmarks', 'success');
       }
-    } catch {}
+    } catch {
+      // Revert on failure
+      setIsSavedLocal(wasSaved);
+      try {
+        const map = JSON.parse(localStorage.getItem('etunisia_saved_items') || '{}');
+        if (wasSaved) map[key] = true;
+        else delete map[key];
+        localStorage.setItem('etunisia_saved_items', JSON.stringify(map));
+      } catch {}
+      showToast('Could not update bookmark', 'error');
+    }
+  };
+
+  const authorHandle = (post.author as any)?.handle;
+  const authorHref = authorHandle
+    ? `#/u/${authorHandle}`
+    : (post.author?.id ? `#/user/${post.author.id}` : '#');
+  const isCreator = (post.author as any)?.role === 'creator';
+  const authorPlan = (post.author as any)?.plan;
+  const isProAuthor = authorPlan === 'premium' || authorPlan === 'business' || authorPlan === 'admin';
+  const images: string[] = Array.isArray(post.images) ? post.images.filter(Boolean) : [];
+
+  // Reviews are shaped as feed cards but have no reaction/comment system of their
+  // own — the honest engagement signal is the star rating. Render review cards with
+  // a rating-first action row instead of the (server-side broken) react/comment/repost.
+  const isReview = (post as any).type === 'review';
+  const reviewRating = Number((post as any).rating) || 0;
+
+  // Auto-generated achievement cards (badge/level earned) — celebratory styling,
+  // still reactable/commentable by others (they're real posts).
+  const isAchievement = (post as any).kind === 'achievement';
+  const achievementMeta = (post as any).meta || null;
+  const achievementBadges: Array<{ label: string; description?: string }> =
+    Array.isArray(achievementMeta?.badges) ? achievementMeta.badges : [];
+
+  return (
+    <motion.article
+      className={`post-card-v2${isProAuthor ? ' is-pro' : ''}${isAchievement ? ' is-achievement' : ''}`}
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
+    >
+      <header className="post-card-v2-head">
+        <a
+          className="post-card-v2-author"
+          href={authorHref}
+          onClick={(e) => { if (!post.author?.id) e.preventDefault(); }}
+          data-user-id={post.author?.id || undefined}
+          data-user-name={post.author?.fullName || undefined}
+          data-user-avatar={post.author?.avatar || undefined}
+          data-user-handle={authorHandle || undefined}
+          data-user-plan={authorPlan || undefined}
+        >
+          <Avatar
+            src={post.author?.avatar}
+            fallback={post.author?.fullName}
+            size="sm"
+          />
+          <div className="post-card-v2-byline">
+            <strong>
+              {post.author?.fullName || 'Anonymous'}
+              <TierBadge plan={(post.author as any)?.plan} role={(post.author as any)?.role} size="xs" />
+            </strong>
+            <span>
+              {authorHandle ? `@${authorHandle} · ` : ''}{formatDate(post.createdAt)}
+            </span>
+          </div>
+        </a>
+        {post.category && (
+          <span className="post-card-v2-category">{post.category}</span>
+        )}
+      </header>
+
+      {isAchievement ? (
+        <div className="post-card-v2-achievement">
+          <div className="pc-achv-medal" aria-hidden="true"><Award size={22} /></div>
+          <div className="pc-achv-body">
+            <h3 className="pc-achv-title">{post.title}</h3>
+            {achievementBadges.length > 0 && (
+              <ul className="pc-achv-badges">
+                {achievementBadges.map((b, i) => (
+                  <li key={i} className="pc-achv-badge">{b.label}</li>
+                ))}
+              </ul>
+            )}
+            {typeof achievementMeta?.points === 'number' && achievementMeta.points > 0 && (
+              <span className="pc-achv-xp">+{achievementMeta.points} XP</span>
+            )}
+          </div>
+        </div>
+      ) : (
+        <a className="post-card-v2-content" href={detailHash}>
+          {post.title && <h3 className="post-card-v2-title">{post.title}</h3>}
+          {isReview && reviewRating > 0 && (
+            <div className="post-card-v2-review-rating" aria-label={`Rated ${reviewRating} out of 5`}>
+              <StarRating rating={reviewRating} size={15} />
+            </div>
+          )}
+          {post.body && <p className="post-card-v2-body">{displayBody}</p>}
+        </a>
+      )}
+      {post.body && post.body.trim().length > 0 && (
+        <button
+          type="button"
+          onClick={handleTranslate}
+          disabled={translating}
+          className="post-card-v2-translate inline-flex items-center gap-1 text-xs font-medium text-brand hover:underline disabled:opacity-50 mt-0.5 ml-0.5"
+        >
+          <Languages size={12} />
+          {translating ? 'Translating…' : translated && !showOriginal ? 'Show original' : 'Translate'}
+        </button>
+      )}
+
+      {(post as any).videoUrl && (
+        <a className="post-card-v2-media post-card-v2-media-1" href={detailHash} aria-label="Open post">
+          <video
+            src={(post as any).videoUrl}
+            muted
+            playsInline
+            preload="metadata"
+            className="w-full h-full object-cover rounded-xl"
+          />
+          <span className="absolute bottom-2 right-2 px-2 py-0.5 rounded-md bg-black/50 text-white text-xs font-medium">
+            VIDEO
+          </span>
+        </a>
+      )}
+      {images.length > 0 && !(post as any).videoUrl && (
+        <PostImageCarousel images={images} onOpen={() => goTo(detailHash)} />
+      )}
+
+      {post.location && (
+        <div className="post-card-v2-loc">
+          <MapPin size={12} /> {post.location}
+        </div>
+      )}
+
+      <footer className="post-card-v2-actions">
+        {!isReview && (
+          <>
+            <ReactionPicker
+              postId={post.id}
+              initialMine={(post as any).myReaction || null}
+              initialBreakdown={(post as any).reactions?.breakdown || {}}
+              initialTotal={
+                typeof (post as any).reactions?.total === 'number'
+                  ? (post as any).reactions.total
+                  : (Number(post.upvotes) || 0)
+              }
+            />
+            <button className="post-card-v2-action pc-act-comment" onClick={handleComment} aria-label="Comments">
+              <MessageCircle size={15} />
+              <span>{formatNumber(post.commentCount)}</span>
+            </button>
+            <button className={`post-card-v2-action pc-act-repost ${repostedLocal ? 'is-active' : ''}`} onClick={handleRepost} aria-label={repostedLocal ? 'Undo repost' : 'Repost'}>
+              <Repeat size={15} />
+              <span>{formatNumber(repostCount)}</span>
+            </button>
+          </>
+        )}
+        {isReview && (
+          <a className="post-card-v2-action pc-act-review" href={detailHash} aria-label="Read review on place page">
+            <MapPin size={15} />
+            <span>Visit place</span>
+          </a>
+        )}
+        <button className="post-card-v2-action pc-act-share" onClick={handleShare} aria-label="Share">
+          <Share2 size={15} />
+          <span>Share</span>
+        </button>
+        <button
+          className={`post-card-v2-action pc-act-save ${isSavedLocal ? 'is-active' : ''}`}
+          onClick={handleSave}
+          aria-label={isSavedLocal ? 'Unsave' : 'Save'}
+        >
+          <motion.span
+            animate={isSavedLocal ? { scale: [1, 1.35, 1] } : { scale: 1 }}
+            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            style={{ display: 'inline-flex' }}
+          >
+            <Bookmark size={15} className={isSavedLocal ? 'fill-current' : ''} />
+          </motion.span>
+          <span>{isSavedLocal ? 'Saved' : 'Save'}</span>
+        </button>
+        {post.author && (
+          <button
+            className="post-card-v2-action post-card-v2-tip"
+            onClick={() => openDonateModal({
+              target: 'user',
+              toUserId: post.author!.id,
+              toUserName: post.author!.fullName,
+              toUserAvatar: post.author!.avatar || undefined,
+            })}
+            aria-label="Tip"
+          >
+            <Coins size={15} />
+            <span>Tip</span>
+          </button>
+        )}
+      </footer>
+    </motion.article>
+  );
+}
+
+/**
+ * Segmented-pill sort bar that becomes elevated when the page scrolls past it.
+ * Replaces the old Tailwind-utility sort row with a token-driven, sticky control
+ * that matches the rest of the redesign.
+ */
+function FeedSortBar({
+  sort,
+  onSort,
+  isAuth,
+  onRefresh,
+  total,
+}: {
+  sort: SortType;
+  onSort: (s: SortType) => void;
+  isAuth: boolean;
+  onRefresh: () => void;
+  total: number;
+}) {
+  const railRef = useRef<HTMLDivElement | null>(null);
+  const refreshBtnRef = useRef<HTMLButtonElement | null>(null);
+  const t = useT();
+
+  useEffect(() => {
+    const rail = railRef.current;
+    if (!rail) return;
+    // Sentinel a pixel above the rail tells us when it sticks.
+    const sentinel = document.createElement('div');
+    sentinel.style.cssText = 'position:absolute;top:-1px;height:1px;width:1px;';
+    rail.parentElement?.insertBefore(sentinel, rail);
+    const obs = new IntersectionObserver(([entry]) => {
+      rail.classList.toggle('is-scrolled', !entry.isIntersecting);
+    }, { threshold: [0] });
+    obs.observe(sentinel);
+    return () => { obs.disconnect(); sentinel.remove(); };
+  }, []);
+
+  const handleRefresh = () => {
+    const btn = refreshBtnRef.current;
+    if (btn) {
+      btn.classList.add('is-spinning');
+      setTimeout(() => btn.classList.remove('is-spinning'), 500);
+    }
+    onRefresh();
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-    >
-      <Card hover className="group">
-        <CardContent className="p-0">
-          <div className="flex">
-            {/* Vote sidebar */}
-            <div className="flex flex-col items-center gap-1 p-3 bg-black/[0.02] dark:bg-white/[0.02] border-r border-black/5 dark:border-white/5">
-              <button
-                onClick={() => handleVote('up')}
-                className={`p-1 rounded-lg transition-colors ${
-                  voteState === 'up'
-                    ? 'text-orange-500 bg-orange-500/10'
-                    : 'text-gray-400 hover:text-orange-500 hover:bg-orange-500/10'
-                }`}
-              >
-                <ArrowBigUp size={24} />
-              </button>
-              <span
-                className={`text-sm font-bold ${
-                  voteState === 'up'
-                    ? 'text-orange-500'
-                    : voteState === 'down'
-                      ? 'text-indigo-500'
-                      : 'text-foreground'
-                }`}
-              >
-                {formatNumber(localScore)}
-              </span>
-              <button
-                onClick={() => handleVote('down')}
-                className={`p-1 rounded-lg transition-colors ${
-                  voteState === 'down'
-                    ? 'text-indigo-500 bg-indigo-500/10'
-                    : 'text-gray-400 hover:text-indigo-500 hover:bg-indigo-500/10'
-                }`}
-              >
-                <ArrowBigDown size={24} />
-              </button>
-            </div>
-
-            {/* Content */}
-            <div className="flex-1 p-4 min-w-0">
-              {/* Header */}
-              <div className="flex items-center gap-2 mb-2">
-                <a
-                  href={post.author?.id ? `#/user/${post.author.id}` : '#'}
-                  className="contents"
-                  onClick={(e) => { if (!post.author?.id) e.preventDefault(); }}
-                >
-                  <Avatar
-                    src={post.author?.avatar}
-                    fallback={post.author?.fullName}
-                    size="sm"
-                  />
-                </a>
-                <div className="flex-1 min-w-0">
-                  <a
-                    href={post.author?.id ? `#/user/${post.author.id}` : '#'}
-                    className="text-sm font-medium truncate hover:text-brand"
-                    onClick={(e) => { if (!post.author?.id) e.preventDefault(); }}
-                  >
-                    {post.author?.fullName || 'Anonymous'}
-                  </a>
-                  <span className="text-xs text-muted-foreground ml-2">
-                    {formatDate(post.createdAt)}
-                  </span>
-                </div>
-                {post.category && (
-                  <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-brand/10 text-brand">
-                    {post.category}
-                  </span>
-                )}
-              </div>
-
-              {/* Title & Body */}
-              <h3 className="text-base font-semibold mb-1 leading-snug">
-                {post.title}
-              </h3>
-              <p className="text-sm text-muted-foreground line-clamp-3 mb-3">
-                {post.body}
-              </p>
-
-              {/* Images */}
-              {post.images && post.images.length > 0 && (
-                <div className="mb-3 rounded-xl overflow-hidden">
-                  <img
-                    src={post.images[0]}
-                    alt={post.title}
-                    className="w-full h-48 object-cover"
-                    loading="lazy"
-                  />
-                </div>
-              )}
-
-              {/* Location */}
-              {post.location && (
-                <div className="flex items-center gap-1 text-xs text-muted-foreground mb-3">
-                  <MapPin size={12} />
-                  {post.location}
-                </div>
-              )}
-
-              {/* Actions */}
-              <div className="flex items-center gap-2 flex-wrap">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  leftIcon={<MessageCircle size={14} />}
-                  onClick={handleComment}
-                >
-                  {formatNumber(post.commentCount)}
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  leftIcon={<Share2 size={14} />}
-                  onClick={handleShare}
-                >
-                  Share
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  leftIcon={<Bookmark size={14} className={isSavedLocal ? 'fill-current' : ''} />}
-                  onClick={handleSave}
-                  className={isSavedLocal ? 'text-brand' : ''}
-                >
-                  {isSavedLocal ? 'Saved' : 'Save'}
-                </Button>
-                {post.author && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    leftIcon={<Coins size={14} className="text-amber-500" />}
-                    onClick={() => openDonateModal({
-                      target: 'user',
-                      toUserId: post.author!.id,
-                      toUserName: post.author!.fullName,
-                      toUserAvatar: post.author!.avatar || undefined,
-                    })}
-                  >
-                    Tip
-                  </Button>
-                )}
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </motion.div>
+    <div ref={railRef} className="feed-sort-rail" role="tablist" aria-label="Feed sort">
+      {(Object.keys(sortIcons) as SortType[]).map((key) => {
+        if ((key === 'mine' || key === 'following') && !isAuth) return null;
+        const isActive = sort === key;
+        return (
+          <button
+            key={key}
+            role="tab"
+            aria-selected={isActive}
+            onClick={() => onSort(key)}
+            className={`feed-sort-pill${isActive ? ' is-active' : ''}`}
+          >
+            {sortIcons[key]}
+            {t(`sort.${key}`)}
+          </button>
+        );
+      })}
+      {total > 0 && (
+        <span className="feed-sort-meta" aria-live="polite">{total} {t('sort.posts')}</span>
+      )}
+      <button
+        ref={refreshBtnRef}
+        onClick={handleRefresh}
+        className="feed-sort-refresh"
+        title="Refresh feed"
+        aria-label="Refresh feed"
+      >
+        <RefreshCcw size={14} />
+      </button>
+    </div>
   );
 }
 
 export default function FeedPage() {
-  const [sort, setSort] = useState<SortType>('hot');
+  const [sort, setSort] = useState<SortType>('foryou');
   const queryClient = useQueryClient();
   const showToast = useUIStore((s) => s.showToast);
   const observerRef = useRef<IntersectionObserver | null>(null);
@@ -314,6 +493,7 @@ export default function FeedPage() {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
+    isFetchNextPageError,
     isLoading,
     isError,
   } = useInfiniteQuery({
@@ -356,7 +536,10 @@ export default function FeedPage() {
     if (loadMoreRef.current) {
       observerRef.current = new IntersectionObserver(
         (entries) => {
-          if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          // Bail if the last page request failed (e.g. 429 rate limit). Without this,
+          // the sentinel stays in view, the effect re-runs, and we hammer the API in a
+          // tight loop — which is exactly what trips the throttler.
+          if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage && !isFetchNextPageError) {
             fetchNextPage();
           }
         },
@@ -365,24 +548,7 @@ export default function FeedPage() {
       observerRef.current.observe(loadMoreRef.current);
     }
     return () => observerRef.current?.disconnect();
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
-
-  const voteMutation = useMutation({
-    mutationFn: async ({ id, direction }: { id: string; direction: 'up' | 'down' }) => {
-      // Will be replaced with actual API
-      return { id, direction };
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['posts'] });
-    },
-  });
-
-  const handleVote = useCallback(
-    (id: string, direction: 'up' | 'down') => {
-      voteMutation.mutate({ id, direction });
-    },
-    [voteMutation],
-  );
+  }, [hasNextPage, isFetchingNextPage, isFetchNextPageError, fetchNextPage]);
 
   const allItems = (() => {
     const pages = data?.pages || [];
@@ -408,69 +574,80 @@ export default function FeedPage() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-4 animate-fade-in">
-      {/* Stories — 24h ephemeral images uploaded by users (Facebook-style) */}
-      <StoriesStrip />
-
-      {/* Facebook-style "What's on your mind?" composer box */}
-      {isAuth && <ComposeBox user={user} />}
-
-      {/* Who-to-follow widget — cold-start nudge */}
-      <SuggestedUsers />
-
-      {/* Sort bar */}
-      <div className="flex items-center gap-2 p-1 bg-surface rounded-xl shadow-sm sticky top-20 z-10 overflow-x-auto scrollbar-hide">
-        {(Object.keys(sortLabels) as SortType[]).map((key) => {
-          if ((key === 'mine' || key === 'following') && !isAuth) return null;
-          return (
-            <button
-              key={key}
-              onClick={() => setSort(key)}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
-                sort === key
-                  ? 'bg-brand text-white shadow-sm'
-                  : 'text-muted-foreground hover:bg-black/5 dark:hover:bg-white/5'
-              }`}
-            >
-              {sortLabels[key].icon}
-              {sortLabels[key].label}
-            </button>
-          );
-        })}
-        <button
-          onClick={() => queryClient.invalidateQueries({ queryKey: ['feed'] })}
-          className="ml-auto p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5"
-          title="Refresh feed"
-          aria-label="Refresh feed"
-        >
-          <RefreshCcw size={14} />
-        </button>
+    <div className="compass-shell animate-fade-in">
+      {/* Top band: welcome/hero spans full width */}
+      <div className="compass-top">
+        <WelcomeStrip />
+        {isAuth && <OnboardingBanner />}
+        <TunisiaPulse />
+        <MoodCompass />
       </div>
 
+      {/* 2-column body: wide feed + sticky discovery panel */}
+      <div className="compass-body">
+        <div className="compass-feed">
+          <StoriesStrip />
+          {isAuth && <ComposeBox user={user} />}
+          <div className="compass-discovery-mobile">
+            <Reveal><FeaturedPlaces /></Reveal>
+            <Reveal delay={0.06}><DiscoverTrips /></Reveal>
+            <Reveal delay={0.12}><TrendingHashtags /></Reveal>
+            <Reveal delay={0.18}><SuggestedUsers /></Reveal>
+            <Reveal delay={0.24}><SponsorsStrip /></Reveal>
+          </div>
+
+      {/* Sort bar — segmented pill control with sliding refresh affordance */}
+      <FeedSortBar
+        sort={sort}
+        onSort={setSort}
+        isAuth={isAuth}
+        onRefresh={() => queryClient.invalidateQueries({ queryKey: ['feed'] })}
+        total={allItems.length}
+      />
+
       {/* Posts + ads */}
+      <PullToRefresh onRefresh={async () => {
+        await queryClient.invalidateQueries({ queryKey: ['feed'] });
+        await queryClient.refetchQueries({ queryKey: ['feed'] });
+      }}>
       <div className="space-y-4">
         <AnimatePresence mode="popLayout">
           {isLoading ? (
             Array.from({ length: 3 }).map((_, i) => <PostCardSkeleton key={i} />)
           ) : isError ? (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">Failed to load feed</p>
+            <div className="feed-empty">
+              <div className="feed-empty-icon"><RefreshCcw size={28} /></div>
+              <h3>Couldn't load the feed</h3>
+              <p>Check your connection and try again — your draft posts are safe.</p>
               <Button
                 variant="primary"
-                className="mt-4"
                 onClick={() => queryClient.invalidateQueries({ queryKey: ['feed'] })}
               >
                 Retry
               </Button>
             </div>
           ) : allItems.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground mb-3">
-                {sort === 'mine' ? "You haven't posted anything yet." : 'No posts yet.'}
+            <div className="feed-empty">
+              <div className="feed-empty-icon">
+                {sort === 'mine' ? <Sparkles size={28} /> : <Compass size={28} />}
+              </div>
+              <h3>
+                {sort === 'mine'
+                  ? 'Your story starts here'
+                  : sort === 'following'
+                    ? 'Follow people to see them here'
+                    : 'No posts yet — be first'}
+              </h3>
+              <p>
+                {sort === 'mine'
+                  ? 'Share a place, a tip, or a photo from your last trip. Other travelers will see it on Hot and Top.'
+                  : sort === 'following'
+                    ? 'Find local guides and travelers on the Explore tab, then come back here to see only what they share.'
+                    : 'The community is just warming up. Be the first to share a moment from Tunisia and start a thread.'}
               </p>
               {isAuth && (
                 <Button variant="primary" onClick={openComposer} leftIcon={<Plus size={16} />}>
-                  Create your first post
+                  {sort === 'mine' ? 'Create your first post' : 'Share something'}
                 </Button>
               )}
             </div>
@@ -478,11 +655,14 @@ export default function FeedPage() {
             allItems.map((item: any) =>
               item.type === 'ad'
                 ? <AdCard key={item.id} ad={item} />
-                : <PostCard key={item.id} post={item} onVote={handleVote} />
+                : item.type === 'discovery'
+                  ? <DiscoveryCard key={item.id} item={item} />
+                  : <PostCard key={item.id} post={item} />
             )
           )}
         </AnimatePresence>
       </div>
+      </PullToRefresh>
 
       {/* Load more trigger */}
       <div ref={loadMoreRef} className="py-4 text-center">
@@ -492,10 +672,26 @@ export default function FeedPage() {
             <PostCardSkeleton />
           </div>
         )}
+        {isFetchNextPageError && !isFetchingNextPage && (
+          <button
+            type="button"
+            onClick={() => fetchNextPage()}
+            className="px-5 py-2 rounded-full bg-surface border border-black/5 dark:border-white/10 text-sm font-medium"
+          >
+            Couldn't load more — tap to retry
+          </button>
+        )}
         {!hasNextPage && allItems.length > 0 && (
-          <p className="text-sm text-muted-foreground">You've reached the end!</p>
+          <div className="feed-end">
+            <span className="feed-end-mark">You've reached the end</span>
+          </div>
         )}
       </div>
+        </div>{/* /compass-feed */}
+
+        {/* Right sticky panel — single tabbed widget instead of a stack of cards. */}
+        <TunisiaNowPanel />
+      </div>{/* /compass-body */}
     </div>
   );
 }

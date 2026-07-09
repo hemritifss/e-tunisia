@@ -1,23 +1,89 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Like, MoreThanOrEqual } from 'typeorm';
+import { Repository, Like, MoreThanOrEqual, LessThan } from 'typeorm';
 import { Place } from './place.entity';
 import { CreatePlaceDto } from './dto/create-place.dto';
 import { QueryPlacesDto } from './dto/query-places.dto';
 import slugify from 'slugify';
+import { CreditsService } from '../credits/credits.service';
+
+/** Pricing model for listing boosts — credits per duration. */
+export const BOOST_TIERS = {
+    1:  { days: 1,  credits: 50,   label: '1 day'   },
+    7:  { days: 7,  credits: 280,  label: '7 days'  },
+    30: { days: 30, credits: 1000, label: '30 days' },
+} as const;
+export type BoostTier = keyof typeof BOOST_TIERS;
 
 @Injectable()
 export class PlacesService {
     constructor(
         @InjectRepository(Place)
         private placesRepo: Repository<Place>,
+        private credits: CreditsService,
     ) { }
+
+    /**
+     * Sweep places whose boost expired and flip the flag back.
+     * Cheap to call before any read-side endpoint that surfaces "featured" places.
+     */
+    async sweepExpiredBoosts(): Promise<void> {
+        const now = new Date();
+        await this.placesRepo.createQueryBuilder()
+            .update(Place)
+            .set({ isBoosted: false })
+            .where('isBoosted = :b', { b: true })
+            .andWhere('boostExpiresAt IS NOT NULL AND boostExpiresAt < :now', { now })
+            .execute();
+    }
+
+    /**
+     * Charge credits and turn on boost for a place. Owner-only.
+     * Stacking: if a place is already boosted, we EXTEND the existing window.
+     */
+    async boostListing(placeId: string, ownerUserId: string, days: number) {
+        if (!(days in BOOST_TIERS)) throw new BadRequestException('Invalid boost duration');
+        const tier = (BOOST_TIERS as any)[days];
+
+        const place = await this.placesRepo.findOne({ where: { id: placeId } });
+        if (!place) throw new NotFoundException('Place not found');
+        if (place.submittedBy !== ownerUserId) {
+            throw new ForbiddenException('Only the listing owner can boost it');
+        }
+
+        // Stack on top of any existing boost; otherwise start fresh from now.
+        const start = (place.isBoosted && place.boostExpiresAt && new Date(place.boostExpiresAt) > new Date())
+            ? new Date(place.boostExpiresAt)
+            : new Date();
+        const expiresAt = new Date(start.getTime() + tier.days * 24 * 60 * 60 * 1000);
+
+        // Deduct credits first (throws if insufficient).
+        const result = await this.credits.chargeBoost(
+            ownerUserId, tier.credits,
+            `Boost: ${place.name} (${tier.label})`,
+            place.id,
+        );
+
+        place.isBoosted = true;
+        place.boostExpiresAt = expiresAt;
+        // Boosted places also surface on the Featured carousel
+        place.isFeatured = true;
+        await this.placesRepo.save(place);
+
+        return {
+            placeId: place.id,
+            isBoosted: true,
+            boostExpiresAt: expiresAt,
+            balanceAfter: result.balance,
+            charged: result.charged,
+        };
+    }
 
     async findAll(query: QueryPlacesDto) {
         const {
-            search, categoryId, city, governorate,
+            search, categoryId, category, city, governorate,
             minRating, page = 1, limit = 20, sortBy = 'createdAt',
-            order = 'DESC', featured,
+            order = 'DESC', featured, verified,
         } = query;
 
         const qb = this.placesRepo
@@ -34,6 +100,11 @@ export class PlacesService {
 
         if (categoryId) {
             qb.andWhere('place.categoryId = :categoryId', { categoryId });
+        } else if (category) {
+            // Slug fallback: resolve "beaches", "food", "historical" etc. against the
+            // category.name column (no separate slug column exists). Tolerant ILIKE
+            // so "beach" matches "Beaches", "historical" matches "Historical Sites".
+            qb.andWhere('category.name ILIKE :catSlug', { catSlug: `%${category}%` });
         }
 
         if (city) {
@@ -50,6 +121,14 @@ export class PlacesService {
 
         if (featured === 'true') {
             qb.andWhere('place.isFeatured = :featured', { featured: true });
+        }
+
+        // Verified Business filter: owner (submittedBy) is on an effective Business plan.
+        if (verified === 'true') {
+            qb.andWhere(
+                `place.submittedBy IN (SELECT u.id FROM users u WHERE u.plan = 'business' AND (u."subscriptionExpiresAt" IS NULL OR u."subscriptionExpiresAt" > :nowVerified))`,
+                { nowVerified: new Date() },
+            );
         }
 
         qb.orderBy(`place.${sortBy}`, order as 'ASC' | 'DESC');
@@ -102,13 +181,26 @@ export class PlacesService {
         return this.findById(id);
     }
 
-    async getFeatured(): Promise<Place[]> {
+    /** Places owned/submitted by the given user — for the owner dashboard. */
+    async listMine(userId: string): Promise<Place[]> {
         return this.placesRepo.find({
-            where: { isFeatured: true, isActive: true },
+            where: { submittedBy: userId },
             relations: ['category'],
-            order: { rating: 'DESC' },
-            take: 10,
+            order: { createdAt: 'DESC' },
         });
+    }
+
+    async getFeatured(): Promise<Place[]> {
+        // Drop expired boosts before reading so the UI always reflects truth.
+        await this.sweepExpiredBoosts();
+        return this.placesRepo
+            .createQueryBuilder('place')
+            .leftJoinAndSelect('place.category', 'category')
+            .where('place.isFeatured = :f AND place.isActive = :a', { f: true, a: true })
+            .orderBy('place.isBoosted', 'DESC')         // boosted first
+            .addOrderBy('place.rating', 'DESC')
+            .take(12)
+            .getMany();
     }
 
     async getPopular(): Promise<Place[]> {

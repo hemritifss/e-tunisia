@@ -14,12 +14,13 @@ const user_badge_entity_1 = require("./user-badge.entity");
 const user_entity_1 = require("../users/user.entity");
 const gamification_service_1 = require("./gamification.service");
 const gamification_controller_1 = require("./gamification.controller");
+const notifications_module_1 = require("../notifications/notifications.module");
 let GamificationModule = class GamificationModule {
 };
 exports.GamificationModule = GamificationModule;
 exports.GamificationModule = GamificationModule = __decorate([
     (0, common_1.Module)({
-        imports: [typeorm_1.TypeOrmModule.forFeature([badge_entity_1.Badge, user_badge_entity_1.UserBadge, user_entity_1.User])],
+        imports: [typeorm_1.TypeOrmModule.forFeature([badge_entity_1.Badge, user_badge_entity_1.UserBadge, user_entity_1.User]), notifications_module_1.NotificationsModule],
         controllers: [gamification_controller_1.GamificationController],
         providers: [gamification_service_1.GamificationService],
         exports: [gamification_service_1.GamificationService],

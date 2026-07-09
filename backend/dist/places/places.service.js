@@ -12,18 +12,61 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.PlacesService = void 0;
+exports.PlacesService = exports.BOOST_TIERS = void 0;
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const place_entity_1 = require("./place.entity");
 const slugify_1 = require("slugify");
+const credits_service_1 = require("../credits/credits.service");
+exports.BOOST_TIERS = {
+    1: { days: 1, credits: 50, label: '1 day' },
+    7: { days: 7, credits: 280, label: '7 days' },
+    30: { days: 30, credits: 1000, label: '30 days' },
+};
 let PlacesService = class PlacesService {
-    constructor(placesRepo) {
+    constructor(placesRepo, credits) {
         this.placesRepo = placesRepo;
+        this.credits = credits;
+    }
+    async sweepExpiredBoosts() {
+        const now = new Date();
+        await this.placesRepo.createQueryBuilder()
+            .update(place_entity_1.Place)
+            .set({ isBoosted: false })
+            .where('isBoosted = :b', { b: true })
+            .andWhere('boostExpiresAt IS NOT NULL AND boostExpiresAt < :now', { now })
+            .execute();
+    }
+    async boostListing(placeId, ownerUserId, days) {
+        if (!(days in exports.BOOST_TIERS))
+            throw new common_1.BadRequestException('Invalid boost duration');
+        const tier = exports.BOOST_TIERS[days];
+        const place = await this.placesRepo.findOne({ where: { id: placeId } });
+        if (!place)
+            throw new common_1.NotFoundException('Place not found');
+        if (place.submittedBy !== ownerUserId) {
+            throw new common_1.ForbiddenException('Only the listing owner can boost it');
+        }
+        const start = (place.isBoosted && place.boostExpiresAt && new Date(place.boostExpiresAt) > new Date())
+            ? new Date(place.boostExpiresAt)
+            : new Date();
+        const expiresAt = new Date(start.getTime() + tier.days * 24 * 60 * 60 * 1000);
+        const result = await this.credits.chargeBoost(ownerUserId, tier.credits, `Boost: ${place.name} (${tier.label})`, place.id);
+        place.isBoosted = true;
+        place.boostExpiresAt = expiresAt;
+        place.isFeatured = true;
+        await this.placesRepo.save(place);
+        return {
+            placeId: place.id,
+            isBoosted: true,
+            boostExpiresAt: expiresAt,
+            balanceAfter: result.balance,
+            charged: result.charged,
+        };
     }
     async findAll(query) {
-        const { search, categoryId, city, governorate, minRating, page = 1, limit = 20, sortBy = 'createdAt', order = 'DESC', featured, } = query;
+        const { search, categoryId, category, city, governorate, minRating, page = 1, limit = 20, sortBy = 'createdAt', order = 'DESC', featured, verified, } = query;
         const qb = this.placesRepo
             .createQueryBuilder('place')
             .leftJoinAndSelect('place.category', 'category')
@@ -33,6 +76,9 @@ let PlacesService = class PlacesService {
         }
         if (categoryId) {
             qb.andWhere('place.categoryId = :categoryId', { categoryId });
+        }
+        else if (category) {
+            qb.andWhere('category.name ILIKE :catSlug', { catSlug: `%${category}%` });
         }
         if (city) {
             qb.andWhere('place.city ILIKE :city', { city: `%${city}%` });
@@ -45,6 +91,9 @@ let PlacesService = class PlacesService {
         }
         if (featured === 'true') {
             qb.andWhere('place.isFeatured = :featured', { featured: true });
+        }
+        if (verified === 'true') {
+            qb.andWhere(`place.submittedBy IN (SELECT u.id FROM users u WHERE u.plan = 'business' AND (u."subscriptionExpiresAt" IS NULL OR u."subscriptionExpiresAt" > :nowVerified))`, { nowVerified: new Date() });
         }
         qb.orderBy(`place.${sortBy}`, order);
         qb.skip((page - 1) * limit).take(limit);
@@ -88,13 +137,23 @@ let PlacesService = class PlacesService {
         await this.placesRepo.update(id, data);
         return this.findById(id);
     }
-    async getFeatured() {
+    async listMine(userId) {
         return this.placesRepo.find({
-            where: { isFeatured: true, isActive: true },
+            where: { submittedBy: userId },
             relations: ['category'],
-            order: { rating: 'DESC' },
-            take: 10,
+            order: { createdAt: 'DESC' },
         });
+    }
+    async getFeatured() {
+        await this.sweepExpiredBoosts();
+        return this.placesRepo
+            .createQueryBuilder('place')
+            .leftJoinAndSelect('place.category', 'category')
+            .where('place.isFeatured = :f AND place.isActive = :a', { f: true, a: true })
+            .orderBy('place.isBoosted', 'DESC')
+            .addOrderBy('place.rating', 'DESC')
+            .take(12)
+            .getMany();
     }
     async getPopular() {
         return this.placesRepo.find({
@@ -153,6 +212,7 @@ exports.PlacesService = PlacesService;
 exports.PlacesService = PlacesService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(place_entity_1.Place)),
-    __metadata("design:paramtypes", [typeorm_2.Repository])
+    __metadata("design:paramtypes", [typeorm_2.Repository,
+        credits_service_1.CreditsService])
 ], PlacesService);
 //# sourceMappingURL=places.service.js.map

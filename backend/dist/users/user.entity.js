@@ -18,6 +18,7 @@ var UserRole;
     UserRole["USER"] = "user";
     UserRole["CREATOR"] = "creator";
     UserRole["ADMIN"] = "admin";
+    UserRole["SUPERADMIN"] = "superadmin";
 })(UserRole || (exports.UserRole = UserRole = {}));
 var UserPlan;
 (function (UserPlan) {
@@ -40,6 +41,10 @@ __decorate([
     (0, typeorm_1.Column)({ unique: true }),
     __metadata("design:type", String)
 ], User.prototype, "email", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ length: 30, unique: true, nullable: true }),
+    __metadata("design:type", String)
+], User.prototype, "handle", void 0);
 __decorate([
     (0, typeorm_1.Column)(),
     (0, class_transformer_1.Exclude)(),
@@ -75,8 +80,14 @@ __decorate([
 ], User.prototype, "onboardingComplete", void 0);
 __decorate([
     (0, typeorm_1.Column)({ default: UserRole.USER }),
+    (0, typeorm_1.Index)(),
     __metadata("design:type", String)
 ], User.prototype, "role", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ default: UserPlan.FREE }),
+    (0, typeorm_1.Index)(),
+    __metadata("design:type", String)
+], User.prototype, "plan", void 0);
 __decorate([
     (0, typeorm_1.Column)('simple-array', { nullable: true }),
     __metadata("design:type", Array)
@@ -86,17 +97,31 @@ __decorate([
     __metadata("design:type", Array)
 ], User.prototype, "visitedPlaceIds", void 0);
 __decorate([
+    (0, typeorm_1.Column)({ type: 'int', nullable: true }),
+    (0, typeorm_1.Index)({ unique: true, where: '"founderNumber" IS NOT NULL' }),
+    __metadata("design:type", Number)
+], User.prototype, "founderNumber", void 0);
+__decorate([
     (0, typeorm_1.Column)({ default: true }),
+    (0, typeorm_1.Index)(),
     __metadata("design:type", Boolean)
 ], User.prototype, "isActive", void 0);
-__decorate([
-    (0, typeorm_1.Column)({ default: UserPlan.FREE }),
-    __metadata("design:type", String)
-], User.prototype, "plan", void 0);
 __decorate([
     (0, typeorm_1.Column)({ nullable: true }),
     __metadata("design:type", Date)
 ], User.prototype, "subscriptionExpiresAt", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], User.prototype, "stripeCustomerId", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], User.prototype, "passportTheme", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], User.prototype, "referredBy", void 0);
 __decorate([
     (0, typeorm_1.Column)('simple-array', { nullable: true }),
     __metadata("design:type", Array)
@@ -105,6 +130,29 @@ __decorate([
     (0, typeorm_1.Column)({ default: 0 }),
     __metadata("design:type", Number)
 ], User.prototype, "points", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'int', default: 0 }),
+    __metadata("design:type", Number)
+], User.prototype, "followersCount", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'int', default: 0 }),
+    __metadata("design:type", Number)
+], User.prototype, "followingCount", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true, unique: true }),
+    (0, class_transformer_1.Exclude)(),
+    __metadata("design:type", String)
+], User.prototype, "passwordResetToken", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    (0, class_transformer_1.Exclude)(),
+    __metadata("design:type", Date)
+], User.prototype, "passwordResetExpires", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ default: 0 }),
+    (0, class_transformer_1.Exclude)(),
+    __metadata("design:type", Number)
+], User.prototype, "tokenVersion", void 0);
 __decorate([
     (0, typeorm_1.OneToMany)(() => review_entity_1.Review, (review) => review.user),
     __metadata("design:type", Array)

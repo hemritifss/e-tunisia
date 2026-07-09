@@ -6,10 +6,13 @@ import { User } from '../users/user.entity';
 import { Place } from '../places/place.entity';
 import { Booking } from '../bookings/booking.entity';
 import { Review } from '../reviews/review.entity';
+import { Post } from '../posts/post.entity';
+import { AnalyticsEvent } from './analytics-event.entity';
 import { RedisModule } from '../redis/redis.module';
+import { QueuesModule } from '../queues/queues.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, Place, Booking, Review]), RedisModule],
+  imports: [TypeOrmModule.forFeature([User, Place, Booking, Review, Post, AnalyticsEvent]), RedisModule, QueuesModule],
   controllers: [AnalyticsController],
   providers: [AnalyticsService],
   exports: [AnalyticsService],

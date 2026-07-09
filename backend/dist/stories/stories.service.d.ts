@@ -14,4 +14,14 @@ export declare class StoriesService {
     remove(id: string, requesterId: string): Promise<{
         deleted: boolean;
     }>;
+    toggleHighlight(id: string, requesterId: string): Promise<{
+        ok: boolean;
+        isHighlight: boolean;
+    }>;
+    listHighlights(handle: string): Promise<{
+        id: string;
+        imageUrl: string;
+        caption: string;
+        createdAt: Date;
+    }[]>;
 }

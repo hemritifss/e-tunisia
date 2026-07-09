@@ -3,16 +3,32 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Notification, NotificationType } from './notification.entity';
 import { EventsGateway } from '../websocket/websocket.gateway';
+import { QueuesService } from '../queues/queues.service';
+import { PushService } from '../push/push.service';
 
 @Injectable()
 export class NotificationsService {
     constructor(
         @InjectRepository(Notification)
         private notifRepo: Repository<Notification>,
+        private queuesService: QueuesService,
+        @Optional() private push?: PushService,
         @Optional()
         @Inject(forwardRef(() => EventsGateway))
         private gateway?: EventsGateway,
     ) {}
+
+    /** Where a notification of this type should open in the app. */
+    private deepLink(type: NotificationType, data?: any): string {
+        switch (type) {
+            case NotificationType.FOLLOW: return data?.fromUserId ? `/user/${data.fromUserId}` : '/activity';
+            case NotificationType.EVENT: return data?.eventId ? `/events` : '/events';
+            case NotificationType.BADGE: return '/profile';
+            case NotificationType.COMMENT:
+            case NotificationType.MENTION: return data?.postId ? `/post/${data.postId}` : '/feed';
+            default: return '/';
+        }
+    }
 
     async findByUser(userId: string) {
         return this.notifRepo.find({
@@ -47,6 +63,11 @@ export class NotificationsService {
         }));
         // Push live via WebSocket (best-effort)
         try { this.gateway?.broadcastNotification(userId, saved); } catch {}
+        // Web push, respecting the per-user daily budget (best-effort). This is why
+        // new-follower etc. now reach the user even when the tab is closed.
+        this.push?.sendToUserBudgeted(userId, {
+            title, body, url: this.deepLink(type, data),
+        }).catch(() => { /* never let push break the write */ });
         return saved;
     }
 
@@ -55,6 +76,26 @@ export class NotificationsService {
             userId, title, body, type, data,
         }));
         return this.notifRepo.save(notifications);
+    }
+
+    /**
+     * Queue a notification to be processed asynchronously.
+     * Use for non-urgent notifications where immediate delivery is not critical.
+     */
+    async queueNotification(userId: string, title: string, body: string, type: NotificationType, data?: any, push = true) {
+        return this.queuesService.addNotificationJob('send', {
+            userId, title, body, type, data, push,
+        });
+    }
+
+    /**
+     * Queue bulk notifications to be processed asynchronously.
+     * Use for promo/system notifications sent to many users.
+     */
+    async queueBulkNotification(userIds: string[], title: string, body: string, type: NotificationType, data?: any) {
+        return this.queuesService.addNotificationJob('send_bulk', {
+            userIds, title, body, type, data,
+        });
     }
 
     async remove(id: string, userId: string) {

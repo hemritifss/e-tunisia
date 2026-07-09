@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getDatabaseConfig = void 0;
 const getDatabaseConfig = (configService) => {
     const dbType = configService.get('DB_TYPE') || 'sqlite';
+    const isDev = configService.get('NODE_ENV') === 'development';
     switch (dbType) {
         case 'postgres':
             return {
@@ -13,11 +14,19 @@ const getDatabaseConfig = (configService) => {
                 password: configService.get('DB_PASSWORD') || 'etunisia_secret',
                 database: configService.get('DB_NAME') || 'etunisia',
                 entities: [__dirname + '/../**/*.entity{.ts,.js}'],
-                synchronize: configService.get('NODE_ENV') !== 'production',
-                logging: configService.get('NODE_ENV') === 'development',
+                synchronize: isDev,
+                logging: isDev,
                 ssl: configService.get('DB_SSL') === 'true'
                     ? { rejectUnauthorized: false }
                     : false,
+                migrations: [__dirname + '/migrations/**/*{.ts,.js}'],
+                migrationsRun: false,
+                extra: {
+                    max: parseInt(configService.get('DB_POOL_MAX') || '20', 10),
+                    min: parseInt(configService.get('DB_POOL_MIN') || '5', 10),
+                    acquireTimeoutMillis: 30000,
+                    idleTimeoutMillis: 10000,
+                },
             };
         case 'mysql':
             return {
@@ -28,8 +37,16 @@ const getDatabaseConfig = (configService) => {
                 password: configService.get('DB_PASSWORD') || 'etunisia_secret',
                 database: configService.get('DB_NAME') || 'etunisia',
                 entities: [__dirname + '/../**/*.entity{.ts,.js}'],
-                synchronize: configService.get('NODE_ENV') !== 'production',
-                logging: configService.get('NODE_ENV') === 'development',
+                synchronize: isDev,
+                logging: isDev,
+                migrations: [__dirname + '/migrations/**/*{.ts,.js}'],
+                migrationsRun: false,
+                extra: {
+                    max: parseInt(configService.get('DB_POOL_MAX') || '20', 10),
+                    min: parseInt(configService.get('DB_POOL_MIN') || '5', 10),
+                    acquireTimeoutMillis: 30000,
+                    idleTimeoutMillis: 10000,
+                },
             };
         case 'sqlite':
         default:

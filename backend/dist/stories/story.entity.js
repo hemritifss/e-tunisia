@@ -46,6 +46,11 @@ __decorate([
     __metadata("design:type", Boolean)
 ], Story.prototype, "isActive", void 0);
 __decorate([
+    (0, typeorm_1.Column)({ default: false }),
+    (0, typeorm_1.Index)(),
+    __metadata("design:type", Boolean)
+], Story.prototype, "isHighlight", void 0);
+__decorate([
     (0, typeorm_1.CreateDateColumn)(),
     __metadata("design:type", Date)
 ], Story.prototype, "createdAt", void 0);

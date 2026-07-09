@@ -53,6 +53,7 @@ let StoriesService = class StoriesService {
                 caption: s.caption,
                 createdAt: s.createdAt,
                 expiresAt: s.expiresAt,
+                isHighlight: s.isHighlight,
             });
         }
         return Array.from(byAuthor.values())
@@ -71,6 +72,30 @@ let StoriesService = class StoriesService {
         s.isActive = false;
         await this.repo.save(s);
         return { deleted: true };
+    }
+    async toggleHighlight(id, requesterId) {
+        const s = await this.repo.findOne({ where: { id } });
+        if (!s || s.authorId !== requesterId)
+            return { ok: false, isHighlight: false };
+        s.isHighlight = !s.isHighlight;
+        await this.repo.save(s);
+        return { ok: true, isHighlight: s.isHighlight };
+    }
+    async listHighlights(handle) {
+        const h = (handle || '').toLowerCase();
+        if (!h)
+            return [];
+        const rows = await this.repo.createQueryBuilder('s')
+            .innerJoin('s.author', 'a')
+            .where('LOWER(a.handle) = :h AND s.isHighlight = true AND s.isActive = true', { h })
+            .orderBy('s.createdAt', 'DESC')
+            .getMany();
+        return rows.map((s) => ({
+            id: s.id,
+            imageUrl: s.imageUrl,
+            caption: s.caption,
+            createdAt: s.createdAt,
+        }));
     }
 };
 exports.StoriesService = StoriesService;

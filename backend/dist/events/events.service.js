@@ -21,12 +21,18 @@ let EventsService = class EventsService {
     constructor(eventsRepo) {
         this.eventsRepo = eventsRepo;
     }
-    async findAll(category) {
+    async findAll(category, city) {
         const qb = this.eventsRepo
             .createQueryBuilder('event')
             .leftJoinAndSelect('event.place', 'place')
             .leftJoinAndSelect('event.organizer', 'organizer')
             .where('event.isActive = :active', { active: true });
+        if (city) {
+            qb.andWhere('(place.city ILIKE :city OR event.location ILIKE :cityLike)', {
+                city,
+                cityLike: `%${city}%`,
+            });
+        }
         if (category) {
             qb.andWhere('event.category = :category', { category });
         }

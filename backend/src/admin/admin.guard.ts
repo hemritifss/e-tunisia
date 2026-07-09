@@ -2,6 +2,7 @@ import {
     Injectable, CanActivate, ExecutionContext,
     ForbiddenException,
 } from '@nestjs/common';
+import { isAdmin } from './is-super-admin';
 
 @Injectable()
 export class AdminGuard implements CanActivate {
@@ -9,7 +10,7 @@ export class AdminGuard implements CanActivate {
         const request = context.switchToHttp().getRequest();
         const user = request.user;
 
-        if (!user || user.role !== 'admin') {
+        if (!isAdmin(user)) {
             throw new ForbiddenException('Admin access only');
         }
 

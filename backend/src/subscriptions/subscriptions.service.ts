@@ -3,12 +3,14 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Subscription, SubStatus } from './subscription.entity';
 import { User, UserPlan } from '../users/user.entity';
+import { PLAN_CATALOG } from '../billing/plan-catalog';
 
-const PLAN_PRICES: Record<string, { monthly: number; annual?: number }> = {
-  premium: { monthly: 9.99, annual: 99.99 },
-  business: { monthly: 49.99 },
-  nomad: { monthly: 29.99, annual: 299.99 },
-};
+// Prices derive from the single source of truth (plan-catalog). Don't add literals here.
+const PLAN_PRICES: Record<string, { monthly: number; annual?: number }> = Object.fromEntries(
+  PLAN_CATALOG
+    .filter((p) => p.id !== 'free')
+    .map((p) => [p.id, { monthly: p.monthly, annual: p.yearly }]),
+);
 
 @Injectable()
 export class SubscriptionsService {

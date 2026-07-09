@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { AdminGuard } from '../admin/admin.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { BookingsService } from './bookings.service';
 import { CreateBookingDto } from './dto/create-booking.dto';
@@ -44,6 +45,19 @@ export class BookingsController {
   @ApiOperation({ summary: 'Get bookings for a place' })
   findByPlace(@Param('placeId') placeId: string) {
     return this.bookingsService.findByPlace(placeId);
+  }
+
+  @Get('owner/earnings')
+  @ApiOperation({ summary: 'My payout ledger — earnings across my places (owed vs paid out)' })
+  ownerEarnings(@CurrentUser('id') userId: string) {
+    return this.bookingsService.getOwnerEarnings(userId);
+  }
+
+  @Patch(':id/settle-payout')
+  @UseGuards(AdminGuard)
+  @ApiOperation({ summary: 'Record a manual payout to the host for this booking (admin)' })
+  settlePayout(@Param('id') id: string) {
+    return this.bookingsService.settlePayout(id);
   }
 
   @Get(':id')

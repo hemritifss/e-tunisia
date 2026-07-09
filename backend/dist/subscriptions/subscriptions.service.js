@@ -18,11 +18,10 @@ const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const subscription_entity_1 = require("./subscription.entity");
 const user_entity_1 = require("../users/user.entity");
-const PLAN_PRICES = {
-    premium: { monthly: 9.99, annual: 99.99 },
-    business: { monthly: 49.99 },
-    nomad: { monthly: 29.99, annual: 299.99 },
-};
+const plan_catalog_1 = require("../billing/plan-catalog");
+const PLAN_PRICES = Object.fromEntries(plan_catalog_1.PLAN_CATALOG
+    .filter((p) => p.id !== 'free')
+    .map((p) => [p.id, { monthly: p.monthly, annual: p.yearly }]));
 let SubscriptionsService = class SubscriptionsService {
     constructor(subscriptionRepo, userRepo) {
         this.subscriptionRepo = subscriptionRepo;

@@ -5,9 +5,11 @@ import {
   UseGuards,
   Get,
   Query,
+  Req,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { AIService } from './ai.service';
 
@@ -18,10 +20,11 @@ export class AIController {
   constructor(private readonly aiService: AIService) {}
 
   @Post('itinerary')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(OptionalJwtAuthGuard)
   @ApiOperation({ summary: 'Generate AI-powered itinerary' })
   async generateItinerary(
-    @CurrentUser('id') userId: string,
+    @CurrentUser('id') userId: string | null,
+    @Req() req: any,
     @Body()
     preferences: {
       duration: number;
@@ -32,16 +35,104 @@ export class AIController {
       travelStyle?: string;
     },
   ) {
-    return this.aiService.generateItinerary(preferences);
+    const { premium } = await this.aiService.assertQuotaAndCount({ userId, ip: req.ip });
+    return this.aiService.generateItinerary(preferences, premium);
   }
 
   @Post('chat')
-  @ApiOperation({ summary: 'Chat with AI travel planner' })
+  @UseGuards(OptionalJwtAuthGuard)
+  @ApiOperation({ summary: 'Chat with the grounded AI travel concierge' })
   async chatPlanner(
+    @CurrentUser() user: any,
+    @Req() req: any,
     @Body()
     { messages }: { messages: Array<{ role: 'user' | 'assistant'; content: string }> },
   ) {
-    return this.aiService.chatTravelPlanner(messages);
+    const { premium } = await this.aiService.assertQuotaAndCount({ userId: user?.id, ip: req.ip });
+    // Signed-in users get a concierge that knows their name, tastes and saved places.
+    const userCtx = user
+      ? {
+          fullName: user.fullName,
+          interests: user.interests,
+          favoriteIds: user.favoriteIds,
+          visitedPlaceIds: user.visitedPlaceIds,
+        }
+      : undefined;
+    return this.aiService.chatTravelPlanner(messages, premium, userCtx);
+  }
+
+  @Post('assist')
+  @UseGuards(OptionalJwtAuthGuard)
+  @ApiOperation({ summary: 'AI compose assist — improve / translate / shorten / expand text' })
+  async assist(
+    @CurrentUser('id') userId: string | null,
+    @Req() req: any,
+    @Body() body: { text: string; action: string; targetLang?: string; tone?: string },
+  ) {
+    const { premium } = await this.aiService.assertQuotaAndCount({ userId, ip: req.ip });
+    return this.aiService.assist(body, premium);
+  }
+
+  @Post('search')
+  @UseGuards(OptionalJwtAuthGuard)
+  @ApiOperation({ summary: 'Natural-language search — parses the query into place filters' })
+  async smartSearch(
+    @CurrentUser('id') userId: string | null,
+    @Req() req: any,
+    @Body() body: { query: string },
+  ) {
+    const { premium } = await this.aiService.assertQuotaAndCount({ userId, ip: req.ip });
+    return this.aiService.smartSearch(body?.query || '', premium);
+  }
+
+  @Post('autotag')
+  @UseGuards(OptionalJwtAuthGuard)
+  @ApiOperation({ summary: 'Suggest a category, tags and location for a post' })
+  async autoTag(
+    @CurrentUser('id') userId: string | null,
+    @Req() req: any,
+    @Body() body: { title?: string; body?: string },
+  ) {
+    await this.aiService.assertQuotaAndCount({ userId, ip: req.ip });
+    return this.aiService.autoTag(body || {});
+  }
+
+  @Post('caption')
+  @UseGuards(OptionalJwtAuthGuard)
+  @ApiOperation({ summary: 'Generate a reel caption + hashtags' })
+  async caption(
+    @CurrentUser('id') userId: string | null,
+    @Req() req: any,
+    @Body() body: { topic?: string; location?: string },
+  ) {
+    const { premium } = await this.aiService.assertQuotaAndCount({ userId, ip: req.ip });
+    return this.aiService.generateCaption(body || {}, premium);
+  }
+
+  @Post('surprise')
+  @UseGuards(OptionalJwtAuthGuard)
+  @ApiOperation({ summary: 'One-tap spontaneous day plan' })
+  async surprise(@CurrentUser('id') userId: string | null, @Req() req: any) {
+    const { premium } = await this.aiService.assertQuotaAndCount({ userId, ip: req.ip });
+    return this.aiService.surpriseMe(premium);
+  }
+
+  @Get('personality')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Fun, shareable travel personality' })
+  async personality(@CurrentUser() user: any, @Req() req: any) {
+    const { premium } = await this.aiService.assertQuotaAndCount({ userId: user.id, ip: req.ip });
+    return this.aiService.travelPersonality(
+      { interests: user.interests || [], visitedCount: (user.visitedPlaceIds || []).length },
+      premium,
+    );
+  }
+
+  @Get('greeting')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Short personalized home greeting (cached daily)' })
+  async greeting(@CurrentUser() user: any) {
+    return this.aiService.greeting(user.id, user.fullName);
   }
 
   @Get('suggestions')
@@ -49,12 +140,14 @@ export class AIController {
   @ApiOperation({ summary: 'Get personalized place suggestions' })
   async getSuggestions(
     @CurrentUser() user: any,
+    @Req() req: any,
     @Query('interests') interests?: string,
   ) {
+    const { premium } = await this.aiService.assertQuotaAndCount({ userId: user.id, ip: req.ip });
     return this.aiService.suggestPlaces({
       visitedPlaceIds: user.visitedPlaceIds || [],
       favoriteIds: user.favoriteIds || [],
       interests: interests ? interests.split(',') : ['culture', 'food', 'nature'],
-    });
+    }, premium);
   }
 }

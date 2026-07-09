@@ -13,12 +13,21 @@ const review_entity_1 = require("./review.entity");
 const reviews_service_1 = require("./reviews.service");
 const reviews_controller_1 = require("./reviews.controller");
 const places_module_1 = require("../places/places.module");
+const place_inquiry_entity_1 = require("../places/place-inquiry.entity");
+const place_entity_1 = require("../places/place.entity");
+const users_module_1 = require("../users/users.module");
+const badges_module_1 = require("../badges/badges.module");
 let ReviewsModule = class ReviewsModule {
 };
 exports.ReviewsModule = ReviewsModule;
 exports.ReviewsModule = ReviewsModule = __decorate([
     (0, common_1.Module)({
-        imports: [typeorm_1.TypeOrmModule.forFeature([review_entity_1.Review]), places_module_1.PlacesModule],
+        imports: [
+            typeorm_1.TypeOrmModule.forFeature([review_entity_1.Review, place_inquiry_entity_1.PlaceInquiry, place_entity_1.Place]),
+            places_module_1.PlacesModule,
+            users_module_1.UsersModule,
+            badges_module_1.BadgesModule,
+        ],
         providers: [reviews_service_1.ReviewsService],
         controllers: [reviews_controller_1.ReviewsController],
         exports: [reviews_service_1.ReviewsService],

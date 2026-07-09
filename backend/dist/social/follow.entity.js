@@ -20,17 +20,24 @@ __decorate([
 ], Follow.prototype, "id", void 0);
 __decorate([
     (0, typeorm_1.Column)(),
+    (0, typeorm_1.Index)(),
     __metadata("design:type", String)
 ], Follow.prototype, "followerId", void 0);
 __decorate([
-    (0, typeorm_1.Column)(),
+    (0, typeorm_1.Column)({ nullable: true }),
     __metadata("design:type", String)
 ], Follow.prototype, "followingId", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
+    (0, typeorm_1.Index)(),
+    __metadata("design:type", String)
+], Follow.prototype, "followedId", void 0);
 __decorate([
     (0, typeorm_1.CreateDateColumn)(),
     __metadata("design:type", Date)
 ], Follow.prototype, "createdAt", void 0);
 exports.Follow = Follow = __decorate([
-    (0, typeorm_1.Entity)('follows')
+    (0, typeorm_1.Entity)('follows'),
+    (0, typeorm_1.Unique)(['followerId', 'followedId'])
 ], Follow);
 //# sourceMappingURL=follow.entity.js.map

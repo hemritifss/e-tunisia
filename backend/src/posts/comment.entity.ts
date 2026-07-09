@@ -27,6 +27,17 @@ export class Comment {
     @Column({ default: 0 })
     upvotes: number;
 
+    /** Parent comment id for one-level threading (LinkedIn-style replies). */
+    @Column({ nullable: true })
+    @Index()
+    parentId: string | null;
+
+    @Column({ default: 0 })
+    likeCount: number;
+
+    @Column({ default: 0 })
+    replyCount: number;
+
     @CreateDateColumn()
     createdAt: Date;
 }

@@ -20,6 +20,9 @@ var CreditTxKind;
     CreditTxKind["DONATION_IN"] = "donation_in";
     CreditTxKind["PLATFORM_FEE"] = "platform_fee";
     CreditTxKind["REFUND"] = "refund";
+    CreditTxKind["BOOST"] = "boost";
+    CreditTxKind["REFERRAL"] = "referral";
+    CreditTxKind["SUBSCRIPTION"] = "subscription";
 })(CreditTxKind || (exports.CreditTxKind = CreditTxKind = {}));
 let CreditTransaction = class CreditTransaction {
 };
@@ -39,7 +42,7 @@ __decorate([
     __metadata("design:type", String)
 ], CreditTransaction.prototype, "userId", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'simple-enum', enum: CreditTxKind }),
+    (0, typeorm_1.Column)({ type: 'varchar', length: 32, nullable: true }),
     (0, typeorm_1.Index)(),
     __metadata("design:type", String)
 ], CreditTransaction.prototype, "kind", void 0);

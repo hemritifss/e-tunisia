@@ -1,8 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, X, ChevronLeft, ChevronRight, Image as ImageIcon } from 'lucide-react';
+import { Plus, X, ChevronLeft, ChevronRight, Image as ImageIcon, Bookmark, BookmarkCheck } from 'lucide-react';
+import StoryComposer from './StoryComposer';
 import { api } from '../../shared/api';
+import { goTo } from '../../router';
 import { useAuthStore } from '../stores/auth-store';
 
 interface StoryItem {
@@ -11,6 +13,16 @@ interface StoryItem {
   caption: string | null;
   createdAt: string;
   expiresAt: string;
+  isHighlight?: boolean;
+}
+
+function currentUserId(): string | null {
+  try {
+    const raw = localStorage.getItem('etunisia_user') || localStorage.getItem('auth_user');
+    if (!raw) return null;
+    const u = JSON.parse(raw);
+    return u?.id || null;
+  } catch { return null; }
 }
 interface StoryAuthor {
   authorId: string;
@@ -34,6 +46,7 @@ export function StoriesStrip() {
   const isAuth = useAuthStore((s) => !!s.token || !!localStorage.getItem('etunisia_token'));
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [viewer, setViewer] = useState<{ authorIdx: number; itemIdx: number } | null>(null);
+  const [composer, setComposer] = useState<string | null>(null); // selected image data URL
 
   const { data, isLoading } = useQuery({
     queryKey: ['stories'],
@@ -44,29 +57,45 @@ export function StoriesStrip() {
 
   const groups = useMemo(() => (Array.isArray(data) ? data : []), [data]);
 
-  const createMutation = useMutation({
-    mutationFn: (payload: { imageUrl: string; caption?: string }) => api.createStory(payload),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['stories'] }),
-  });
+  async function uploadDataUrlOnClient(dataUrl: string, folder = 'uploads'): Promise<string> {
+    if (!dataUrl || !dataUrl.startsWith('data:')) return dataUrl;
+    try {
+      const token = localStorage.getItem('etunisia_token');
+      const res = await fetch('/api/v1/media/from-data-url', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ dataUrl, folder }),
+      });
+      const body = await res.json().catch(() => ({}));
+      const url = body?.data?.url || body?.url;
+      return url || dataUrl;
+    } catch {
+      return dataUrl;
+    }
+  }
 
   const onFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = ''; // allow re-select same file
     if (!file) return;
     if (!isAuth) {
-      location.hash = '#/login';
+      goTo('/login');
       return;
     }
     const reader = new FileReader();
     reader.onload = (ev) => {
       const dataUrl = (ev.target?.result as string) || '';
-      if (dataUrl) createMutation.mutate({ imageUrl: dataUrl });
+      // Open the composer so the user can add a caption before posting.
+      if (dataUrl) { setComposer(dataUrl); }
     };
     reader.readAsDataURL(file);
   };
 
   const openYourTile = () => {
-    if (!isAuth) { location.hash = '#/login'; return; }
+    if (!isAuth) { goTo('/login'); return; }
     fileInputRef.current?.click();
   };
 
@@ -94,24 +123,20 @@ export function StoriesStrip() {
         aria-label="Upload a story image"
       />
 
-      <div className="-mx-2 px-2">
-        <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide snap-x">
+      <div className="stories-v2-wrap">
+        <div className="stories-v2-track snap-x">
           {/* "Your story +" tile — always present, opens file picker */}
           <button
             onClick={openYourTile}
-            className="flex-shrink-0 flex flex-col items-center gap-1.5 snap-start group"
+            className="stories-v2-tile stories-v2-tile-self snap-start"
             aria-label="Add a story"
           >
-            <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-brand to-brand-dark p-[2px] transition-transform group-hover:scale-105">
-              <div className="w-full h-full rounded-full bg-surface flex items-center justify-center text-2xl text-brand">
-                {createMutation.isPending ? (
-                  <span className="animate-spin">⟳</span>
-                ) : (
-                  <Plus size={24} />
-                )}
+            <div className="stories-v2-ring stories-v2-ring-self">
+              <div className="stories-v2-add-inner">
+                <Plus size={22} />
               </div>
             </div>
-            <span className="text-[11px] sm:text-xs text-foreground font-medium max-w-[80px] truncate text-center">
+            <span className="stories-v2-label">
               Your story
             </span>
           </button>
@@ -125,19 +150,20 @@ export function StoriesStrip() {
               <button
                 key={g.authorId}
                 onClick={() => setViewer({ authorIdx: gi, itemIdx: 0 })}
-                className="flex-shrink-0 flex flex-col items-center gap-1.5 snap-start group"
+                className="stories-v2-tile snap-start"
               >
-                <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-brand via-coral to-yellow-400 p-[2px] transition-transform group-hover:scale-105">
+                <div className="stories-v2-ring">
                   <img
                     src={top?.imageUrl || avatar}
                     alt={name}
-                    className="w-full h-full rounded-full object-cover border-2 border-surface"
+                    className="stories-v2-image"
                     loading="lazy"
                   />
+                  {g.items.length > 1 && (
+                    <span className="stories-v2-count">{g.items.length}</span>
+                  )}
                 </div>
-                <span className="text-[11px] sm:text-xs text-muted-foreground max-w-[80px] truncate text-center">
-                  {name.split(' ')[0]}
-                </span>
+                <span className="stories-v2-label stories-v2-label-muted">{name.split(' ')[0]}</span>
               </button>
             );
           })}
@@ -155,6 +181,13 @@ export function StoriesStrip() {
           />
         )}
       </AnimatePresence>
+
+      {composer && (
+        <StoryComposer
+          imageUrl={composer}
+          onClose={() => setComposer(null)}
+        />
+      )}
     </>
   );
 }
@@ -174,6 +207,24 @@ function StoryViewer({
   const group = groups[authorIdx];
   const item = group.items[itemIdx];
   const totalInGroup = group.items.length;
+  const queryClient = useQueryClient();
+  const isMine = !!currentUserId() && group.author?.id === currentUserId();
+  const [highlighted, setHighlighted] = useState(!!item?.isHighlight);
+
+  useEffect(() => { setHighlighted(!!item?.isHighlight); }, [item?.id, item?.isHighlight]);
+
+  const toggleHighlight = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      const res: any = await api.toggleStoryHighlight(item.id);
+      const on = !!res?.isHighlight;
+      setHighlighted(on);
+      queryClient.invalidateQueries({ queryKey: ['stories'] });
+      (window as any).showToast?.({ message: on ? 'Pinned to your highlights' : 'Removed from highlights', type: 'success' });
+    } catch {
+      (window as any).showToast?.({ message: 'Could not update highlight', type: 'error' });
+    }
+  };
 
   // Record a view (fire-and-forget) when story changes.
   useEffect(() => {
@@ -265,6 +316,16 @@ function StoryViewer({
           <img src={avatar} alt={name} className="w-8 h-8 rounded-full border-2 border-white object-cover" />
           <div className="text-white text-sm font-medium">{name}</div>
           <div className="text-white/70 text-xs">{timeAgo(item.createdAt)}</div>
+          {isMine && (
+            <button
+              onClick={toggleHighlight}
+              className="ml-auto mr-9 p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white"
+              title={highlighted ? 'Remove from highlights' : 'Pin to your profile highlights'}
+              aria-label={highlighted ? 'Remove from highlights' : 'Add to highlights'}
+            >
+              {highlighted ? <BookmarkCheck size={16} /> : <Bookmark size={16} />}
+            </button>
+          )}
         </div>
 
         <img

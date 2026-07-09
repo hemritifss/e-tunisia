@@ -40,7 +40,7 @@ let SocialService = class SocialService {
         if (exists) {
             throw new common_1.ConflictException('Already following this user');
         }
-        const follow = this.followRepo.create({ followerId, followingId });
+        const follow = this.followRepo.create({ followerId, followingId, followedId: followingId });
         const saved = await this.followRepo.save(follow);
         await this.createActivity(followerId, activity_entity_1.ActivityType.FOLLOWED_USER, {
             targetUserId: followingId,

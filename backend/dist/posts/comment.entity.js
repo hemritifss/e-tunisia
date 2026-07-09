@@ -43,6 +43,19 @@ __decorate([
     __metadata("design:type", Number)
 ], Comment.prototype, "upvotes", void 0);
 __decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    (0, typeorm_1.Index)(),
+    __metadata("design:type", String)
+], Comment.prototype, "parentId", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ default: 0 }),
+    __metadata("design:type", Number)
+], Comment.prototype, "likeCount", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ default: 0 }),
+    __metadata("design:type", Number)
+], Comment.prototype, "replyCount", void 0);
+__decorate([
     (0, typeorm_1.CreateDateColumn)(),
     __metadata("design:type", Date)
 ], Comment.prototype, "createdAt", void 0);

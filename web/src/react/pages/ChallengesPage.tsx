@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Flame,
@@ -20,7 +20,7 @@ import {
 import { Card, CardContent } from '../components/Card';
 import { Button } from '../components/Button';
 import { Skeleton } from '../components/Skeleton';
-import { api } from '../../shared/api';
+import * as api from '../../api';
 import { useUIStore } from '../stores/ui-store';
 
 interface Challenge {
@@ -43,6 +43,8 @@ interface StreakData {
   currentStreak: number;
   longestStreak: number;
   totalDaysActive: number;
+  freezesRemaining?: number;
+  lastCheckInDate?: string | null;
 }
 
 const categoryIcons: Record<string, React.ReactNode> = {
@@ -166,54 +168,51 @@ function ChallengeCard({ challenge, onClaim }: { challenge: Challenge; onClaim: 
 export default function ChallengesPage() {
   const [activeTab, setActiveTab] = useState<'daily' | 'streaks' | 'leaderboard'>('daily');
   const showToast = useUIStore((s) => s.showToast);
+  const queryClient = useQueryClient();
 
   const { data: challengesData, isLoading: challengesLoading } = useQuery({
     queryKey: ['challenges', 'daily'],
-    queryFn: async () => {
-      const token = localStorage.getItem('etunisia_token');
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/v1/challenges/daily`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
-      return res.json();
-    },
+    queryFn: () => api.getDailyChallenges().catch(() => []),
   });
 
   const { data: streakData } = useQuery({
     queryKey: ['streak'],
-    queryFn: async () => {
-      const token = localStorage.getItem('etunisia_token');
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/v1/challenges/streak`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
-      return res.json();
-    },
+    queryFn: () => api.getMyStreak().catch(() => null),
   });
 
   const { data: leaderboardData } = useQuery({
     queryKey: ['leaderboard'],
-    queryFn: async () => {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/v1/challenges/leaderboard?period=weekly&limit=50`);
-      return res.json();
-    },
+    queryFn: () => api.getChallengeLeaderboard('weekly', 50).catch(() => []),
   });
 
   const claimMutation = useMutation({
-    mutationFn: async (userChallengeId: string) => {
-      const token = localStorage.getItem('etunisia_token');
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/v1/challenges/${userChallengeId}/claim`, {
-        method: 'POST',
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
-      return res.json();
+    mutationFn: (userChallengeId: string) => api.claimChallenge(userChallengeId),
+    onSuccess: (data: any) => {
+      showToast(`+${data?.xpEarned || 0} XP earned!`, 'success');
     },
+  });
+
+  const checkInMutation = useMutation({
+    mutationFn: () => api.challengeCheckIn(),
     onSuccess: (data) => {
-      showToast(`+${data.xpEarned || 0} XP earned!`, 'success');
+      const d = data?.data || data || {};
+      if (d.alreadyCheckedIn) {
+        showToast('Already checked in today — see you tomorrow!', 'info');
+      } else {
+        const mult = d.multiplier > 1 ? ` · ${d.multiplier}× streak bonus` : '';
+        const froze = d.freezeUsed ? ' ❄️ A freeze saved your streak!' : '';
+        showToast(`+${d.pointsEarned || 0} Travel Dust${mult}${froze}`, 'success');
+      }
+      queryClient.invalidateQueries({ queryKey: ['streak'] });
     },
+    onError: () => showToast('Check-in failed — try again.', 'error'),
   });
 
   const challenges: Challenge[] = challengesData?.data || challengesData || [];
   const streak: StreakData = streakData?.data || streakData || { currentStreak: 0, longestStreak: 0, totalDaysActive: 0 };
   const leaderboard = leaderboardData?.data || leaderboardData || [];
+  const todayStr = new Date().toISOString().split('T')[0];
+  const checkedInToday = !!streak.lastCheckInDate && String(streak.lastCheckInDate).slice(0, 10) === todayStr;
 
   return (
     <div className="max-w-2xl mx-auto space-y-6 animate-fade-in">
@@ -253,10 +252,19 @@ export default function ChallengesPage() {
               <div className="text-xs text-muted-foreground">Total Days</div>
             </div>
           </div>
-          <div className="text-right">
-            <div className="text-sm font-medium">Keep it up!</div>
+          <div className="flex flex-col items-end gap-1.5">
+            <button
+              type="button"
+              onClick={() => checkInMutation.mutate()}
+              disabled={checkedInToday || checkInMutation.isPending}
+              className="px-3 py-1.5 rounded-lg text-sm font-semibold bg-orange-500 text-white hover:bg-orange-600 disabled:opacity-60 disabled:cursor-default transition-colors"
+            >
+              {checkedInToday ? '✓ Checked in' : checkInMutation.isPending ? 'Checking in…' : 'Daily check-in'}
+            </button>
             <div className="text-xs text-muted-foreground">
-              {streak.currentStreak >= 7 ? '🔥 Week streak! Amazing!' : `${7 - streak.currentStreak} days to week badge`}
+              {typeof streak.freezesRemaining === 'number' && streak.freezesRemaining > 0
+                ? `❄️ ${streak.freezesRemaining} streak freeze${streak.freezesRemaining === 1 ? '' : 's'} left`
+                : streak.currentStreak >= 7 ? '🔥 Week streak!' : `${Math.max(0, 7 - streak.currentStreak)} days to week badge`}
             </div>
           </div>
         </CardContent>

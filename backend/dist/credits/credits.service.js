@@ -12,26 +12,41 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CreditsService = void 0;
+exports.CreditsService = exports.GIFT_CATALOG = void 0;
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
+const config_1 = require("@nestjs/config");
 const credit_balance_entity_1 = require("./credit-balance.entity");
 const credit_transaction_entity_1 = require("./credit-transaction.entity");
 const donation_entity_1 = require("./donation.entity");
+const referral_reward_entity_1 = require("./referral-reward.entity");
+const topup_entity_1 = require("./topup.entity");
 const user_entity_1 = require("../users/user.entity");
+const flouci_service_1 = require("../payments/flouci.service");
 const notifications_service_1 = require("../notifications/notifications.service");
 const notification_entity_1 = require("../notifications/notification.entity");
 const PLATFORM_FEE_PERCENT = Number(process.env.PLATFORM_FEE_PERCENT || 10);
 const PLATFORM_USER_EMAIL = process.env.PLATFORM_USER_EMAIL || 'platform@etunisia.tn';
+exports.GIFT_CATALOG = [
+    { id: 'jasmine', label: 'Jasmine', emoji: '🌼', price: 1 },
+    { id: 'mint_tea', label: 'Mint Tea', emoji: '🍵', price: 3 },
+    { id: 'dates', label: 'Box of Dates', emoji: '🌴', price: 5 },
+    { id: 'carpet', label: 'Kairouan Carpet', emoji: '🧶', price: 15 },
+    { id: 'camel', label: 'Camel', emoji: '🐪', price: 50 },
+];
 let CreditsService = class CreditsService {
-    constructor(balances, txs, donations, users, dataSource, notifications) {
+    constructor(balances, txs, donations, referrals, topups, users, dataSource, notifications, flouci, config) {
         this.balances = balances;
         this.txs = txs;
         this.donations = donations;
+        this.referrals = referrals;
+        this.topups = topups;
         this.users = users;
         this.dataSource = dataSource;
         this.notifications = notifications;
+        this.flouci = flouci;
+        this.config = config;
     }
     async ensureBalance(userId) {
         let bal = await this.balances.findOne({ where: { userId } });
@@ -68,26 +83,240 @@ let CreditsService = class CreditsService {
             recent,
         };
     }
+    async creditInTx(mgr, userId, amount, kind, note, counterpartyId) {
+        const bal = await mgr.findOne(credit_balance_entity_1.CreditBalance, { where: { userId } })
+            ?? mgr.create(credit_balance_entity_1.CreditBalance, { userId, balance: 0 });
+        const after = Number(bal.balance) + amount;
+        bal.balance = after;
+        bal.lifetimeIn = Number(bal.lifetimeIn) + amount;
+        await mgr.save(bal);
+        await mgr.save(mgr.create(credit_transaction_entity_1.CreditTransaction, { userId, kind, amount, counterpartyId, note, balanceAfter: after }));
+    }
+    async createPendingReferral(refereeId, referrerId) {
+        const reward = Number(process.env.REFERRAL_REWARD_TND || 10);
+        if (reward <= 0 || refereeId === referrerId)
+            return;
+        try {
+            await this.referrals.save(this.referrals.create({ refereeId, referrerId, status: 'pending', amount: reward }));
+        }
+        catch {
+            return;
+        }
+        await this.dataSource.transaction(async (mgr) => {
+            await this.creditInTx(mgr, refereeId, reward, credit_transaction_entity_1.CreditTxKind.REFERRAL, 'Welcome bonus — joined via a referral', referrerId);
+        });
+    }
+    async releasePendingReferralForReferee(refereeId) {
+        const maxRewards = Number(process.env.REFERRAL_MAX_REWARDS || 100);
+        let releasedTo = null;
+        await this.dataSource.transaction(async (mgr) => {
+            const reward = await mgr.findOne(referral_reward_entity_1.ReferralReward, { where: { refereeId, status: 'pending' } });
+            if (!reward)
+                return;
+            const alreadyReleased = await mgr.count(referral_reward_entity_1.ReferralReward, { where: { referrerId: reward.referrerId, status: 'released' } });
+            reward.status = 'released';
+            reward.releasedAt = new Date();
+            if (alreadyReleased >= maxRewards) {
+                reward.amount = 0;
+            }
+            else {
+                await this.creditInTx(mgr, reward.referrerId, Number(reward.amount), credit_transaction_entity_1.CreditTxKind.REFERRAL, 'Referral reward — your friend got started', refereeId);
+                releasedTo = { referrerId: reward.referrerId, amount: Number(reward.amount) };
+            }
+            await mgr.save(reward);
+        });
+        if (releasedTo) {
+            try {
+                await this.notifications.create(releasedTo.referrerId, 'Referral reward unlocked', `${releasedTo.amount} TND credit added — your friend got started.`, notification_entity_1.NotificationType.DONATION, { amount: releasedTo.amount });
+            }
+            catch { }
+        }
+    }
+    async referralStats(userId) {
+        const [released, pending] = await Promise.all([
+            this.referrals.count({ where: { referrerId: userId, status: 'released' } }),
+            this.referrals.count({ where: { referrerId: userId, status: 'pending' } }),
+        ]);
+        return { released, pending, rewardTnd: Number(process.env.REFERRAL_REWARD_TND || 10) };
+    }
     async deposit(userId, amount, note) {
         if (amount <= 0)
             throw new common_1.BadRequestException('Amount must be > 0');
         if (amount > 5000)
             throw new common_1.BadRequestException('Single top-up capped at 5000 TND');
-        return this.dataSource.transaction(async (mgr) => {
+        const tx = await this.dataSource.transaction(async (mgr) => {
             const bal = await mgr.findOne(credit_balance_entity_1.CreditBalance, { where: { userId } })
                 ?? mgr.create(credit_balance_entity_1.CreditBalance, { userId, balance: 0 });
             const newBalance = Number(bal.balance) + amount;
             bal.balance = newBalance;
             bal.lifetimeIn = Number(bal.lifetimeIn) + amount;
             await mgr.save(bal);
-            const tx = mgr.create(credit_transaction_entity_1.CreditTransaction, {
+            const txRow = mgr.create(credit_transaction_entity_1.CreditTransaction, {
                 userId,
                 kind: credit_transaction_entity_1.CreditTxKind.DEPOSIT,
                 amount,
                 note: note || `Top-up of ${amount} TND`,
                 balanceAfter: newBalance,
             });
-            return mgr.save(tx);
+            return mgr.save(txRow);
+        });
+        try {
+            await this.releasePendingReferralForReferee(userId);
+        }
+        catch { }
+        return tx;
+    }
+    async createFlouciTopup(userId, amount) {
+        if (!Number.isFinite(amount) || amount <= 0)
+            throw new common_1.BadRequestException('Amount must be > 0');
+        if (amount > 5000)
+            throw new common_1.BadRequestException('Single top-up capped at 5000 TND');
+        if (!this.flouci.enabled) {
+            await this.deposit(userId, amount, `Top-up of ${amount} TND (mock)`);
+            await this.topups.save(this.topups.create({
+                userId,
+                amount,
+                currency: 'TND',
+                status: 'completed',
+                provider: 'mock',
+                paymentReference: `MOCK_${Date.now()}_${userId.slice(0, 8)}`,
+                completedAt: new Date(),
+            }));
+            return { url: this.creditsUrl('success'), mock: true };
+        }
+        const returnLink = `${this.apiBaseUrl()}/api/v1/credits/topup/flouci/return`;
+        const { link, paymentId } = await this.flouci.generatePayment({
+            amountTnd: amount,
+            successLink: returnLink,
+            failLink: returnLink,
+            trackingId: `topup:${userId}:${amount}`,
+        });
+        await this.topups.save(this.topups.create({
+            userId,
+            amount,
+            currency: 'TND',
+            status: 'pending',
+            provider: 'flouci',
+            paymentReference: `FLOUCI_${paymentId}`,
+        }));
+        return { url: link, mock: false };
+    }
+    async handleFlouciTopupReturn(paymentId) {
+        if (!paymentId)
+            return this.creditsUrl('failed');
+        const topup = await this.topups.findOne({ where: { paymentReference: `FLOUCI_${paymentId}` } });
+        if (!topup)
+            return this.creditsUrl('failed');
+        if (topup.status === 'completed')
+            return this.creditsUrl('success');
+        const { success } = await this.flouci.verifyPayment(paymentId);
+        if (!success) {
+            topup.status = 'failed';
+            await this.topups.save(topup);
+            return this.creditsUrl('failed');
+        }
+        await this.deposit(topup.userId, Number(topup.amount), `Top-up of ${Number(topup.amount)} TND (Flouci)`);
+        topup.status = 'completed';
+        topup.completedAt = new Date();
+        await this.topups.save(topup);
+        return this.creditsUrl('success');
+    }
+    async chargeBoost(payerUserId, amount, note, placeId) {
+        if (amount <= 0)
+            throw new common_1.BadRequestException('Boost amount must be > 0');
+        const platform = await this.ensurePlatformUser();
+        return this.dataSource.transaction(async (mgr) => {
+            const bal = await mgr.findOne(credit_balance_entity_1.CreditBalance, { where: { userId: payerUserId } });
+            const current = Number(bal?.balance || 0);
+            if (current < amount)
+                throw new common_1.BadRequestException('Insufficient credits — top up to boost');
+            const newBalance = current - amount;
+            bal.balance = newBalance;
+            bal.lifetimeOut = Number(bal.lifetimeOut) + amount;
+            await mgr.save(bal);
+            await mgr.save(mgr.create(credit_transaction_entity_1.CreditTransaction, {
+                userId: payerUserId,
+                kind: credit_transaction_entity_1.CreditTxKind.BOOST,
+                amount: -amount,
+                counterpartyId: platform.id,
+                note,
+                balanceAfter: newBalance,
+                donationId: placeId,
+            }));
+            const platBal = await mgr.findOne(credit_balance_entity_1.CreditBalance, { where: { userId: platform.id } })
+                ?? mgr.create(credit_balance_entity_1.CreditBalance, { userId: platform.id, balance: 0 });
+            const platNew = Number(platBal.balance || 0) + amount;
+            platBal.balance = platNew;
+            platBal.lifetimeIn = Number(platBal.lifetimeIn || 0) + amount;
+            await mgr.save(platBal);
+            await mgr.save(mgr.create(credit_transaction_entity_1.CreditTransaction, {
+                userId: platform.id,
+                kind: credit_transaction_entity_1.CreditTxKind.BOOST,
+                amount,
+                counterpartyId: payerUserId,
+                note: `Boost revenue: ${note}`,
+                balanceAfter: platNew,
+                donationId: placeId,
+            }));
+            return { balance: newBalance, charged: amount };
+        });
+    }
+    async chargeSubscription(payerUserId, amount, note, planId) {
+        if (!Number.isFinite(amount) || amount <= 0)
+            throw new common_1.BadRequestException('Subscription amount must be > 0');
+        const platform = await this.ensurePlatformUser();
+        return this.dataSource.transaction(async (mgr) => {
+            const bal = await mgr.findOne(credit_balance_entity_1.CreditBalance, { where: { userId: payerUserId } });
+            const current = Number(bal?.balance || 0);
+            if (current < amount) {
+                throw new common_1.BadRequestException({
+                    message: 'Insufficient credits — top up to subscribe.',
+                    code: 'insufficient_credits',
+                    balance: current,
+                    required: amount,
+                });
+            }
+            const newBalance = current - amount;
+            bal.balance = newBalance;
+            bal.lifetimeOut = Number(bal.lifetimeOut) + amount;
+            await mgr.save(bal);
+            await mgr.save(mgr.create(credit_transaction_entity_1.CreditTransaction, {
+                userId: payerUserId,
+                kind: credit_transaction_entity_1.CreditTxKind.SUBSCRIPTION,
+                amount: -amount,
+                counterpartyId: platform.id,
+                note,
+                balanceAfter: newBalance,
+            }));
+            const platBal = await mgr.findOne(credit_balance_entity_1.CreditBalance, { where: { userId: platform.id } })
+                ?? mgr.create(credit_balance_entity_1.CreditBalance, { userId: platform.id, balance: 0 });
+            const platNew = Number(platBal.balance || 0) + amount;
+            platBal.balance = platNew;
+            platBal.lifetimeIn = Number(platBal.lifetimeIn || 0) + amount;
+            await mgr.save(platBal);
+            await mgr.save(mgr.create(credit_transaction_entity_1.CreditTransaction, {
+                userId: platform.id,
+                kind: credit_transaction_entity_1.CreditTxKind.SUBSCRIPTION,
+                amount,
+                counterpartyId: payerUserId,
+                note: `Subscription revenue: ${note}`,
+                balanceAfter: platNew,
+            }));
+            return { balance: newBalance, charged: amount, planId };
+        });
+    }
+    async refund(userId, amount, note) {
+        if (!Number.isFinite(amount) || amount <= 0)
+            return;
+        const platform = await this.ensurePlatformUser();
+        await this.dataSource.transaction(async (mgr) => {
+            await this.creditInTx(mgr, userId, amount, credit_transaction_entity_1.CreditTxKind.REFUND, note, platform.id);
+            const platBal = await mgr.findOne(credit_balance_entity_1.CreditBalance, { where: { userId: platform.id } });
+            if (platBal) {
+                platBal.balance = Number(platBal.balance) - amount;
+                platBal.lifetimeOut = Number(platBal.lifetimeOut) + amount;
+                await mgr.save(platBal);
+            }
         });
     }
     async donate(fromUserId, opts) {
@@ -148,6 +377,7 @@ let CreditsService = class CreditsService {
                 netAmount: net,
                 message: opts.message,
                 isAnonymous: !!opts.isAnonymous,
+                giftType: opts.giftType || null,
             }));
             await mgr.save(mgr.create(credit_transaction_entity_1.CreditTransaction, {
                 userId: fromUserId,
@@ -199,6 +429,24 @@ let CreditsService = class CreditsService {
             return result;
         });
     }
+    listGifts() {
+        return exports.GIFT_CATALOG;
+    }
+    async sendGift(fromUserId, giftId, toUserId, isAnonymous = false) {
+        const gift = exports.GIFT_CATALOG.find((g) => g.id === giftId);
+        if (!gift)
+            throw new common_1.BadRequestException('Unknown gift');
+        if (!toUserId)
+            throw new common_1.BadRequestException('toUserId required');
+        return this.donate(fromUserId, {
+            target: donation_entity_1.DonationTarget.USER,
+            toUserId,
+            amount: gift.price,
+            message: `${gift.emoji} ${gift.label}`,
+            isAnonymous,
+            giftType: gift.id,
+        });
+    }
     async listSent(userId, limit = 25) {
         return this.donations.find({
             where: { fromUserId: userId },
@@ -237,6 +485,15 @@ let CreditsService = class CreditsService {
         `, [lim]);
         return { topPlatformSupporters: topPlatform, topReceivers };
     }
+    apiBaseUrl() {
+        return this.config.get('PUBLIC_API_URL') || 'http://localhost:3000';
+    }
+    creditsUrl(topup) {
+        const base = this.config.get('FRONTEND_URL') ||
+            (this.config.get('BILLING_CANCEL_URL') || '').split('#')[0].replace(/\/$/, '') ||
+            'http://localhost:5173';
+        return `${base}/#/credits?topup=${topup}`;
+    }
 };
 exports.CreditsService = CreditsService;
 exports.CreditsService = CreditsService = __decorate([
@@ -244,12 +501,18 @@ exports.CreditsService = CreditsService = __decorate([
     __param(0, (0, typeorm_1.InjectRepository)(credit_balance_entity_1.CreditBalance)),
     __param(1, (0, typeorm_1.InjectRepository)(credit_transaction_entity_1.CreditTransaction)),
     __param(2, (0, typeorm_1.InjectRepository)(donation_entity_1.Donation)),
-    __param(3, (0, typeorm_1.InjectRepository)(user_entity_1.User)),
+    __param(3, (0, typeorm_1.InjectRepository)(referral_reward_entity_1.ReferralReward)),
+    __param(4, (0, typeorm_1.InjectRepository)(topup_entity_1.Topup)),
+    __param(5, (0, typeorm_1.InjectRepository)(user_entity_1.User)),
     __metadata("design:paramtypes", [typeorm_2.Repository,
         typeorm_2.Repository,
         typeorm_2.Repository,
         typeorm_2.Repository,
+        typeorm_2.Repository,
+        typeorm_2.Repository,
         typeorm_2.DataSource,
-        notifications_service_1.NotificationsService])
+        notifications_service_1.NotificationsService,
+        flouci_service_1.FlouciService,
+        config_1.ConfigService])
 ], CreditsService);
 //# sourceMappingURL=credits.service.js.map

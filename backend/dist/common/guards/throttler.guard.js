@@ -11,10 +11,11 @@ const throttler_1 = require("@nestjs/throttler");
 const common_1 = require("@nestjs/common");
 let CustomThrottlerGuard = class CustomThrottlerGuard extends throttler_1.ThrottlerGuard {
     async getTracker(req) {
-        return req.user?.id || req.ip;
+        const fingerprint = req.headers['user-agent'] || 'unknown';
+        return req.user?.id || `${req.ip}::${fingerprint}`;
     }
     async throwThrottlingException() {
-        throw new Error('Too many requests. Please slow down.');
+        throw new common_1.HttpException('Too many requests. Please slow down.', common_1.HttpStatus.TOO_MANY_REQUESTS);
     }
 };
 exports.CustomThrottlerGuard = CustomThrottlerGuard;

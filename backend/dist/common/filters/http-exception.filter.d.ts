@@ -5,6 +5,7 @@ export interface ErrorResponse {
     error: string;
     timestamp: string;
     path: string;
+    requestId: string;
     details?: Record<string, unknown>;
 }
 export declare class GlobalExceptionFilter implements ExceptionFilter {

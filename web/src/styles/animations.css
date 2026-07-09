@@ -351,10 +351,26 @@
   to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
+/* ── Micro-interactions: tactile press feedback + reaction hover-grow ── */
+/* Scoped to :active so we don't clobber existing per-button transitions. Most
+   of these buttons already transition transform; where they don't, the press
+   simply snaps — still valid feedback. */
+.btn:active, .post-card-v2-action:active, .reaction-trigger:active {
+  transform: scale(0.96);
+}
+/* Facebook/LinkedIn-style emoji grow on hover */
+.reaction-chip {
+  transition: transform 180ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.reaction-chip:hover, .reaction-chip:focus-visible {
+  transform: scale(1.4) translateY(-3px);
+}
+
 /* ── Reduced motion override ── */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
+    animation-delay: 0s !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;

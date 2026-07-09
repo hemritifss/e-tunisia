@@ -20,12 +20,14 @@ const booking_entity_1 = require("./booking.entity");
 const inventory_entity_1 = require("../inventory/inventory.entity");
 const config_1 = require("@nestjs/config");
 const redis_service_1 = require("../redis/redis.service");
+const queues_service_1 = require("../queues/queues.service");
 let BookingsService = class BookingsService {
-    constructor(bookingRepo, inventoryRepo, configService, redisService) {
+    constructor(bookingRepo, inventoryRepo, configService, redisService, queuesService) {
         this.bookingRepo = bookingRepo;
         this.inventoryRepo = inventoryRepo;
         this.configService = configService;
         this.redisService = redisService;
+        this.queuesService = queuesService;
     }
     async create(userId, dto) {
         const item = await this.inventoryRepo.findOne({
@@ -130,7 +132,17 @@ let BookingsService = class BookingsService {
         booking.status = 'confirmed';
         booking.paymentIntentId = paymentIntentId;
         booking.qrCode = this.generateQRCode(booking.id);
-        return this.bookingRepo.save(booking);
+        const saved = await this.bookingRepo.save(booking);
+        try {
+            await this.queuesService.addBookingJob('confirm', {
+                bookingId: saved.id,
+                paymentIntentId,
+                userEmail: saved.user?.email,
+                userId: saved.userId,
+            });
+        }
+        catch { }
+        return saved;
     }
     async cancel(id, userId, reason) {
         const booking = await this.findOne(id);
@@ -178,6 +190,67 @@ let BookingsService = class BookingsService {
             totalPlatformFees: Number(result.totalPlatformFees) || 0,
             totalHostPayouts: Number(result.totalHostPayouts) || 0,
         };
+    }
+    async getOwnerEarnings(ownerId) {
+        const rows = await this.bookingRepo
+            .createQueryBuilder('booking')
+            .innerJoin('booking.place', 'place')
+            .where('place.submittedBy = :ownerId', { ownerId })
+            .andWhere('booking.status IN (:...statuses)', { statuses: ['paid', 'completed'] })
+            .orderBy('booking.createdAt', 'DESC')
+            .select([
+            'booking.id AS id',
+            'booking.placeId AS "placeId"',
+            'place.name AS "placeName"',
+            'booking.currency AS currency',
+            'booking.subtotal AS subtotal',
+            'booking.platformFee AS "platformFee"',
+            'booking.hostPayout AS "hostPayout"',
+            'booking.status AS status',
+            'booking.checkIn AS "checkIn"',
+            'booking.payoutSettledAt AS "payoutSettledAt"',
+            'booking.createdAt AS "createdAt"',
+        ])
+            .getRawMany();
+        let grossTnd = 0, commissionTnd = 0, netTnd = 0, owedTnd = 0, paidOutTnd = 0;
+        const entries = rows.map((r) => {
+            const gross = Number(r.subtotal) || 0;
+            const commission = Number(r.platformFee) || 0;
+            const net = Number(r.hostPayout) || 0;
+            const settled = !!r.payoutSettledAt;
+            grossTnd += gross;
+            commissionTnd += commission;
+            netTnd += net;
+            if (settled)
+                paidOutTnd += net;
+            else
+                owedTnd += net;
+            return {
+                id: r.id, placeId: r.placeId, placeName: r.placeName, currency: r.currency,
+                grossTnd: gross, commissionTnd: commission, netTnd: net,
+                status: r.status, checkIn: r.checkIn, settled, payoutSettledAt: r.payoutSettledAt,
+                createdAt: r.createdAt,
+            };
+        });
+        return {
+            summary: {
+                bookings: entries.length,
+                grossTnd: Math.round(grossTnd * 100) / 100,
+                commissionTnd: Math.round(commissionTnd * 100) / 100,
+                netTnd: Math.round(netTnd * 100) / 100,
+                owedTnd: Math.round(owedTnd * 100) / 100,
+                paidOutTnd: Math.round(paidOutTnd * 100) / 100,
+            },
+            entries,
+        };
+    }
+    async settlePayout(bookingId) {
+        const booking = await this.bookingRepo.findOne({ where: { id: bookingId } });
+        if (!booking)
+            throw new common_1.NotFoundException('Booking not found');
+        booking.payoutSettledAt = new Date();
+        await this.bookingRepo.save(booking);
+        return { id: booking.id, payoutSettledAt: booking.payoutSettledAt };
     }
     async checkAvailability(itemId, checkIn, checkOut, guests) {
         const item = await this.inventoryRepo.findOne({ where: { id: itemId } });
@@ -253,6 +326,7 @@ exports.BookingsService = BookingsService = __decorate([
     __metadata("design:paramtypes", [typeorm_2.Repository,
         typeorm_2.Repository,
         config_1.ConfigService,
-        redis_service_1.RedisService])
+        redis_service_1.RedisService,
+        queues_service_1.QueuesService])
 ], BookingsService);
 //# sourceMappingURL=bookings.service.js.map

@@ -23,12 +23,14 @@ let GlobalExceptionFilter = GlobalExceptionFilter_1 = class GlobalExceptionFilte
         const message = exception instanceof common_1.HttpException
             ? exception.message
             : 'Internal server error';
+        const requestId = request.id || 'no-id';
         const errorResponse = {
             statusCode: status,
             message,
             error: common_1.HttpStatus[status] || 'Unknown Error',
             timestamp: new Date().toISOString(),
             path: request.url,
+            requestId,
         };
         if (exception instanceof common_1.HttpException) {
             const exceptionResponse = exception.getResponse();
@@ -39,7 +41,7 @@ let GlobalExceptionFilter = GlobalExceptionFilter_1 = class GlobalExceptionFilte
                 }
             }
         }
-        this.logger.error(`${request.method} ${request.url} → ${status}: ${message}`, exception instanceof Error ? exception.stack : undefined);
+        this.logger.error(`[${requestId}] ${request.method} ${request.url} → ${status}: ${message}`, exception instanceof Error ? exception.stack : undefined);
         response.status(status).json(errorResponse);
     }
 };

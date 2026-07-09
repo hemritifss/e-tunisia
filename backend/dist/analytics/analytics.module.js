@@ -15,13 +15,16 @@ const user_entity_1 = require("../users/user.entity");
 const place_entity_1 = require("../places/place.entity");
 const booking_entity_1 = require("../bookings/booking.entity");
 const review_entity_1 = require("../reviews/review.entity");
+const post_entity_1 = require("../posts/post.entity");
+const analytics_event_entity_1 = require("./analytics-event.entity");
 const redis_module_1 = require("../redis/redis.module");
+const queues_module_1 = require("../queues/queues.module");
 let AnalyticsModule = class AnalyticsModule {
 };
 exports.AnalyticsModule = AnalyticsModule;
 exports.AnalyticsModule = AnalyticsModule = __decorate([
     (0, common_1.Module)({
-        imports: [typeorm_1.TypeOrmModule.forFeature([user_entity_1.User, place_entity_1.Place, booking_entity_1.Booking, review_entity_1.Review]), redis_module_1.RedisModule],
+        imports: [typeorm_1.TypeOrmModule.forFeature([user_entity_1.User, place_entity_1.Place, booking_entity_1.Booking, review_entity_1.Review, post_entity_1.Post, analytics_event_entity_1.AnalyticsEvent]), redis_module_1.RedisModule, queues_module_1.QueuesModule],
         controllers: [analytics_controller_1.AnalyticsController],
         providers: [analytics_service_1.AnalyticsService],
         exports: [analytics_service_1.AnalyticsService],

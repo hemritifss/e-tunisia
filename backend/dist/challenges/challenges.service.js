@@ -20,14 +20,38 @@ const typeorm_2 = require("typeorm");
 const challenge_entity_1 = require("./challenge.entity");
 const user_challenge_entity_1 = require("./user-challenge.entity");
 const streak_entity_1 = require("./streak.entity");
+const user_entity_1 = require("../users/user.entity");
+const plan_catalog_1 = require("../billing/plan-catalog");
 const redis_service_1 = require("../redis/redis.service");
 let ChallengesService = ChallengesService_1 = class ChallengesService {
-    constructor(challengeRepo, userChallengeRepo, streakRepo, redisService) {
+    constructor(challengeRepo, userChallengeRepo, streakRepo, userRepo, redisService) {
         this.challengeRepo = challengeRepo;
         this.userChallengeRepo = userChallengeRepo;
         this.streakRepo = streakRepo;
+        this.userRepo = userRepo;
         this.redisService = redisService;
         this.logger = new common_1.Logger(ChallengesService_1.name);
+    }
+    monthKey(d = new Date()) {
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    }
+    freezesForPlan(plan) {
+        if (plan === user_entity_1.UserPlan.BUSINESS)
+            return Number(process.env.STREAK_FREEZES_BUSINESS || 3);
+        if (plan === user_entity_1.UserPlan.PREMIUM)
+            return Number(process.env.STREAK_FREEZES_PREMIUM || 1);
+        return 0;
+    }
+    refillFreezes(streak, plan) {
+        const mk = this.monthKey();
+        if (streak.freezeMonth !== mk) {
+            streak.freezeMonth = mk;
+            streak.freezesRemaining = this.freezesForPlan(plan);
+        }
+    }
+    async effectivePlanOf(userId) {
+        const u = await this.userRepo.findOne({ where: { id: userId }, select: ['id', 'plan', 'subscriptionExpiresAt'] });
+        return u ? (0, plan_catalog_1.effectivePlanFor)(u) : user_entity_1.UserPlan.FREE;
     }
     async generateDailyChallenges() {
         const today = new Date();
@@ -189,6 +213,9 @@ let ChallengesService = ChallengesService_1 = class ChallengesService {
     }
     async recordActivity(userId, action) {
         const streak = await this.getOrCreateStreak(userId);
+        const plan = await this.effectivePlanOf(userId);
+        this.refillFreezes(streak, plan);
+        streak.__freezeUsed = false;
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         const lastActive = streak.lastActiveDate
@@ -222,17 +249,35 @@ let ChallengesService = ChallengesService_1 = class ChallengesService {
                 ];
             }
             else {
-                streak.currentStreak = 1;
-                streak.totalDaysActive += 1;
-                streak.lastActiveDate = today;
-                streak.streakHistory = [
-                    ...(streak.streakHistory || []),
-                    {
-                        date: today.toISOString().split('T')[0],
-                        action,
-                        pointsEarned: 10,
-                    },
-                ];
+                if (diffDays === 2 && streak.freezesRemaining > 0) {
+                    streak.freezesRemaining -= 1;
+                    streak.__freezeUsed = true;
+                    streak.currentStreak += 1;
+                    streak.longestStreak = Math.max(streak.currentStreak, streak.longestStreak);
+                    streak.totalDaysActive += 1;
+                    streak.lastActiveDate = today;
+                    streak.streakHistory = [
+                        ...(streak.streakHistory || []),
+                        {
+                            date: today.toISOString().split('T')[0],
+                            action: `${action} (freeze used)`,
+                            pointsEarned: 10 + streak.currentStreak * 2,
+                        },
+                    ];
+                }
+                else {
+                    streak.currentStreak = 1;
+                    streak.totalDaysActive += 1;
+                    streak.lastActiveDate = today;
+                    streak.streakHistory = [
+                        ...(streak.streakHistory || []),
+                        {
+                            date: today.toISOString().split('T')[0],
+                            action,
+                            pointsEarned: 10,
+                        },
+                    ];
+                }
             }
         }
         else {
@@ -249,6 +294,26 @@ let ChallengesService = ChallengesService_1 = class ChallengesService {
             ];
         }
         return this.streakRepo.save(streak);
+    }
+    async checkIn(userId) {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const existing = await this.getOrCreateStreak(userId);
+        if (existing.lastCheckInDate) {
+            const last = new Date(existing.lastCheckInDate);
+            last.setHours(0, 0, 0, 0);
+            if (last.getTime() === today.getTime()) {
+                return { alreadyCheckedIn: true, pointsEarned: 0, multiplier: 1, freezeUsed: false, streak: existing };
+            }
+        }
+        const streak = await this.recordActivity(userId, 'daily-check-in');
+        const freezeUsed = !!streak.__freezeUsed;
+        const multiplier = streak.currentStreak >= 7 ? 2 : 1;
+        const pointsEarned = 10 * multiplier;
+        streak.lastCheckInDate = today;
+        await this.streakRepo.save(streak);
+        await this.userRepo.increment({ id: userId }, 'points', pointsEarned);
+        return { alreadyCheckedIn: false, pointsEarned, multiplier, freezeUsed, streak };
     }
     async getLeaderboard(period = 'weekly', limit = 50) {
         const cacheKey = `leaderboard:${period}`;
@@ -284,7 +349,9 @@ exports.ChallengesService = ChallengesService = ChallengesService_1 = __decorate
     __param(0, (0, typeorm_1.InjectRepository)(challenge_entity_1.Challenge)),
     __param(1, (0, typeorm_1.InjectRepository)(user_challenge_entity_1.UserChallenge)),
     __param(2, (0, typeorm_1.InjectRepository)(streak_entity_1.UserStreak)),
+    __param(3, (0, typeorm_1.InjectRepository)(user_entity_1.User)),
     __metadata("design:paramtypes", [typeorm_2.Repository,
+        typeorm_2.Repository,
         typeorm_2.Repository,
         typeorm_2.Repository,
         redis_service_1.RedisService])

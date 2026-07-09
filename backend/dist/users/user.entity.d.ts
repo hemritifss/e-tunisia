@@ -2,7 +2,8 @@ import { Review } from '../reviews/review.entity';
 export declare enum UserRole {
     USER = "user",
     CREATOR = "creator",
-    ADMIN = "admin"
+    ADMIN = "admin",
+    SUPERADMIN = "superadmin"
 }
 export declare enum UserPlan {
     FREE = "free",
@@ -13,6 +14,7 @@ export declare class User {
     id: string;
     fullName: string;
     email: string;
+    handle: string | null;
     password: string;
     avatar: string;
     phone: string;
@@ -22,13 +24,22 @@ export declare class User {
     interests: string[];
     onboardingComplete: boolean;
     role: UserRole;
+    plan: UserPlan;
     favoriteIds: string[];
     visitedPlaceIds: string[];
+    founderNumber: number | null;
     isActive: boolean;
-    plan: UserPlan;
     subscriptionExpiresAt: Date;
+    stripeCustomerId: string | null;
+    passportTheme: string | null;
+    referredBy: string | null;
     badges: string[];
     points: number;
+    followersCount: number;
+    followingCount: number;
+    passwordResetToken: string | null;
+    passwordResetExpires: Date | null;
+    tokenVersion: number;
     reviews: Review[];
     createdAt: Date;
     updatedAt: Date;

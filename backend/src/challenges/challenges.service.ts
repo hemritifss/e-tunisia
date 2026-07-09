@@ -4,6 +4,8 @@ import { Repository } from 'typeorm';
 import { Challenge, ChallengeType } from './challenge.entity';
 import { UserChallenge, UserChallengeStatus } from './user-challenge.entity';
 import { UserStreak } from './streak.entity';
+import { User, UserPlan } from '../users/user.entity';
+import { effectivePlanFor } from '../billing/plan-catalog';
 import { RedisService } from '../redis/redis.service';
 
 export interface LeaderboardEntry {
@@ -25,8 +27,35 @@ export class ChallengesService {
     private userChallengeRepo: Repository<UserChallenge>,
     @InjectRepository(UserStreak)
     private streakRepo: Repository<UserStreak>,
+    @InjectRepository(User)
+    private userRepo: Repository<User>,
     private redisService: RedisService,
   ) {}
+
+  // ─── Streak-freeze helpers (Pro/Business retention perk) ───
+  private monthKey(d = new Date()): string {
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  }
+
+  private freezesForPlan(plan: UserPlan): number {
+    if (plan === UserPlan.BUSINESS) return Number(process.env.STREAK_FREEZES_BUSINESS || 3);
+    if (plan === UserPlan.PREMIUM) return Number(process.env.STREAK_FREEZES_PREMIUM || 1);
+    return 0;
+  }
+
+  /** Refill the monthly freeze allowance if we've rolled into a new month. */
+  private refillFreezes(streak: UserStreak, plan: UserPlan): void {
+    const mk = this.monthKey();
+    if (streak.freezeMonth !== mk) {
+      streak.freezeMonth = mk;
+      streak.freezesRemaining = this.freezesForPlan(plan);
+    }
+  }
+
+  private async effectivePlanOf(userId: string): Promise<UserPlan> {
+    const u = await this.userRepo.findOne({ where: { id: userId }, select: ['id', 'plan', 'subscriptionExpiresAt'] as any });
+    return u ? effectivePlanFor(u) : UserPlan.FREE;
+  }
 
   async generateDailyChallenges(): Promise<Challenge[]> {
     const today = new Date();
@@ -218,6 +247,9 @@ export class ChallengesService {
 
   async recordActivity(userId: string, action: string): Promise<UserStreak> {
     const streak = await this.getOrCreateStreak(userId);
+    const plan = await this.effectivePlanOf(userId);
+    this.refillFreezes(streak, plan);
+    (streak as any).__freezeUsed = false;
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -254,17 +286,36 @@ export class ChallengesService {
           },
         ];
       } else {
-        streak.currentStreak = 1;
-        streak.totalDaysActive += 1;
-        streak.lastActiveDate = today;
-        streak.streakHistory = [
-          ...(streak.streakHistory || []),
-          {
-            date: today.toISOString().split('T')[0],
-            action,
-            pointsEarned: 10,
-          },
-        ];
+        // Missed one or more days. A single missed day can be rescued by a streak
+        // freeze (Pro/Business perk) — otherwise the streak resets.
+        if (diffDays === 2 && streak.freezesRemaining > 0) {
+          streak.freezesRemaining -= 1;
+          (streak as any).__freezeUsed = true;
+          streak.currentStreak += 1;
+          streak.longestStreak = Math.max(streak.currentStreak, streak.longestStreak);
+          streak.totalDaysActive += 1;
+          streak.lastActiveDate = today;
+          streak.streakHistory = [
+            ...(streak.streakHistory || []),
+            {
+              date: today.toISOString().split('T')[0],
+              action: `${action} (freeze used)`,
+              pointsEarned: 10 + streak.currentStreak * 2,
+            },
+          ];
+        } else {
+          streak.currentStreak = 1;
+          streak.totalDaysActive += 1;
+          streak.lastActiveDate = today;
+          streak.streakHistory = [
+            ...(streak.streakHistory || []),
+            {
+              date: today.toISOString().split('T')[0],
+              action,
+              pointsEarned: 10,
+            },
+          ];
+        }
       }
     } else {
       streak.currentStreak = 1;
@@ -281,6 +332,45 @@ export class ChallengesService {
     }
 
     return this.streakRepo.save(streak);
+  }
+
+  /**
+   * Daily check-in — the retention hook. Idempotent per calendar day. Advances the
+   * streak (freeze-aware) and awards "Travel Dust" points (base 10, doubled on a
+   * 7+ day streak). Returns a summary for the UI.
+   */
+  async checkIn(userId: string): Promise<{
+    alreadyCheckedIn: boolean;
+    pointsEarned: number;
+    multiplier: number;
+    freezeUsed: boolean;
+    streak: UserStreak;
+  }> {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const existing = await this.getOrCreateStreak(userId);
+    if (existing.lastCheckInDate) {
+      const last = new Date(existing.lastCheckInDate);
+      last.setHours(0, 0, 0, 0);
+      if (last.getTime() === today.getTime()) {
+        return { alreadyCheckedIn: true, pointsEarned: 0, multiplier: 1, freezeUsed: false, streak: existing };
+      }
+    }
+
+    // Advance the streak (handles increment / freeze / reset + monthly freeze refill).
+    const streak = await this.recordActivity(userId, 'daily-check-in');
+    const freezeUsed = !!(streak as any).__freezeUsed;
+
+    const multiplier = streak.currentStreak >= 7 ? 2 : 1; // 7-day streak doubles the reward
+    const pointsEarned = 10 * multiplier;
+
+    streak.lastCheckInDate = today;
+    await this.streakRepo.save(streak);
+
+    // "Travel Dust" = the existing XP/points wallet on the user.
+    await this.userRepo.increment({ id: userId }, 'points', pointsEarned);
+
+    return { alreadyCheckedIn: false, pointsEarned, multiplier, freezeUsed, streak };
   }
 
   async getLeaderboard(

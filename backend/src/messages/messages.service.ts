@@ -146,6 +146,14 @@ export class MessagesService {
       .andWhere('senderId != :userId', { userId })
       .andWhere('isRead = false')
       .execute();
+
+    // Live read receipt to other participants
+    try {
+      const room = await this.roomRepo.findOne({ where: { id: roomId } });
+      if (room?.participantIds?.length) {
+        this.gateway?.broadcastReadReceipt(roomId, userId, room.participantIds);
+      }
+    } catch {}
   }
 
   async getUnreadCount(userId: string): Promise<number> {

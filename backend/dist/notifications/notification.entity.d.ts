@@ -9,7 +9,8 @@ export declare enum NotificationType {
     FOLLOW = "follow",
     COMMENT = "comment",
     DONATION = "donation",
-    MENTION = "mention"
+    MENTION = "mention",
+    PASSPORT_VIEW = "passport_view"
 }
 export declare class Notification {
     id: string;

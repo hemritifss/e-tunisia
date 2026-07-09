@@ -1,4 +1,5 @@
 import { AdminService } from './admin.service';
+import { UpdateUserDto } from './dto/update-user.dto';
 export declare class AdminController {
     private adminService;
     constructor(adminService: AdminService);
@@ -13,6 +14,20 @@ export declare class AdminController {
         totalRevenue: number;
         activeSubscriptions: number;
     }>;
+    me(req: any): {
+        id: any;
+        role: any;
+        isSuperAdmin: boolean;
+    };
+    getAudit(page?: number, limit?: number): Promise<{
+        data: import("./audit-log.entity").AuditLog[];
+        meta: {
+            total: number;
+            page: number;
+            limit: number;
+            totalPages: number;
+        };
+    }>;
     getUsers(page?: number, limit?: number): Promise<{
         data: import("../users/user.entity").User[];
         meta: {
@@ -22,7 +37,10 @@ export declare class AdminController {
             totalPages: number;
         };
     }>;
-    updateUser(id: string, body: any): Promise<import("../users/user.entity").User>;
+    updateUser(id: string, body: UpdateUserDto): Promise<import("../users/user.entity").User>;
+    setUserRole(id: string, body: {
+        role: string;
+    }): Promise<import("../users/user.entity").User>;
     banUser(id: string): Promise<{
         message: string;
     }>;
@@ -47,7 +65,39 @@ export declare class AdminController {
     deletePlace(id: string): Promise<{
         message: string;
     }>;
+    getReviews(page?: number, limit?: number): Promise<{
+        data: import("../reviews/review.entity").Review[];
+        meta: {
+            total: number;
+            page: number;
+            limit: number;
+            totalPages: number;
+        };
+    }>;
+    deleteReview(id: string): Promise<{
+        message: string;
+    }>;
     getSubscriptions(): Promise<import("../subscriptions/subscription.entity").Subscription[]>;
+    confirmSubscription(id: string): Promise<{
+        message: string;
+        plan: string;
+    }>;
+    rejectSubscription(id: string): Promise<{
+        message: string;
+    }>;
+    getAnalytics(): Promise<{
+        mrr: number;
+        arr: number;
+        activeSubscriptions: number;
+        pendingSubscriptions: number;
+        byPlan: Record<string, {
+            count: number;
+            revenue: number;
+        }>;
+        totalUsers: number;
+        paidUsers: number;
+        conversionRate: number;
+    }>;
     getEvents(): Promise<import("../events/event.entity").Event[]>;
     toggleEvent(id: string): Promise<import("../events/event.entity").Event>;
     getTips(): Promise<import("../tips/tip.entity").Tip[]>;

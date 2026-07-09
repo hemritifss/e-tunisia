@@ -1,8 +1,9 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink, ArrowRight } from 'lucide-react';
 import { Card, CardContent } from './Card';
 import { Button } from './Button';
+import { goTo } from '../../router';
 
 interface AdItem {
   id: string;
@@ -13,11 +14,17 @@ interface AdItem {
   ctaUrl?: string | null;
   images: string[];
   sponsor: string;
+  /** True for e-Tunisia's own promos — labeled "e-Tunisia", navigated in-app. */
+  isHouse?: boolean;
 }
 
 export function AdCard({ ad }: { ad: AdItem }) {
+  // Internal (house) CTAs navigate within the SPA; external partner links open a tab.
+  const isInternal = !!ad.ctaUrl && !/^https?:\/\//i.test(ad.ctaUrl);
   const open = () => {
-    if (ad.ctaUrl) window.open(ad.ctaUrl, '_blank', 'noopener,noreferrer');
+    if (!ad.ctaUrl) return;
+    if (isInternal) goTo(ad.ctaUrl);
+    else window.open(ad.ctaUrl, '_blank', 'noopener,noreferrer');
   };
 
   return (
@@ -30,9 +37,9 @@ export function AdCard({ ad }: { ad: AdItem }) {
         <CardContent className="p-0">
           <div className="px-4 pt-3 pb-1 flex items-center justify-between">
             <span className="text-[11px] uppercase tracking-wider font-semibold text-brand">
-              Sponsored
+              {ad.isHouse ? 'From e-Tunisia' : 'Sponsored'}
             </span>
-            <span className="text-xs text-muted-foreground">{ad.sponsor}</span>
+            {!ad.isHouse && <span className="text-xs text-muted-foreground">{ad.sponsor}</span>}
           </div>
           {ad.images?.[0] && (
             <button onClick={open} className="block w-full cursor-pointer">
@@ -52,11 +59,11 @@ export function AdCard({ ad }: { ad: AdItem }) {
             <Button
               variant="primary"
               size="sm"
-              rightIcon={<ExternalLink size={14} />}
+              rightIcon={isInternal ? <ArrowRight size={14} /> : <ExternalLink size={14} />}
               onClick={open}
               disabled={!ad.ctaUrl}
             >
-              {ad.cta || 'Learn More'}
+              {ad.cta || (ad.isHouse ? 'Open' : 'Learn More')}
             </Button>
           </div>
         </CardContent>

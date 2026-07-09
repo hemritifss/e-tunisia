@@ -1,0 +1,418 @@
+/* ============================================================
+   Interactive popups — global queue surface (PopupHost).
+   Center dialog on desktop, bottom-sheet on mobile.
+   Kinds: celebration (tip received), tutorial (first run), daily (check-in).
+   ============================================================ */
+
+.popup-root {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.popup-scrim {
+  position: absolute;
+  inset: 0;
+  background: oklch(0% 0 0 / 0.5);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+
+.popup-card {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 400px;
+  max-height: 92vh;
+  overflow-y: auto;
+  background: var(--surface-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-2xl);
+  padding: 28px 24px 24px;
+}
+
+.popup-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 3;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: var(--radius-full);
+  background: var(--surface-hover);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.popup-close:hover { background: var(--surface-active); color: var(--text-primary); }
+
+/* ---- Shared body type ---- */
+.popup-body { display: flex; flex-direction: column; align-items: center; }
+.popup-title {
+  font-size: 1.35rem;
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--text-primary);
+  margin: 4px 0 6px;
+  text-align: center;
+}
+.popup-sub {
+  font-size: 0.92rem;
+  line-height: 1.45;
+  color: var(--text-secondary);
+  text-align: center;
+  margin: 0;
+  max-width: 320px;
+}
+
+/* ---- Action buttons ---- */
+.popup-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  margin-top: 22px;
+}
+.popup-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.12s, filter 0.15s, background 0.15s;
+}
+.popup-btn:active { transform: translateY(1px); }
+.popup-btn.primary {
+  background: var(--gradient-cta);
+  color: #fff;
+  box-shadow: var(--shadow-glow);
+}
+.popup-btn.primary:hover { filter: brightness(1.05); }
+.popup-btn.ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  border-color: var(--border);
+}
+.popup-btn.ghost:hover { background: var(--surface-hover); color: var(--text-primary); }
+
+/* ---- Round icon badges shared by variants ---- */
+.popup-celebrate-coin,
+.popup-daily-flame,
+.popup-tutorial-icon {
+  width: 64px;
+  height: 64px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  margin-bottom: 6px;
+}
+
+/* ---- Celebration ---- */
+.popup-celebrate-coin {
+  background: var(--gradient-gold);
+  color: #fff;
+  box-shadow: var(--shadow-glow-gold);
+  animation: popup-pop 0.5s ease-out;
+}
+.popup-celebrate-amount {
+  font-size: 2.6rem;
+  font-weight: 900;
+  line-height: 1;
+  margin: 4px 0 8px;
+  background: var(--gradient-cta);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.popup-celebrate-amount span { font-size: 1.1rem; font-weight: 700; }
+.popup-celebrate-msg {
+  margin: 10px 0 0;
+  font-style: italic;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+/* ---- Daily ---- */
+.popup-daily-flame {
+  background: linear-gradient(135deg, oklch(70% 0.19 40), oklch(62% 0.2 25));
+  color: #fff;
+  box-shadow: 0 8px 24px oklch(62% 0.2 25 / 0.35);
+}
+.popup-daily-checkin {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 16px;
+  padding: 12px 16px;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #fff;
+  background: linear-gradient(135deg, oklch(70% 0.19 40), oklch(62% 0.2 25));
+  cursor: pointer;
+  transition: filter 0.15s, opacity 0.15s;
+}
+.popup-daily-checkin:hover:not(:disabled) { filter: brightness(1.05); }
+.popup-daily-checkin.done,
+.popup-daily-checkin:disabled {
+  background: var(--surface-active);
+  color: var(--text-muted);
+  cursor: default;
+}
+
+.popup-daily-tasks {
+  width: 100%;
+  margin-top: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.popup-daily-tasks-head {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+.popup-task-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 5px;
+}
+.popup-task-title { font-size: 0.86rem; font-weight: 600; color: var(--text-primary); }
+.popup-task-count {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--terracotta);
+  display: inline-flex;
+  align-items: center;
+}
+.popup-task-bar {
+  height: 7px;
+  border-radius: var(--radius-full);
+  background: var(--surface-active);
+  overflow: hidden;
+}
+.popup-task-fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  background: var(--gradient-cta);
+  transition: width 0.5s ease-out;
+}
+
+/* ---- Tutorial ---- */
+.popup-tutorial-icon {
+  background: var(--terracotta-pale);
+  color: var(--terracotta);
+}
+.popup-tutorial-step {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin-bottom: 2px;
+}
+.popup-dots {
+  display: flex;
+  gap: 7px;
+  margin-top: 18px;
+}
+.popup-dot {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-full);
+  background: var(--surface-active);
+  cursor: pointer;
+  transition: width 0.2s, background 0.2s;
+}
+.popup-dot.on { width: 22px; background: var(--terracotta); }
+
+/* In the multi-step tour, Skip/Back + Next sit side-by-side. */
+.popup-tutorial .popup-actions { flex-direction: row; }
+.popup-tutorial .popup-actions .popup-btn { flex: 1; }
+
+/* ---- Shared kicker chip (badge / level-up) ---- */
+.popup-badge-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin: 4px 0 2px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--terracotta);
+}
+
+/* ---- Badge unlocked ---- */
+.popup-badge-medal {
+  position: relative;
+  width: 84px;
+  height: 84px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  background: var(--gradient-gold);
+  box-shadow: var(--shadow-glow-gold);
+  margin-bottom: 4px;
+  animation: popup-pop 0.5s ease-out;
+}
+.popup-badge-emoji { font-size: 2.4rem; line-height: 1; }
+.popup-badge-ring {
+  position: absolute;
+  inset: -6px;
+  border-radius: var(--radius-full);
+  border: 2px dashed oklch(78% 0.17 80 / 0.6);
+  animation: popup-spin 9s linear infinite;
+}
+
+/* ---- Level up ---- */
+.popup-levelup-ring {
+  position: relative;
+  width: 76px;
+  height: 76px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  color: #fff;
+  background: var(--gradient-cta);
+  box-shadow: var(--shadow-glow);
+  margin-bottom: 4px;
+  animation: popup-pop 0.5s ease-out;
+}
+.popup-levelup-num {
+  position: absolute;
+  right: -4px;
+  bottom: -4px;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  background: var(--surface-elevated);
+  color: var(--terracotta);
+  border: 2px solid var(--surface-elevated);
+  box-shadow: var(--shadow-md);
+  font-size: 0.9rem;
+  font-weight: 900;
+}
+
+/* ---- Streak milestone ---- */
+.popup-streak-kicker { color: oklch(62% 0.2 25); }
+.popup-streak-flame {
+  position: relative;
+  width: 76px;
+  height: 76px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  color: #fff;
+  background: linear-gradient(135deg, oklch(72% 0.19 60), oklch(60% 0.21 25));
+  box-shadow: 0 8px 26px oklch(62% 0.2 25 / 0.4);
+  margin-bottom: 4px;
+  animation: popup-pop 0.5s ease-out;
+}
+.popup-streak-num {
+  position: absolute;
+  right: -4px;
+  bottom: -4px;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  background: var(--surface-elevated);
+  color: oklch(62% 0.2 25);
+  border: 2px solid var(--surface-elevated);
+  box-shadow: var(--shadow-md);
+  font-size: 0.9rem;
+  font-weight: 900;
+}
+.popup-streak-reward {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 14px;
+  padding: 8px 14px;
+  border-radius: var(--radius-full);
+  background: oklch(78% 0.17 80 / 0.14);
+  color: var(--gold);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+/* ---- Welcome back ---- */
+.popup-welcome-wave {
+  font-size: 3rem;
+  line-height: 1;
+  margin-bottom: 6px;
+  animation: popup-wave 1.6s ease-in-out 0.2s 2;
+  transform-origin: 70% 80%;
+}
+
+@keyframes popup-pop {
+  0% { transform: scale(0.5); opacity: 0; }
+  60% { transform: scale(1.12); }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes popup-spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes popup-wave {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(18deg); }
+  75% { transform: rotate(-12deg); }
+}
+
+/* ---- Mobile: dock to the bottom as a sheet ---- */
+@media (max-width: 640px) {
+  .popup-root { align-items: flex-end; padding: 0; }
+  .popup-card {
+    max-width: 100%;
+    border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
+    padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+    max-height: 88vh;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .popup-celebrate-coin,
+  .popup-badge-medal,
+  .popup-badge-ring,
+  .popup-levelup-ring,
+  .popup-streak-flame,
+  .popup-welcome-wave { animation: none; }
+  .popup-task-fill { transition: none; }
+}

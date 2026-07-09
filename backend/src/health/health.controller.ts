@@ -6,6 +6,8 @@ import {
   MemoryHealthIndicator,
   DiskHealthIndicator,
 } from '@nestjs/terminus';
+import { QueuesService } from '../queues/queues.service';
+import { RedisHealthIndicator } from '../redis/redis.health.indicator';
 
 @Controller('health')
 export class HealthController {
@@ -14,6 +16,8 @@ export class HealthController {
     private db: TypeOrmHealthIndicator,
     private memory: MemoryHealthIndicator,
     private disk: DiskHealthIndicator,
+    private queuesService: QueuesService,
+    private redis: RedisHealthIndicator,
   ) {}
 
   @Get()
@@ -21,6 +25,7 @@ export class HealthController {
   check() {
     return this.health.check([
       () => this.db.pingCheck('database'),
+      () => this.redis.isHealthy('redis'),
       () => this.memory.checkHeap('memory_heap', 300 * 1024 * 1024), // 300MB
       () => this.memory.checkRSS('memory_rss', 300 * 1024 * 1024),
       () =>
@@ -35,5 +40,23 @@ export class HealthController {
   @HealthCheck()
   checkDb() {
     return this.health.check([() => this.db.pingCheck('database')]);
+  }
+
+  @Get('redis')
+  @HealthCheck()
+  checkRedis() {
+    return this.health.check([() => this.redis.isHealthy('redis')]);
+  }
+
+  @Get('queues')
+  async checkQueues() {
+    const stats = await this.queuesService.getQueueStats();
+    const allHealthy = Object.values(stats).every(
+      (q) => q.failed < 100, // Alert if more than 100 failed jobs in any queue
+    );
+    return {
+      status: allHealthy ? 'ok' : 'warning',
+      queues: stats,
+    };
   }
 }

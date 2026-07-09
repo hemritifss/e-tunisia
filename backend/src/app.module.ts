@@ -1,9 +1,15 @@
-import { Module } from '@nestjs/common';
+import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { CustomThrottlerGuard } from './common/guards/throttler.guard';
+import { CacheModule } from '@nestjs/cache-manager';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
+import { BadgesModule } from './badges/badges.module';
+import { BillingModule } from './billing/billing.module';
+import { OgModule } from './og/og.module';
 import { PlacesModule } from './places/places.module';
 import { CategoriesModule } from './categories/categories.module';
 import { ReviewsModule } from './reviews/reviews.module';
@@ -24,6 +30,8 @@ import { AdsModule } from './ads/ads.module';
 import { GamificationModule } from './gamification/gamification.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { ContactModule } from './contact/contact.module';
+import { PushModule } from './push/push.module';
+import { SearchModule } from './search/search.module';
 import { RedisModule } from './redis/redis.module';
 import { StorageModule } from './storage/storage.module';
 import { HealthModule } from './health/health.module';
@@ -38,6 +46,11 @@ import { MessagesModule } from './messages/messages.module';
 import { MarketplaceModule } from './marketplace/marketplace.module';
 import { QueuesModule } from './queues/queues.module';
 import { AnalyticsModule } from './analytics/analytics.module';
+import { EmailModule } from './email/email.module';
+import { DigestModule } from './digest/digest.module';
+import { ScheduledModule } from './scheduled/scheduled.module';
+import { I18nModule } from './i18n/i18n.module';
+import { RoutingModule } from './routing/routing.module';
 import { getDatabaseConfig } from './database/database.config';
 
 @Module({
@@ -59,11 +72,15 @@ import { getDatabaseConfig } from './database/database.config';
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => getDatabaseConfig(configService),
     }),
+    CacheModule.register({ isGlobal: true, ttl: 300_000 }),
     RedisModule,
     StorageModule,
     HealthModule,
     AuthModule,
     UsersModule,
+    BadgesModule,
+    OgModule,
+    BillingModule,
     PlacesModule,
     CategoriesModule,
     ReviewsModule,
@@ -84,6 +101,8 @@ import { getDatabaseConfig } from './database/database.config';
     GamificationModule,
     NotificationsModule,
     ContactModule,
+    PushModule,
+    SearchModule,
     BookingsModule,
     InventoryModule,
     PaymentsModule,
@@ -95,6 +114,17 @@ import { getDatabaseConfig } from './database/database.config';
     MarketplaceModule,
     QueuesModule,
     AnalyticsModule,
+    I18nModule,
+    RoutingModule,
+    EmailModule,
+    DigestModule,
+    ScheduledModule,
+  ],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: CustomThrottlerGuard,
+    },
   ],
 })
 export class AppModule {}

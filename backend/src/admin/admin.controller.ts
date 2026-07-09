@@ -1,15 +1,20 @@
 import {
     Controller, Get, Patch, Delete, Param,
-    Query, UseGuards, Body,
+    Query, UseGuards, UseInterceptors, Body, Request,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags, ApiOperation } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { AdminGuard } from './admin.guard';
+import { SuperAdminGuard } from './super-admin.guard';
 import { AdminService } from './admin.service';
+import { AuditInterceptor } from './audit.interceptor';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { isSuperAdmin } from './is-super-admin';
 
 @ApiTags('admin')
 @Controller('admin')
 @UseGuards(JwtAuthGuard, AdminGuard)
+@UseInterceptors(AuditInterceptor)
 @ApiBearerAuth()
 export class AdminController {
     constructor(private adminService: AdminService) {}
@@ -21,6 +26,20 @@ export class AdminController {
         return this.adminService.getStats();
     }
 
+    /** Who is the viewing admin + are they a super-admin? Drives UI gating. */
+    @Get('me')
+    @ApiOperation({ summary: 'Viewer admin identity' })
+    me(@Request() req) {
+        return { id: req.user.id, role: req.user.role, isSuperAdmin: isSuperAdmin(req.user) };
+    }
+
+    // ─── AUDIT LOG ──────────────────────────────────
+    @Get('audit')
+    @ApiOperation({ summary: 'Audit log of admin actions' })
+    getAudit(@Query('page') page?: number, @Query('limit') limit?: number) {
+        return this.adminService.getAudit(page, limit);
+    }
+
     // ─── USERS ──────────────────────────────────
     @Get('users')
     @ApiOperation({ summary: 'List all users' })
@@ -29,9 +48,16 @@ export class AdminController {
     }
 
     @Patch('users/:id')
-    @ApiOperation({ summary: 'Update user (role, plan, etc.)' })
-    updateUser(@Param('id') id: string, @Body() body: any) {
-        return this.adminService.updateUser(id, body);
+    @ApiOperation({ summary: 'Update user (plan, profile fields — NOT role)' })
+    updateUser(@Param('id') id: string, @Body() body: UpdateUserDto) {
+        return this.adminService.updateUser(id, body as any);
+    }
+
+    @Patch('users/:id/role')
+    @UseGuards(SuperAdminGuard)
+    @ApiOperation({ summary: 'Grant/revoke a role (super-admin only)' })
+    setUserRole(@Param('id') id: string, @Body() body: { role: string }) {
+        return this.adminService.setUserRole(id, body?.role);
     }
 
     @Patch('users/:id/ban')
@@ -75,11 +101,43 @@ export class AdminController {
         return this.adminService.deletePlace(id);
     }
 
+    // ─── REVIEWS ──────────────────────────────────
+    @Get('reviews')
+    @ApiOperation({ summary: 'List reviews (moderation queue)' })
+    getReviews(@Query('page') page?: number, @Query('limit') limit?: number) {
+        return this.adminService.getReviews(page, limit);
+    }
+
+    @Delete('reviews/:id')
+    @ApiOperation({ summary: 'Delete a review' })
+    deleteReview(@Param('id') id: string) {
+        return this.adminService.deleteReview(id);
+    }
+
     // ─── SUBSCRIPTIONS ──────────────────────────────────
     @Get('subscriptions')
     @ApiOperation({ summary: 'List all subscriptions' })
     getSubscriptions() {
         return this.adminService.getSubscriptions();
+    }
+
+    @Patch('subscriptions/:id/confirm')
+    @ApiOperation({ summary: 'Confirm a pending (bank/cash) subscription → activate plan' })
+    confirmSubscription(@Param('id') id: string) {
+        return this.adminService.confirmSubscription(id);
+    }
+
+    @Patch('subscriptions/:id/reject')
+    @ApiOperation({ summary: 'Reject/cancel a subscription' })
+    rejectSubscription(@Param('id') id: string) {
+        return this.adminService.rejectSubscription(id);
+    }
+
+    // ─── ANALYTICS ──────────────────────────────────
+    @Get('analytics')
+    @ApiOperation({ summary: 'Revenue + subscription analytics (MRR, by-plan, conversion)' })
+    getAnalytics() {
+        return this.adminService.getAnalytics();
     }
 
     // ─── EVENTS ──────────────────────────────────

@@ -4,6 +4,8 @@ import { Repository } from 'typeorm';
 import { Badge } from './badge.entity';
 import { UserBadge } from './user-badge.entity';
 import { User } from '../users/user.entity';
+import { NotificationsService } from '../notifications/notifications.service';
+import { NotificationType } from '../notifications/notification.entity';
 
 @Injectable()
 export class GamificationService {
@@ -14,6 +16,7 @@ export class GamificationService {
         private userBadgesRepo: Repository<UserBadge>,
         @InjectRepository(User)
         private usersRepo: Repository<User>,
+        private notifications: NotificationsService,
     ) {}
 
     async getAllBadges() {
@@ -99,6 +102,16 @@ export class GamificationService {
                     userId,
                     badgeId: badge.id,
                 }));
+                // Push a live notification so the client can celebrate the unlock.
+                try {
+                    await this.notifications.create(
+                        userId,
+                        `${badge.icon || '🏅'} Badge unlocked: ${badge.name}`,
+                        badge.description || `You earned the "${badge.name}" badge.`,
+                        NotificationType.BADGE,
+                        { badge: badge.name, emoji: badge.icon, description: badge.description },
+                    );
+                } catch { /* never block badge award on a notification */ }
             }
         }
     }

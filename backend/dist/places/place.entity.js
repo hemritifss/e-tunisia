@@ -54,6 +54,7 @@ __decorate([
 ], Place.prototype, "address", void 0);
 __decorate([
     (0, typeorm_1.Column)({ length: 100 }),
+    (0, typeorm_1.Index)(),
     __metadata("design:type", String)
 ], Place.prototype, "city", void 0);
 __decorate([
@@ -97,7 +98,20 @@ __decorate([
     __metadata("design:type", String)
 ], Place.prototype, "priceRange", void 0);
 __decorate([
+    (0, typeorm_1.Column)('decimal', { precision: 10, scale: 2, nullable: true }),
+    __metadata("design:type", Number)
+], Place.prototype, "entryPrice", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], Place.prototype, "ticketUrl", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'int', nullable: true }),
+    __metadata("design:type", Number)
+], Place.prototype, "avgVisitMinutes", void 0);
+__decorate([
     (0, typeorm_1.Column)('decimal', { precision: 2, scale: 1, default: 0 }),
+    (0, typeorm_1.Index)(),
     __metadata("design:type", Number)
 ], Place.prototype, "rating", void 0);
 __decorate([
@@ -114,10 +128,12 @@ __decorate([
 ], Place.prototype, "tags", void 0);
 __decorate([
     (0, typeorm_1.Column)({ default: true }),
+    (0, typeorm_1.Index)(),
     __metadata("design:type", Boolean)
 ], Place.prototype, "isActive", void 0);
 __decorate([
     (0, typeorm_1.Column)({ default: false }),
+    (0, typeorm_1.Index)(),
     __metadata("design:type", Boolean)
 ], Place.prototype, "isFeatured", void 0);
 __decorate([
@@ -130,10 +146,12 @@ __decorate([
 ], Place.prototype, "boostExpiresAt", void 0);
 __decorate([
     (0, typeorm_1.Column)({ default: true }),
+    (0, typeorm_1.Index)(),
     __metadata("design:type", Boolean)
 ], Place.prototype, "isApproved", void 0);
 __decorate([
     (0, typeorm_1.Column)({ nullable: true }),
+    (0, typeorm_1.Index)(),
     __metadata("design:type", String)
 ], Place.prototype, "submittedBy", void 0);
 __decorate([

@@ -27,14 +27,14 @@ export class FeedController {
     @ApiOperation({ summary: 'Unified social feed (posts + reviews + ads)' })
     @ApiQuery({ name: 'page', required: false })
     @ApiQuery({ name: 'limit', required: false })
-    @ApiQuery({ name: 'sort', required: false, enum: ['new', 'top', 'hot'] })
+    @ApiQuery({ name: 'sort', required: false, enum: ['new', 'top', 'hot', 'foryou'] })
     @ApiQuery({ name: 'category', required: false })
     @ApiQuery({ name: 'hashtag', required: false })
     public(
         @Request() req,
         @Query('page') page?: string,
         @Query('limit') limit?: string,
-        @Query('sort') sort?: 'new' | 'top' | 'hot',
+        @Query('sort') sort?: 'new' | 'top' | 'hot' | 'foryou',
         @Query('category') category?: string,
         @Query('hashtag') hashtag?: string,
     ) {
@@ -91,5 +91,12 @@ export class FeedController {
     @ApiQuery({ name: 'limit', required: false })
     stories(@Query('limit') limit?: string) {
         return this.feed.stories(limit ? Number(limit) : 12);
+    }
+
+    @Get('trending-hashtags')
+    @ApiOperation({ summary: 'Top hashtags across recent posts + reviews' })
+    @ApiQuery({ name: 'limit', required: false })
+    trending(@Query('limit') limit?: string) {
+        return this.feed.trendingHashtags(limit ? Number(limit) : 8);
     }
 }

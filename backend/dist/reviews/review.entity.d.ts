@@ -9,5 +9,8 @@ export declare class Review {
     userId: string;
     place: Place;
     placeId: string;
+    verifiedInquiryId: string | null;
+    hostReply: string | null;
+    hostRepliedAt: Date | null;
     createdAt: Date;
 }

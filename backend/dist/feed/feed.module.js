@@ -16,6 +16,8 @@ const reviews_module_1 = require("../reviews/reviews.module");
 const ads_module_1 = require("../ads/ads.module");
 const places_module_1 = require("../places/places.module");
 const follow_entity_1 = require("../social/follow.entity");
+const user_entity_1 = require("../users/user.entity");
+const place_visit_entity_1 = require("../users/place-visit.entity");
 const safety_module_1 = require("../safety/safety.module");
 const feed_controller_1 = require("./feed.controller");
 const feed_service_1 = require("./feed.service");
@@ -26,7 +28,7 @@ exports.FeedModule = FeedModule = __decorate([
     (0, common_1.Module)({
         imports: [
             posts_module_1.PostsModule, reviews_module_1.ReviewsModule, ads_module_1.AdsModule, places_module_1.PlacesModule, safety_module_1.SafetyModule,
-            typeorm_1.TypeOrmModule.forFeature([follow_entity_1.Follow]),
+            typeorm_1.TypeOrmModule.forFeature([follow_entity_1.Follow, user_entity_1.User, place_visit_entity_1.PlaceVisit]),
             jwt_1.JwtModule.registerAsync({
                 imports: [config_1.ConfigModule],
                 inject: [config_1.ConfigService],

@@ -20,7 +20,7 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
         className={cn(
           'rounded-2xl overflow-hidden transition-all duration-200',
           variants[variant],
-          hover && 'hover:shadow-lg hover:-translate-y-0.5 cursor-pointer',
+          hover && 'hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99] cursor-pointer',
           className,
         )}
         {...props}

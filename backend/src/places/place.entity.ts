@@ -7,6 +7,7 @@ import {
     ManyToOne,
     OneToMany,
     JoinColumn,
+    Index,
 } from 'typeorm';
 import { Category } from '../categories/category.entity';
 import { Review } from '../reviews/review.entity';
@@ -41,6 +42,7 @@ export class Place {
     address: string;
 
     @Column({ length: 100 })
+    @Index()
     city: string;
 
     @Column({ length: 100 })
@@ -73,7 +75,21 @@ export class Place {
     @Column({ nullable: true })
     priceRange: string;
 
+    // Practical info (Tier 2.2). All nullable so synchronize adds them cleanly.
+    /** Entry/ticket price in TND (0 = free). */
+    @Column('decimal', { precision: 10, scale: 2, nullable: true })
+    entryPrice: number | null;
+
+    /** Where to buy tickets, if any. */
+    @Column({ nullable: true })
+    ticketUrl: string | null;
+
+    /** Typical visit duration in minutes — powers "arrive by …" hints. */
+    @Column({ type: 'int', nullable: true })
+    avgVisitMinutes: number | null;
+
     @Column('decimal', { precision: 2, scale: 1, default: 0 })
+    @Index()
     rating: number;
 
     @Column({ default: 0 })
@@ -86,9 +102,11 @@ export class Place {
     tags: string[];
 
     @Column({ default: true })
+    @Index()
     isActive: boolean;
 
     @Column({ default: false })
+    @Index()
     isFeatured: boolean;
 
     @Column({ default: false })
@@ -98,9 +116,11 @@ export class Place {
     boostExpiresAt: Date;
 
     @Column({ default: true })
+    @Index()
     isApproved: boolean;
 
     @Column({ nullable: true })
+    @Index()
     submittedBy: string;
 
     @ManyToOne(() => Category, (category) => category.places, {

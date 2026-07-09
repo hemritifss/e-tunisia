@@ -33,6 +33,18 @@ export class UserStreak {
   @Column({ default: 0 })
   totalDaysActive: number;
 
+  /** Pro/Business streak-freeze allowance — refilled monthly, consumed to survive a missed day. */
+  @Column({ default: 0 })
+  freezesRemaining: number;
+
+  /** Month (YYYY-MM) the freeze allowance was last refilled. */
+  @Column({ nullable: true })
+  freezeMonth: string;
+
+  /** Last daily check-in (date) — drives check-in idempotency + points. */
+  @Column({ type: 'date', nullable: true })
+  lastCheckInDate: Date;
+
   @CreateDateColumn()
   createdAt: Date;
 

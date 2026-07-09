@@ -51,6 +51,19 @@ __decorate([
     __metadata("design:type", String)
 ], Review.prototype, "placeId", void 0);
 __decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    (0, typeorm_1.Index)(),
+    __metadata("design:type", String)
+], Review.prototype, "verifiedInquiryId", void 0);
+__decorate([
+    (0, typeorm_1.Column)('text', { nullable: true }),
+    __metadata("design:type", String)
+], Review.prototype, "hostReply", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'timestamptz', nullable: true }),
+    __metadata("design:type", Date)
+], Review.prototype, "hostRepliedAt", void 0);
+__decorate([
     (0, typeorm_1.CreateDateColumn)(),
     __metadata("design:type", Date)
 ], Review.prototype, "createdAt", void 0);

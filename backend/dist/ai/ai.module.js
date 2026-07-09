@@ -10,17 +10,21 @@ exports.AIModule = void 0;
 const common_1 = require("@nestjs/common");
 const config_1 = require("@nestjs/config");
 const ai_service_1 = require("./ai.service");
+const llm_service_1 = require("./llm.service");
+const moderation_service_1 = require("./moderation.service");
 const ai_controller_1 = require("./ai.controller");
 const places_module_1 = require("../places/places.module");
+const search_module_1 = require("../search/search.module");
+const billing_module_1 = require("../billing/billing.module");
 let AIModule = class AIModule {
 };
 exports.AIModule = AIModule;
 exports.AIModule = AIModule = __decorate([
     (0, common_1.Module)({
-        imports: [config_1.ConfigModule, places_module_1.PlacesModule],
+        imports: [config_1.ConfigModule, places_module_1.PlacesModule, search_module_1.SearchModule, billing_module_1.BillingModule],
         controllers: [ai_controller_1.AIController],
-        providers: [ai_service_1.AIService],
-        exports: [ai_service_1.AIService],
+        providers: [ai_service_1.AIService, llm_service_1.LlmService, moderation_service_1.ModerationService],
+        exports: [ai_service_1.AIService, llm_service_1.LlmService, moderation_service_1.ModerationService],
     })
 ], AIModule);
 //# sourceMappingURL=ai.module.js.map

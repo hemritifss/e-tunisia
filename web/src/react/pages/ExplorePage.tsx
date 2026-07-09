@@ -1,18 +1,28 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useInfiniteQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
+import type { LucideIcon } from 'lucide-react';
 import {
   MapPin,
-  Star,
   Heart,
   Search,
   SlidersHorizontal,
   Grid3X3,
   List,
-  ChevronDown,
   X,
+  Compass,
+  Globe,
+  Waves,
+  Landmark,
+  UtensilsCrossed,
+  Trees,
+  Library,
+  Mountain,
+  Star,
+  Sparkles,
 } from 'lucide-react';
 import { api, getImageUrl } from '../../shared/api';
+import { coverPlaceholder } from '../../shared/placeholder';
 import { requireAuth } from '../../ui-utils';
 import type { Place, Category } from '../../shared/types/api';
 import { Card, CardImage, CardContent, CardFooter } from '../components/Card';
@@ -22,17 +32,27 @@ import { Skeleton, PlaceCardSkeleton } from '../components/Skeleton';
 import { formatNumber } from '../lib/utils';
 import { useAuthStore } from '../stores/auth-store';
 import { useUIStore } from '../stores/ui-store';
+import { PullToRefresh } from '../components/PullToRefresh';
+import { useCity } from '../lib/useCity';
 
 type ViewMode = 'grid' | 'list';
 
-const CATEGORIES = [
-  { id: 'all', name: 'All', icon: '🌍' },
-  { id: 'beaches', name: 'Beaches', icon: '🏖️' },
-  { id: 'historical', name: 'Historical', icon: '🏛️' },
-  { id: 'food', name: 'Food', icon: '🍽️' },
-  { id: 'nature', name: 'Nature', icon: '🌿' },
-  { id: 'culture', name: 'Culture', icon: '🎭' },
-  { id: 'adventure', name: 'Adventure', icon: '🏔️' },
+interface CategoryDef {
+  id: string;
+  name: string;
+  Icon: LucideIcon;
+  /** CSS variable expression used as `--cat-tint`. Closes the loop with mood palette. */
+  tint: string;
+}
+
+const CATEGORIES: CategoryDef[] = [
+  { id: 'all',        name: 'All',        Icon: Globe,            tint: 'var(--text-secondary)' },
+  { id: 'beaches',    name: 'Beaches',    Icon: Waves,            tint: 'var(--cyan)' },
+  { id: 'historical', name: 'Historical', Icon: Landmark,         tint: 'var(--sand)' },
+  { id: 'food',       name: 'Food',       Icon: UtensilsCrossed,  tint: 'var(--gold)' },
+  { id: 'nature',     name: 'Nature',     Icon: Trees,            tint: 'var(--olive)' },
+  { id: 'culture',    name: 'Culture',    Icon: Library,          tint: 'var(--violet)' },
+  { id: 'adventure',  name: 'Adventure',  Icon: Mountain,         tint: 'var(--terracotta)' },
 ];
 
 function PlaceCard({
@@ -66,6 +86,7 @@ function PlaceCard({
   };
 
   const handleLike = (e: React.MouseEvent) => {
+    e.preventDefault();
     e.stopPropagation();
     if (!requireAuth('save places')) return;
     const next = !isLiked;
@@ -88,10 +109,15 @@ function PlaceCard({
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.3 }}
       >
+        <a
+          href={`#/place/${place.id}`}
+          className="block no-underline text-inherit rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+          aria-label={`View ${place.name}`}
+        >
         <Card hover className="flex gap-4">
           <div className="w-48 shrink-0">
             <CardImage
-              src={getImageUrl(place.coverImage || place.images?.[0]) || 'https://images.unsplash.com/photo-1539020140153-e479b8c22e70?w=400'}
+              src={getImageUrl(place.coverImage || place.images?.[0]) || coverPlaceholder(place.id, place.name)}
               alt={place.name}
               aspect="square"
             />
@@ -135,6 +161,7 @@ function PlaceCard({
             </div>
           </CardContent>
         </Card>
+        </a>
       </motion.div>
     );
   }
@@ -146,10 +173,15 @@ function PlaceCard({
       transition={{ duration: 0.3 }}
       className="group"
     >
+      <a
+        href={`#/place/${place.id}`}
+        className="block h-full no-underline text-inherit rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+        aria-label={`View ${place.name}`}
+      >
       <Card hover className="h-full flex flex-col">
         <div className="relative">
           <CardImage
-            src={getImageUrl(place.coverImage || place.images?.[0]) || 'https://images.unsplash.com/photo-1539020140153-e479b8c22e70?w=400'}
+            src={getImageUrl(place.coverImage || place.images?.[0]) || coverPlaceholder(place.id, place.name)}
             alt={place.name}
             aspect="video"
           />
@@ -164,26 +196,83 @@ function PlaceCard({
             <Heart size={18} className={isLiked ? 'fill-current' : ''} />
           </button>
           {place.isFeatured && (
-            <span className="absolute top-3 left-3 px-2 py-1 text-xs font-medium rounded-full bg-brand text-white">
+            <span className="absolute top-3 left-3 px-2.5 py-1 text-xs font-semibold rounded-full bg-brand text-white shadow-sm">
               Featured
+            </span>
+          )}
+          {/* Bottom scrim + glassy rating pill (editorial travel-card style) */}
+          <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/55 to-transparent pointer-events-none" />
+          {Number(place.rating) > 0 && (
+            <span className="absolute bottom-3 left-3 inline-flex items-center gap-1 px-2 py-1 rounded-full bg-white/95 backdrop-blur-md text-xs font-bold text-gray-900 shadow-sm">
+              <Star size={12} className="fill-amber-400 text-amber-400" />
+              {Number(place.rating).toFixed(1)}
             </span>
           )}
         </div>
         <CardContent className="flex-1 flex flex-col">
-          <h3 className="font-semibold text-base mb-1">{place.name}</h3>
-          <div className="flex items-center gap-1 text-sm text-muted-foreground mb-2">
-            <MapPin size={14} />
-            {place.city}
-          </div>
-          <div className="flex items-center gap-2 mt-auto">
-            <StarRating rating={place.rating} size={14} />
-            <span className="text-xs text-muted-foreground">
-              {formatNumber(place.reviewCount)}
-            </span>
+          <h3 className="font-semibold text-base leading-snug mb-1 line-clamp-1 group-hover:text-brand transition-colors">{place.name}</h3>
+          <div className="flex items-center gap-1 text-sm text-muted-foreground">
+            <MapPin size={14} className="shrink-0" />
+            <span className="truncate">{place.city}</span>
+            <span className="text-muted-foreground/50 mx-1">·</span>
+            <span className="whitespace-nowrap">{formatNumber(place.reviewCount)} reviews</span>
           </div>
         </CardContent>
       </Card>
+      </a>
     </motion.div>
+  );
+}
+
+/**
+ * AI "For you" strip — Claude-re-ranked place picks for the signed-in user
+ * (GET /ai/suggestions). Rendered only on the unfiltered Explore view; hidden
+ * for guests and when there are no suggestions.
+ */
+function ForYouStrip() {
+  const user = useAuthStore((s) => s.user);
+  const { data } = useQuery({
+    queryKey: ['ai-suggestions', user?.id],
+    queryFn: () => api.aiSuggestions((user as any)?.interests).catch(() => []),
+    enabled: !!user,
+    staleTime: 5 * 60 * 1000,
+  });
+  const items = Array.isArray(data) ? data : [];
+  if (!user || items.length === 0) return null;
+
+  return (
+    <section className="explore-foryou mt-2 mb-6">
+      <div className="flex items-center gap-2 mb-3 px-1">
+        <Sparkles size={16} className="text-brand" />
+        <h2 className="font-semibold text-base">For you</h2>
+        <span className="text-xs text-muted-foreground">AI picks based on your taste</span>
+      </div>
+      <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 snap-x">
+        {items.slice(0, 10).map((it: any) => {
+          const p = it.place || {};
+          const img = getImageUrl(p.coverImage || p.images?.[0]) || coverPlaceholder(p.id, p.name);
+          return (
+            <a key={it.placeId} href={`#/place/${p.id}`} className="shrink-0 w-44 snap-start group">
+              <div className="relative w-44 h-28 rounded-xl overflow-hidden bg-black/5 dark:bg-white/5">
+                <img
+                  src={img}
+                  alt={p.name}
+                  loading="lazy"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+                {Number(p.rating) > 0 && (
+                  <span className="absolute bottom-1.5 left-1.5 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-white/95 text-[11px] font-bold text-gray-900">
+                    <Star size={10} className="fill-amber-400 text-amber-400" /> {Number(p.rating).toFixed(1)}
+                  </span>
+                )}
+              </div>
+              <h3 className="mt-1.5 text-sm font-medium line-clamp-1 group-hover:text-brand transition-colors">{p.name}</h3>
+              {it.reason && <p className="text-xs text-muted-foreground line-clamp-2 leading-snug">{it.reason}</p>}
+            </a>
+          );
+        })}
+      </div>
+    </section>
   );
 }
 
@@ -194,6 +283,9 @@ export default function ExplorePage() {
   const [showFilters, setShowFilters] = useState(false);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000]);
   const [minRating, setMinRating] = useState(0);
+  const [verifiedOnly, setVerifiedOnly] = useState(false);
+  const globalCity = useCity(); // navbar city pill — filters the whole app
+  const queryClient = useQueryClient();
   const observerRef = useRef<IntersectionObserver | null>(null);
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
@@ -205,7 +297,7 @@ export default function ExplorePage() {
     isLoading,
     isError,
   } = useInfiniteQuery({
-    queryKey: ['places', activeCategory, searchQuery, priceRange, minRating],
+    queryKey: ['places', activeCategory, searchQuery, priceRange, minRating, verifiedOnly, globalCity],
     queryFn: async ({ pageParam = 1 }) => {
       const params: Record<string, string> = {
         page: String(pageParam),
@@ -214,6 +306,8 @@ export default function ExplorePage() {
       if (activeCategory !== 'all') params.category = activeCategory;
       if (searchQuery) params.search = searchQuery;
       if (minRating > 0) params.minRating = String(minRating);
+      if (verifiedOnly) params.verified = 'true';
+      if (globalCity) params.city = globalCity;
 
       try {
         const response = await api.getPlaces(params);
@@ -297,56 +391,99 @@ export default function ExplorePage() {
 
   const allPlaces = data?.pages.flatMap((page) => page.data) || [];
 
-  return (
-    <div className="space-y-6 animate-fade-in">
-      {/* Hero */}
-      <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-brand via-brand-dark to-mediterranean p-8 text-white">
-        <div className="relative z-10">
-          <h1 className="text-3xl md:text-4xl font-bold mb-2">
-            Discover Hidden Tunisia
-          </h1>
-          <p className="text-white/80 max-w-lg">
-            Explore authentic places, from ancient ruins to secret beaches, curated by locals and travelers like you.
-          </p>
-        </div>
-        <div className="absolute inset-0 bg-black/20" />
-      </div>
+  const activeCat = CATEGORIES.find((c) => c.id === activeCategory) || CATEGORIES[0];
+  const clearAll = () => {
+    setActiveCategory('all');
+    setSearchQuery('');
+    setMinRating(0);
+    setVerifiedOnly(false);
+  };
+  const hasFilter = activeCategory !== 'all' || searchQuery.trim() !== '' || minRating > 0 || verifiedOnly;
 
-      {/* Search & Controls */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
-          <input
-            type="text"
-            placeholder="Search places, cities, tags..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-black/10 dark:border-white/10 bg-surface focus:outline-none focus:ring-2 focus:ring-brand/30 transition-all"
-          />
+  return (
+    <div className="explore-page animate-fade-in" style={{ '--cat-tint': activeCat.tint } as React.CSSProperties}>
+      {/* Hero — atmospheric mesh, search baked in */}
+      <header className="explore-hero">
+        <div className="explore-hero-bg" aria-hidden="true" />
+        <div className="explore-hero-orbs" aria-hidden="true">
+          <span className="explore-hero-orb" />
+          <span className="explore-hero-orb" />
         </div>
-        <div className="flex gap-2">
-          <Button
-            variant={showFilters ? 'primary' : 'ghost'}
-            size="md"
-            leftIcon={<SlidersHorizontal size={16} />}
-            onClick={() => setShowFilters(!showFilters)}
+        <div className="explore-hero-content">
+          <span className="explore-hero-eyebrow">
+            <Compass size={12} /> Discover
+          </span>
+          <h1>Find your next <span className="explore-hero-grad">Tunisia</span></h1>
+          <p>Authentic places curated by locals and travelers — from ancient ruins to secret beaches.</p>
+          <form
+            className="explore-search-form"
+            role="search"
+            onSubmit={(e) => e.preventDefault()}
           >
-            Filters
-          </Button>
-          <div className="flex bg-surface rounded-xl p-1 border border-black/10 dark:border-white/10">
-            <button
-              onClick={() => setViewMode('grid')}
-              className={`p-2 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-brand text-white' : 'text-muted-foreground hover:text-foreground'}`}
-            >
-              <Grid3X3 size={18} />
-            </button>
-            <button
-              onClick={() => setViewMode('list')}
-              className={`p-2 rounded-lg transition-all ${viewMode === 'list' ? 'bg-brand text-white' : 'text-muted-foreground hover:text-foreground'}`}
-            >
-              <List size={18} />
-            </button>
-          </div>
+            <Search className="explore-search-icon" size={18} aria-hidden="true" />
+            <input
+              type="search"
+              placeholder="Search places, cities, tags…"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="explore-search-input"
+              aria-label="Search places"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                className="explore-search-clear"
+                onClick={() => setSearchQuery('')}
+                aria-label="Clear search"
+              >
+                <X size={14} />
+              </button>
+            )}
+          </form>
+        </div>
+      </header>
+
+      {/* Controls — filters + view-mode toggle */}
+      <div className="explore-controls">
+        <button
+          type="button"
+          className={`explore-controls-btn${showFilters ? ' is-active' : ''}`}
+          onClick={() => setShowFilters(!showFilters)}
+          aria-expanded={showFilters}
+        >
+          <SlidersHorizontal size={16} /> Filters
+          {minRating > 0 && <span className="explore-controls-dot" aria-hidden="true" />}
+        </button>
+        {hasFilter && (
+          <button
+            type="button"
+            className="explore-controls-clear"
+            onClick={clearAll}
+          >
+            Clear all
+          </button>
+        )}
+        <div className="explore-view-toggle" role="tablist" aria-label="View mode">
+          <button
+            role="tab"
+            aria-selected={viewMode === 'grid'}
+            onClick={() => setViewMode('grid')}
+            className={`explore-view-btn${viewMode === 'grid' ? ' is-active' : ''}`}
+            title="Grid view"
+            aria-label="Grid view"
+          >
+            <Grid3X3 size={16} />
+          </button>
+          <button
+            role="tab"
+            aria-selected={viewMode === 'list'}
+            onClick={() => setViewMode('list')}
+            className={`explore-view-btn${viewMode === 'list' ? ' is-active' : ''}`}
+            title="List view"
+            aria-label="List view"
+          >
+            <List size={16} />
+          </button>
         </div>
       </div>
 
@@ -358,69 +495,91 @@ export default function ExplorePage() {
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="overflow-hidden"
+            className="explore-filters-wrap"
           >
-            <div className="p-4 bg-surface rounded-xl border border-black/10 dark:border-white/10 space-y-4">
-              <div>
-                <label className="text-sm font-medium mb-2 block">Minimum Rating</label>
-                <div className="flex gap-2">
+            <div className="explore-filters">
+              <fieldset className="explore-filter-group">
+                <legend>Minimum rating</legend>
+                <div className="explore-filter-pills">
                   {[0, 3, 4, 4.5].map((rating) => (
                     <button
                       key={rating}
+                      type="button"
                       onClick={() => setMinRating(rating)}
-                      className={`px-3 py-1.5 rounded-lg text-sm transition-all ${
-                        minRating === rating
-                          ? 'bg-brand text-white'
-                          : 'bg-black/5 dark:bg-white/5 hover:bg-black/10'
-                      }`}
+                      className={`explore-filter-pill${minRating === rating ? ' is-active' : ''}`}
                     >
-                      {rating === 0 ? 'Any' : `${rating}+`}
+                      {rating === 0 ? 'Any' : `${rating}+ stars`}
                     </button>
                   ))}
                 </div>
-              </div>
+              </fieldset>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Category filters */}
-      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-        {CATEGORIES.map((cat) => (
-          <button
-            key={cat.id}
-            onClick={() => setActiveCategory(cat.id)}
-            className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
-              activeCategory === cat.id
-                ? 'bg-brand text-white shadow-sm'
-                : 'bg-surface border border-black/10 dark:border-white/10 text-muted-foreground hover:text-foreground'
-            }`}
-          >
-            <span>{cat.icon}</span>
-            {cat.name}
-          </button>
-        ))}
-      </div>
+      {/* Category strip — Lucide icons, tinted on active */}
+      <nav className="explore-cats" aria-label="Category filter">
+        {CATEGORIES.map((cat) => {
+          const I = cat.Icon;
+          const isActive = activeCategory === cat.id;
+          return (
+            <button
+              key={cat.id}
+              type="button"
+              onClick={() => setActiveCategory(cat.id)}
+              className={`explore-cat${isActive ? ' is-active' : ''}`}
+              style={{ '--cat-tint': cat.tint } as React.CSSProperties}
+              aria-pressed={isActive}
+            >
+              <span className="explore-cat-icon"><I size={16} strokeWidth={1.75} /></span>
+              <span>{cat.name}</span>
+            </button>
+          );
+        })}
+        <button
+          type="button"
+          onClick={() => setVerifiedOnly((v) => !v)}
+          className={`explore-cat explore-cat-verified${verifiedOnly ? ' is-active' : ''}`}
+          aria-pressed={verifiedOnly}
+          title="Show only listings from Verified Businesses"
+        >
+          <span className="explore-cat-icon" aria-hidden="true">✓</span>
+          <span>Verified</span>
+        </button>
+      </nav>
 
-      {/* Places grid/list */}
+      {/* AI "For you" — only on the unfiltered discovery view */}
+      {activeCategory === 'all' && !searchQuery.trim() && minRating === 0 && !verifiedOnly && <ForYouStrip />}
+
+      {/* Results */}
+      <PullToRefresh onRefresh={async () => {
+        await queryClient.invalidateQueries({ queryKey: ['explore'] });
+        await queryClient.refetchQueries({ queryKey: ['explore'] });
+      }}>
       {isLoading ? (
-        <div className={viewMode === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4' : 'space-y-4'}>
+        <div className={viewMode === 'grid' ? 'explore-grid' : 'explore-list'}>
           {Array.from({ length: 6 }).map((_, i) => (
-            <PlaceCardSkeleton key={i} />
+            <div key={i} className="explore-skel" />
           ))}
         </div>
       ) : isError ? (
-        <div className="text-center py-12">
-          <p className="text-muted-foreground">Failed to load places</p>
+        <div className="explore-empty">
+          <div className="explore-empty-icon"><X size={28} /></div>
+          <h3>Couldn't load places</h3>
+          <p>Check your connection and try again — your filters are preserved.</p>
+        </div>
+      ) : allPlaces.length === 0 ? (
+        <div className="explore-empty">
+          <div className="explore-empty-icon"><Compass size={28} /></div>
+          <h3>No places match your filters</h3>
+          <p>Try broadening the category, dropping the rating filter, or searching a city name.</p>
+          {hasFilter && (
+            <Button variant="primary" onClick={clearAll}>Clear all filters</Button>
+          )}
         </div>
       ) : (
-        <div
-          className={
-            viewMode === 'grid'
-              ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'
-              : 'space-y-4'
-          }
-        >
+        <div className={viewMode === 'grid' ? 'explore-grid' : 'explore-list'}>
           <AnimatePresence mode="popLayout">
             {allPlaces.map((place) => (
               <PlaceCard key={place.id} place={place} viewMode={viewMode} />
@@ -428,17 +587,20 @@ export default function ExplorePage() {
           </AnimatePresence>
         </div>
       )}
+      </PullToRefresh>
 
-      {/* Load more */}
-      <div ref={loadMoreRef} className="py-4 text-center">
+      {/* Load more sentinel */}
+      <div ref={loadMoreRef} className="explore-loadmore">
         {isFetchingNextPage && (
-          <div className={viewMode === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4' : 'space-y-4'}>
-            <PlaceCardSkeleton />
-            <PlaceCardSkeleton />
+          <div className={viewMode === 'grid' ? 'explore-grid' : 'explore-list'}>
+            <div className="explore-skel" />
+            <div className="explore-skel" />
           </div>
         )}
         {!hasNextPage && allPlaces.length > 0 && (
-          <p className="text-sm text-muted-foreground">No more places to show</p>
+          <div className="explore-end">
+            <span className="explore-end-mark">You've seen every place</span>
+          </div>
         )}
       </div>
     </div>

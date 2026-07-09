@@ -17,6 +17,7 @@ var SubStatus;
     SubStatus["ACTIVE"] = "active";
     SubStatus["EXPIRED"] = "expired";
     SubStatus["CANCELLED"] = "cancelled";
+    SubStatus["PENDING"] = "pending";
 })(SubStatus || (exports.SubStatus = SubStatus = {}));
 let Subscription = class Subscription {
 };

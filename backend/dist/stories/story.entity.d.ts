@@ -7,6 +7,7 @@ export declare class Story {
     caption: string;
     viewCount: number;
     isActive: boolean;
+    isHighlight: boolean;
     createdAt: Date;
     expiresAt: Date;
 }
