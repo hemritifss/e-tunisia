@@ -8,6 +8,7 @@ import * as cart from '../../trip-cart';
 import { showToast } from '../../ui-utils';
 import { currentPath, goTo, absoluteUrl, onRouteChange } from '../../router';
 import { TripRouteMap, TripDayChips } from '../components/TripRouteMap';
+import { WeatherBadge } from '../components/WeatherBadge';
 import { useT } from '../../i18n/useT';
 
 // Migrated from vanilla pages/trip.ts — cart view (/trip) + saved view (/trip/:slug).
@@ -58,11 +59,19 @@ function DayBlocks({ stops, editable }: { stops: any[]; editable: boolean }) {
   const last = days[days.length - 1];
   return (
     <div className="trip-days">
-      {days.map((d) => (
+      {days.map((d) => {
+        // Weather for the day's first geocoded stop (forecast relative to today).
+        const coordStop = byDay.get(d)!.find(
+          (s) => Number.isFinite(Number(s.latitude)) && Number.isFinite(Number(s.longitude)),
+        );
+        return (
         <section className="trip-day" key={d} id={`trip-day-${d}`}>
           <header className="trip-day-head">
             <span className="trip-day-num">{d + 1}</span>
             <span className="trip-day-label">{t('trip.day')} {d + 1}</span>
+            {coordStop && (
+              <WeatherBadge lat={Number(coordStop.latitude)} lon={Number(coordStop.longitude)} dayOffset={d} />
+            )}
             {d === days[0] && (
               <span className="trip-day-tag trip-day-tag-arrival"><PlaneLanding size={13} /> {t('trip.arrival')}</span>
             )}
@@ -74,7 +83,8 @@ function DayBlocks({ stops, editable }: { stops: any[]; editable: boolean }) {
             {byDay.get(d)!.map((s, i) => <StopCard key={(s.placeId || '') + (s.packageId || '') + i} stop={s} editable={editable} />)}
           </div>
         </section>
-      ))}
+        );
+      })}
     </div>
   );
 }

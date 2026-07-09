@@ -1,0 +1,26 @@
+/* Tier 2.7 — per-trip-day weather chip. */
+.trip-weather {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 2px 8px;
+    border-radius: var(--radius-full);
+    background: var(--surface-hover);
+    color: var(--text-secondary);
+    font-size: var(--text-xs);
+    font-weight: 600;
+    white-space: nowrap;
+}
+.trip-weather svg { color: var(--accent); flex: 0 0 auto; }
+.trip-weather-temp { color: var(--text-primary); font-variant-numeric: tabular-nums; }
+.trip-weather-min { color: var(--text-tertiary); }
+.trip-weather-rain {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    margin-left: 2px;
+    padding-left: 6px;
+    border-left: 1px solid var(--border);
+    color: var(--mediterranean);
+}
+.trip-weather-rain svg { color: var(--mediterranean); }
