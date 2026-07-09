@@ -20,4 +20,17 @@ export class RoutingController {
     optimize(@Query('coords') coords: string) {
         return this.routing.optimize(this.routing.parseCoords(coords));
     }
+
+    /** "How do I get there?" — louage/bus/train/drive/walk estimates between two points. */
+    @Get('transport')
+    @ApiOperation({ summary: 'Estimated transport options between two coords' })
+    transport(
+        @Query('from') from: string,
+        @Query('to') to: string,
+        @Query('fromCity') fromCity?: string,
+        @Query('toCity') toCity?: string,
+    ) {
+        const [a, b] = this.routing.parseCoords(`${from};${to}`);
+        return this.routing.transportEstimate(a, b, fromCity, toCity);
+    }
 }

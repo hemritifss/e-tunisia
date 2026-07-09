@@ -26,4 +26,12 @@ export declare class RoutingService {
     private cacheKey;
     route(coords: [number, number][]): Promise<RouteResult>;
     optimize(coords: [number, number][]): Promise<OptimizeResult>;
+    private static readonly RAIL_CITIES;
+    private haversineKm;
+    private costRange;
+    transportEstimate(from: [number, number], to: [number, number], fromCity?: string, toCity?: string): {
+        distanceKm: number;
+        straightKm: number;
+        options: any[];
+    };
 }

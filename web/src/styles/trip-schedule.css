@@ -67,3 +67,43 @@
 }
 .trip-stop-time input[type="time"]:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 .trip-stop-time-ro svg { color: var(--accent); }
+
+/* Tier 2.4 — inter-city "how to get there" connector between trip days */
+.transport-options {
+    margin: var(--space-2) 0;
+    padding: var(--space-3) var(--space-4);
+    border-left: 2px dashed var(--border);
+    background: var(--surface-hover);
+    border-radius: var(--radius-md);
+}
+.transport-head {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: var(--text-xs);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-secondary);
+    margin-bottom: var(--space-2);
+}
+.transport-head svg { color: var(--accent); }
+.transport-km { color: var(--text-tertiary); font-weight: 600; }
+.transport-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.transport-opt {
+    display: grid;
+    grid-template-columns: 18px minmax(90px, auto) auto auto 1fr;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+}
+.transport-opt > svg { color: var(--accent); }
+.transport-opt-label { font-weight: 600; color: var(--text-primary); }
+.transport-opt-dur { font-variant-numeric: tabular-nums; }
+.transport-opt-cost { font-variant-numeric: tabular-nums; color: var(--text-primary); font-weight: 600; }
+.transport-opt-note { color: var(--text-tertiary); font-size: var(--text-xs); }
+@media (max-width: 560px) {
+    .transport-opt { grid-template-columns: 18px 1fr auto; }
+    .transport-opt-note { display: none; }
+}

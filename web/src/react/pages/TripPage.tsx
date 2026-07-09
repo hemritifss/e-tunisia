@@ -10,6 +10,7 @@ import { showToast } from '../../ui-utils';
 import { currentPath, goTo, absoluteUrl, onRouteChange } from '../../router';
 import { TripRouteMap, TripDayChips } from '../components/TripRouteMap';
 import { WeatherBadge } from '../components/WeatherBadge';
+import { TransportOptions } from '../components/TransportOptions';
 import { useCurrency } from '../lib/useCurrency';
 import { formatMoney } from '../../currency';
 import { useT } from '../../i18n/useT';
@@ -79,19 +80,34 @@ function DayBlocks({ stops, editable, startDate }: { stops: any[]; editable: boo
   }
   const days = [...byDay.keys()].sort((a, b) => a - b);
   const last = days[days.length - 1];
+  // A day's representative geocoded stop (first with coords) + its city — used for
+  // weather and the inter-city "how to get there" connector.
+  const repOf = (d: number): { coord: [number, number]; city?: string } | null => {
+    const s = (byDay.get(d) || []).find(
+      (x) => Number.isFinite(Number(x.latitude)) && Number.isFinite(Number(x.longitude)),
+    );
+    return s ? { coord: [Number(s.longitude), Number(s.latitude)], city: s.placeCity || undefined } : null;
+  };
+  const norm = (s?: string) => (s || '').trim().toLowerCase();
   return (
     <div className="trip-days">
-      {days.map((d) => {
-        // Weather for the day's first geocoded stop. With a real start date the
-        // forecast aligns to that calendar day; otherwise it's relative to today.
+      {days.map((d, i) => {
         const coordStop = byDay.get(d)!.find(
           (s) => Number.isFinite(Number(s.latitude)) && Number.isFinite(Number(s.longitude)),
         );
         const dt = dayDate(startDate, d);
         const isToday = dt ? isSameDay(dt, today) : false;
         const weatherOffset = dt ? offsetFromToday(dt) : d;
+        // Inter-city transport connector when this day starts in a different city.
+        const rep = repOf(d);
+        const prevRep = i > 0 ? repOf(days[i - 1]) : null;
+        const connector = prevRep && rep && prevRep.city && rep.city && norm(prevRep.city) !== norm(rep.city)
+          ? <TransportOptions from={prevRep.coord} to={rep.coord} fromCity={prevRep.city} toCity={rep.city} />
+          : null;
         return (
-        <section className={`trip-day${isToday ? ' is-today' : ''}`} key={d} id={`trip-day-${d}`}>
+        <React.Fragment key={d}>
+        {connector}
+        <section className={`trip-day${isToday ? ' is-today' : ''}`} id={`trip-day-${d}`}>
           <header className="trip-day-head">
             <span className="trip-day-num">{d + 1}</span>
             <span className="trip-day-label">{t('trip.day')} {d + 1}</span>
@@ -110,9 +126,10 @@ function DayBlocks({ stops, editable, startDate }: { stops: any[]; editable: boo
             )}
           </header>
           <div className="trip-day-list">
-            {byDay.get(d)!.map((s, i) => <StopCard key={(s.placeId || '') + (s.packageId || '') + i} stop={s} editable={editable} />)}
+            {byDay.get(d)!.map((s, si) => <StopCard key={(s.placeId || '') + (s.packageId || '') + si} stop={s} editable={editable} />)}
           </div>
         </section>
+        </React.Fragment>
         );
       })}
     </div>
