@@ -2,7 +2,7 @@ import '../../styles/trip-schedule.css';
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Luggage, Send, Share2, Compass, Link as LinkIcon, Copy, X, Package, MapPin, SearchX, ShieldCheck, CheckCircle2, PlaneLanding, PlaneTakeoff, Clock, CalendarDays } from 'lucide-react';
+import { Luggage, Send, Share2, Compass, Link as LinkIcon, Copy, X, Package, MapPin, SearchX, ShieldCheck, CheckCircle2, PlaneLanding, PlaneTakeoff, Clock, CalendarDays, Download } from 'lucide-react';
 import * as api from '../../api';
 import { ogShareUrl } from '../../shared/api';
 import * as cart from '../../trip-cart';
@@ -11,6 +11,7 @@ import { currentPath, goTo, absoluteUrl, onRouteChange } from '../../router';
 import { TripRouteMap, TripDayChips } from '../components/TripRouteMap';
 import { WeatherBadge } from '../components/WeatherBadge';
 import { TransportOptions } from '../components/TransportOptions';
+import { prefetchTripOffline } from '../../offline-trip';
 import { useCurrency } from '../lib/useCurrency';
 import { formatMoney } from '../../currency';
 import { useT } from '../../i18n/useT';
@@ -420,6 +421,21 @@ function SavedTripView({ slug }: { slug: string }) {
     catch { showToast('Could not copy', { type: 'error' }); }
   };
 
+  const [offline, setOffline] = useState<'idle' | 'saving' | 'done'>('idle');
+  const saveOffline = async () => {
+    if (offline === 'saving') return;
+    setOffline('saving');
+    showToast('Saving this trip for offline…');
+    try {
+      await prefetchTripOffline(trip);
+      setOffline('done');
+      showToast('Saved — this trip now works offline');
+    } catch {
+      setOffline('idle');
+      showToast('Could not fully save offline', { type: 'error' });
+    }
+  };
+
   let total = 0, hasPriced = false;
   for (const s of trip.stops) {
     if (typeof s.pricePerPerson === 'number' && s.pricePerPerson > 0) { total += s.pricePerPerson * trip.travelers; hasPriced = true; }
@@ -435,6 +451,9 @@ function SavedTripView({ slug }: { slug: string }) {
         <div className="trip-page-actions">
           <button className="btn btn-primary" type="button" onClick={() => setInquiry(trip)}><Send /> Request quotes for all</button>
           <button className="btn btn-outline" type="button" onClick={copyLink}><LinkIcon /> Copy link</button>
+          <button className="btn btn-outline" type="button" onClick={saveOffline} disabled={offline === 'saving'}>
+            <Download /> {offline === 'saving' ? 'Saving…' : offline === 'done' ? 'Available offline' : 'Save offline'}
+          </button>
           <button className="btn btn-primary" type="button" onClick={clone}><Copy /> Use as my trip</button>
         </div>
       </header>
