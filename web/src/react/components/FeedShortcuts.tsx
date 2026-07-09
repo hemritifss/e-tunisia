@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import {
     Compass, Map, Bookmark, Trophy, Globe2, IdCard,
     Heart, Briefcase, Send, Calendar, Crown, Lightbulb, Award,
-    ChevronDown, ChevronUp, Clapperboard, Sparkles, Route, Layers,
+    ChevronDown, ChevronUp, Clapperboard, Sparkles, Route, Layers, Shield,
 } from 'lucide-react';
 import { api, getImageUrl } from '../../shared/api';
 import { useAuthStore } from '../stores/auth-store';
@@ -47,6 +47,7 @@ const SECONDARY: ShortcutItem[] = [
     { id: 'inquiries', icon: <Send size={18} />,      label: 'My Inquiries', href: '#/inquiries' },
     { id: 'events',    icon: <Calendar size={18} />,  label: 'Events',       href: '#/events' },
     { id: 'tips',      icon: <Lightbulb size={18} />, label: 'Travel Tips',  href: '#/tips' },
+    { id: 'safety',    icon: <Shield size={18} />,    label: 'Safety & essentials', href: '#/safety' },
     { id: 'owner',     icon: <Briefcase size={18} />, label: 'Owner Tools',  href: '#/owner', creatorOnly: true },
     { id: 'premium',   icon: <Crown size={18} />,     label: 'Go Premium',   href: '#/premium' },
 ];
