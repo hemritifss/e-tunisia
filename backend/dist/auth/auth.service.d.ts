@@ -20,6 +20,7 @@ export declare class AuthService {
             email: string;
             avatar: string;
             role: import("../users/user.entity").UserRole;
+            founderNumber: any;
         };
         accessToken: string;
     }>;

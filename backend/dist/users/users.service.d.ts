@@ -10,6 +10,7 @@ import { PlaceVisit } from './place-visit.entity';
 import { NotificationsService } from '../notifications/notifications.service';
 import { PassportDto } from './dto/passport.dto';
 import { BadgesService } from '../badges/badges.service';
+import { GamificationService } from '../gamification/gamification.service';
 import { EndorsementsService } from './endorsements.service';
 export declare class UsersService {
     private usersRepository;
@@ -22,9 +23,11 @@ export declare class UsersService {
     private cache;
     private badges;
     private notifications;
+    private gamification;
     private endorsements;
-    constructor(usersRepository: Repository<User>, reviewsRepo: Repository<Review>, placesRepo: Repository<Place>, tripsRepo: Repository<TripPlan>, savesRepo: Repository<SavedPost>, passportViewsRepo: Repository<PassportView>, placeVisitsRepo: Repository<PlaceVisit>, cache: Cache, badges: BadgesService, notifications: NotificationsService, endorsements: EndorsementsService);
+    constructor(usersRepository: Repository<User>, reviewsRepo: Repository<Review>, placesRepo: Repository<Place>, tripsRepo: Repository<TripPlan>, savesRepo: Repository<SavedPost>, passportViewsRepo: Repository<PassportView>, placeVisitsRepo: Repository<PlaceVisit>, cache: Cache, badges: BadgesService, notifications: NotificationsService, gamification: GamificationService, endorsements: EndorsementsService);
     findByEmail(email: string): Promise<User | null>;
+    assignFounderNumber(userId: string): Promise<number | null>;
     findByHandle(handle: string): Promise<User | null>;
     findByResetToken(token: string): Promise<User | null>;
     generateAvailableHandle(fullName: string): Promise<string>;

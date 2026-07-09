@@ -43,6 +43,8 @@ export declare class PostsController {
             commentCount: any;
             viewCount: any;
             isPinned: any;
+            kind: any;
+            meta: any;
             createdAt: any;
         }[];
         meta: {
@@ -76,6 +78,8 @@ export declare class PostsController {
             commentCount: any;
             viewCount: any;
             isPinned: any;
+            kind: any;
+            meta: any;
             createdAt: any;
         }[];
         meta: {
@@ -183,6 +187,8 @@ export declare class PostsController {
             commentCount: any;
             viewCount: any;
             isPinned: any;
+            kind: any;
+            meta: any;
             createdAt: any;
         }[];
         meta: {

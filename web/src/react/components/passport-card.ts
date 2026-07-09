@@ -14,6 +14,8 @@ export interface PassportCardData {
   tripsPlanned?: number;
   reviewsCount?: number;
   badgesCount?: number;
+  /** Founders' program: №1–1000 for the first accounts — gold edition card. */
+  founderNumber?: number | null;
   url: string;
 }
 
@@ -107,11 +109,18 @@ export async function renderPassportCard(data: PassportCardData): Promise<HTMLCa
   glow(ctx, W * 0.15, H * 0.12, 620, '#274b86', 0.55); // mediterranean
   glow(ctx, W * 0.95, H * 0.35, 560, '#5b3d8f', 0.45); // violet
   glow(ctx, W * 0.35, H * 0.95, 640, '#8a4a2c', 0.5);  // terracotta ember
-  // Hairline frame
-  ctx.strokeStyle = 'rgba(255,255,255,0.14)';
-  ctx.lineWidth = 2;
+  // Frame — founders get the permanent gold-trimmed edition.
+  const isFounder = !!data.founderNumber;
+  ctx.strokeStyle = isFounder ? 'rgba(232,176,75,0.85)' : 'rgba(255,255,255,0.14)';
+  ctx.lineWidth = isFounder ? 5 : 2;
   roundRect(ctx, 36, 36, W - 72, H - 72, 40);
   ctx.stroke();
+  if (isFounder) {
+    ctx.strokeStyle = 'rgba(232,176,75,0.35)';
+    ctx.lineWidth = 1.5;
+    roundRect(ctx, 52, 52, W - 104, H - 104, 32);
+    ctx.stroke();
+  }
 
   ctx.textAlign = 'center';
   ctx.textBaseline = 'alphabetic';
@@ -120,6 +129,21 @@ export async function renderPassportCard(data: PassportCardData): Promise<HTMLCa
   ctx.fillStyle = '#e8b04b';
   ctx.font = '700 26px Inter, sans-serif';
   spacedText(ctx, 'E-TUNISIA — TRAVEL PASSPORT', W / 2, 132, 8);
+
+  // ── Founder ribbon ──
+  if (isFounder) {
+    const fText = `FOUNDER #${String(data.founderNumber).padStart(4, '0')}`;
+    ctx.font = '800 24px Inter, sans-serif';
+    const fW = ctx.measureText(fText).width + 70;
+    roundRect(ctx, W / 2 - fW / 2, 158, fW, 52, 26);
+    ctx.fillStyle = 'rgba(232,176,75,0.14)';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(232,176,75,0.9)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.fillStyle = '#f3dc8e';
+    spacedText(ctx, fText, W / 2, 192, 3);
+  }
 
   // ── Monogram disc ──
   const mx = W / 2;

@@ -12346,6 +12346,49 @@ section[class^="hero-"] {
 }
 [data-theme="dark"] .trip-route-marker { border-color: oklch(20% 0.01 260); }
 
+/* ── "Kont houni" passport stamp button ─────── */
+.kont-houni {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 7px 14px;
+  border: 1.5px dashed var(--accent);
+  border-radius: 10px;
+  background: color-mix(in oklab, var(--accent) 6%, transparent);
+  color: var(--accent);
+  font-size: 0.83rem; font-weight: 700;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transform: rotate(-1.2deg); /* a real stamp is never perfectly straight */
+  transition: transform var(--duration-fast) var(--ease-spring),
+              background var(--duration-fast) var(--ease-out),
+              border-color var(--duration-fast) var(--ease-out),
+              color var(--duration-fast) var(--ease-out);
+}
+.kont-houni:hover:not(:disabled) { transform: rotate(0deg) scale(1.03); background: color-mix(in oklab, var(--accent) 12%, transparent); }
+.kont-houni:active:not(:disabled) { transform: scale(0.95); }
+.kont-houni:disabled { opacity: 0.6; cursor: wait; }
+.kont-houni.is-visited {
+  border-style: solid;
+  border-color: var(--success);
+  background: color-mix(in oklab, var(--success) 12%, transparent);
+  color: var(--success);
+  transform: rotate(0deg);
+}
+.kont-houni.is-compact { padding: 6px 11px; font-size: 0.78rem; }
+.place-detail-location .kont-houni { margin-inline-start: 12px; }
+.map-info-visit { margin: 10px 0 2px; display: flex; }
+
+/* Founder chip on the passport */
+.founder-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 12px; border-radius: 999px;
+  border: 1.5px solid var(--gold);
+  background: color-mix(in oklab, var(--gold) 14%, transparent);
+  color: var(--gold);
+  font-size: 0.74rem; font-weight: 800;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+}
+
 /* Real driving stats under the map */
 .trip-drive-stats {
   display: flex; flex-wrap: wrap; align-items: center; gap: 8px;

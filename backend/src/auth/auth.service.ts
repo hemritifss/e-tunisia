@@ -51,6 +51,10 @@ export class AuthService {
         const user = await this.usersService.create({ ...rest, handle: handleLower });
         await this.badgesService.awardIfEligible(user.id, 'user.created', {});
 
+        // Founders' program: first 1000 real accounts get a numbered passport.
+        // Failure never blocks signup — the number just stays unassigned.
+        const founderNumber = await this.usersService.assignFounderNumber(user.id).catch(() => null);
+
         // Referral: link + reward both sides if a valid, non-self referrer handle was provided.
         if (ref && ref.trim()) {
             try {
@@ -80,6 +84,7 @@ export class AuthService {
                 email: user.email,
                 avatar: user.avatar,
                 role: user.role,
+                founderNumber,
             },
             accessToken: token,
         };

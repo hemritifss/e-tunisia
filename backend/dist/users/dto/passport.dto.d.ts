@@ -37,5 +37,6 @@ export interface PassportDto {
     plan: 'free' | 'premium' | 'business';
     passportTheme?: string | null;
     stampRarity?: Record<string, number>;
+    founderNumber?: number | null;
 }
 export declare function deriveLevel(points: number): PassportLevel;

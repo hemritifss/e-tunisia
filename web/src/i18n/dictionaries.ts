@@ -52,6 +52,13 @@ export const DICTIONARIES: Record<Locale, Record<string, string>> = {
         'trip.optimizeFailed': 'Could not optimize right now',
         'city.all': 'All Tunisia',
         'city.filterLabel': 'City',
+
+        'visit.kontHouni': 'Kont houni — I was here',
+        'visit.visited': 'Visited',
+        'visit.stamped': 'Stamped in your passport · +5 XP',
+        'visit.unstamped': 'Stamp removed',
+        'visit.failed': 'Could not update — try again',
+        'passport.founder': 'Founder',
     },
     fr: {
         'nav.feed': 'Fil',
@@ -101,6 +108,13 @@ export const DICTIONARIES: Record<Locale, Record<string, string>> = {
         'trip.optimizeFailed': "Optimisation impossible pour l'instant",
         'city.all': 'Toute la Tunisie',
         'city.filterLabel': 'Ville',
+
+        'visit.kontHouni': "Kont houni — j'y étais",
+        'visit.visited': 'Visité',
+        'visit.stamped': 'Tamponné dans votre passeport · +5 XP',
+        'visit.unstamped': 'Tampon retiré',
+        'visit.failed': 'Échec — réessayez',
+        'passport.founder': 'Fondateur',
     },
     ar: {
         'nav.feed': 'الرئيسية',
@@ -150,5 +164,12 @@ export const DICTIONARIES: Record<Locale, Record<string, string>> = {
         'trip.optimizeFailed': 'تعذّر التحسين حاليًا',
         'city.all': 'كل تونس',
         'city.filterLabel': 'المدينة',
+
+        'visit.kontHouni': 'كنت هنا',
+        'visit.visited': 'تمت الزيارة',
+        'visit.stamped': 'خُتمت في جواز سفرك · +5 نقاط',
+        'visit.unstamped': 'أُزيل الختم',
+        'visit.failed': 'تعذّر التحديث — حاول مجددًا',
+        'passport.founder': 'مؤسس',
     },
 };

@@ -97,6 +97,11 @@ __decorate([
     __metadata("design:type", Array)
 ], User.prototype, "visitedPlaceIds", void 0);
 __decorate([
+    (0, typeorm_1.Column)({ type: 'int', nullable: true }),
+    (0, typeorm_1.Index)({ unique: true, where: '"founderNumber" IS NOT NULL' }),
+    __metadata("design:type", Number)
+], User.prototype, "founderNumber", void 0);
+__decorate([
     (0, typeorm_1.Column)({ default: true }),
     (0, typeorm_1.Index)(),
     __metadata("design:type", Boolean)

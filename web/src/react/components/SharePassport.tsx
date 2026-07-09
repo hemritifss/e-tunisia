@@ -14,9 +14,10 @@ interface Props {
     tripsPlanned?: number;
     reviewsCount?: number;
     badgesCount?: number;
+    founderNumber?: number | null;
 }
 
-export function SharePassport({ handle, fullName, level, country, citiesVisited, tripsPlanned, reviewsCount, badgesCount }: Props) {
+export function SharePassport({ handle, fullName, level, country, citiesVisited, tripsPlanned, reviewsCount, badgesCount, founderNumber }: Props) {
     const [open, setOpen] = useState(false);
     const [copied, setCopied] = useState(false);
     const [cardUrl, setCardUrl] = useState<string | null>(null);
@@ -28,6 +29,7 @@ export function SharePassport({ handle, fullName, level, country, citiesVisited,
     const cardData: PassportCardData = {
         fullName, handle, level, country,
         citiesVisited, tripsPlanned, reviewsCount, badgesCount,
+        founderNumber,
         url,
     };
 

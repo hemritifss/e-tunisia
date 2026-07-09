@@ -10,8 +10,9 @@ import { PassportDto } from '../users/dto/passport.dto';
  * Renders the shareable "Tunisia Passport" postcard.
  *
  * Pure-JS toolchain: satori produces SVG, resvg rasterises to PNG.
- * Fonts are fetched once at module init from Google Fonts and cached
- * on disk (next to the source file) — no manual font bundling.
+ * Fonts are vendored via the `@fontsource/inter` dependency and read from
+ * node_modules at boot — zero network dependency (the old gstatic hash URLs
+ * rotated and started 404ing, silently blanking every share card).
  */
 @Injectable()
 export class OgService implements OnModuleInit {
@@ -22,24 +23,38 @@ export class OgService implements OnModuleInit {
     async onModuleInit() {
         try {
             this.regular = await this.loadFont(
-                'Inter-Regular.ttf',
-                'https://fonts.gstatic.com/s/inter/v18/UcCo3FwrK3iLTcvneQg7Ca725JhhKnNqk4j1ebLhAm8SrXTc2dRH.ttf',
+                'inter-latin-400-normal.woff',
+                'https://cdn.jsdelivr.net/npm/@fontsource/inter@5/files/inter-latin-400-normal.woff',
             );
             this.bold = await this.loadFont(
-                'Inter-Bold.ttf',
-                'https://fonts.gstatic.com/s/inter/v18/UcCo3FwrK3iLTcvneQg7Ca725JhhKnNqk4j1ebLhAm8SrXTRWtsk2dRH.ttf',
+                'inter-latin-700-normal.woff',
+                'https://cdn.jsdelivr.net/npm/@fontsource/inter@5/files/inter-latin-700-normal.woff',
             );
         } catch (err) {
             this.logger.warn(`Font preload failed; OG cards will fall back to a static image: ${(err as Error).message}`);
         }
     }
 
-    private async loadFont(name: string, url: string): Promise<Buffer> {
+    /**
+     * Load a vendored font: node_modules first (offline, deterministic), then a
+     * pinned jsDelivr URL as a last resort, cached on disk next to the build.
+     */
+    private async loadFont(fontsourceFile: string, cdnUrl: string): Promise<Buffer> {
+        // 1) Vendored copy in node_modules — the reliable path.
+        try {
+            const pkg = require.resolve('@fontsource/inter/package.json');
+            const vendored = path.join(path.dirname(pkg), 'files', fontsourceFile);
+            if (fs.existsSync(vendored)) return fs.promises.readFile(vendored);
+        } catch { /* package missing — fall through to CDN */ }
+
+        // 2) Disk cache next to the build output.
         const dir = path.join(__dirname, 'fonts');
-        const file = path.join(dir, name);
+        const file = path.join(dir, fontsourceFile);
         if (fs.existsSync(file)) return fs.promises.readFile(file);
+
+        // 3) Pinned CDN (version-locked, so it won't rotate like gstatic did).
         await fs.promises.mkdir(dir, { recursive: true });
-        const buf = await this.fetchBinary(url);
+        const buf = await this.fetchBinary(cdnUrl);
         await fs.promises.writeFile(file, buf);
         return buf;
     }
@@ -83,6 +98,7 @@ export class OgService implements OnModuleInit {
         const cities = (p.visitedCities || []).slice(0, 6);
         const stats = p.stats;
 
+        const isFounder = !!p.founderNumber;
         const node: any = {
             type: 'div',
             props: {
@@ -96,8 +112,34 @@ export class OgService implements OnModuleInit {
                     padding: '64px',
                     fontFamily: 'Inter',
                     position: 'relative',
+                    // Founders get the permanent gold-trimmed edition.
+                    border: isFounder ? '8px solid rgba(222,184,80,0.92)' : undefined,
                 },
                 children: [
+                    // Founder ribbon — top-right, above everything.
+                    isFounder
+                        ? {
+                            type: 'div',
+                            props: {
+                                style: {
+                                    position: 'absolute',
+                                    top: 36,
+                                    right: 48,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    padding: '10px 24px',
+                                    borderRadius: 999,
+                                    background: 'rgba(222,184,80,0.16)',
+                                    border: '2px solid rgba(222,184,80,0.9)',
+                                    color: '#f3dc8e',
+                                    fontSize: 24,
+                                    fontWeight: 700,
+                                    letterSpacing: 3,
+                                },
+                                children: `FOUNDER #${String(p.founderNumber).padStart(4, '0')}`,
+                            },
+                        }
+                        : null,
                     // top row: avatar/initials + handle + name
                     {
                         type: 'div',

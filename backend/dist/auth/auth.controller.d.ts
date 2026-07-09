@@ -15,6 +15,7 @@ export declare class AuthController {
             email: string;
             avatar: string;
             role: import("../users/user.entity").UserRole;
+            founderNumber: any;
         };
         accessToken: string;
     }>;

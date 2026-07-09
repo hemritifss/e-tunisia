@@ -26,12 +26,13 @@ const users_controller_1 = require("./users.controller");
 const badges_module_1 = require("../badges/badges.module");
 const og_module_1 = require("../og/og.module");
 const notifications_module_1 = require("../notifications/notifications.module");
+const gamification_module_1 = require("../gamification/gamification.module");
 let UsersModule = class UsersModule {
 };
 exports.UsersModule = UsersModule;
 exports.UsersModule = UsersModule = __decorate([
     (0, common_1.Module)({
-        imports: [typeorm_1.TypeOrmModule.forFeature([user_entity_1.User, follow_entity_1.Follow, endorsement_entity_1.Endorsement, review_entity_1.Review, place_entity_1.Place, trip_plan_entity_1.TripPlan, saved_post_entity_1.SavedPost, passport_view_entity_1.PassportView, place_visit_entity_1.PlaceVisit]), badges_module_1.BadgesModule, og_module_1.OgModule, notifications_module_1.NotificationsModule],
+        imports: [typeorm_1.TypeOrmModule.forFeature([user_entity_1.User, follow_entity_1.Follow, endorsement_entity_1.Endorsement, review_entity_1.Review, place_entity_1.Place, trip_plan_entity_1.TripPlan, saved_post_entity_1.SavedPost, passport_view_entity_1.PassportView, place_visit_entity_1.PlaceVisit]), badges_module_1.BadgesModule, og_module_1.OgModule, notifications_module_1.NotificationsModule, gamification_module_1.GamificationModule],
         providers: [users_service_1.UsersService, follows_service_1.FollowsService, endorsements_service_1.EndorsementsService, activity_service_1.ActivityService],
         controllers: [users_controller_1.UsersController],
         exports: [users_service_1.UsersService, follows_service_1.FollowsService, endorsements_service_1.EndorsementsService, activity_service_1.ActivityService],

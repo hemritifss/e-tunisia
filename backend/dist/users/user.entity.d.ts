@@ -27,6 +27,7 @@ export declare class User {
     plan: UserPlan;
     favoriteIds: string[];
     visitedPlaceIds: string[];
+    founderNumber: number | null;
     isActive: boolean;
     subscriptionExpiresAt: Date;
     stripeCustomerId: string | null;

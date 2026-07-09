@@ -46,6 +46,7 @@ let AuthService = class AuthService {
         const { ref, ...rest } = dto;
         const user = await this.usersService.create({ ...rest, handle: handleLower });
         await this.badgesService.awardIfEligible(user.id, 'user.created', {});
+        const founderNumber = await this.usersService.assignFounderNumber(user.id).catch(() => null);
         if (ref && ref.trim()) {
             try {
                 const referrer = await this.usersService.findByHandle(ref.trim().toLowerCase());
@@ -72,6 +73,7 @@ let AuthService = class AuthService {
                 email: user.email,
                 avatar: user.avatar,
                 role: user.role,
+                founderNumber,
             },
             accessToken: token,
         };

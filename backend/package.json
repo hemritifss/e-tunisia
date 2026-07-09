@@ -18,6 +18,7 @@
         "@anthropic-ai/sdk": "^0.71.2",
         "@aws-sdk/client-s3": "^3.1045.0",
         "@aws-sdk/s3-request-presigner": "^3.1045.0",
+        "@fontsource/inter": "^5.2.8",
         "@nestjs/bullmq": "^11.0.4",
         "@nestjs/cache-manager": "^3.1.2",
         "@nestjs/common": "^11.0.0",

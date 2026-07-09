@@ -200,6 +200,15 @@ export async function getCategories() {
   return api<any[]>('/categories');
 }
 
+// ── VISITED ("Kont houni" one-tap check-in) ──
+export async function toggleVisited(placeId: string) {
+  return api<string[]>(`/users/visited/${encodeURIComponent(placeId)}`, { method: 'POST' });
+}
+
+export async function getVisitedIds() {
+  return api<string[]>('/users/visited');
+}
+
 // ── ROUTING (real roads via OSRM/Mapbox) ─────
 export async function getRoute(coords: [number, number][]) {
   const path = coords.map((c) => c.join(',')).join(';');

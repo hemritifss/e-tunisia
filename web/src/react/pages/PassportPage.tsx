@@ -303,6 +303,11 @@ export default function PassportPage() {
                             <div className="passport-handle">@{p.handle}</div>
                             <h1>{p.fullName}</h1>
                             <div className="passport-meta">
+                                {p.founderNumber && (
+                                    <span className="founder-chip" title="One of the first 1000 explorers">
+                                        Founder #{String(p.founderNumber).padStart(4, '0')}
+                                    </span>
+                                )}
                                 {p.country && <span className="passport-meta-chip"><MapPin size={11} /> {p.country}</span>}
                                 <span className={`passport-level passport-level-${p.passportLevel.toLowerCase()}`}>{p.passportLevel} Explorer</span>
                                 {p.plan === 'premium' && <span className="passport-pro-chip"><Sparkles size={11} /> Pro Traveler</span>}
@@ -351,6 +356,7 @@ export default function PassportPage() {
                             tripsPlanned={p.stats?.tripsPlanned}
                             reviewsCount={p.stats?.reviewsCount}
                             badgesCount={p.badges?.length}
+                            founderNumber={p.founderNumber}
                         />
                     </div>
                 </div>

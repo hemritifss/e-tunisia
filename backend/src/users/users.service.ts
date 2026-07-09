@@ -2,7 +2,7 @@ import { Inject, Injectable, NotFoundException, forwardRef } from '@nestjs/commo
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { In, IsNull, Repository } from 'typeorm';
 import { User } from './user.entity';
 import * as bcrypt from 'bcrypt';
 import { Review } from '../reviews/review.entity';
@@ -15,6 +15,7 @@ import { NotificationsService } from '../notifications/notifications.service';
 import { NotificationType } from '../notifications/notification.entity';
 import { PassportDto, deriveLevel } from './dto/passport.dto';
 import { BadgesService } from '../badges/badges.service';
+import { GamificationService } from '../gamification/gamification.service';
 import { EndorsementsService } from './endorsements.service';
 import { effectivePlan } from './effective-plan';
 
@@ -31,11 +32,37 @@ export class UsersService {
         @Inject(CACHE_MANAGER) private cache: Cache,
         private badges: BadgesService,
         private notifications: NotificationsService,
+        private gamification: GamificationService,
         @Inject(forwardRef(() => EndorsementsService)) private endorsements: EndorsementsService,
     ) { }
 
     async findByEmail(email: string): Promise<User | null> {
         return this.usersRepository.findOne({ where: { email } });
+    }
+
+    /**
+     * Founders' program: the first 1000 real accounts get a permanent numbered
+     * passport. Concurrency-safe via the partial unique index — a collision on
+     * simultaneous signups just retries with the next number.
+     */
+    async assignFounderNumber(userId: string): Promise<number | null> {
+        for (let attempt = 0; attempt < 3; attempt++) {
+            try {
+                const row = await this.usersRepository
+                    .createQueryBuilder('u')
+                    .select('COALESCE(MAX(u.founderNumber), 0)', 'max')
+                    .getRawOne();
+                const next = Number(row?.max || 0) + 1;
+                if (next > 1000) return null;
+                const res = await this.usersRepository.update(
+                    { id: userId, founderNumber: IsNull() },
+                    { founderNumber: next },
+                );
+                if (res.affected) return next;
+                return null; // already numbered
+            } catch { /* unique collision — retry with a fresh MAX */ }
+        }
+        return null;
     }
 
     async findByHandle(handle: string): Promise<User | null> {
@@ -243,13 +270,20 @@ export class UsersService {
         // Dual-write the normalized place_visits row (powers rarity + analytics).
         if (wasAdded) {
             const place = await this.placesRepo.findOne({ where: { id: placeId }, select: ['city'] }).catch(() => null);
+            let firstEver = false;
             try {
-                await this.placeVisitsRepo.save(this.placeVisitsRepo.create({ userId, placeId, city: place?.city || null }));
-            } catch { /* unique (userId, placeId) — already recorded */ }
+                await this.placeVisitsRepo.insert(this.placeVisitsRepo.create({ userId, placeId, city: place?.city || null }));
+                firstEver = true;
+            } catch { /* unique (userId, placeId) — a re-toggle, not a first visit */ }
             if (this.badges) await this.badges.awardIfEligible(userId, 'place.visited', { city: place?.city });
-        } else {
-            try { await this.placeVisitsRepo.delete({ userId, placeId }); } catch { /* ignore */ }
+            // "Kont houni" — first rung of the contribution ladder. XP only on
+            // the first-ever visit of this place: the immutable place_visits
+            // row is the guard that makes toggle-farming impossible.
+            if (firstEver) void this.gamification.addPoints(userId, 5, 'Visited a place').catch(() => {});
         }
+        // Un-toggling removes the stamp from the passport (visitedPlaceIds) but
+        // keeps the place_visits history row — it powers rarity/analytics and
+        // is the XP-farming guard above.
         return visited;
     }
 
@@ -389,6 +423,7 @@ export class UsersService {
             plan: this.resolveEffectivePlan(user),
             passportTheme: (user as any).passportTheme || null,
             stampRarity,
+            founderNumber: user.founderNumber ?? null,
         };
 
         await this.cache.set(key, passport, 300_000);

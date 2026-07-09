@@ -76,6 +76,14 @@ export class User {
     @Column('simple-array', { nullable: true })
     visitedPlaceIds: string[];
 
+    /**
+     * Founders' program: the first 1000 real accounts get a permanent numbered
+     * passport (№0001–№1000). Assigned once at registration, never reused.
+     */
+    @Column({ type: 'int', nullable: true })
+    @Index({ unique: true, where: '"founderNumber" IS NOT NULL' })
+    founderNumber: number | null;
+
     @Column({ default: true })
     @Index()
     isActive: boolean;

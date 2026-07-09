@@ -22,20 +22,27 @@ let OgService = OgService_1 = class OgService {
     }
     async onModuleInit() {
         try {
-            this.regular = await this.loadFont('Inter-Regular.ttf', 'https://fonts.gstatic.com/s/inter/v18/UcCo3FwrK3iLTcvneQg7Ca725JhhKnNqk4j1ebLhAm8SrXTc2dRH.ttf');
-            this.bold = await this.loadFont('Inter-Bold.ttf', 'https://fonts.gstatic.com/s/inter/v18/UcCo3FwrK3iLTcvneQg7Ca725JhhKnNqk4j1ebLhAm8SrXTRWtsk2dRH.ttf');
+            this.regular = await this.loadFont('inter-latin-400-normal.woff', 'https://cdn.jsdelivr.net/npm/@fontsource/inter@5/files/inter-latin-400-normal.woff');
+            this.bold = await this.loadFont('inter-latin-700-normal.woff', 'https://cdn.jsdelivr.net/npm/@fontsource/inter@5/files/inter-latin-700-normal.woff');
         }
         catch (err) {
             this.logger.warn(`Font preload failed; OG cards will fall back to a static image: ${err.message}`);
         }
     }
-    async loadFont(name, url) {
+    async loadFont(fontsourceFile, cdnUrl) {
+        try {
+            const pkg = require.resolve('@fontsource/inter/package.json');
+            const vendored = path.join(path.dirname(pkg), 'files', fontsourceFile);
+            if (fs.existsSync(vendored))
+                return fs.promises.readFile(vendored);
+        }
+        catch { }
         const dir = path.join(__dirname, 'fonts');
-        const file = path.join(dir, name);
+        const file = path.join(dir, fontsourceFile);
         if (fs.existsSync(file))
             return fs.promises.readFile(file);
         await fs.promises.mkdir(dir, { recursive: true });
-        const buf = await this.fetchBinary(url);
+        const buf = await this.fetchBinary(cdnUrl);
         await fs.promises.writeFile(file, buf);
         return buf;
     }
@@ -74,6 +81,7 @@ let OgService = OgService_1 = class OgService {
             .toUpperCase();
         const cities = (p.visitedCities || []).slice(0, 6);
         const stats = p.stats;
+        const isFounder = !!p.founderNumber;
         const node = {
             type: 'div',
             props: {
@@ -87,8 +95,32 @@ let OgService = OgService_1 = class OgService {
                     padding: '64px',
                     fontFamily: 'Inter',
                     position: 'relative',
+                    border: isFounder ? '8px solid rgba(222,184,80,0.92)' : undefined,
                 },
                 children: [
+                    isFounder
+                        ? {
+                            type: 'div',
+                            props: {
+                                style: {
+                                    position: 'absolute',
+                                    top: 36,
+                                    right: 48,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    padding: '10px 24px',
+                                    borderRadius: 999,
+                                    background: 'rgba(222,184,80,0.16)',
+                                    border: '2px solid rgba(222,184,80,0.9)',
+                                    color: '#f3dc8e',
+                                    fontSize: 24,
+                                    fontWeight: 700,
+                                    letterSpacing: 3,
+                                },
+                                children: `FOUNDER #${String(p.founderNumber).padStart(4, '0')}`,
+                            },
+                        }
+                        : null,
                     {
                         type: 'div',
                         props: {

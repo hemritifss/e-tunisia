@@ -41,6 +41,8 @@ export interface PassportDto {
     passportTheme?: string | null;
     /** Honest stamp rarity: visited-city → distinct explorer count. */
     stampRarity?: Record<string, number>;
+    /** Founders' program: №1–1000 for the first real accounts, else null. */
+    founderNumber?: number | null;
 }
 
 export function deriveLevel(points: number): PassportLevel {

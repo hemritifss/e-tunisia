@@ -6,6 +6,7 @@ import { Search, X, ArrowRight, Loader2 } from 'lucide-react';
 import * as api from '../../api';
 import { useCity } from '../lib/useCity';
 import { cityCenter } from '../../city-filter';
+import { KontHouniButton } from '../components/KontHouniButton';
 
 // Map of Tunisia — every real place from the database (no hardcoded demo
 // data). Categories, colors and chips derive from the data itself; the info
@@ -361,6 +362,7 @@ export default function MapPage() {
                 <div className="map-info-comment"><div className="map-info-comment-text">No reviews yet — be the first.</div></div>
               )}
             </div>
+            <div className="map-info-visit"><KontHouniButton placeId={selected.id} compact /></div>
             <a href={`#/place/${selected.id}`} className="map-info-btn" style={{ background: selColor }}><ArrowRight size={16} /> View place</a>
           </div>
         )}

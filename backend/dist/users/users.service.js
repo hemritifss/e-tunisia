@@ -29,10 +29,11 @@ const notifications_service_1 = require("../notifications/notifications.service"
 const notification_entity_1 = require("../notifications/notification.entity");
 const passport_dto_1 = require("./dto/passport.dto");
 const badges_service_1 = require("../badges/badges.service");
+const gamification_service_1 = require("../gamification/gamification.service");
 const endorsements_service_1 = require("./endorsements.service");
 const effective_plan_1 = require("./effective-plan");
 let UsersService = class UsersService {
-    constructor(usersRepository, reviewsRepo, placesRepo, tripsRepo, savesRepo, passportViewsRepo, placeVisitsRepo, cache, badges, notifications, endorsements) {
+    constructor(usersRepository, reviewsRepo, placesRepo, tripsRepo, savesRepo, passportViewsRepo, placeVisitsRepo, cache, badges, notifications, gamification, endorsements) {
         this.usersRepository = usersRepository;
         this.reviewsRepo = reviewsRepo;
         this.placesRepo = placesRepo;
@@ -43,10 +44,30 @@ let UsersService = class UsersService {
         this.cache = cache;
         this.badges = badges;
         this.notifications = notifications;
+        this.gamification = gamification;
         this.endorsements = endorsements;
     }
     async findByEmail(email) {
         return this.usersRepository.findOne({ where: { email } });
+    }
+    async assignFounderNumber(userId) {
+        for (let attempt = 0; attempt < 3; attempt++) {
+            try {
+                const row = await this.usersRepository
+                    .createQueryBuilder('u')
+                    .select('COALESCE(MAX(u.founderNumber), 0)', 'max')
+                    .getRawOne();
+                const next = Number(row?.max || 0) + 1;
+                if (next > 1000)
+                    return null;
+                const res = await this.usersRepository.update({ id: userId, founderNumber: (0, typeorm_2.IsNull)() }, { founderNumber: next });
+                if (res.affected)
+                    return next;
+                return null;
+            }
+            catch { }
+        }
+        return null;
     }
     async findByHandle(handle) {
         if (!handle)
@@ -226,18 +247,16 @@ let UsersService = class UsersService {
         await this.invalidatePassportCache(userId);
         if (wasAdded) {
             const place = await this.placesRepo.findOne({ where: { id: placeId }, select: ['city'] }).catch(() => null);
+            let firstEver = false;
             try {
-                await this.placeVisitsRepo.save(this.placeVisitsRepo.create({ userId, placeId, city: place?.city || null }));
+                await this.placeVisitsRepo.insert(this.placeVisitsRepo.create({ userId, placeId, city: place?.city || null }));
+                firstEver = true;
             }
             catch { }
             if (this.badges)
                 await this.badges.awardIfEligible(userId, 'place.visited', { city: place?.city });
-        }
-        else {
-            try {
-                await this.placeVisitsRepo.delete({ userId, placeId });
-            }
-            catch { }
+            if (firstEver)
+                void this.gamification.addPoints(userId, 5, 'Visited a place').catch(() => { });
         }
         return visited;
     }
@@ -367,6 +386,7 @@ let UsersService = class UsersService {
             plan: this.resolveEffectivePlan(user),
             passportTheme: user.passportTheme || null,
             stampRarity,
+            founderNumber: user.founderNumber ?? null,
         };
         await this.cache.set(key, passport, 300_000);
         return passport;
@@ -580,7 +600,7 @@ exports.UsersService = UsersService = __decorate([
     __param(5, (0, typeorm_1.InjectRepository)(passport_view_entity_1.PassportView)),
     __param(6, (0, typeorm_1.InjectRepository)(place_visit_entity_1.PlaceVisit)),
     __param(7, (0, common_1.Inject)(cache_manager_1.CACHE_MANAGER)),
-    __param(10, (0, common_1.Inject)((0, common_1.forwardRef)(() => endorsements_service_1.EndorsementsService))),
+    __param(11, (0, common_1.Inject)((0, common_1.forwardRef)(() => endorsements_service_1.EndorsementsService))),
     __metadata("design:paramtypes", [typeorm_2.Repository,
         typeorm_2.Repository,
         typeorm_2.Repository,
@@ -589,6 +609,7 @@ exports.UsersService = UsersService = __decorate([
         typeorm_2.Repository,
         typeorm_2.Repository, Object, badges_service_1.BadgesService,
         notifications_service_1.NotificationsService,
+        gamification_service_1.GamificationService,
         endorsements_service_1.EndorsementsService])
 ], UsersService);
 //# sourceMappingURL=users.service.js.map

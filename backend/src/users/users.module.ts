@@ -17,9 +17,10 @@ import { UsersController } from './users.controller';
 import { BadgesModule } from '../badges/badges.module';
 import { OgModule } from '../og/og.module';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { GamificationModule } from '../gamification/gamification.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, Follow, Endorsement, Review, Place, TripPlan, SavedPost, PassportView, PlaceVisit]), BadgesModule, OgModule, NotificationsModule],
+  imports: [TypeOrmModule.forFeature([User, Follow, Endorsement, Review, Place, TripPlan, SavedPost, PassportView, PlaceVisit]), BadgesModule, OgModule, NotificationsModule, GamificationModule],
   providers: [UsersService, FollowsService, EndorsementsService, ActivityService],
   controllers: [UsersController],
   exports: [UsersService, FollowsService, EndorsementsService, ActivityService],
