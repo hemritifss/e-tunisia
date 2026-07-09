@@ -16,7 +16,7 @@ const email_module_1 = require("../email/email.module");
 const push_module_1 = require("../push/push.module");
 const digest_service_1 = require("./digest.service");
 const digest_controller_1 = require("./digest.controller");
-const scheduled_tasks_service_1 = require("../scheduled/scheduled-tasks.service");
+const weekly_digest_runner_1 = require("../scheduled/weekly-digest-runner");
 let DigestModule = class DigestModule {
 };
 exports.DigestModule = DigestModule;
@@ -26,9 +26,9 @@ exports.DigestModule = DigestModule = __decorate([
         controllers: [digest_controller_1.DigestController],
         providers: [
             digest_service_1.DigestService,
-            { provide: scheduled_tasks_service_1.WeeklyDigestRunner, useExisting: digest_service_1.DigestService },
+            { provide: weekly_digest_runner_1.WeeklyDigestRunner, useExisting: digest_service_1.DigestService },
         ],
-        exports: [digest_service_1.DigestService, scheduled_tasks_service_1.WeeklyDigestRunner],
+        exports: [digest_service_1.DigestService, weekly_digest_runner_1.WeeklyDigestRunner],
     })
 ], DigestModule);
 //# sourceMappingURL=digest.module.js.map

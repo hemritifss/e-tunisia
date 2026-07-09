@@ -5,6 +5,7 @@ import { UserStreak } from '../challenges/streak.entity';
 import { NotificationsService } from '../notifications/notifications.service';
 import { NotificationType } from '../notifications/notification.entity';
 import { RedisService } from '../redis/redis.service';
+import { WeeklyDigestRunner } from './weekly-digest-runner';
 
 /**
  * Lightweight in-process scheduler (no @nestjs/schedule dependency). Ticks hourly
@@ -91,13 +92,4 @@ export class ScheduledTasksService implements OnModuleInit, OnModuleDestroy {
     }
     this.logger.log(`Streak reminders sent: ${sent}/${rows.length}`);
   }
-}
-
-/**
- * Optional collaborator that produces + sends the weekly digest. Kept as a separate
- * injectable so Tier 1.3 (email) can register it without this service depending on
- * the email module directly.
- */
-export abstract class WeeklyDigestRunner {
-  abstract runWeeklyDigest(): Promise<void>;
 }

@@ -13,7 +13,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 };
 var ScheduledTasksService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.WeeklyDigestRunner = exports.ScheduledTasksService = void 0;
+exports.ScheduledTasksService = void 0;
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
@@ -21,6 +21,7 @@ const streak_entity_1 = require("../challenges/streak.entity");
 const notifications_service_1 = require("../notifications/notifications.service");
 const notification_entity_1 = require("../notifications/notification.entity");
 const redis_service_1 = require("../redis/redis.service");
+const weekly_digest_runner_1 = require("./weekly-digest-runner");
 let ScheduledTasksService = ScheduledTasksService_1 = class ScheduledTasksService {
     constructor(streaks, notifications, redis, weekly) {
         this.streaks = streaks;
@@ -86,9 +87,6 @@ exports.ScheduledTasksService = ScheduledTasksService = ScheduledTasksService_1 
     __metadata("design:paramtypes", [typeorm_2.Repository,
         notifications_service_1.NotificationsService,
         redis_service_1.RedisService,
-        WeeklyDigestRunner])
+        weekly_digest_runner_1.WeeklyDigestRunner])
 ], ScheduledTasksService);
-class WeeklyDigestRunner {
-}
-exports.WeeklyDigestRunner = WeeklyDigestRunner;
 //# sourceMappingURL=scheduled-tasks.service.js.map

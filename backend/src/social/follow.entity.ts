@@ -3,23 +3,30 @@ import {
   PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
+  Index,
+  Unique,
 } from 'typeorm';
 
+// NOTE: this maps the SAME `follows` table as users/follow.entity. The two MUST
+// declare an identical schema or TypeORM synchronize fights over the columns
+// (it was dropping + re-adding followingId as NOT NULL and failing on existing
+// rows, which aborted the whole schema sync). Keep both in lock-step.
 @Entity('follows')
+@Unique(['followerId', 'followedId'])
 export class Follow {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column()
+  @Index()
   followerId: string; // Who is following
 
-  @Column()
+  // Mirror of followedId; nullable so inserts from either subsystem succeed.
+  @Column({ nullable: true })
   followingId: string; // Who is being followed
 
-  // The `follows` table is shared with users/follow.entity, which has a NOT NULL
-  // `followedId`. Mirror followingId here so inserts via this service satisfy that
-  // column and both follow subsystems (social + activity/feed) see the same edges.
   @Column()
+  @Index()
   followedId: string;
 
   @CreateDateColumn()

@@ -7,7 +7,7 @@ import { EmailModule } from '../email/email.module';
 import { PushModule } from '../push/push.module';
 import { DigestService } from './digest.service';
 import { DigestController } from './digest.controller';
-import { WeeklyDigestRunner } from '../scheduled/scheduled-tasks.service';
+import { WeeklyDigestRunner } from '../scheduled/weekly-digest-runner';
 
 /**
  * Weekly "Your Tunisia week" digest (email + budgeted push). Registered as the

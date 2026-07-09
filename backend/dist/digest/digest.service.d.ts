@@ -4,7 +4,7 @@ import { UserStreak } from '../challenges/streak.entity';
 import { Place } from '../places/place.entity';
 import { EmailService } from '../email/email.service';
 import { PushService } from '../push/push.service';
-import { WeeklyDigestRunner } from '../scheduled/scheduled-tasks.service';
+import { WeeklyDigestRunner } from '../scheduled/weekly-digest-runner';
 export declare class DigestService implements WeeklyDigestRunner {
     private readonly users;
     private readonly streaks;

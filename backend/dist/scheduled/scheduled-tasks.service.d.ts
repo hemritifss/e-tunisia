@@ -3,6 +3,7 @@ import { Repository } from 'typeorm';
 import { UserStreak } from '../challenges/streak.entity';
 import { NotificationsService } from '../notifications/notifications.service';
 import { RedisService } from '../redis/redis.service';
+import { WeeklyDigestRunner } from './weekly-digest-runner';
 export declare class ScheduledTasksService implements OnModuleInit, OnModuleDestroy {
     private readonly streaks;
     private readonly notifications;
@@ -18,7 +19,4 @@ export declare class ScheduledTasksService implements OnModuleInit, OnModuleDest
     private tick;
     private runOnce;
     runStreakReminders(): Promise<void>;
-}
-export declare abstract class WeeklyDigestRunner {
-    abstract runWeeklyDigest(): Promise<void>;
 }
