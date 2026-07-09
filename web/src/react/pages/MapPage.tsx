@@ -2,6 +2,9 @@ import '../../styles/map.css';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import 'leaflet.markercluster';
+import 'leaflet.markercluster/dist/MarkerCluster.css';
+import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 import { Search, X, ArrowRight, Loader2 } from 'lucide-react';
 import * as api from '../../api';
 import { useCity } from '../lib/useCity';
@@ -129,6 +132,7 @@ export default function MapPage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const markersRef = useRef<{ marker: L.Marker; place: MapPlace }[]>([]);
+  const clusterRef = useRef<any>(null); // L.MarkerClusterGroup
 
   const [places, setPlaces] = useState<MapPlace[]>([]);
   const [loading, setLoading] = useState(true);
@@ -175,7 +179,7 @@ export default function MapPage() {
     }).catch(() => { /* travelers optional */ });
 
     setTimeout(() => map.invalidateSize(), 100);
-    return () => { map.remove(); mapRef.current = null; markersRef.current = []; };
+    return () => { map.remove(); mapRef.current = null; markersRef.current = []; clusterRef.current = null; };
   }, []);
 
   // Load the real catalog.
@@ -188,22 +192,31 @@ export default function MapPage() {
     return () => { cancelled = true; };
   }, []);
 
-  // (Re)create markers whenever the catalog lands.
+  // (Re)create markers whenever the catalog lands. With ~800 real places we cluster
+  // them (leaflet.markercluster) so dense areas (Tunis, Djerba) stay readable; the
+  // category/city filter re-fills the cluster (see the filter effect below).
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !places.length) return;
-    markersRef.current.forEach(({ marker }) => marker.remove());
-    markersRef.current = [];
-    places.forEach((place, index) => {
-      const marker = L.marker([place.lat, place.lng], { icon: markerIcon(place), opacity: 0 }).addTo(map);
-      setTimeout(() => {
-        marker.setOpacity(1);
-        marker.getElement()?.classList.add('map-marker-animate-in');
-      }, 60 + Math.min(index, 40) * 30);
+    if (clusterRef.current) { map.removeLayer(clusterRef.current); clusterRef.current = null; }
+
+    const cluster = (L as any).markerClusterGroup({
+      chunkedLoading: true,
+      showCoverageOnHover: false,
+      maxClusterRadius: 55,
+      spiderfyOnMaxZoom: true,
+      disableClusteringAtZoom: 15, // individual pins once you're zoomed into a town
+    });
+    clusterRef.current = cluster;
+
+    markersRef.current = places.map((place) => {
+      const marker = L.marker([place.lat, place.lng], { icon: markerIcon(place) });
       marker.bindPopup(L.popup({ maxWidth: 320, minWidth: 280, className: 'map-custom-popup', closeButton: true, autoPan: true }).setContent(popupHtml(place)));
       marker.on('click', () => setSelected(place));
-      markersRef.current.push({ marker, place });
+      return { marker, place };
     });
+    map.addLayer(cluster);
+    // Fill respecting the active filter (the filter effect also runs on `places`).
   }, [places]);
 
   // Real reviews for the selected place.
@@ -235,17 +248,15 @@ export default function MapPage() {
       const dLng = (p.lng - center.lng) * 92;
       return Math.sqrt(dLat * dLat + dLng * dLng) <= 45;
     };
-    markersRef.current.forEach(({ marker, place }) => {
-      const el = marker.getElement();
-      if (!el) return;
-      if ((activeCat === 'all' || place.category === activeCat) && nearCity(place)) {
-        el.style.display = '';
-        el.classList.remove('map-marker-animate-in');
-        requestAnimationFrame(() => el.classList.add('map-marker-animate-in'));
-      } else {
-        el.style.display = 'none';
-      }
-    });
+    // Re-fill the cluster with only the markers matching the category + city filter.
+    const cluster = clusterRef.current;
+    if (cluster) {
+      const visible = markersRef.current
+        .filter(({ place }) => (activeCat === 'all' || place.category === activeCat) && nearCity(place))
+        .map(({ marker }) => marker);
+      cluster.clearLayers();
+      cluster.addLayers(visible);
+    }
     setSelected(null);
     const map = mapRef.current;
     if (map) {
@@ -264,8 +275,16 @@ export default function MapPage() {
   const goToPlace = (p: MapPlace) => {
     const found = markersRef.current.find((m) => m.place.id === p.id);
     if (found && mapRef.current) {
-      mapRef.current.flyTo([p.lat, p.lng], 12, { duration: 1 });
-      setTimeout(() => { found.marker.openPopup(); setSelected(p); }, 1100);
+      // Expand the enclosing cluster (if any) so the pin + popup are visible.
+      const cluster = clusterRef.current;
+      if (cluster && typeof cluster.zoomToShowLayer === 'function') {
+        cluster.zoomToShowLayer(found.marker, () => {
+          setTimeout(() => { found.marker.openPopup(); setSelected(p); }, 200);
+        });
+      } else {
+        mapRef.current.flyTo([p.lat, p.lng], 12, { duration: 1 });
+        setTimeout(() => { found.marker.openPopup(); setSelected(p); }, 1100);
+      }
     }
     setSearch('');
     setSearchOpen(false);
