@@ -27,9 +27,16 @@ interface UpsertInput {
         placeId: string;
         packageId?: string | null;
         dayIndex?: number;
+        timeSlot?: string | null;
     }>;
     days?: number;
+    startDate?: string | null;
     isPublic?: boolean;
+}
+
+/** Accept only a clean "YYYY-MM-DD" date, else null. */
+function cleanDate(v: unknown): string | null {
+    return typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v) ? v : null;
 }
 
 @Injectable()
@@ -167,6 +174,7 @@ export class TripsService {
                     pricePerPerson: pkg?.pricePerPerson ?? null,
                     currency: pkg?.currency || null,
                     dayIndex: Number.isFinite(s.dayIndex) ? Number(s.dayIndex) : idx,
+                    timeSlot: typeof s.timeSlot === 'string' && /^\d{2}:\d{2}$/.test(s.timeSlot) ? s.timeSlot : null,
                     addedAt: now,
                 } as TripStop;
             });
@@ -213,6 +221,7 @@ export class TripsService {
             currency: (input.currency || 'TND').toUpperCase().slice(0, 8),
             stops,
             days,
+            startDate: cleanDate(input.startDate),
             isPublic: input.isPublic !== false,
         }));
         if (userId) await this.badges.awardIfEligible(userId, 'trip.created', {});
@@ -235,6 +244,7 @@ export class TripsService {
         if (input.travelers) trip.travelers = Math.min(50, Math.max(1, Number(input.travelers)));
         if (input.currency) trip.currency = String(input.currency).toUpperCase().slice(0, 8);
         if (input.days) trip.days = Math.max(1, Number(input.days));
+        if ('startDate' in input) trip.startDate = cleanDate(input.startDate);
         if (typeof input.isPublic === 'boolean') trip.isPublic = input.isPublic;
         return this.trips.save(trip);
     }

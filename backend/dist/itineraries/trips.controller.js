@@ -38,6 +38,12 @@ __decorate([
     (0, class_validator_1.Max)(29),
     __metadata("design:type", Number)
 ], StopDto.prototype, "dayIndex", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.MaxLength)(5),
+    __metadata("design:type", String)
+], StopDto.prototype, "timeSlot", void 0);
 class UpsertTripDto {
 }
 __decorate([
@@ -66,6 +72,12 @@ __decorate([
     (0, class_validator_1.Max)(30),
     __metadata("design:type", Number)
 ], UpsertTripDto.prototype, "days", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.MaxLength)(10),
+    __metadata("design:type", String)
+], UpsertTripDto.prototype, "startDate", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsBoolean)(),

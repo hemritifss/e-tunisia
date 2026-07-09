@@ -23,8 +23,10 @@ interface UpsertInput {
         placeId: string;
         packageId?: string | null;
         dayIndex?: number;
+        timeSlot?: string | null;
     }>;
     days?: number;
+    startDate?: string | null;
     isPublic?: boolean;
 }
 export declare class TripsService {

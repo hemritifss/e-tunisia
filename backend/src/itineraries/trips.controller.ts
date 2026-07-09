@@ -15,6 +15,7 @@ class StopDto {
     @IsUUID() placeId: string;
     @IsOptional() @IsUUID() packageId?: string;
     @IsOptional() @IsInt() @Min(0) @Max(29) dayIndex?: number;
+    @IsOptional() @IsString() @MaxLength(5) timeSlot?: string; // "HH:MM"
 }
 
 class UpsertTripDto {
@@ -22,6 +23,7 @@ class UpsertTripDto {
     @IsOptional() @IsInt() @Min(1) @Max(50) travelers?: number;
     @IsOptional() @IsString() @MaxLength(8) currency?: string;
     @IsOptional() @IsInt() @Min(1) @Max(30) days?: number;
+    @IsOptional() @IsString() @MaxLength(10) startDate?: string; // "YYYY-MM-DD"
     @IsOptional() @IsBoolean() isPublic?: boolean;
     @IsArray() @ValidateNested({ each: true }) @Type(() => StopDto)
     stops: StopDto[];

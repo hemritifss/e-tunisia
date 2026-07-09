@@ -49,6 +49,10 @@ __decorate([
     __metadata("design:type", Number)
 ], TripPlan.prototype, "days", void 0);
 __decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], TripPlan.prototype, "startDate", void 0);
+__decorate([
     (0, typeorm_1.Column)({ default: true }),
     __metadata("design:type", Boolean)
 ], TripPlan.prototype, "isPublic", void 0);
