@@ -191,6 +191,67 @@ let BookingsService = class BookingsService {
             totalHostPayouts: Number(result.totalHostPayouts) || 0,
         };
     }
+    async getOwnerEarnings(ownerId) {
+        const rows = await this.bookingRepo
+            .createQueryBuilder('booking')
+            .innerJoin('booking.place', 'place')
+            .where('place.submittedBy = :ownerId', { ownerId })
+            .andWhere('booking.status IN (:...statuses)', { statuses: ['paid', 'completed'] })
+            .orderBy('booking.createdAt', 'DESC')
+            .select([
+            'booking.id AS id',
+            'booking.placeId AS "placeId"',
+            'place.name AS "placeName"',
+            'booking.currency AS currency',
+            'booking.subtotal AS subtotal',
+            'booking.platformFee AS "platformFee"',
+            'booking.hostPayout AS "hostPayout"',
+            'booking.status AS status',
+            'booking.checkIn AS "checkIn"',
+            'booking.payoutSettledAt AS "payoutSettledAt"',
+            'booking.createdAt AS "createdAt"',
+        ])
+            .getRawMany();
+        let grossTnd = 0, commissionTnd = 0, netTnd = 0, owedTnd = 0, paidOutTnd = 0;
+        const entries = rows.map((r) => {
+            const gross = Number(r.subtotal) || 0;
+            const commission = Number(r.platformFee) || 0;
+            const net = Number(r.hostPayout) || 0;
+            const settled = !!r.payoutSettledAt;
+            grossTnd += gross;
+            commissionTnd += commission;
+            netTnd += net;
+            if (settled)
+                paidOutTnd += net;
+            else
+                owedTnd += net;
+            return {
+                id: r.id, placeId: r.placeId, placeName: r.placeName, currency: r.currency,
+                grossTnd: gross, commissionTnd: commission, netTnd: net,
+                status: r.status, checkIn: r.checkIn, settled, payoutSettledAt: r.payoutSettledAt,
+                createdAt: r.createdAt,
+            };
+        });
+        return {
+            summary: {
+                bookings: entries.length,
+                grossTnd: Math.round(grossTnd * 100) / 100,
+                commissionTnd: Math.round(commissionTnd * 100) / 100,
+                netTnd: Math.round(netTnd * 100) / 100,
+                owedTnd: Math.round(owedTnd * 100) / 100,
+                paidOutTnd: Math.round(paidOutTnd * 100) / 100,
+            },
+            entries,
+        };
+    }
+    async settlePayout(bookingId) {
+        const booking = await this.bookingRepo.findOne({ where: { id: bookingId } });
+        if (!booking)
+            throw new common_1.NotFoundException('Booking not found');
+        booking.payoutSettledAt = new Date();
+        await this.bookingRepo.save(booking);
+        return { id: booking.id, payoutSettledAt: booking.payoutSettledAt };
+    }
     async checkAvailability(itemId, checkIn, checkOut, guests) {
         const item = await this.inventoryRepo.findOne({ where: { id: itemId } });
         if (!item)

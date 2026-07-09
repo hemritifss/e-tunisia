@@ -1,12 +1,14 @@
+import '../../styles/owner-earnings.css';
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Briefcase, Check, Sparkles, Inbox, BarChart3, MapPin, TrendingUp, Target, Mail, Phone,
-  MessageCircle, Star, Package, X, Plus, Pencil, Trash2, ExternalLink, Coins,
+  MessageCircle, Star, Package, X, Plus, Pencil, Trash2, ExternalLink, Coins, Wallet,
 } from 'lucide-react';
 import * as api from '../../api';
 import { showToast } from '../../ui-utils';
+import { useMoney } from '../lib/useCurrency';
 
 // Migrated from vanilla pages/owner.ts — business dashboard: stats, inquiry
 // pipeline, lead-source breakdown, listings, + boost/package CRUD modals.
@@ -364,6 +366,46 @@ function PlanBanner() {
   );
 }
 
+function Earnings() {
+  const money = useMoney();
+  const { data, isLoading } = useQuery({ queryKey: ['owner-earnings'], queryFn: () => api.getOwnerEarnings().catch(() => null) });
+  if (isLoading) return <div className="owner-stats">{[0, 1, 2].map((i) => <div className="owner-stat-skel" key={i} />)}</div>;
+  const s = data?.summary;
+  if (!s || s.bookings === 0) {
+    return <p className="text-muted" style={{ padding: 'var(--space-3)' }}>No paid bookings yet. Earnings from confirmed bookings will show here.</p>;
+  }
+  const tiles: Array<{ label: string; val: string; hint?: string }> = [
+    { label: 'Owed to you', val: money(s.owedTnd), hint: 'Awaiting payout' },
+    { label: 'Paid out', val: money(s.paidOutTnd) },
+    { label: 'Net earnings', val: money(s.netTnd), hint: `${s.bookings} booking${s.bookings === 1 ? '' : 's'}` },
+    { label: 'Platform commission', val: money(s.commissionTnd) },
+  ];
+  return (
+    <>
+      <div className="owner-stats">
+        {tiles.map((t, i) => (
+          <div className="owner-stat" key={i}>
+            <div className="owner-stat-icon"><Wallet size={18} /></div>
+            <div className="owner-stat-meta">
+              <div className="owner-stat-num">{t.val}</div>
+              <div className="owner-stat-label">{t.label}{t.hint ? ` · ${t.hint}` : ''}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+      <ul className="owner-earnings-list">
+        {(data!.entries || []).slice(0, 8).map((e) => (
+          <li className="owner-earnings-row" key={e.id}>
+            <span className="owner-earnings-place">{e.placeName}</span>
+            <span className="owner-earnings-net">{money(e.netTnd)}</span>
+            <span className={`owner-earnings-status ${e.settled ? 'is-paid' : 'is-owed'}`}>{e.settled ? 'Paid out' : 'Owed'}</span>
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+}
+
 export default function OwnerPage() {
   const [boostPlace, setBoostPlace] = useState<any | null>(null);
   const [pkgPlace, setPkgPlace] = useState<any | null>(null);
@@ -379,6 +421,11 @@ export default function OwnerPage() {
       </div>
 
       <StatsTiles />
+
+      <section className="owner-section">
+        <header className="owner-section-head"><h2><Wallet /> Earnings &amp; payouts</h2></header>
+        <div className="owner-earnings"><Earnings /></div>
+      </section>
 
       <section className="owner-section">
         <header className="owner-section-head">

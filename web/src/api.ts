@@ -892,6 +892,19 @@ export async function getInquiryStats() {
   }>('/inquiries/stats');
 }
 
+// ── OWNER PAYOUT LEDGER (Tier 2.6) ──
+export interface OwnerEarnings {
+  summary: { bookings: number; grossTnd: number; commissionTnd: number; netTnd: number; owedTnd: number; paidOutTnd: number };
+  entries: Array<{
+    id: string; placeId: string; placeName: string; currency: string;
+    grossTnd: number; commissionTnd: number; netTnd: number;
+    status: string; checkIn: string; settled: boolean; payoutSettledAt: string | null; createdAt: string;
+  }>;
+}
+export async function getOwnerEarnings() {
+  return api<OwnerEarnings>('/bookings/owner/earnings');
+}
+
 export async function listMyInquiries(page = 1, limit = 20) {
   return api<{ data: any[]; meta: { page: number; limit: number; total: number; totalPages: number } }>(
     `/inquiries/mine?page=${page}&limit=${limit}`,
