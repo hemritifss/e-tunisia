@@ -6,9 +6,10 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   ArrowLeft, Heart, Share2, MapPin, Star, Send, Phone, MessageCircle, ExternalLink,
   Navigation, Map as MapIcon, Luggage, Pencil, Package, MessageSquare, ShieldCheck,
-  CornerDownRight, Trash2, MessageSquareReply, X, CheckCircle2,
+  CornerDownRight, Trash2, MessageSquareReply, X, CheckCircle2, Clock, Ticket, Hourglass,
 } from 'lucide-react';
 import * as apiService from '../../api';
+import { useMoney } from '../lib/useCurrency';
 import { shareUrl, toggleSaved, isSaved, showToast } from '../../ui-utils';
 import * as tripCart from '../../trip-cart';
 import { Reveal } from '../components/Reveal';
@@ -29,6 +30,36 @@ function whatsappLink(phone: string): string {
   if (!digits) return '#';
   const withCountry = digits.startsWith('216') ? digits : (digits.length === 8 ? '216' + digits : digits);
   return `https://wa.me/${withCountry}`;
+}
+
+function fmtDuration(min: number): string {
+  if (min < 60) return `${min} min`;
+  const h = Math.floor(min / 60), m = min % 60;
+  return m ? `${h}h ${m}m` : `${h}h`;
+}
+const pad2 = (n: number) => String(n).padStart(2, '0');
+/** Best-effort: pull the last close time (minutes since midnight) from a free-form hours string. */
+function parseCloseMinutes(hours?: string): number | null {
+  if (!hours) return null;
+  const re = /(\d{1,2})(?::(\d{2}))?\s*(am|pm)?/gi;
+  let m: RegExpExecArray | null, lastMin: number | null = null;
+  while ((m = re.exec(hours)) !== null) {
+    let h = Number(m[1]); const mm = Number(m[2] || 0); const ap = (m[3] || '').toLowerCase();
+    if (h > 24 || mm > 59) continue;
+    if (ap === 'pm' && h < 12) h += 12;
+    if (ap === 'am' && h === 12) h = 0;
+    lastMin = h * 60 + mm;
+  }
+  return lastMin;
+}
+/** "arrive by" = close − typical visit − 15 min buffer. Returns "HH:MM" or null. */
+function arriveByLabel(hours?: string, avgVisitMinutes?: number | null): { close: string; arrive: string } | null {
+  const close = parseCloseMinutes(hours);
+  if (close == null || !avgVisitMinutes || avgVisitMinutes <= 0) return null;
+  const arrive = close - avgVisitMinutes - 15;
+  if (arrive <= 0) return null;
+  const fmt = (mins: number) => `${pad2(Math.floor(mins / 60))}:${pad2(mins % 60)}`;
+  return { close: fmt(close), arrive: fmt(arrive) };
 }
 
 function Stars({ rating, size = 16 }: { rating: number; size?: number }) {
@@ -293,6 +324,7 @@ function InquiryModal({ place, placeId, pkg, onClose }: { place: any; placeId: s
 
 export default function PlaceDetailPage() {
   const queryClient = useQueryClient();
+  const money = useMoney();
   const [placeId, setPlaceId] = useState(placeIdFromPath());
   useEffect(() => onRouteChange(() => setPlaceId(placeIdFromPath())), []);
 
@@ -500,6 +532,32 @@ export default function PlaceDetailPage() {
               <button className="btn btn-ghost" onClick={() => setReviewFormOpen((o) => !o)}><Pencil /> Write a review</button>
             </div>
           </div>
+
+          {(place.openingHours || place.entryPrice != null || place.avgVisitMinutes || place.ticketUrl) && (
+            <div className="place-practical">
+              <h3 className="place-practical-title">Good to know</h3>
+              <ul className="place-practical-list">
+                {place.openingHours && (
+                  <li><Clock size={15} /> <span>{place.openingHours}</span></li>
+                )}
+                {place.entryPrice != null && (
+                  <li><Ticket size={15} /> <span>{Number(place.entryPrice) > 0 ? `${money(Number(place.entryPrice))} entry` : 'Free entry'}</span></li>
+                )}
+                {place.avgVisitMinutes ? (
+                  <li><Hourglass size={15} /> <span>~{fmtDuration(Number(place.avgVisitMinutes))} typical visit</span></li>
+                ) : null}
+                {(() => {
+                  const ab = arriveByLabel(place.openingHours, place.avgVisitMinutes);
+                  return ab ? (
+                    <li className="place-practical-hint"><Clock size={15} /> <span>Closes {ab.close} — arrive by {ab.arrive}</span></li>
+                  ) : null;
+                })()}
+              </ul>
+              {place.ticketUrl && (
+                <a className="btn btn-outline" target="_blank" rel="noopener" href={place.ticketUrl}><Ticket size={15} /> Buy tickets</a>
+              )}
+            </div>
+          )}
         </aside>
       </div>
 

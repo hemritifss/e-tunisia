@@ -21,6 +21,9 @@ export declare class Place {
     phone: string;
     openingHours: string;
     priceRange: string;
+    entryPrice: number | null;
+    ticketUrl: string | null;
+    avgVisitMinutes: number | null;
     rating: number;
     reviewCount: number;
     viewCount: number;

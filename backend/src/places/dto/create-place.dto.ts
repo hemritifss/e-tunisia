@@ -1,6 +1,8 @@
 import {
     IsString,
     IsNumber,
+    IsInt,
+    Min,
     IsOptional,
     IsArray,
     IsBoolean,
@@ -27,6 +29,9 @@ export class CreatePlaceDto {
     @ApiProperty({ required: false }) @IsOptional() @IsString() phone?: string;
     @ApiProperty({ required: false }) @IsOptional() @IsString() openingHours?: string;
     @ApiProperty({ required: false }) @IsOptional() @IsString() priceRange?: string;
+    @ApiProperty({ required: false }) @IsOptional() @IsNumber() @Min(0) entryPrice?: number;
+    @ApiProperty({ required: false }) @IsOptional() @IsString() ticketUrl?: string;
+    @ApiProperty({ required: false }) @IsOptional() @IsInt() @Min(0) avgVisitMinutes?: number;
     @ApiProperty({ required: false }) @IsOptional() @IsArray() tags?: string[];
     @ApiProperty({ required: false }) @IsOptional() @IsBoolean() isFeatured?: boolean;
     @ApiProperty() @IsUUID() categoryId: string;
