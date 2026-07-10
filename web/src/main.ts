@@ -45,6 +45,7 @@ const ItinerariesPage = React.lazy(() => import('./react/pages/ItinerariesPage')
 const DiscoverTripsPage = React.lazy(() => import('./react/pages/DiscoverTripsPage'));
 const TipsPage = React.lazy(() => import('./react/pages/TipsPage'));
 const SafetyPage = React.lazy(() => import('./react/pages/SafetyPage'));
+const SubmitGemPage = React.lazy(() => import('./react/pages/SubmitGemPage'));
 const SettingsPage = React.lazy(() => import('./react/pages/SettingsPage'));
 const CreditsPage = React.lazy(() => import('./react/pages/CreditsPage'));
 const InquiriesPage = React.lazy(() => import('./react/pages/InquiriesPage'));
@@ -194,6 +195,7 @@ function getRoute(route: string): Route {
     '/events': { render: () => '', init: () => {}, page: 'events', isReact: true },
     '/tips': { render: () => '', init: () => {}, page: 'tips', isReact: true },
     '/safety': { render: () => '', init: () => {}, page: 'safety', isReact: true },
+    '/submit-gem': { render: () => '', init: () => {}, page: 'submit-gem', isReact: true },
     '/map': { render: () => '', init: () => {}, page: 'map', isReact: true },
     '/profile': { render: () => '', init: () => {}, page: 'profile', isReact: true },
     '/leaderboard': { render: () => '', init: () => {}, page: 'profile', isReact: true },
@@ -343,6 +345,8 @@ function navigate() {
         currentUnmount = mountIsland(TipsPage, islandRoot);
       } else if (path === '/safety') {
         currentUnmount = mountIsland(SafetyPage, islandRoot);
+      } else if (path === '/submit-gem') {
+        currentUnmount = mountIsland(SubmitGemPage, islandRoot);
       } else if (path === '/settings') {
         currentUnmount = mountIsland(SettingsPage, islandRoot);
       } else if (path === '/credits') {

@@ -33,6 +33,7 @@ import { formatNumber } from '../lib/utils';
 import { useAuthStore } from '../stores/auth-store';
 import { useUIStore } from '../stores/ui-store';
 import { PullToRefresh } from '../components/PullToRefresh';
+import { CityCompleteness } from '../components/GemWidgets';
 import { useCity } from '../lib/useCity';
 
 type ViewMode = 'grid' | 'list';
@@ -551,6 +552,9 @@ export default function ExplorePage() {
 
       {/* AI "For you" — only on the unfiltered discovery view */}
       {activeCategory === 'all' && !searchQuery.trim() && minRating === 0 && !verifiedOnly && <ForYouStrip />}
+
+      {/* The completeness game — "Kairouan is 34% mapped" → contribute */}
+      {activeCategory === 'all' && !searchQuery.trim() && <CityCompleteness />}
 
       {/* Results */}
       <PullToRefresh onRefresh={async () => {

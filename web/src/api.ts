@@ -209,6 +209,34 @@ export async function getVisitedIds() {
   return api<string[]>('/users/visited');
 }
 
+// ── GEMS (community contribution engine) ─────
+export interface GemSubmitResult {
+  duplicate: boolean;
+  place: { id: string; name: string; slug: string; city?: string; governorate?: string };
+  needsConfirmations?: number;
+}
+export async function submitGem(payload: {
+  name: string; description: string; latitude: number; longitude: number;
+  images?: string[]; city?: string; governorate?: string; categoryId?: string;
+}) {
+  return api<GemSubmitResult>('/gems/submit', { method: 'POST', body: JSON.stringify(payload) });
+}
+export async function confirmGem(placeId: string) {
+  return api<{ confirmations: number; wentLive: boolean; approved: boolean }>(
+    `/gems/${encodeURIComponent(placeId)}/confirm`, { method: 'POST' },
+  );
+}
+export async function getGemStatus(placeId: string) {
+  return api<{ confirmations: number; confirmedByMe: boolean; pending: boolean; needed: number; isMine: boolean }>(
+    `/gems/${encodeURIComponent(placeId)}/status`,
+  );
+}
+export async function getCompleteness() {
+  return api<Array<{ governorate: string; count: number; target: number; pct: number; missing: number }>>(
+    '/gems/completeness',
+  );
+}
+
 // ── ROUTING (real roads via OSRM/Mapbox) ─────
 export async function getRoute(coords: [number, number][]) {
   const path = coords.map((c) => c.join(',')).join(';');

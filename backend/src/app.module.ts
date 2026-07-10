@@ -49,6 +49,7 @@ import { AnalyticsModule } from './analytics/analytics.module';
 import { EmailModule } from './email/email.module';
 import { DigestModule } from './digest/digest.module';
 import { ScheduledModule } from './scheduled/scheduled.module';
+import { GemsModule } from './gems/gems.module';
 import { I18nModule } from './i18n/i18n.module';
 import { RoutingModule } from './routing/routing.module';
 import { getDatabaseConfig } from './database/database.config';
@@ -119,6 +120,7 @@ import { getDatabaseConfig } from './database/database.config';
     EmailModule,
     DigestModule,
     ScheduledModule,
+    GemsModule,
   ],
   providers: [
     {

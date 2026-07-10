@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import {
     Compass, Map, Bookmark, Trophy, Globe2, IdCard,
     Heart, Briefcase, Send, Calendar, Crown, Lightbulb, Award,
-    ChevronDown, ChevronUp, Clapperboard, Sparkles, Route, Layers, Shield,
+    ChevronDown, ChevronUp, Clapperboard, Sparkles, Route, Layers, Shield, Gem,
 } from 'lucide-react';
 import { api, getImageUrl } from '../../shared/api';
 import { useAuthStore } from '../stores/auth-store';
@@ -32,6 +32,7 @@ const PRIMARY: ShortcutItem[] = [
     { id: 'reels',      icon: <Clapperboard size={18} />, label: 'Reels',    href: '#/reels' },
     { id: 'activity',   icon: <Globe2 size={18} />,   label: 'Following',    href: '#/activity' },
     { id: 'explore',    icon: <Compass size={18} />,  label: 'Explore',      href: '#/explore' },
+    { id: 'add-gem',    icon: <Gem size={18} />,      label: 'Add a hidden gem', href: '#/submit-gem' },
     { id: 'ai-planner', icon: <Sparkles size={18} />, label: 'AI Planner',   href: '#/ai-planner' },
     { id: 'map',        icon: <Map size={18} />,      label: 'Map',          href: '#/map' },
     { id: 'itineraries',icon: <Route size={18} />,    label: 'Itineraries',  href: '#/itineraries' },

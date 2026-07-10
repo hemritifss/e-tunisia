@@ -14,6 +14,7 @@ import { shareUrl, toggleSaved, isSaved, showToast } from '../../ui-utils';
 import * as tripCart from '../../trip-cart';
 import { Reveal } from '../components/Reveal';
 import { KontHouniButton } from '../components/KontHouniButton';
+import { GemConfirmBlock } from '../components/GemWidgets';
 import { currentPath, query as routeQuery, absoluteUrl, onRouteChange } from '../../router';
 import { addVisitedCity, isAnonymous } from '../../passport-draft';
 
@@ -473,7 +474,16 @@ export default function PlaceDetailPage() {
               <span className="place-detail-rating-value">{ratingValue.toFixed(1)}</span>
               <span className="place-detail-review-count">({reviewTotal} reviews)</span>
             </div>
+            {place.discoveredBy?.handle && (
+              <a className="discovered-by" href={`#/u/${place.discoveredBy.handle}`} style={{ marginBottom: 'var(--space-3)' }}>
+                {place.discoveredBy.avatar
+                  ? <img src={apiService.getImageUrl(place.discoveredBy.avatar)} alt="" />
+                  : <span className="gem-mark">💎</span>}
+                Discovered by @{place.discoveredBy.handle}
+              </a>
+            )}
             <p className="place-detail-description">{place.description || ''}</p>
+            <GemConfirmBlock placeId={placeId} />
           </div>
 
           {reviewFormOpen && (
