@@ -209,6 +209,22 @@ export async function getVisitedIds() {
   return api<string[]>('/users/visited');
 }
 
+// ── COLLABORATIVE TRIPS (invite co-planners) ─
+export async function inviteTrip(slug: string) {
+  return api<{ code: string }>(`/trips/${encodeURIComponent(slug)}/invite`, { method: 'POST' });
+}
+export async function joinTrip(slug: string, code: string) {
+  return api<{ joined: boolean; title?: string; alreadyOwner?: boolean }>(
+    `/trips/${encodeURIComponent(slug)}/join`, { method: 'POST', body: JSON.stringify({ code }) },
+  );
+}
+export async function getTripMembers(slug: string) {
+  return api<{
+    members: Array<{ id: string; handle: string | null; fullName: string; avatar: string | null; isOwner: boolean }>;
+    canEdit: boolean; isOwner: boolean;
+  }>(`/trips/${encodeURIComponent(slug)}/members`);
+}
+
 // ── GEMS (community contribution engine) ─────
 export interface GemSubmitResult {
   duplicate: boolean;

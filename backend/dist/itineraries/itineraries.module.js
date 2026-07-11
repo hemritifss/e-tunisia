@@ -11,6 +11,7 @@ const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const itinerary_entity_1 = require("./itinerary.entity");
 const trip_plan_entity_1 = require("./trip-plan.entity");
+const trip_member_entity_1 = require("./trip-member.entity");
 const itineraries_service_1 = require("./itineraries.service");
 const itineraries_controller_1 = require("./itineraries.controller");
 const trips_service_1 = require("./trips.service");
@@ -27,7 +28,7 @@ exports.ItinerariesModule = ItinerariesModule;
 exports.ItinerariesModule = ItinerariesModule = __decorate([
     (0, common_1.Module)({
         imports: [
-            typeorm_1.TypeOrmModule.forFeature([itinerary_entity_1.Itinerary, trip_plan_entity_1.TripPlan, place_entity_1.Place, tour_package_entity_1.TourPackage]),
+            typeorm_1.TypeOrmModule.forFeature([itinerary_entity_1.Itinerary, trip_plan_entity_1.TripPlan, trip_member_entity_1.TripMember, place_entity_1.Place, tour_package_entity_1.TourPackage]),
             places_module_1.PlacesModule,
             users_module_1.UsersModule,
             badges_module_1.BadgesModule,

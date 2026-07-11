@@ -102,9 +102,34 @@ export class TripsController {
     @Put(':slug')
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()
-    @ApiOperation({ summary: 'Update a trip (owner only)' })
+    @ApiOperation({ summary: 'Update a trip (owner or co-planner)' })
     update(@Request() req, @Param('slug') slug: string, @Body() body: UpsertTripDto) {
         return this.trips.update(slug, req.user.id, body);
+    }
+
+    // ── Collaborative planning ─────────────────────────────────────────────
+
+    @Post(':slug/invite')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Get/mint the invite code for co-planning (owner only)' })
+    invite(@Request() req, @Param('slug') slug: string) {
+        return this.trips.ensureInviteCode(slug, req.user.id);
+    }
+
+    @Post(':slug/join')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Join a trip as co-planner via its invite code' })
+    join(@Request() req, @Param('slug') slug: string, @Body('code') code: string) {
+        return this.trips.join(slug, req.user.id, code);
+    }
+
+    @Get(':slug/members')
+    @UseGuards(OptionalJwtAuthGuard)
+    @ApiOperation({ summary: 'Who is planning this trip (owner + co-planners)' })
+    members(@Request() req, @Param('slug') slug: string) {
+        return this.trips.listMembers(slug, req?.user?.id);
     }
 
     @Post(':slug/inquiry')

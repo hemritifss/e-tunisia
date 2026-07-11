@@ -59,6 +59,10 @@ export class TripPlan {
     @Column({ nullable: true })
     startDate: string | null;
 
+    /** Secret co-planning invite code — share /trip/:slug?invite=<code> to add editors. */
+    @Column({ length: 24, nullable: true })
+    inviteCode: string | null;
+
     @Column({ default: true })
     isPublic: boolean; // anyone with the slug can view
 

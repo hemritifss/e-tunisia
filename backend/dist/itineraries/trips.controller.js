@@ -160,6 +160,15 @@ let TripsController = class TripsController {
     update(req, slug, body) {
         return this.trips.update(slug, req.user.id, body);
     }
+    invite(req, slug) {
+        return this.trips.ensureInviteCode(slug, req.user.id);
+    }
+    join(req, slug, code) {
+        return this.trips.join(slug, req.user.id, code);
+    }
+    members(req, slug) {
+        return this.trips.listMembers(slug, req?.user?.id);
+    }
     batchInquire(req, slug, body) {
         const userId = req?.user?.id || null;
         return this.trips.batchInquire(slug, userId, body);
@@ -230,7 +239,7 @@ __decorate([
     (0, common_1.Put)(':slug'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, swagger_1.ApiBearerAuth)(),
-    (0, swagger_1.ApiOperation)({ summary: 'Update a trip (owner only)' }),
+    (0, swagger_1.ApiOperation)({ summary: 'Update a trip (owner or co-planner)' }),
     __param(0, (0, common_1.Request)()),
     __param(1, (0, common_1.Param)('slug')),
     __param(2, (0, common_1.Body)()),
@@ -238,6 +247,39 @@ __decorate([
     __metadata("design:paramtypes", [Object, String, UpsertTripDto]),
     __metadata("design:returntype", void 0)
 ], TripsController.prototype, "update", null);
+__decorate([
+    (0, common_1.Post)(':slug/invite'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, swagger_1.ApiOperation)({ summary: 'Get/mint the invite code for co-planning (owner only)' }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)('slug')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", void 0)
+], TripsController.prototype, "invite", null);
+__decorate([
+    (0, common_1.Post)(':slug/join'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, swagger_1.ApiOperation)({ summary: 'Join a trip as co-planner via its invite code' }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)('slug')),
+    __param(2, (0, common_1.Body)('code')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String, String]),
+    __metadata("design:returntype", void 0)
+], TripsController.prototype, "join", null);
+__decorate([
+    (0, common_1.Get)(':slug/members'),
+    (0, common_1.UseGuards)(optional_jwt_auth_guard_1.OptionalJwtAuthGuard),
+    (0, swagger_1.ApiOperation)({ summary: 'Who is planning this trip (owner + co-planners)' }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)('slug')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", void 0)
+], TripsController.prototype, "members", null);
 __decorate([
     (0, common_1.Post)(':slug/inquiry'),
     (0, common_1.UseGuards)(optional_jwt_auth_guard_1.OptionalJwtAuthGuard),
