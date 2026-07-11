@@ -45,6 +45,23 @@ export declare class GemsController {
         pct: number;
         missing: number;
     }[]>;
+    ambassadors(): Promise<{
+        month: string;
+        ambassadors: {
+            governorate: string;
+            gems: number;
+            user: any;
+        }[];
+        topHunters: {
+            gems: number;
+            user: {
+                id: string;
+                handle: any;
+                fullName: string;
+                avatar: any;
+            };
+        }[];
+    }>;
     status(req: any, placeId: string): Promise<{
         confirmations: number;
         confirmedByMe: boolean;

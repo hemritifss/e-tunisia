@@ -76,6 +76,9 @@ let GemsController = class GemsController {
     completeness() {
         return this.gems.completeness();
     }
+    ambassadors() {
+        return this.gems.ambassadors();
+    }
     status(req, placeId) {
         return this.gems.status(placeId, req.user?.id);
     }
@@ -110,6 +113,13 @@ __decorate([
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)
 ], GemsController.prototype, "completeness", null);
+__decorate([
+    (0, common_1.Get)('ambassadors'),
+    (0, swagger_1.ApiOperation)({ summary: 'Monthly Ambassador per governorate + all-time Gem Hunters' }),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], GemsController.prototype, "ambassadors", null);
 __decorate([
     (0, common_1.Get)(':placeId/status'),
     (0, common_1.UseGuards)(optional_jwt_auth_guard_1.OptionalJwtAuthGuard),

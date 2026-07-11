@@ -64,6 +64,23 @@ export declare class GemsService {
         isMine: boolean;
     }>;
     private foldKey;
+    ambassadors(): Promise<{
+        month: string;
+        ambassadors: {
+            governorate: string;
+            gems: number;
+            user: any;
+        }[];
+        topHunters: {
+            gems: number;
+            user: {
+                id: string;
+                handle: any;
+                fullName: string;
+                avatar: any;
+            };
+        }[];
+    }>;
     completeness(): Promise<{
         governorate: string;
         count: number;

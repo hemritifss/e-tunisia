@@ -252,6 +252,14 @@ export async function getCompleteness() {
     '/gems/completeness',
   );
 }
+export interface GemUser { id: string; handle: string | null; fullName: string; avatar: string | null }
+export async function getAmbassadors() {
+  return api<{
+    month: string;
+    ambassadors: Array<{ governorate: string; gems: number; user: GemUser }>;
+    topHunters: Array<{ gems: number; user: GemUser }>;
+  }>('/gems/ambassadors');
+}
 
 // ── ROUTING (real roads via OSRM/Mapbox) ─────
 export async function getRoute(coords: [number, number][]) {

@@ -269,6 +269,51 @@ export class GemsService {
         return k === 'kef' ? 'le kef' : k; // seeded rows say "Kef"
     }
 
+    /**
+     * City pride (GROWTH §4): per-governorate top contributor this month holds the
+     * "Ambassador of <governorate>" title — contested monthly. Plus the all-time
+     * Gem Hunter top list. Score = approved places you put on the map.
+     */
+    async ambassadors() {
+        const monthRows: Array<{ governorate: string; userId: string; gems: string }> = await this.places.query(
+            `SELECT governorate, "submittedBy" AS "userId", count(*)::int AS gems
+               FROM places
+              WHERE "submittedBy" IS NOT NULL AND "isApproved" = true AND "isActive" = true
+                AND "createdAt" >= date_trunc('month', now())
+              GROUP BY governorate, "submittedBy"
+              ORDER BY gems DESC`,
+        ).catch(() => []);
+        const allTimeRows: Array<{ userId: string; gems: string }> = await this.places.query(
+            `SELECT "submittedBy" AS "userId", count(*)::int AS gems
+               FROM places
+              WHERE "submittedBy" IS NOT NULL AND "isApproved" = true AND "isActive" = true
+              GROUP BY "submittedBy" ORDER BY gems DESC LIMIT 10`,
+        ).catch(() => []);
+
+        const userIds = Array.from(new Set([...monthRows.map((r) => r.userId), ...allTimeRows.map((r) => r.userId)]));
+        const users = userIds.length
+            ? await this.users.find({ where: userIds.map((id) => ({ id })), select: ['id', 'handle', 'fullName', 'avatar'] as any })
+            : [];
+        const byId = new Map(users.map((u) => [u.id, { id: u.id, handle: (u as any).handle || null, fullName: u.fullName, avatar: (u as any).avatar || null }]));
+
+        // Top contributor per governorate wins the title (ties: first by count order).
+        const seen = new Set<string>();
+        const ambassadors = [] as Array<{ governorate: string; gems: number; user: any }>;
+        for (const r of monthRows) {
+            const gov = this.foldKey(r.governorate);
+            if (seen.has(gov) || !byId.has(r.userId)) continue;
+            seen.add(gov);
+            ambassadors.push({ governorate: r.governorate, gems: Number(r.gems), user: byId.get(r.userId) });
+        }
+        return {
+            month: new Date().toISOString().slice(0, 7),
+            ambassadors,
+            topHunters: allTimeRows
+                .filter((r) => byId.has(r.userId))
+                .map((r) => ({ gems: Number(r.gems), user: byId.get(r.userId) })),
+        };
+    }
+
     /** The completeness game: % mapped + gems missing, per governorate. */
     async completeness() {
         const rows: Array<{ governorate: string; n: string }> = await this.places

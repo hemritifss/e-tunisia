@@ -45,6 +45,12 @@ export class GemsController {
         return this.gems.completeness();
     }
 
+    @Get('ambassadors')
+    @ApiOperation({ summary: 'Monthly Ambassador per governorate + all-time Gem Hunters' })
+    ambassadors() {
+        return this.gems.ambassadors();
+    }
+
     @Get(':placeId/status')
     @UseGuards(OptionalJwtAuthGuard)
     @ApiOperation({ summary: 'Confirmation status for a place' })

@@ -233,6 +233,39 @@ let GemsService = GemsService_1 = class GemsService {
         const k = String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
         return k === 'kef' ? 'le kef' : k;
     }
+    async ambassadors() {
+        const monthRows = await this.places.query(`SELECT governorate, "submittedBy" AS "userId", count(*)::int AS gems
+               FROM places
+              WHERE "submittedBy" IS NOT NULL AND "isApproved" = true AND "isActive" = true
+                AND "createdAt" >= date_trunc('month', now())
+              GROUP BY governorate, "submittedBy"
+              ORDER BY gems DESC`).catch(() => []);
+        const allTimeRows = await this.places.query(`SELECT "submittedBy" AS "userId", count(*)::int AS gems
+               FROM places
+              WHERE "submittedBy" IS NOT NULL AND "isApproved" = true AND "isActive" = true
+              GROUP BY "submittedBy" ORDER BY gems DESC LIMIT 10`).catch(() => []);
+        const userIds = Array.from(new Set([...monthRows.map((r) => r.userId), ...allTimeRows.map((r) => r.userId)]));
+        const users = userIds.length
+            ? await this.users.find({ where: userIds.map((id) => ({ id })), select: ['id', 'handle', 'fullName', 'avatar'] })
+            : [];
+        const byId = new Map(users.map((u) => [u.id, { id: u.id, handle: u.handle || null, fullName: u.fullName, avatar: u.avatar || null }]));
+        const seen = new Set();
+        const ambassadors = [];
+        for (const r of monthRows) {
+            const gov = this.foldKey(r.governorate);
+            if (seen.has(gov) || !byId.has(r.userId))
+                continue;
+            seen.add(gov);
+            ambassadors.push({ governorate: r.governorate, gems: Number(r.gems), user: byId.get(r.userId) });
+        }
+        return {
+            month: new Date().toISOString().slice(0, 7),
+            ambassadors,
+            topHunters: allTimeRows
+                .filter((r) => byId.has(r.userId))
+                .map((r) => ({ gems: Number(r.gems), user: byId.get(r.userId) })),
+        };
+    }
     async completeness() {
         const rows = await this.places
             .createQueryBuilder('p')
