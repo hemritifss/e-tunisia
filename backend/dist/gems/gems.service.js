@@ -174,8 +174,11 @@ let GemsService = GemsService_1 = class GemsService {
         if (category)
             draft.categoryId = category.id;
         const place = await this.places.save(draft);
-        void this.gamification.addPoints(userId, 25, 'Submitted a hidden gem').catch(() => { });
-        void this.badges.awardIfEligible(userId, 'gem.submitted', {}).catch(() => { });
+        try {
+            await this.badges.awardIfEligible(userId, 'gem.submitted', {});
+            await this.gamification.addPoints(userId, 25, 'Submitted a hidden gem');
+        }
+        catch { }
         return {
             duplicate: false,
             place: { id: place.id, name: place.name, slug: place.slug, city: place.city, governorate: place.governorate },
@@ -201,8 +204,11 @@ let GemsService = GemsService_1 = class GemsService {
             await this.places.update(placeId, { isApproved: true });
             wentLive = true;
             if (place.submittedBy) {
-                void this.gamification.addPoints(place.submittedBy, 200, `Your gem "${place.name}" went live`).catch(() => { });
-                void this.badges.awardIfEligible(place.submittedBy, 'gem.approved', {}).catch(() => { });
+                try {
+                    await this.badges.awardIfEligible(place.submittedBy, 'gem.approved', {});
+                    await this.gamification.addPoints(place.submittedBy, 200, `Your gem "${place.name}" went live`);
+                }
+                catch { }
             }
         }
         return { confirmations: count, wentLive, approved: place.isApproved || wentLive };
@@ -223,6 +229,10 @@ let GemsService = GemsService_1 = class GemsService {
             isMine: !!userId && place.submittedBy === userId,
         };
     }
+    foldKey(s) {
+        const k = String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+        return k === 'kef' ? 'le kef' : k;
+    }
     async completeness() {
         const rows = await this.places
             .createQueryBuilder('p')
@@ -233,12 +243,12 @@ let GemsService = GemsService_1 = class GemsService {
             .getRawMany();
         const counts = new Map();
         for (const r of rows) {
-            const key = String(r.governorate || '').trim().toLowerCase();
+            const key = this.foldKey(r.governorate);
             counts.set(key, (counts.get(key) || 0) + Number(r.n));
         }
         return Object.entries(GOVERNORATE_TARGETS)
             .map(([governorate, target]) => {
-            const count = counts.get(governorate.toLowerCase()) || 0;
+            const count = counts.get(this.foldKey(governorate)) || 0;
             return {
                 governorate,
                 count,

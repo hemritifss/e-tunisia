@@ -63,6 +63,7 @@ export declare class GemsService {
         needed: number;
         isMine: boolean;
     }>;
+    private foldKey;
     completeness(): Promise<{
         governorate: string;
         count: number;

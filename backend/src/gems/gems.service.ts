@@ -202,8 +202,12 @@ export class GemsService {
         const place = await this.places.save(draft);
 
         // Rewards: a taste now, the real payout when the community approves it.
-        void this.gamification.addPoints(userId, 25, 'Submitted a hidden gem').catch(() => {});
-        void this.badges.awardIfEligible(userId, 'gem.submitted', {}).catch(() => {});
+        // Sequenced (not concurrent): both writers read-modify-write users.points,
+        // so firing them in parallel loses one update (verified live).
+        try {
+            await this.badges.awardIfEligible(userId, 'gem.submitted', {});
+            await this.gamification.addPoints(userId, 25, 'Submitted a hidden gem');
+        } catch { /* rewards are best-effort */ }
 
         return {
             duplicate: false as const,
@@ -232,8 +236,11 @@ export class GemsService {
             wentLive = true;
             if (place.submittedBy) {
                 // The big payout: the community validated your discovery.
-                void this.gamification.addPoints(place.submittedBy, 200, `Your gem "${place.name}" went live`).catch(() => {});
-                void this.badges.awardIfEligible(place.submittedBy, 'gem.approved', {}).catch(() => {});
+                // Sequenced — see submit(): concurrent writers clobber users.points.
+                try {
+                    await this.badges.awardIfEligible(place.submittedBy, 'gem.approved', {});
+                    await this.gamification.addPoints(place.submittedBy, 200, `Your gem "${place.name}" went live`);
+                } catch { /* rewards are best-effort */ }
             }
         }
         return { confirmations: count, wentLive, approved: place.isApproved || wentLive };
@@ -256,6 +263,12 @@ export class GemsService {
         };
     }
 
+    /** Accent-insensitive grouping key — the DB mixes "Medenine"/"Médenine" spellings. */
+    private foldKey(s: string): string {
+        const k = String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+        return k === 'kef' ? 'le kef' : k; // seeded rows say "Kef"
+    }
+
     /** The completeness game: % mapped + gems missing, per governorate. */
     async completeness() {
         const rows: Array<{ governorate: string; n: string }> = await this.places
@@ -267,12 +280,12 @@ export class GemsService {
             .getRawMany();
         const counts = new Map<string, number>();
         for (const r of rows) {
-            const key = String(r.governorate || '').trim().toLowerCase();
+            const key = this.foldKey(r.governorate);
             counts.set(key, (counts.get(key) || 0) + Number(r.n));
         }
         return Object.entries(GOVERNORATE_TARGETS)
             .map(([governorate, target]) => {
-                const count = counts.get(governorate.toLowerCase()) || 0;
+                const count = counts.get(this.foldKey(governorate)) || 0;
                 return {
                     governorate,
                     count,
