@@ -1,0 +1,71 @@
+/* GROWTH §7 — louage lookup magnet page. */
+.louage-page { max-width: 680px; margin: 0 auto; padding: var(--space-5) var(--space-4) var(--space-8); }
+.louage-header { margin-bottom: var(--space-5); }
+.louage-kicker {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: var(--text-xs); font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+    color: var(--accent);
+}
+.louage-header h1 { font-size: var(--text-2xl); font-weight: 800; color: var(--text-primary); margin: var(--space-2) 0 var(--space-1); }
+.louage-header p { color: var(--text-secondary); margin: 0; }
+
+.louage-controls { display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-4); }
+.louage-select {
+    flex: 1 1 0;
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--surface-elevated);
+}
+.louage-select svg { color: var(--accent); flex: 0 0 auto; }
+.louage-select select {
+    width: 100%; border: none; background: transparent; outline: none;
+    color: var(--text-primary); font-weight: 600; font-size: var(--text-base);
+}
+.louage-swap {
+    flex: 0 0 auto;
+    display: grid; place-items: center;
+    width: 40px; height: 40px;
+    border-radius: var(--radius-full);
+    border: 1px solid var(--border);
+    background: var(--surface-elevated);
+    color: var(--accent);
+    cursor: pointer;
+    transition: transform var(--duration-fast, .15s);
+}
+.louage-swap:hover { transform: rotate(180deg); }
+.louage-hint { color: var(--text-tertiary); }
+
+.louage-popular { margin-top: var(--space-5); }
+.louage-popular h2 { font-size: var(--text-base); font-weight: 700; color: var(--text-primary); margin: 0 0 var(--space-2); }
+.louage-popular-row { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.louage-chip {
+    padding: 6px 14px;
+    border-radius: var(--radius-full);
+    border: 1px solid var(--border);
+    background: var(--surface-elevated);
+    color: var(--text-secondary);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color var(--duration-fast, .15s), color var(--duration-fast, .15s);
+}
+.louage-chip:hover, .louage-chip.is-active { border-color: var(--accent); color: var(--accent); }
+
+.louage-explainer { margin-top: var(--space-6); }
+.louage-explainer h2 {
+    display: flex; align-items: center; gap: 6px;
+    font-size: var(--text-base); font-weight: 700; color: var(--text-primary);
+    margin: 0 0 var(--space-2); padding-bottom: var(--space-2); border-bottom: 1px solid var(--border);
+}
+.louage-explainer h2 svg { color: var(--accent); }
+.louage-explainer ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-2); }
+.louage-explainer li { position: relative; padding-left: var(--space-4); color: var(--text-secondary); line-height: 1.6; }
+.louage-explainer li::before {
+    content: ""; position: absolute; left: 2px; top: .62em;
+    width: 6px; height: 6px; border-radius: var(--radius-full); background: var(--accent);
+}
+.louage-explainer li strong { color: var(--text-primary); }
+.louage-cta { margin-top: var(--space-4); color: var(--text-secondary); }
+.louage-cta a { color: var(--accent); font-weight: 600; text-decoration: none; }

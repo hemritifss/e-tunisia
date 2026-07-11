@@ -213,6 +213,22 @@ let GemsService = GemsService_1 = class GemsService {
         }
         return { confirmations: count, wentLive, approved: place.isApproved || wentLive };
     }
+    async adminApprove(placeId) {
+        const place = await this.places.findOne({ where: { id: placeId } });
+        if (!place)
+            throw new common_1.NotFoundException('Place not found');
+        if (place.isApproved)
+            return { message: 'Already approved' };
+        await this.places.update(placeId, { isApproved: true });
+        if (place.submittedBy && (place.tags || []).includes('community')) {
+            try {
+                await this.badges.awardIfEligible(place.submittedBy, 'gem.approved', {});
+                await this.gamification.addPoints(place.submittedBy, 200, `Your gem "${place.name}" went live`);
+            }
+            catch { }
+        }
+        return { message: 'Place approved' };
+    }
     async status(placeId, userId) {
         const [count, mine, place] = await Promise.all([
             this.confirmations.count({ where: { placeId } }),

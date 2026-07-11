@@ -56,6 +56,9 @@ export declare class GemsService {
         wentLive: boolean;
         approved: boolean;
     }>;
+    adminApprove(placeId: string): Promise<{
+        message: string;
+    }>;
     status(placeId: string, userId?: string): Promise<{
         confirmations: number;
         confirmedByMe: boolean;

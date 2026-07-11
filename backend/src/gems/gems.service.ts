@@ -246,6 +246,25 @@ export class GemsService {
         return { confirmations: count, wentLive, approved: place.isApproved || wentLive };
     }
 
+    /**
+     * Admin approval path — same payout as community approval so the contributor's
+     * promise ("+200 XP when it goes live") holds however the gem gets approved.
+     * Idempotent: re-approving an approved place is a no-op.
+     */
+    async adminApprove(placeId: string) {
+        const place = await this.places.findOne({ where: { id: placeId } });
+        if (!place) throw new NotFoundException('Place not found');
+        if (place.isApproved) return { message: 'Already approved' };
+        await this.places.update(placeId, { isApproved: true });
+        if (place.submittedBy && (place.tags || []).includes('community')) {
+            try {
+                await this.badges.awardIfEligible(place.submittedBy, 'gem.approved', {});
+                await this.gamification.addPoints(place.submittedBy, 200, `Your gem "${place.name}" went live`);
+            } catch { /* rewards are best-effort */ }
+        }
+        return { message: 'Place approved' };
+    }
+
     /** Confirmation status for a place (drives the confirm button + pending banner). */
     async status(placeId: string, userId?: string) {
         const [count, mine, place] = await Promise.all([

@@ -14,6 +14,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AdminService = void 0;
 const common_1 = require("@nestjs/common");
+const gems_service_1 = require("../gems/gems.service");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const user_entity_1 = require("../users/user.entity");
@@ -25,7 +26,8 @@ const tip_entity_1 = require("../tips/tip.entity");
 const audit_log_entity_1 = require("./audit-log.entity");
 const plan_catalog_1 = require("../billing/plan-catalog");
 let AdminService = class AdminService {
-    constructor(usersRepo, placesRepo, reviewsRepo, subsRepo, eventsRepo, tipsRepo, auditRepo) {
+    constructor(gems, usersRepo, placesRepo, reviewsRepo, subsRepo, eventsRepo, tipsRepo, auditRepo) {
+        this.gems = gems;
         this.usersRepo = usersRepo;
         this.placesRepo = placesRepo;
         this.reviewsRepo = reviewsRepo;
@@ -127,8 +129,7 @@ let AdminService = class AdminService {
         return { data, meta: { total, page, limit, totalPages: Math.ceil(total / limit) } };
     }
     async approvePlace(id) {
-        await this.placesRepo.update(id, { isApproved: true });
-        return { message: 'Place approved' };
+        return this.gems.adminApprove(id);
     }
     async toggleFeature(id) {
         const place = await this.placesRepo.findOne({ where: { id } });
@@ -231,14 +232,15 @@ let AdminService = class AdminService {
 exports.AdminService = AdminService;
 exports.AdminService = AdminService = __decorate([
     (0, common_1.Injectable)(),
-    __param(0, (0, typeorm_1.InjectRepository)(user_entity_1.User)),
-    __param(1, (0, typeorm_1.InjectRepository)(place_entity_1.Place)),
-    __param(2, (0, typeorm_1.InjectRepository)(review_entity_1.Review)),
-    __param(3, (0, typeorm_1.InjectRepository)(subscription_entity_1.Subscription)),
-    __param(4, (0, typeorm_1.InjectRepository)(event_entity_1.Event)),
-    __param(5, (0, typeorm_1.InjectRepository)(tip_entity_1.Tip)),
-    __param(6, (0, typeorm_1.InjectRepository)(audit_log_entity_1.AuditLog)),
-    __metadata("design:paramtypes", [typeorm_2.Repository,
+    __param(1, (0, typeorm_1.InjectRepository)(user_entity_1.User)),
+    __param(2, (0, typeorm_1.InjectRepository)(place_entity_1.Place)),
+    __param(3, (0, typeorm_1.InjectRepository)(review_entity_1.Review)),
+    __param(4, (0, typeorm_1.InjectRepository)(subscription_entity_1.Subscription)),
+    __param(5, (0, typeorm_1.InjectRepository)(event_entity_1.Event)),
+    __param(6, (0, typeorm_1.InjectRepository)(tip_entity_1.Tip)),
+    __param(7, (0, typeorm_1.InjectRepository)(audit_log_entity_1.AuditLog)),
+    __metadata("design:paramtypes", [gems_service_1.GemsService,
+        typeorm_2.Repository,
         typeorm_2.Repository,
         typeorm_2.Repository,
         typeorm_2.Repository,
