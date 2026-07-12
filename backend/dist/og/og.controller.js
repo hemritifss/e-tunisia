@@ -22,14 +22,16 @@ const place_entity_1 = require("../places/place.entity");
 const post_entity_1 = require("../posts/post.entity");
 const trip_plan_entity_1 = require("../itineraries/trip-plan.entity");
 const og_service_1 = require("./og.service");
+const wrapped_service_1 = require("../wrapped/wrapped.service");
 let OgController = class OgController {
-    constructor(config, users, places, posts, trips, og) {
+    constructor(config, users, places, posts, trips, og, wrapped) {
         this.config = config;
         this.users = users;
         this.places = places;
         this.posts = posts;
         this.trips = trips;
         this.og = og;
+        this.wrapped = wrapped;
     }
     webOrigin() {
         return (this.config.get('FRONTEND_URL') || 'http://localhost:5173').replace(/\/+$/, '');
@@ -132,6 +134,35 @@ let OgController = class OgController {
             res.send(transparent);
         }
     }
+    async wrappedOg(rawHandle, req, res) {
+        const handle = (rawHandle || '').toLowerCase();
+        const w = await this.wrapped.build(handle).catch(() => null);
+        const name = w?.fullName || `@${handle}`;
+        res.send(renderOgHtml({
+            title: w ? `${name}'s ${w.period.label} in Tunisia — ${w.personality.label}` : 'Your Summer in Tunisia — Wrapped',
+            description: w && !w.isEmpty
+                ? `${w.stats.checkIns} check-ins · ${w.stats.citiesCount} cities · ${w.stats.governoratesCount} governorates. See the Wrapped and make yours on e-Tunisia.`
+                : 'Your summer across Tunisia, wrapped up: cities, check-ins and your traveler personality. Free on e-Tunisia.',
+            image: `${this.apiOrigin(req)}/api/v1/og/wrapped/${encodeURIComponent(handle)}/image.png`,
+            canonical: `${this.webOrigin()}/wrapped/${encodeURIComponent(handle)}`,
+            largeCard: true,
+        }));
+    }
+    async wrappedImage(rawHandle, res) {
+        try {
+            const w = await this.wrapped.build((rawHandle || '').toLowerCase());
+            res.send(await this.og.renderWrappedCard({
+                fullName: w.fullName,
+                periodLabel: w.period.label,
+                personalityLabel: w.personality.label,
+                stats: w.stats,
+            }));
+        }
+        catch {
+            const transparent = Buffer.from('89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c4890000000a49444154789c63000000000200015c34a40d0000000049454e44ae426082', 'hex');
+            res.send(transparent);
+        }
+    }
 };
 exports.OgController = OgController;
 __decorate([
@@ -199,6 +230,27 @@ __decorate([
     __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", Promise)
 ], OgController.prototype, "cityQuizImage", null);
+__decorate([
+    (0, common_1.Get)('wrapped/:handle'),
+    (0, common_1.Header)('Content-Type', 'text/html; charset=utf-8'),
+    (0, common_1.Header)('Cache-Control', 'public, max-age=1800, stale-while-revalidate=86400'),
+    __param(0, (0, common_1.Param)('handle')),
+    __param(1, (0, common_1.Req)()),
+    __param(2, (0, common_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object, Object]),
+    __metadata("design:returntype", Promise)
+], OgController.prototype, "wrappedOg", null);
+__decorate([
+    (0, common_1.Get)('wrapped/:handle/image.png'),
+    (0, common_1.Header)('Content-Type', 'image/png'),
+    (0, common_1.Header)('Cache-Control', 'public, max-age=1800, stale-while-revalidate=86400'),
+    __param(0, (0, common_1.Param)('handle')),
+    __param(1, (0, common_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
+], OgController.prototype, "wrappedImage", null);
 exports.OgController = OgController = __decorate([
     (0, common_1.Controller)('og'),
     __param(1, (0, typeorm_1.InjectRepository)(user_entity_1.User)),
@@ -210,7 +262,8 @@ exports.OgController = OgController = __decorate([
         typeorm_2.Repository,
         typeorm_2.Repository,
         typeorm_2.Repository,
-        og_service_1.OgService])
+        og_service_1.OgService,
+        wrapped_service_1.WrappedService])
 ], OgController);
 function esc(s) {
     return String(s ?? '')

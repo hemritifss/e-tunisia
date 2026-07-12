@@ -50,6 +50,7 @@ export function KontHouniButton({ placeId, placeName, city, compact = false }: {
                     title: placeName || 'KONT HOUNI',
                     city,
                     bottom: gov ? `GOUVERNORAT ${gov.name.toUpperCase()}` : undefined,
+                    motif: gov?.motif,
                 });
             } else {
                 showToast(t('visit.unstamped'));

@@ -153,6 +153,7 @@ function GovernorateAlbum({ visited, isOwner }: { visited: string[]; isOwner: bo
                                             city: g.nameAr,
                                             top: 'GOUVERNORAT',
                                             bottom: `${num} · TUNISIE`,
+                                            motif: g.motif,
                                         }),
                                     }}
                                 />

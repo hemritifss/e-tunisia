@@ -269,6 +269,47 @@ let OgService = OgService_1 = class OgService {
         const png = new resvg_js_1.Resvg(svg, { fitTo: { mode: 'width', value: 1200 } }).render().asPng();
         return Buffer.from(png);
     }
+    async renderWrappedCard(w) {
+        if (!this.regular || !this.bold)
+            throw new Error('OG fonts not loaded');
+        const node = {
+            type: 'div',
+            props: {
+                style: {
+                    width: 1200, height: 630, display: 'flex', flexDirection: 'column',
+                    background: 'linear-gradient(135deg,#0b1e3f 0%,#1a6a8a 50%,#d4623a 100%)',
+                    color: '#fff', padding: '60px 64px', fontFamily: 'Inter', position: 'relative',
+                },
+                children: [
+                    { type: 'div', props: { style: { fontSize: 26, letterSpacing: 5, opacity: 0.85, fontWeight: 700 }, children: `${w.periodLabel.toUpperCase()} · IN TUNISIA` } },
+                    { type: 'div', props: { style: { fontSize: 64, fontWeight: 700, marginTop: 10, lineHeight: 1.05 }, children: w.fullName } },
+                    { type: 'div', props: { style: { fontSize: 40, fontWeight: 700, marginTop: 6, opacity: 0.95 }, children: w.personalityLabel } },
+                    {
+                        type: 'div',
+                        props: {
+                            style: { display: 'flex', gap: 20, marginTop: 40 },
+                            children: [
+                                statTile(w.stats.checkIns, 'check-ins'),
+                                statTile(w.stats.citiesCount, 'cities'),
+                                statTile(w.stats.governoratesCount, 'governorates'),
+                                statTile(w.stats.reviews, 'reviews'),
+                            ],
+                        },
+                    },
+                    { type: 'div', props: { style: { position: 'absolute', bottom: 36, right: 64, fontSize: 24, fontWeight: 600, opacity: 0.8 }, children: 'e-tunisia · your Wrapped' } },
+                ],
+            },
+        };
+        const svg = await (0, satori_1.default)(node, {
+            width: 1200, height: 630,
+            fonts: [
+                { name: 'Inter', data: this.regular, weight: 400, style: 'normal' },
+                { name: 'Inter', data: this.bold, weight: 700, style: 'normal' },
+            ],
+        });
+        const png = new resvg_js_1.Resvg(svg, { fitTo: { mode: 'width', value: 1200 } }).render().asPng();
+        return Buffer.from(png);
+    }
 };
 exports.OgService = OgService;
 exports.OgService = OgService = OgService_1 = __decorate([

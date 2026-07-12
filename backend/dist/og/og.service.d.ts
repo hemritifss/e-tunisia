@@ -17,4 +17,15 @@ export declare class OgService implements OnModuleInit {
     isReady(): boolean;
     renderPassportCard(p: PassportDto): Promise<Buffer>;
     renderCityQuizCard(a: QuizArchetype): Promise<Buffer>;
+    renderWrappedCard(w: {
+        fullName: string;
+        periodLabel: string;
+        personalityLabel: string;
+        stats: {
+            checkIns: number;
+            citiesCount: number;
+            governoratesCount: number;
+            reviews: number;
+        };
+    }): Promise<Buffer>;
 }

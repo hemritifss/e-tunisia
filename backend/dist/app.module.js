@@ -60,6 +60,7 @@ const digest_module_1 = require("./digest/digest.module");
 const scheduled_module_1 = require("./scheduled/scheduled.module");
 const gems_module_1 = require("./gems/gems.module");
 const beaches_module_1 = require("./beaches/beaches.module");
+const wrapped_module_1 = require("./wrapped/wrapped.module");
 const i18n_module_1 = require("./i18n/i18n.module");
 const routing_module_1 = require("./routing/routing.module");
 const database_config_1 = require("./database/database.config");
@@ -135,6 +136,7 @@ exports.AppModule = AppModule = __decorate([
             scheduled_module_1.ScheduledModule,
             gems_module_1.GemsModule,
             beaches_module_1.BeachesModule,
+            wrapped_module_1.WrappedModule,
         ],
         providers: [
             {

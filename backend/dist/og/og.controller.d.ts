@@ -6,6 +6,7 @@ import { Place } from '../places/place.entity';
 import { Post } from '../posts/post.entity';
 import { TripPlan } from '../itineraries/trip-plan.entity';
 import { OgService } from './og.service';
+import { WrappedService } from '../wrapped/wrapped.service';
 export declare class OgController {
     private readonly config;
     private readonly users;
@@ -13,7 +14,8 @@ export declare class OgController {
     private readonly posts;
     private readonly trips;
     private readonly og;
-    constructor(config: ConfigService, users: Repository<User>, places: Repository<Place>, posts: Repository<Post>, trips: Repository<TripPlan>, og: OgService);
+    private readonly wrapped;
+    constructor(config: ConfigService, users: Repository<User>, places: Repository<Place>, posts: Repository<Post>, trips: Repository<TripPlan>, og: OgService, wrapped: WrappedService);
     private webOrigin;
     private apiOrigin;
     private absolutize;
@@ -23,4 +25,6 @@ export declare class OgController {
     trip(slug: string, req: Request, res: Response): Promise<void>;
     cityQuiz(rawSlug: string, req: Request, res: Response): Promise<void>;
     cityQuizImage(rawSlug: string, res: Response): Promise<void>;
+    wrappedOg(rawHandle: string, req: Request, res: Response): Promise<void>;
+    wrappedImage(rawHandle: string, res: Response): Promise<void>;
 }

@@ -11,6 +11,8 @@ export interface StampSlamOptions {
   city?: string;
   /** Bottom arc text; defaults to today's date · TUNISIE. */
   bottom?: string;
+  /** Governorate motif glyph engraved on the stamp. */
+  motif?: string;
 }
 
 let busy = false;
@@ -33,7 +35,7 @@ export function stampSlam(opts: StampSlamOptions): void {
     <div class="stamp-slam-stage">
       <span class="stamp-slam-ripple" aria-hidden="true"></span>
       <div class="stamp-slam-disc">
-        ${renderStampSVG({ title: opts.title, city: opts.city, bottom: opts.bottom || `${dateStr} · TUNISIE` })}
+        ${renderStampSVG({ title: opts.title, city: opts.city, bottom: opts.bottom || `${dateStr} · TUNISIE`, motif: opts.motif })}
       </div>
     </div>`;
   document.body.appendChild(overlay);

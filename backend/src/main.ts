@@ -56,9 +56,14 @@ async function bootstrap() {
     return new RegExp(`^${escaped}$`);
   });
 
+  // Any localhost / 127.0.0.1 origin on any port is always allowed — a remote
+  // page cannot forge Origin: localhost, so this is safe, and it stops the dev
+  // Vite port (5173/5199/…) from tripping CORS every time it changes.
+  const isLocalhostOrigin = (o: string) => /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(o);
+
   app.enableCors({
     origin: (origin, callback) => {
-      if (!origin || originRegexes.some(r => r.test(origin))) {
+      if (!origin || isLocalhostOrigin(origin) || originRegexes.some(r => r.test(origin))) {
         callback(null, true);
       } else {
         callback(new Error(`Not allowed by CORS: ${origin}`), false);
