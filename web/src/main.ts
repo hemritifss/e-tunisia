@@ -312,7 +312,10 @@ function navigate() {
       const onEnterEnd = (e: AnimationEvent) => { if (e.animationName === 'pageEnter') clearEnter(); };
       el.addEventListener('animationend', onEnterEnd as EventListener);
       const enterFallback = window.setTimeout(clearEnter, 1200);
-      const path = currentRoute();
+      // Match on pathname only — the mount chain uses exact `path === …` checks,
+      // so a query string (e.g. /city-quiz?r=<slug>) would fall through and mount
+      // nothing. Pages read their own params from location.search.
+      const path = currentRoute().split('?')[0];
       if (path === '/' || path === '') {
         currentUnmount = mountIsland(FeedPage, islandRoot);
       } else if (path === '/explore') {
