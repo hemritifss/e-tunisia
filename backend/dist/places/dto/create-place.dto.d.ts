@@ -17,6 +17,9 @@ export declare class CreatePlaceDto {
     phone?: string;
     openingHours?: string;
     priceRange?: string;
+    entryPrice?: number;
+    ticketUrl?: string;
+    avgVisitMinutes?: number;
     tags?: string[];
     isFeatured?: boolean;
     categoryId: string;

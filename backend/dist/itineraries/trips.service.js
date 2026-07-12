@@ -23,6 +23,9 @@ const inquiries_service_1 = require("../places/inquiries.service");
 const users_service_1 = require("../users/users.service");
 const badges_service_1 = require("../badges/badges.service");
 const billing_service_1 = require("../billing/billing.service");
+function cleanDate(v) {
+    return typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v) ? v : null;
+}
 let TripsService = class TripsService {
     constructor(trips, places, packages, inquiries, users, badges, billing) {
         this.trips = trips;
@@ -140,6 +143,7 @@ let TripsService = class TripsService {
                 pricePerPerson: pkg?.pricePerPerson ?? null,
                 currency: pkg?.currency || null,
                 dayIndex: Number.isFinite(s.dayIndex) ? Number(s.dayIndex) : idx,
+                timeSlot: typeof s.timeSlot === 'string' && /^\d{2}:\d{2}$/.test(s.timeSlot) ? s.timeSlot : null,
                 addedAt: now,
             };
         });
@@ -177,6 +181,7 @@ let TripsService = class TripsService {
             currency: (input.currency || 'TND').toUpperCase().slice(0, 8),
             stops,
             days,
+            startDate: cleanDate(input.startDate),
             isPublic: input.isPublic !== false,
         }));
         if (userId)
@@ -207,6 +212,8 @@ let TripsService = class TripsService {
             trip.currency = String(input.currency).toUpperCase().slice(0, 8);
         if (input.days)
             trip.days = Math.max(1, Number(input.days));
+        if ('startDate' in input)
+            trip.startDate = cleanDate(input.startDate);
         if (typeof input.isPublic === 'boolean')
             trip.isPublic = input.isPublic;
         return this.trips.save(trip);

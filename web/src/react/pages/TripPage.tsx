@@ -1,13 +1,19 @@
+import '../../styles/trip-schedule.css';
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Luggage, Send, Share2, Compass, Link as LinkIcon, Copy, X, Package, MapPin, SearchX, ShieldCheck, CheckCircle2, PlaneLanding, PlaneTakeoff } from 'lucide-react';
+import { Luggage, Send, Share2, Compass, Link as LinkIcon, Copy, X, Package, MapPin, SearchX, ShieldCheck, CheckCircle2, PlaneLanding, PlaneTakeoff, Clock, CalendarDays, Download } from 'lucide-react';
 import * as api from '../../api';
 import { ogShareUrl } from '../../shared/api';
 import * as cart from '../../trip-cart';
 import { showToast } from '../../ui-utils';
 import { currentPath, goTo, absoluteUrl, onRouteChange } from '../../router';
 import { TripRouteMap, TripDayChips } from '../components/TripRouteMap';
+import { WeatherBadge } from '../components/WeatherBadge';
+import { TransportOptions } from '../components/TransportOptions';
+import { prefetchTripOffline } from '../../offline-trip';
+import { useCurrency } from '../lib/useCurrency';
+import { formatMoney } from '../../currency';
 import { useT } from '../../i18n/useT';
 
 // Migrated from vanilla pages/trip.ts — cart view (/trip) + saved view (/trip/:slug).
@@ -17,7 +23,12 @@ function slugFromPath(): string | null {
   return m && m[1] ? m[1] : null;
 }
 
-const fmtPrice = (n: number, currency: string) => `${(Math.round(n) || 0).toLocaleString()} ${currency || 'TND'}`;
+// TND amounts flip to the visitor's chosen display currency; a non-TND source
+// currency (rare) is shown as stored.
+const fmtPrice = (n: number, currency: string) =>
+  currency && currency !== 'TND'
+    ? `${(Math.round(n) || 0).toLocaleString()} ${currency}`
+    : formatMoney(n);
 
 function StopCard({ stop, editable }: { stop: any; editable: boolean }) {
   return (
@@ -38,16 +49,30 @@ function StopCard({ stop, editable }: { stop: any; editable: boolean }) {
         </div>
         {stop.packageTitle && <div className="trip-stop-pkg"><Package /> <span> {stop.packageTitle}</span></div>}
         {stop.placeCity && <div className="trip-stop-meta"><MapPin /> <span> {stop.placeCity}</span></div>}
+        {editable ? (
+          <label className="trip-stop-time">
+            <Clock size={13} />
+            <input
+              type="time"
+              value={stop.timeSlot || ''}
+              onChange={(e) => cart.setStopTime(stop.placeId, stop.packageId || null, e.target.value || null)}
+              aria-label="Start time for this stop"
+            />
+          </label>
+        ) : (
+          stop.timeSlot && <div className="trip-stop-meta trip-stop-time-ro"><Clock size={13} /> <span> {stop.timeSlot}</span></div>
+        )}
         {typeof stop.pricePerPerson === 'number' && stop.pricePerPerson > 0 && (
-          <div className="trip-stop-price"><strong>{stop.pricePerPerson} {stop.currency || 'TND'}</strong> / person</div>
+          <div className="trip-stop-price"><strong>{fmtPrice(stop.pricePerPerson, stop.currency)}</strong> / person</div>
         )}
       </div>
     </article>
   );
 }
 
-function DayBlocks({ stops, editable }: { stops: any[]; editable: boolean }) {
+function DayBlocks({ stops, editable, startDate }: { stops: any[]; editable: boolean; startDate?: string | null }) {
   const t = useT();
+  const today = new Date();
   const byDay = new Map<number, any[]>();
   for (const s of stops) {
     const d = s.dayIndex || 0;
@@ -56,13 +81,44 @@ function DayBlocks({ stops, editable }: { stops: any[]; editable: boolean }) {
   }
   const days = [...byDay.keys()].sort((a, b) => a - b);
   const last = days[days.length - 1];
+  // A day's representative geocoded stop (first with coords) + its city — used for
+  // weather and the inter-city "how to get there" connector.
+  const repOf = (d: number): { coord: [number, number]; city?: string } | null => {
+    const s = (byDay.get(d) || []).find(
+      (x) => Number.isFinite(Number(x.latitude)) && Number.isFinite(Number(x.longitude)),
+    );
+    return s ? { coord: [Number(s.longitude), Number(s.latitude)], city: s.placeCity || undefined } : null;
+  };
+  const norm = (s?: string) => (s || '').trim().toLowerCase();
   return (
     <div className="trip-days">
-      {days.map((d) => (
-        <section className="trip-day" key={d} id={`trip-day-${d}`}>
+      {days.map((d, i) => {
+        const coordStop = byDay.get(d)!.find(
+          (s) => Number.isFinite(Number(s.latitude)) && Number.isFinite(Number(s.longitude)),
+        );
+        const dt = dayDate(startDate, d);
+        const isToday = dt ? isSameDay(dt, today) : false;
+        const weatherOffset = dt ? offsetFromToday(dt) : d;
+        // Inter-city transport connector when this day starts in a different city.
+        const rep = repOf(d);
+        const prevRep = i > 0 ? repOf(days[i - 1]) : null;
+        const connector = prevRep && rep && prevRep.city && rep.city && norm(prevRep.city) !== norm(rep.city)
+          ? <TransportOptions from={prevRep.coord} to={rep.coord} fromCity={prevRep.city} toCity={rep.city} />
+          : null;
+        return (
+        <React.Fragment key={d}>
+        {connector}
+        <section className={`trip-day${isToday ? ' is-today' : ''}`} id={`trip-day-${d}`}>
           <header className="trip-day-head">
             <span className="trip-day-num">{d + 1}</span>
             <span className="trip-day-label">{t('trip.day')} {d + 1}</span>
+            {dt && (
+              <span className="trip-day-date">{dt.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}</span>
+            )}
+            {isToday && <span className="trip-day-tag trip-day-tag-today">Today</span>}
+            {coordStop && weatherOffset >= 0 && (
+              <WeatherBadge lat={Number(coordStop.latitude)} lon={Number(coordStop.longitude)} dayOffset={weatherOffset} />
+            )}
             {d === days[0] && (
               <span className="trip-day-tag trip-day-tag-arrival"><PlaneLanding size={13} /> {t('trip.arrival')}</span>
             )}
@@ -71,10 +127,12 @@ function DayBlocks({ stops, editable }: { stops: any[]; editable: boolean }) {
             )}
           </header>
           <div className="trip-day-list">
-            {byDay.get(d)!.map((s, i) => <StopCard key={(s.placeId || '') + (s.packageId || '') + i} stop={s} editable={editable} />)}
+            {byDay.get(d)!.map((s, si) => <StopCard key={(s.placeId || '') + (s.packageId || '') + si} stop={s} editable={editable} />)}
           </div>
         </section>
-      ))}
+        </React.Fragment>
+        );
+      })}
     </div>
   );
 }
@@ -246,6 +304,15 @@ function CartView() {
         </div>
         {state.stops.length > 0 && (
           <div className="trip-page-actions">
+            <label className="trip-start-date" title="Set your trip start date">
+              <CalendarDays size={15} />
+              <input
+                type="date"
+                value={state.startDate || ''}
+                onChange={(e) => cart.setStartDate(e.target.value || null)}
+                aria-label="Trip start date"
+              />
+            </label>
             <button className="btn btn-primary" type="button" onClick={requestAll}><Send /> Request quotes for all</button>
             <button className="btn btn-outline" type="button" disabled={savingBtn} onClick={saveAndShare}><Share2 /> Save &amp; share</button>
           </div>
@@ -262,7 +329,7 @@ function CartView() {
       ) : (
         <>
           <TripMapSection stops={state.stops} editable />
-          <DayBlocks stops={state.stops} editable />
+          <DayBlocks stops={state.stops} editable startDate={state.startDate} />
           {total.hasPriced && (
             <aside className="trip-summary">
               <div className="trip-summary-label">Estimated total for {state.travelers} {state.travelers === 1 ? 'traveler' : 'travelers'}</div>
@@ -281,8 +348,30 @@ function CartView() {
 function serialize(state: any) {
   return {
     title: state.title, travelers: state.travelers, currency: state.currency, days: state.days,
-    stops: state.stops.map((s: any) => ({ placeId: s.placeId, packageId: s.packageId || undefined, dayIndex: s.dayIndex })),
+    startDate: state.startDate || undefined,
+    stops: state.stops.map((s: any) => ({
+      placeId: s.placeId, packageId: s.packageId || undefined, dayIndex: s.dayIndex,
+      timeSlot: s.timeSlot || undefined,
+    })),
   };
+}
+
+/** The calendar date for a 0-indexed trip day, given a "YYYY-MM-DD" start. */
+function dayDate(startDate: string | null | undefined, dayIndex: number): Date | null {
+  if (!startDate || !/^\d{4}-\d{2}-\d{2}$/.test(startDate)) return null;
+  const [y, m, d] = startDate.split('-').map(Number);
+  const dt = new Date(y, m - 1, d);
+  dt.setDate(dt.getDate() + dayIndex);
+  return dt;
+}
+function isSameDay(a: Date, b: Date): boolean {
+  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+}
+/** Whole-day offset from today (local), for aligning the weather forecast. */
+function offsetFromToday(dt: Date): number {
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const d = new Date(dt); d.setHours(0, 0, 0, 0);
+  return Math.round((d.getTime() - today.getTime()) / 86_400_000);
 }
 
 function SavedTripView({ slug }: { slug: string }) {
@@ -314,10 +403,11 @@ function SavedTripView({ slug }: { slug: string }) {
     cart.setTravelers(trip.travelers);
     cart.setDays(trip.days);
     cart.setCurrency(trip.currency);
+    cart.setStartDate((trip as any).startDate || null);
     for (const s of trip.stops) {
       cart.addStop({
         placeId: s.placeId, placeName: s.placeName || undefined, placeCity: s.placeCity || undefined, placeCover: s.placeCover || undefined,
-        packageId: s.packageId, packageTitle: s.packageTitle, pricePerPerson: s.pricePerPerson, currency: s.currency, dayIndex: s.dayIndex,
+        packageId: s.packageId, packageTitle: s.packageTitle, pricePerPerson: s.pricePerPerson, currency: s.currency, dayIndex: s.dayIndex, timeSlot: (s as any).timeSlot,
       });
     }
     showToast('Loaded into your trip cart');
@@ -329,6 +419,21 @@ function SavedTripView({ slug }: { slug: string }) {
     const url = ogShareUrl(`trip/${trip.slug}`);
     try { await navigator.clipboard.writeText(url); showToast('Link copied'); }
     catch { showToast('Could not copy', { type: 'error' }); }
+  };
+
+  const [offline, setOffline] = useState<'idle' | 'saving' | 'done'>('idle');
+  const saveOffline = async () => {
+    if (offline === 'saving') return;
+    setOffline('saving');
+    showToast('Saving this trip for offline…');
+    try {
+      await prefetchTripOffline(trip);
+      setOffline('done');
+      showToast('Saved — this trip now works offline');
+    } catch {
+      setOffline('idle');
+      showToast('Could not fully save offline', { type: 'error' });
+    }
   };
 
   let total = 0, hasPriced = false;
@@ -346,12 +451,15 @@ function SavedTripView({ slug }: { slug: string }) {
         <div className="trip-page-actions">
           <button className="btn btn-primary" type="button" onClick={() => setInquiry(trip)}><Send /> Request quotes for all</button>
           <button className="btn btn-outline" type="button" onClick={copyLink}><LinkIcon /> Copy link</button>
+          <button className="btn btn-outline" type="button" onClick={saveOffline} disabled={offline === 'saving'}>
+            <Download /> {offline === 'saving' ? 'Saving…' : offline === 'done' ? 'Available offline' : 'Save offline'}
+          </button>
           <button className="btn btn-primary" type="button" onClick={clone}><Copy /> Use as my trip</button>
         </div>
       </header>
 
       <TripMapSection stops={trip.stops} />
-      <DayBlocks stops={trip.stops} editable={false} />
+      <DayBlocks stops={trip.stops} editable={false} startDate={(trip as any).startDate} />
 
       {hasPriced && (
         <aside className="trip-summary">
@@ -369,6 +477,7 @@ function SavedTripView({ slug }: { slug: string }) {
 
 export default function TripPage() {
   const [slug, setSlug] = useState(slugFromPath());
+  useCurrency(); // re-render the whole trip view when the display currency changes
   useEffect(() => onRouteChange(() => setSlug(slugFromPath())), []);
   return slug ? <SavedTripView slug={slug} /> : <CartView />;
 }

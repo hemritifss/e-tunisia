@@ -112,6 +112,11 @@ export class Booking {
   @Column({ nullable: true })
   paymentMethod: string;
 
+  /** When the host was manually paid their hostPayout for this booking (Tier 2.6
+   *  payout ledger). Null = still owed. Nullable so synchronize adds it cleanly. */
+  @Column({ type: 'timestamp', nullable: true })
+  payoutSettledAt: Date | null;
+
   @Column({ type: 'simple-enum', enum: ['flexible', 'moderate', 'strict'], default: 'moderate' })
   cancellationPolicy: 'flexible' | 'moderate' | 'strict';
 

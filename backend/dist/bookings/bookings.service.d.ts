@@ -26,6 +26,34 @@ export declare class BookingsService {
         totalPlatformFees: number;
         totalHostPayouts: number;
     }>;
+    getOwnerEarnings(ownerId: string): Promise<{
+        summary: {
+            bookings: number;
+            grossTnd: number;
+            commissionTnd: number;
+            netTnd: number;
+            owedTnd: number;
+            paidOutTnd: number;
+        };
+        entries: {
+            id: any;
+            placeId: any;
+            placeName: any;
+            currency: any;
+            grossTnd: number;
+            commissionTnd: number;
+            netTnd: number;
+            status: any;
+            checkIn: any;
+            settled: boolean;
+            payoutSettledAt: any;
+            createdAt: any;
+        }[];
+    }>;
+    settlePayout(bookingId: string): Promise<{
+        id: string;
+        payoutSettledAt: Date;
+    }>;
     private checkAvailability;
     private getPlatformFeePercent;
     private calculateRefund;

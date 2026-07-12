@@ -3,12 +3,14 @@ declare class StopDto {
     placeId: string;
     packageId?: string;
     dayIndex?: number;
+    timeSlot?: string;
 }
 declare class UpsertTripDto {
     title?: string;
     travelers?: number;
     currency?: string;
     days?: number;
+    startDate?: string;
     isPublic?: boolean;
     stops: StopDto[];
 }

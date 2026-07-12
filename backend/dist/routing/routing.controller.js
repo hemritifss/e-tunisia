@@ -26,6 +26,10 @@ let RoutingController = class RoutingController {
     optimize(coords) {
         return this.routing.optimize(this.routing.parseCoords(coords));
     }
+    transport(from, to, fromCity, toCity) {
+        const [a, b] = this.routing.parseCoords(`${from};${to}`);
+        return this.routing.transportEstimate(a, b, fromCity, toCity);
+    }
 };
 exports.RoutingController = RoutingController;
 __decorate([
@@ -44,6 +48,17 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], RoutingController.prototype, "optimize", null);
+__decorate([
+    (0, common_1.Get)('transport'),
+    (0, swagger_1.ApiOperation)({ summary: 'Estimated transport options between two coords' }),
+    __param(0, (0, common_1.Query)('from')),
+    __param(1, (0, common_1.Query)('to')),
+    __param(2, (0, common_1.Query)('fromCity')),
+    __param(3, (0, common_1.Query)('toCity')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, String, String]),
+    __metadata("design:returntype", void 0)
+], RoutingController.prototype, "transport", null);
 exports.RoutingController = RoutingController = __decorate([
     (0, swagger_1.ApiTags)('routing'),
     (0, common_1.Controller)('routing'),

@@ -98,6 +98,18 @@ __decorate([
     __metadata("design:type", String)
 ], Place.prototype, "priceRange", void 0);
 __decorate([
+    (0, typeorm_1.Column)('decimal', { precision: 10, scale: 2, nullable: true }),
+    __metadata("design:type", Number)
+], Place.prototype, "entryPrice", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], Place.prototype, "ticketUrl", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'int', nullable: true }),
+    __metadata("design:type", Number)
+], Place.prototype, "avgVisitMinutes", void 0);
+__decorate([
     (0, typeorm_1.Column)('decimal', { precision: 2, scale: 1, default: 0 }),
     (0, typeorm_1.Index)(),
     __metadata("design:type", Number)

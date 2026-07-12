@@ -37,6 +37,7 @@ export declare class Booking {
     status: 'pending' | 'confirmed' | 'paid' | 'completed' | 'cancelled' | 'refunded';
     paymentIntentId: string;
     paymentMethod: string;
+    payoutSettledAt: Date | null;
     cancellationPolicy: 'flexible' | 'moderate' | 'strict';
     specialRequests: string;
     qrCode: string;

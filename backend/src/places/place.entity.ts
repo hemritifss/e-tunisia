@@ -75,6 +75,19 @@ export class Place {
     @Column({ nullable: true })
     priceRange: string;
 
+    // Practical info (Tier 2.2). All nullable so synchronize adds them cleanly.
+    /** Entry/ticket price in TND (0 = free). */
+    @Column('decimal', { precision: 10, scale: 2, nullable: true })
+    entryPrice: number | null;
+
+    /** Where to buy tickets, if any. */
+    @Column({ nullable: true })
+    ticketUrl: string | null;
+
+    /** Typical visit duration in minutes — powers "arrive by …" hints. */
+    @Column({ type: 'int', nullable: true })
+    avgVisitMinutes: number | null;
+
     @Column('decimal', { precision: 2, scale: 1, default: 0 })
     @Index()
     rating: number;

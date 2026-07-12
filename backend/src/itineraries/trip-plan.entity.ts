@@ -21,6 +21,8 @@ export interface TripStop {
     pricePerPerson?: number | null;
     currency?: string | null;
     dayIndex: number;         // 0-indexed
+    /** Optional start time for this stop, "HH:MM" (24h) — the day's schedule. */
+    timeSlot?: string | null;
     addedAt: string;
 }
 
@@ -51,6 +53,11 @@ export class TripPlan {
 
     @Column({ type: 'int', default: 1 })
     days: number;
+
+    /** Trip start date, "YYYY-MM-DD" (nullable varchar to dodge date/tz sync churn).
+     *  Turns day numbers into real dates and drives the "Today" highlight. */
+    @Column({ nullable: true })
+    startDate: string | null;
 
     @Column({ default: true })
     isPublic: boolean; // anyone with the slug can view

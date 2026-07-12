@@ -146,4 +146,70 @@ export class RoutingService {
         await this.redis.setJson(key, out, CACHE_TTL_S).catch(() => {});
         return out;
     }
+
+    // ── Transport modes ("how do I get there?") ──────────────────────────────
+    // A static estimate is fine to start (roadmap 2.4): louage/bus/train/drive/
+    // walk options between two points, derived from great-circle distance × a road
+    // factor. No upstream call — instant and offline-friendly.
+
+    /** Cities on the SNCFT rail network (coastal + Gafsa/Metlaoui line). */
+    private static readonly RAIL_CITIES = new Set([
+        'tunis', 'bizerte', 'borj cedria', 'hammam lif', 'nabeul', 'dar chaabane',
+        'sousse', 'monastir', 'mahdia', 'el jem', 'sfax', 'gabes', 'gabès',
+        'gafsa', 'metlaoui', 'moularès', 'redeyef',
+    ]);
+
+    private haversineKm(a: [number, number], b: [number, number]): number {
+        const [lng1, lat1] = a, [lng2, lat2] = b;
+        const R = 6371;
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLng = (lng2 - lng1) * Math.PI / 180;
+        const s = Math.sin(dLat / 2) ** 2 +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
+        return 2 * R * Math.asin(Math.sqrt(s));
+    }
+
+    private costRange(mid: number): { lowTnd: number; highTnd: number } {
+        return { lowTnd: Math.max(1, Math.round(mid * 0.85)), highTnd: Math.max(2, Math.round(mid * 1.2)) };
+    }
+
+    /**
+     * Estimated ways to travel between two coords. `from`/`to` are [lng, lat];
+     * optional city names unlock the train option on rail-served pairs.
+     */
+    transportEstimate(
+        from: [number, number], to: [number, number],
+        fromCity?: string, toCity?: string,
+    ) {
+        const straightKm = this.haversineKm(from, to);
+        const roadKm = Math.max(1, Math.round(straightKm * 1.25)); // road detour factor
+        const driveMin = Math.round((roadKm / 80) * 60); // ~80 km/h intercity average
+        const norm = (s?: string) => (s || '').trim().toLowerCase();
+        const railPair = RoutingService.RAIL_CITIES.has(norm(fromCity)) &&
+            RoutingService.RAIL_CITIES.has(norm(toCity)) && norm(fromCity) !== norm(toCity);
+
+        const options: any[] = [];
+        options.push({ mode: 'drive', label: 'Car', durationMin: driveMin, note: 'Fastest, door to door' });
+        options.push({
+            mode: 'louage', label: 'Louage (shared taxi)', durationMin: Math.round(driveMin * 1.15),
+            cost: this.costRange(roadKm * 0.08), note: 'Leaves when full from the louage station',
+        });
+        options.push({
+            mode: 'bus', label: 'Bus (SNTRI)', durationMin: Math.round(driveMin * 1.35),
+            cost: this.costRange(roadKm * 0.055), note: 'Cheapest; scheduled departures',
+        });
+        if (railPair) {
+            options.push({
+                mode: 'train', label: 'Train (SNCFT)', durationMin: Math.round(driveMin * 1.25),
+                cost: this.costRange(roadKm * 0.05), note: 'Comfortable on the coastal line',
+            });
+        }
+        if (roadKm <= 4) {
+            options.push({
+                mode: 'walk', label: 'Walk', durationMin: Math.round((roadKm / 4.5) * 60),
+                cost: { lowTnd: 0, highTnd: 0 }, note: 'Perfect for medina distances',
+            });
+        }
+        return { distanceKm: roadKm, straightKm: Math.round(straightKm), options };
+    }
 }

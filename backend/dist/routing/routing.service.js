@@ -114,8 +114,56 @@ let RoutingService = RoutingService_1 = class RoutingService {
         await this.redis.setJson(key, out, CACHE_TTL_S).catch(() => { });
         return out;
     }
+    haversineKm(a, b) {
+        const [lng1, lat1] = a, [lng2, lat2] = b;
+        const R = 6371;
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLng = (lng2 - lng1) * Math.PI / 180;
+        const s = Math.sin(dLat / 2) ** 2 +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
+        return 2 * R * Math.asin(Math.sqrt(s));
+    }
+    costRange(mid) {
+        return { lowTnd: Math.max(1, Math.round(mid * 0.85)), highTnd: Math.max(2, Math.round(mid * 1.2)) };
+    }
+    transportEstimate(from, to, fromCity, toCity) {
+        const straightKm = this.haversineKm(from, to);
+        const roadKm = Math.max(1, Math.round(straightKm * 1.25));
+        const driveMin = Math.round((roadKm / 80) * 60);
+        const norm = (s) => (s || '').trim().toLowerCase();
+        const railPair = RoutingService_1.RAIL_CITIES.has(norm(fromCity)) &&
+            RoutingService_1.RAIL_CITIES.has(norm(toCity)) && norm(fromCity) !== norm(toCity);
+        const options = [];
+        options.push({ mode: 'drive', label: 'Car', durationMin: driveMin, note: 'Fastest, door to door' });
+        options.push({
+            mode: 'louage', label: 'Louage (shared taxi)', durationMin: Math.round(driveMin * 1.15),
+            cost: this.costRange(roadKm * 0.08), note: 'Leaves when full from the louage station',
+        });
+        options.push({
+            mode: 'bus', label: 'Bus (SNTRI)', durationMin: Math.round(driveMin * 1.35),
+            cost: this.costRange(roadKm * 0.055), note: 'Cheapest; scheduled departures',
+        });
+        if (railPair) {
+            options.push({
+                mode: 'train', label: 'Train (SNCFT)', durationMin: Math.round(driveMin * 1.25),
+                cost: this.costRange(roadKm * 0.05), note: 'Comfortable on the coastal line',
+            });
+        }
+        if (roadKm <= 4) {
+            options.push({
+                mode: 'walk', label: 'Walk', durationMin: Math.round((roadKm / 4.5) * 60),
+                cost: { lowTnd: 0, highTnd: 0 }, note: 'Perfect for medina distances',
+            });
+        }
+        return { distanceKm: roadKm, straightKm: Math.round(straightKm), options };
+    }
 };
 exports.RoutingService = RoutingService;
+RoutingService.RAIL_CITIES = new Set([
+    'tunis', 'bizerte', 'borj cedria', 'hammam lif', 'nabeul', 'dar chaabane',
+    'sousse', 'monastir', 'mahdia', 'el jem', 'sfax', 'gabes', 'gabès',
+    'gafsa', 'metlaoui', 'moularès', 'redeyef',
+]);
 exports.RoutingService = RoutingService = RoutingService_1 = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [config_1.ConfigService,

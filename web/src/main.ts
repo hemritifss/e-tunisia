@@ -12,6 +12,7 @@ import { initAnalytics } from './analytics';
 import { initI18n } from './i18n';
 import './referral'; // capture ?ref from the landing URL for the referral loop
 import { initCityFilter } from './city-filter';
+import { initCurrencyToggle } from './currency';
 
 function esc(v: unknown): string {
   const s = String(v ?? '');
@@ -1480,6 +1481,7 @@ function init() {
   initTheme();
   initI18n(); // before first paint of chrome — stamps <html lang/dir>, translates [data-i18n]
   initCityFilter(); // global city pill in the navbar
+  initCurrencyToggle(); // global currency pill (TND/EUR/USD/GBP)
   initToasts();
   initSearch();
   initNotifications();

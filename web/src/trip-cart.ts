@@ -16,6 +16,7 @@ export interface CartStop {
   pricePerPerson?: number | null;
   currency?: string | null;
   dayIndex: number;
+  timeSlot?: string | null; // "HH:MM"
   addedAt: string;
 }
 
@@ -24,6 +25,7 @@ export interface CartState {
   travelers: number;
   currency: string;
   days: number;
+  startDate?: string | null; // "YYYY-MM-DD"
   stops: CartStop[];
 }
 
@@ -33,6 +35,7 @@ function emptyState(): CartState {
     travelers: 2,
     currency: 'TND',
     days: 1,
+    startDate: null,
     stops: [],
   };
 }
@@ -42,11 +45,14 @@ function readState(): CartState {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return emptyState();
     const parsed = JSON.parse(raw);
+    const startDate = typeof parsed.startDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(parsed.startDate)
+      ? parsed.startDate : null;
     return {
       title: String(parsed.title || 'My Tunisia trip'),
       travelers: Math.min(50, Math.max(1, Number(parsed.travelers) || 2)),
       currency: String(parsed.currency || 'TND'),
       days: Math.min(30, Math.max(1, Number(parsed.days) || 1)),
+      startDate,
       stops: Array.isArray(parsed.stops) ? parsed.stops : [],
     };
   } catch {
@@ -89,6 +95,19 @@ export function setCurrency(currency: string) {
   s.currency = String(currency || 'TND').toUpperCase().slice(0, 8);
   writeState(s);
 }
+export function setStartDate(date: string | null) {
+  const s = readState();
+  s.startDate = date && /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : null;
+  writeState(s);
+}
+export function setStopTime(placeId: string, packageId: string | null | undefined, timeSlot: string | null) {
+  const s = readState();
+  const clean = timeSlot && /^\d{2}:\d{2}$/.test(timeSlot) ? timeSlot : null;
+  s.stops = s.stops.map((x) =>
+    x.placeId === placeId && (x.packageId || null) === (packageId || null) ? { ...x, timeSlot: clean } : x,
+  );
+  writeState(s);
+}
 
 /**
  * Add a stop to the cart. If a package is supplied, we replace any prior
@@ -105,6 +124,7 @@ export function addStop(stop: {
   pricePerPerson?: number | null;
   currency?: string | null;
   dayIndex?: number;
+  timeSlot?: string | null;
 }) {
   const s = readState();
   const dupIdx = s.stops.findIndex(x =>
@@ -120,6 +140,7 @@ export function addStop(stop: {
     pricePerPerson: typeof stop.pricePerPerson === 'number' ? stop.pricePerPerson : null,
     currency: stop.currency || null,
     dayIndex: Number.isFinite(stop.dayIndex) ? Number(stop.dayIndex) : s.stops.length,
+    timeSlot: typeof stop.timeSlot === 'string' && /^\d{2}:\d{2}$/.test(stop.timeSlot) ? stop.timeSlot : null,
     addedAt: new Date().toISOString(),
   };
   if (dupIdx >= 0) s.stops[dupIdx] = next;

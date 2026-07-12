@@ -10,6 +10,7 @@ export interface TripStop {
     pricePerPerson?: number | null;
     currency?: string | null;
     dayIndex: number;
+    timeSlot?: string | null;
     addedAt: string;
 }
 export declare class TripPlan {
@@ -21,6 +22,7 @@ export declare class TripPlan {
     currency: string;
     stops: TripStop[];
     days: number;
+    startDate: string | null;
     isPublic: boolean;
     viewCount: number;
     cloneCount: number;

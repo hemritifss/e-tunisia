@@ -100,6 +100,49 @@ export default defineConfig({
               },
             },
           },
+          // ── Offline trip mode (Tier 2.3) ──────────────────────────────────
+          // Map tiles: cache-first so a route you've panned over renders offline.
+          {
+            urlPattern: /^https:\/\/[a-d]?\.?basemaps\.cartocdn\.com\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'map-tiles',
+              expiration: { maxEntries: 800, maxAgeSeconds: 60 * 60 * 24 * 30 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          // Trip + place API (same-origin): network-first with an offline fallback,
+          // so a trip you opened on wifi still opens on the road.
+          {
+            urlPattern: ({ url }: any) =>
+              url.pathname.startsWith('/api/v1/trips') || url.pathname.startsWith('/api/v1/places'),
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'trip-data',
+              networkTimeoutSeconds: 4,
+              expiration: { maxEntries: 200, maxAgeSeconds: 60 * 60 * 24 * 14 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          // Uploaded place images — cache-first so covers show offline.
+          {
+            urlPattern: ({ url }: any) => url.pathname.startsWith('/uploads'),
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'uploads',
+              expiration: { maxEntries: 400, maxAgeSeconds: 60 * 60 * 24 * 30 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          // Weather forecasts — keep the last response for offline trip days.
+          {
+            urlPattern: /^https:\/\/api\.open-meteo\.com\/.*/i,
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'weather',
+              expiration: { maxEntries: 60, maxAgeSeconds: 60 * 60 * 12 },
+            },
+          },
         ],
       },
     }),

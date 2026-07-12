@@ -16,6 +16,7 @@ exports.BookingsController = void 0;
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
+const admin_guard_1 = require("../admin/admin.guard");
 const current_user_decorator_1 = require("../common/decorators/current-user.decorator");
 const bookings_service_1 = require("./bookings.service");
 const create_booking_dto_1 = require("./dto/create-booking.dto");
@@ -34,6 +35,12 @@ let BookingsController = class BookingsController {
     }
     findByPlace(placeId) {
         return this.bookingsService.findByPlace(placeId);
+    }
+    ownerEarnings(userId) {
+        return this.bookingsService.getOwnerEarnings(userId);
+    }
+    settlePayout(id) {
+        return this.bookingsService.settlePayout(id);
     }
     findOne(id) {
         return this.bookingsService.findOne(id);
@@ -85,6 +92,23 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], BookingsController.prototype, "findByPlace", null);
+__decorate([
+    (0, common_1.Get)('owner/earnings'),
+    (0, swagger_1.ApiOperation)({ summary: 'My payout ledger — earnings across my places (owed vs paid out)' }),
+    __param(0, (0, current_user_decorator_1.CurrentUser)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], BookingsController.prototype, "ownerEarnings", null);
+__decorate([
+    (0, common_1.Patch)(':id/settle-payout'),
+    (0, common_1.UseGuards)(admin_guard_1.AdminGuard),
+    (0, swagger_1.ApiOperation)({ summary: 'Record a manual payout to the host for this booking (admin)' }),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], BookingsController.prototype, "settlePayout", null);
 __decorate([
     (0, common_1.Get)(':id'),
     (0, swagger_1.ApiOperation)({ summary: 'Get booking details' }),

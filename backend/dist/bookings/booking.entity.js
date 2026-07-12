@@ -127,6 +127,10 @@ __decorate([
     __metadata("design:type", String)
 ], Booking.prototype, "paymentMethod", void 0);
 __decorate([
+    (0, typeorm_1.Column)({ type: 'timestamp', nullable: true }),
+    __metadata("design:type", Date)
+], Booking.prototype, "payoutSettledAt", void 0);
+__decorate([
     (0, typeorm_1.Column)({ type: 'simple-enum', enum: ['flexible', 'moderate', 'strict'], default: 'moderate' }),
     __metadata("design:type", String)
 ], Booking.prototype, "cancellationPolicy", void 0);

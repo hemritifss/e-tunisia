@@ -4,4 +4,9 @@ export declare class RoutingController {
     constructor(routing: RoutingService);
     route(coords: string): Promise<import("./routing.service").RouteResult>;
     optimize(coords: string): Promise<import("./routing.service").OptimizeResult>;
+    transport(from: string, to: string, fromCity?: string, toCity?: string): {
+        distanceKm: number;
+        straightKm: number;
+        options: any[];
+    };
 }
