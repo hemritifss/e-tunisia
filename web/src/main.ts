@@ -47,6 +47,7 @@ const TipsPage = React.lazy(() => import('./react/pages/TipsPage'));
 const SafetyPage = React.lazy(() => import('./react/pages/SafetyPage'));
 const SubmitGemPage = React.lazy(() => import('./react/pages/SubmitGemPage'));
 const LouagePage = React.lazy(() => import('./react/pages/LouagePage'));
+const JellyfishPage = React.lazy(() => import('./react/pages/JellyfishPage'));
 const SettingsPage = React.lazy(() => import('./react/pages/SettingsPage'));
 const CreditsPage = React.lazy(() => import('./react/pages/CreditsPage'));
 const InquiriesPage = React.lazy(() => import('./react/pages/InquiriesPage'));
@@ -198,6 +199,8 @@ function getRoute(route: string): Route {
     '/safety': { render: () => '', init: () => {}, page: 'safety', isReact: true },
     '/submit-gem': { render: () => '', init: () => {}, page: 'submit-gem', isReact: true },
     '/louage': { render: () => '', init: () => {}, page: 'louage', isReact: true },
+    '/jellyfish': { render: () => '', init: () => {}, page: 'jellyfish', isReact: true },
+    '/beaches': { render: () => '', init: () => {}, page: 'jellyfish', isReact: true },
     '/map': { render: () => '', init: () => {}, page: 'map', isReact: true },
     '/profile': { render: () => '', init: () => {}, page: 'profile', isReact: true },
     '/leaderboard': { render: () => '', init: () => {}, page: 'profile', isReact: true },
@@ -351,6 +354,8 @@ function navigate() {
         currentUnmount = mountIsland(SubmitGemPage, islandRoot);
       } else if (path === '/louage') {
         currentUnmount = mountIsland(LouagePage, islandRoot);
+      } else if (path === '/jellyfish' || path === '/beaches') {
+        currentUnmount = mountIsland(JellyfishPage, islandRoot);
       } else if (path === '/settings') {
         currentUnmount = mountIsland(SettingsPage, islandRoot);
       } else if (path === '/credits') {

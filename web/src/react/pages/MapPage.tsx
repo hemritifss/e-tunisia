@@ -17,7 +17,7 @@ import { KontHouniButton } from '../components/KontHouniButton';
 
 interface MapPlace {
   id: string; name: string; lat: number; lng: number; category: string;
-  rating: number; reviewCount: number; image: string; description: string;
+  rating: number; reviewCount: number; image: string; description: string; city?: string;
 }
 
 function esc(s: unknown): string {
@@ -120,6 +120,7 @@ async function loadAllPlaces(): Promise<MapPlace[]> {
         reviewCount: Number(p.reviewCount ?? p.reviewsCount) || 0,
         image: api.getImageUrl(p.coverImage || p.images?.[0], 'place'),
         description: String(p.description || ''),
+        city: p.city || undefined,
       });
     }
     const totalPages = res?.meta?.totalPages;
@@ -381,7 +382,7 @@ export default function MapPage() {
                 <div className="map-info-comment"><div className="map-info-comment-text">No reviews yet — be the first.</div></div>
               )}
             </div>
-            <div className="map-info-visit"><KontHouniButton placeId={selected.id} compact /></div>
+            <div className="map-info-visit"><KontHouniButton placeId={selected.id} placeName={selected.name} city={selected.city} compact /></div>
             <a href={`#/place/${selected.id}`} className="map-info-btn" style={{ background: selColor }}><ArrowRight size={16} /> View place</a>
           </div>
         )}

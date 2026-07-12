@@ -261,6 +261,22 @@ export async function getAmbassadors() {
   }>('/gems/ambassadors');
 }
 
+// ── BEACHES (jellyfish report — famma 9nadel?) ─
+export async function getBeaches(governorate?: string) {
+  const qs = governorate ? `?governorate=${encodeURIComponent(governorate)}` : '';
+  return api<any[]>(`/beaches${qs}`);
+}
+export async function getBeach(placeId: string) {
+  return api<any>(`/beaches/${encodeURIComponent(placeId)}`);
+}
+export async function reportBeach(placeId: string, payload: {
+  jellyfish: 'none' | 'few' | 'lots'; water?: string; crowd?: string; note?: string;
+}) {
+  return api<{ id: string; awarded: boolean }>(
+    `/beaches/${encodeURIComponent(placeId)}/report`, { method: 'POST', body: JSON.stringify(payload) },
+  );
+}
+
 // ── ROUTING (real roads via OSRM/Mapbox) ─────
 export async function getRoute(coords: [number, number][]) {
   const path = coords.map((c) => c.join(',')).join(';');
