@@ -4,7 +4,10 @@ import { createPortal } from 'react-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Map as MapIcon, CalendarDays, Crown, Mountain, Eye, X, Compass, Bookmark } from 'lucide-react';
 import * as api from '../../api';
-import { showToast } from '../../ui-utils';
+import { showToast, requireAuth, toggleSaved } from '../../ui-utils';
+import { coverPlaceholder } from '../../shared/placeholder';
+import PublicMasthead from '../components/public/PublicMasthead';
+import PublicFooter from '../components/public/PublicFooter';
 
 // Migrated from vanilla pages/itineraries.ts — same classes, same data + mock
 // fallback, same detail modal (portaled to body).
@@ -27,7 +30,14 @@ const DIFF_TINT: Record<string, string> = {
 const diffStyle = (tint: string) => ({ ['--diff-tint']: tint } as React.CSSProperties);
 
 function coverOf(it: any): string {
-  return api.getImageUrl(it.coverImage || it.image || (it.images && it.images[0]) || '');
+  const src = it.coverImage || it.image || (it.images && it.images[0]) || '';
+  return src ? api.getImageUrl(src, 'itinerary') : coverPlaceholder(it.id, it.title);
+}
+
+// Seed titles embed the day count (e.g. "Sahara Desert Adventure (5 Days)"); a
+// dedicated duration chip already carries it, so strip the suffix from the name.
+function cleanTitle(title: string): string {
+  return (title || '').replace(/\s*\(\s*\d+\s*days?\s*\)\s*$/i, '').trim();
 }
 
 function ItineraryModal({ it, onClose }: { it: any; onClose: () => void }) {
@@ -69,21 +79,37 @@ function ItineraryModal({ it, onClose }: { it: any; onClose: () => void }) {
             <span className="itinerary-duration-tag"><CalendarDays /> {it.duration} day{it.duration === 1 ? '' : 's'}</span>
             {it.isPremium && <span className="itinerary-pro-tag"><Crown /> Pro</span>}
           </div>
-          <h2>{it.title}</h2>
+          <h2>{cleanTitle(it.title)}</h2>
         </div>
         <div className="itinerary-modal-body">
           <div className="itinerary-modal-meta">
             <span className="itinerary-modal-meta-chip"><Mountain /> {diff}</span>
-            <span className="itinerary-modal-meta-chip"><CalendarDays /> {it.duration} day{it.duration === 1 ? '' : 's'}</span>
           </div>
           <p className="itinerary-modal-desc">{it.description}</p>
+          {Array.isArray(it.days) && it.days.length > 0 && (
+            <ol className="itinerary-modal-days">
+              {it.days.map((d: any) => (
+                <li key={d.day} className="itinerary-modal-day">
+                  <span className="itinerary-modal-day-num">Day {d.day}</span>
+                  <div>
+                    <strong className="itinerary-modal-day-title">{d.title}</strong>
+                    {d.notes && <p className="itinerary-modal-day-notes">{d.notes}</p>}
+                  </div>
+                </li>
+              ))}
+            </ol>
+          )}
           <div className="itinerary-modal-actions">
             {it.isPremium ? (
               <a href="#/premium" className="btn btn-primary itinerary-modal-cta"><Crown /> Unlock with Pro</a>
             ) : (
               <a href="#/explore" className="btn btn-primary itinerary-modal-cta"><Compass /> Start exploring</a>
             )}
-            <button type="button" className="btn btn-outline itinerary-modal-save" onClick={() => showToast('Itinerary saved')}>
+            <button type="button" className="btn btn-outline itinerary-modal-save" onClick={() => {
+              if (!requireAuth('save itineraries')) return;
+              const saved = toggleSaved(`itinerary:${it.id}`);
+              showToast(saved ? 'Itinerary saved' : 'Removed from saved');
+            }}>
               <Bookmark /> Save
             </button>
           </div>
@@ -111,6 +137,7 @@ export default function ItinerariesPage() {
 
   return (
     <div className="itineraries-page page-enter">
+      {!api.isLoggedIn() && <PublicMasthead active="itineraries" />}
       <section className="itineraries-hero">
         <div className="itineraries-hero-bg" aria-hidden="true" />
         <div className="itineraries-hero-mesh" aria-hidden="true" />
@@ -140,13 +167,13 @@ export default function ItinerariesPage() {
                     <span className="itinerary-duration-tag"><CalendarDays /> {it.duration} day{it.duration === 1 ? '' : 's'}</span>
                     {it.isPremium && <span className="itinerary-pro-tag"><Crown /> Pro</span>}
                   </div>
-                  <h3 className="itinerary-card-title">{it.title}</h3>
+                  <h3 className="itinerary-card-title">{cleanTitle(it.title)}</h3>
                 </div>
                 <div className="itinerary-card-body">
                   <div className="itinerary-difficulty"><Mountain /> {diff}</div>
                   <p className="itinerary-desc">{it.description}</p>
                   <button type="button" className="btn btn-outline btn-sm itinerary-view-btn" onClick={() => setSelected(it)}>
-                    <Eye /> View full itinerary
+                    <Eye /> {Array.isArray(it.days) && it.days.length > 0 ? 'View full itinerary' : 'Preview'}
                   </button>
                 </div>
               </article>
@@ -156,6 +183,7 @@ export default function ItinerariesPage() {
       </div>
 
       {selected && <ItineraryModal it={selected} onClose={() => setSelected(null)} />}
+      {!api.isLoggedIn() && <PublicFooter />}
     </div>
   );
 }

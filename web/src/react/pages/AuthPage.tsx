@@ -6,6 +6,7 @@ import * as api from '../../api';
 import { goTo, currentRoute, replace } from '../../router';
 import { track } from '../../analytics';
 import { getStoredRef, clearStoredRef } from '../../referral';
+import { MARKETING_STATS } from '../data/marketingStats';
 
 // Split-screen auth: imagery/welcome panel + form, with an animated side-switch
 // between Sign in and Sign up (in-place, no full reload). Migrated from auth.ts.
@@ -151,7 +152,7 @@ export default function AuthPage() {
         </a>
 
         <section className="auth-split" data-mode={mode}>
-          {/* Imagery / welcome panel — slides to the opposite side on toggle */}
+          {/* Imagery / welcome panel - slides to the opposite side on toggle */}
           <motion.aside className="auth-visual" layout transition={layoutTransition}>
             <div className="auth-visual-media" aria-hidden="true">
               <img src={isRegister ? '/img/hero3.png' : '/img/hero1.png'} alt="" />
@@ -168,14 +169,14 @@ export default function AuthPage() {
                 >
                   <span className="auth-visual-eyebrow"><Sparkles /> {isRegister ? 'Start exploring' : 'Welcome back'}</span>
                   <h2 className="auth-visual-title">{isRegister ? 'Your Tunisia, unlocked.' : 'The real Tunisia is waiting.'}</h2>
-                  <p className="auth-visual-text">{isRegister ? 'Join 12,400+ travelers and locals sharing the places guidebooks miss.' : 'Pick up right where you left off — your saved places, trips, and people.'}</p>
+                  <p className="auth-visual-text">{isRegister ? `Join ${MARKETING_STATS.travelers.display} travelers and locals sharing the places guidebooks miss.` : 'Pick up right where you left off - your saved places, trips, and people.'}</p>
                 </motion.div>
               </AnimatePresence>
               <div className="auth-visual-switch">
                 <span>{cfg.altText}</span>
                 <button type="button" className="auth-visual-switch-btn" onClick={() => switchMode(cfg.altMode)}>{cfg.altLabel}</button>
               </div>
-              <div className="auth-visual-meta"><MapPin /> 24 governorates · 2,500+ hidden places</div>
+              <div className="auth-visual-meta"><MapPin /> {MARKETING_STATS.governorates.display} governorates · {MARKETING_STATS.placesCharted.display} hidden places</div>
             </div>
           </motion.aside>
 

@@ -5,6 +5,10 @@ import { useQuery } from '@tanstack/react-query';
 import * as api from '../../api';
 import { usePlanCatalog, fmtPrice } from '../lib/plan-catalog';
 import { coverPlaceholder } from '../../shared/placeholder';
+import { getImageUrl } from '../../shared/api';
+import { MARKETING_STATS } from '../data/marketingStats';
+import PublicMasthead from '../components/public/PublicMasthead';
+import PublicFooter from '../components/public/PublicFooter';
 
 // Landing — "Carnet de Voyage" editorial edition (landing-editorial.css).
 // A hand-assembled travel journal: paper, ink, pasted photo prints, rubber
@@ -12,7 +16,7 @@ import { coverPlaceholder } from '../../shared/placeholder';
 // particles, no mesh orbs, no gradient text, no fake live counters, no stock
 // avatar stacks — those read as machine-made. Real data with honest fallbacks.
 
-interface Place { id: string; name: string; city: string; category?: { name: string }; rating: number; reviewCount: number; images?: string[]; image?: string; }
+interface Place { id: string; name: string; city: string; category?: { name: string }; rating: number; reviewCount: number; coverImage?: string; images?: string[]; image?: string; }
 
 const fallbackPlaces: Place[] = [
   { id: '1', name: 'Amphitheatre of El Jem', city: 'El Jem', rating: 4.9, reviewCount: 1240, category: { name: 'Historical' }, images: ['/img/hero3.png'] },
@@ -73,7 +77,7 @@ const RouteDoodle = () => (
 
 /* ── Place card — a pinned photo print with an index number ───── */
 function PlacePrint({ p, index }: { p: Place; index: number }) {
-  const [imgSrc, setImgSrc] = useState(p.images?.[0] || p.image || '/img/hero1.png');
+  const [imgSrc, setImgSrc] = useState(getImageUrl(p.coverImage || p.images?.[0]) || coverPlaceholder(p.id, p.name));
   const cat = p.category?.name || 'Place';
   const filled = Math.floor(p.rating || 0);
   return (
@@ -161,14 +165,6 @@ const TESTIMONIALS = [
 
 export default function HeroPage() {
   const rootRef = useRef<HTMLDivElement>(null);
-  const [navScrolled, setNavScrolled] = useState(false);
-
-  useEffect(() => {
-    const onScroll = () => setNavScrolled(window.scrollY > 24);
-    onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
 
   const placesQ = useQuery({
     queryKey: ['hero-places'],
@@ -194,7 +190,7 @@ export default function HeroPage() {
 
   const places = placesQ.data?.places;
   const totalPlaces = placesQ.data?.total || 0;
-  const totalReviews = places ? Math.max(places.reduce((s, p) => s + (p.reviewCount || 0), 0), 8500) : 0;
+  const totalReviews = places ? Math.max(places.reduce((s, p) => s + (p.reviewCount || 0), 0), MARKETING_STATS.communityReviews.value) : 0;
   const itineraries = itinQ.data;
 
   // Scroll reveal — re-run when async content mounts so it gets observed.
@@ -227,31 +223,11 @@ export default function HeroPage() {
     }
   };
 
-  const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
-
   return (
     <div className="ej-landing" ref={rootRef}>
 
       {/* ── Masthead ── */}
-      <nav className={`ej-masthead${navScrolled ? ' is-scrolled' : ''}`} aria-label="Primary">
-        <div className="ej-masthead-strip" aria-hidden="true">
-          <span>Vol. I — The traveler's edition</span>
-          <span>{today} · Tunis, Tunisia</span>
-        </div>
-        <div className="ej-masthead-inner">
-          <a href="#/hero" className="ej-wordmark"><strong>e-Tunisia</strong><span>تونس</span></a>
-          <div className="ej-masthead-links">
-            <a href="#/explore">Explore</a>
-            <a href="#/itineraries">Itineraries</a>
-            <a href="#/about">About</a>
-            <a href="#/premium">Pricing</a>
-          </div>
-          <div className="ej-masthead-actions">
-            <a href="#/login" className="ej-masthead-login">Log in</a>
-            <a href="#/register" className="ej-btn ej-btn--sm">Join free</a>
-          </div>
-        </div>
-      </nav>
+      <PublicMasthead />
 
       {/* ── Hero — the opening spread ── */}
       <header className="ej-hero">
@@ -287,8 +263,8 @@ export default function HeroPage() {
             <figcaption>Sidi Bou Said, 07:14 <span className="ej-print-meta">36.87°N 10.34°E</span></figcaption>
           </figure>
           <figure className="ej-print ej-print-2">
-            <img src="/img/hero2.png" alt="Alleys of the old Medina of Tunis" loading="lazy" />
-            <figcaption>mid-souk, Tunis <span className="ej-print-meta">est. 698 AD</span></figcaption>
+            <img src="/img/hero2.png" alt="A camel and rider crossing the Sahara dunes at sunset near Douz" loading="lazy" />
+            <figcaption>Douz, golden hour <span className="ej-print-meta">33.46°N 9.02°E</span></figcaption>
           </figure>
           <figure className="ej-print ej-print-3">
             <img src="/img/hero3.png" alt="The Roman amphitheatre of El Jem at golden hour" loading="lazy" />
@@ -322,11 +298,11 @@ export default function HeroPage() {
             <span className="ej-almanac-label">Community reviews</span>
           </div>
           <div className="ej-almanac-cell">
-            <span className="ej-almanac-num">24</span>
+            <span className="ej-almanac-num">{MARKETING_STATS.governorates.display}</span>
             <span className="ej-almanac-label">Governorates</span>
           </div>
           <div className="ej-almanac-cell">
-            <span className="ej-almanac-num">3,000+</span>
+            <span className="ej-almanac-num">{MARKETING_STATS.yearsOfHistory.display}</span>
             <span className="ej-almanac-label">Years of history</span>
           </div>
         </div>
@@ -389,8 +365,8 @@ export default function HeroPage() {
         </div>
         <div className="ej-moods">
           {[
-            { href: '#/mood/adventure', img: '/img/hero3.png', title: 'Adventure', desc: 'dunes, kitesurf, canyons, cave homes' },
-            { href: '#/mood/culture', img: '/img/hero2.png', title: 'Culture', desc: 'Roman ruins, medinas, Berber heritage' },
+            { href: '#/mood/adventure', img: '/img/hero2.png', title: 'Adventure', desc: 'dunes, kitesurf, canyons, cave homes' },
+            { href: '#/mood/culture', img: '/img/hero3.png', title: 'Culture', desc: 'Roman ruins, medinas, Berber heritage' },
             { href: '#/mood/relax', img: '/img/hero1.png', title: 'Relax', desc: 'hammams, blue doors, sunset terraces' },
             { href: '#/mood/foodie', img: '/img/hero3.png', title: 'Foodie', desc: 'brik, harissa, mint tea on rooftops' },
             { href: '#/mood/spiritual', img: '/img/hero2.png', title: 'Spiritual & slow', desc: 'Kairouan, Sufi chants, desert silence' },
@@ -454,7 +430,7 @@ export default function HeroPage() {
             <p className="ej-kicker"><span className="ej-no">✳</span> For business owners</p>
             <h2 className="ej-h2">Run a riad, a table, a tour? <em>Write to us.</em></h2>
             <p className="ej-letter-arabic">وصل للسياح اللي يستحقو</p>
-            <p className="ej-lede">Hotels, riads, restaurants, guides, artisans — whatever you do, there's a traveler looking for you. Join 890+ Tunisian businesses already on the platform.</p>
+            <p className="ej-lede">Hotels, riads, restaurants, guides, artisans - whatever you do, there's a traveler looking for you. Join {MARKETING_STATS.localHosts.display} Tunisian businesses already on the platform.</p>
             <ul className="ej-letter-benefits">
               <li><span className="ej-tick" aria-hidden="true">✓</span> Direct bookings, no middlemen</li>
               <li><span className="ej-tick" aria-hidden="true">✓</span> You keep what you earn</li>
@@ -530,27 +506,7 @@ export default function HeroPage() {
         </div>
       </section>
 
-      {/* ── Colophon ── */}
-      <footer className="ej-footer">
-        <div className="ej-footer-grid">
-          <div className="ej-footer-brand">
-            <a href="#/hero" className="ej-wordmark"><strong>e-Tunisia</strong><span>تونس</span></a>
-            <p>The platform for discovering real Tunisia. Built by Tunisians, for the world.</p>
-          </div>
-          <div className="ej-footer-col"><h4>Explore</h4><a href="#/explore">Places</a><a href="#/map">Map</a><a href="#/itineraries">Itineraries</a><a href="#/events">Events</a></div>
-          <div className="ej-footer-col"><h4>Community</h4><a href="#/">Feed</a><a href="#/tips">Tips</a><a href="#/leaderboard">Leaderboard</a><a href="#/partner">Partner</a></div>
-          <div className="ej-footer-col"><h4>Company</h4><a href="#/about">About</a><a href="#/premium">Pricing</a><a href="#/partner">Contact</a><a href="#/legal/privacy">Privacy</a></div>
-        </div>
-        <div className="ej-footer-bottom">
-          <span>© 2026 e-Tunisia — Édition Nº 1</span>
-          <span>
-            Printed with
-            {' '}<span className="ej-footer-heart" aria-hidden="true"><svg width="13" height="13" viewBox="0 0 24 24"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" /></svg></span>
-            <span className="ej-sr-only">love</span>
-            {' '}in Tunis
-          </span>
-        </div>
-      </footer>
+      <PublicFooter />
     </div>
   );
 }

@@ -623,7 +623,7 @@
     font-size: 0.68rem;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: var(--ink-faint);
+    color: var(--ink-soft);
 }
 .ej-place-meta .ej-stars { display: inline-flex; gap: 1px; color: var(--rule-strong); }
 .ej-place-meta .ej-stars .is-filled { color: var(--gold); }
@@ -698,14 +698,14 @@
     font-size: 0.6rem;
     letter-spacing: 0.2em;
     text-transform: uppercase;
-    color: var(--ink-faint);
+    color: var(--ink-soft);
 }
 .ej-ticket-route {
     margin-top: var(--space-3);
     font-family: var(--font-mono);
     font-size: 0.56rem;
     letter-spacing: 0.14em;
-    color: var(--ink-faint);
+    color: var(--ink-soft);
     writing-mode: vertical-rl;
     text-transform: uppercase;
 }
@@ -1135,9 +1135,9 @@ select.ej-input option { color: var(--text-primary); background: var(--surface);
     gap: var(--space-10);
 }
 .ej-partners-row img {
-    height: 44px;
-    width: auto;
-    max-width: 130px;
+    height: 40px;
+    width: 150px;
+    max-width: none;
     object-fit: contain;
     filter: grayscale(1) contrast(0.92);
     opacity: 0.6;

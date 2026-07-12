@@ -5,6 +5,9 @@ import { api } from '../../shared/api';
 import { goTo, currentRoute } from '../../router';
 import { openTopupModal } from '../../topup-modal';
 import { Tier, Cycle, fmtPrice, usePlanCatalog } from '../lib/plan-catalog';
+import PublicMasthead from '../components/public/PublicMasthead';
+import PublicFooter from '../components/public/PublicFooter';
+import { isLoggedIn } from '../../api';
 
 type PayMethod = 'card' | 'flouci' | 'credits' | 'bank' | 'cash';
 
@@ -161,7 +164,7 @@ export default function ProUpgradePage() {
                     <div className="pro-page-hero-bg" />
                     <span className="pro-page-kicker"><PartyPopper size={12} /> You're in</span>
                     <h1>Welcome to {current.name}.</h1>
-                    <p>Your plan is active. Your new perks are live across the app — the badge, the lifted caps, all of it.</p>
+                    <p>Your plan is active. Your new perks are live across the app - the badge, the lifted caps, all of it.</p>
                     <div className="pro-page-cycle" style={{ marginTop: 'var(--space-4)' }}>
                         <a className="btn primary" href="#/">Back to feed</a>
                         {plan !== 'free' && (
@@ -177,6 +180,7 @@ export default function ProUpgradePage() {
 
     return (
         <main className="pro-page">
+            {!isLoggedIn() && <PublicMasthead active="pricing" />}
             {offline && (
                 <div className="pro-offline-banner">
                     <strong>Billing service offline</strong>
@@ -230,7 +234,7 @@ export default function ProUpgradePage() {
 
             <section className="pro-page-grid">
                 {plans.map((p) => {
-                    const isCurrent = plan === p.id;
+                    const isCurrent = !isAnon && plan === p.id;
                     const amount = cycle === 'yearly' ? p.yearly : p.monthly;
                     const priceLabel = p.id === 'free' ? 'Free' : `${fmtPrice(amount, currency)} / ${cycle === 'yearly' ? 'yr' : 'mo'}`;
                     return (
@@ -268,7 +272,11 @@ export default function ProUpgradePage() {
                                         </div>
                                     )
                                 ) : p.id === 'free' ? (
-                                    <button className="btn ghost block" disabled>Default</button>
+                                    isAnon ? (
+                                        <a className="btn primary block" href="#/register">Get started free →</a>
+                                    ) : (
+                                        <button className="btn ghost block" disabled>Default</button>
+                                    )
                                 ) : isAnon ? (
                                     <a className="btn primary block" href="#/register">Sign in to upgrade →</a>
                                 ) : (
@@ -296,6 +304,7 @@ export default function ProUpgradePage() {
                     end of the period.
                 </p>
             </section>
+            {!isLoggedIn() && <PublicFooter />}
         </main>
     );
 }

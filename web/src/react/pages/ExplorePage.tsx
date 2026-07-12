@@ -22,10 +22,13 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { api, getImageUrl } from '../../shared/api';
+import { isLoggedIn } from '../../api';
 import { coverPlaceholder } from '../../shared/placeholder';
 import { requireAuth } from '../../ui-utils';
 import type { Place, Category } from '../../shared/types/api';
-import { Card, CardImage, CardContent, CardFooter } from '../components/Card';
+import { Card, CardContent } from '../components/Card';
+import PublicMasthead from '../components/public/PublicMasthead';
+import PublicFooter from '../components/public/PublicFooter';
 import { StarRating } from '../components/StarRating';
 import { Button } from '../components/Button';
 import { Skeleton, PlaceCardSkeleton } from '../components/Skeleton';
@@ -54,6 +57,49 @@ const CATEGORIES: CategoryDef[] = [
   { id: 'culture',    name: 'Culture',    Icon: Library,          tint: 'var(--violet)' },
   { id: 'adventure',  name: 'Adventure',  Icon: Mountain,         tint: 'var(--terracotta)' },
 ];
+
+/**
+ * Card cover image with per-image fade-in and an error fallback. Cards mount
+ * before their (often hotlinked, slow) photo arrives; without this the un-liked
+ * favorite heart and rating pill would briefly sit on flat white. The parent
+ * wrapper carries the tinted backing so nothing renders on bare surface, and a
+ * broken/missing source falls back to the per-place gradient placeholder.
+ */
+function FadeImage({
+  src,
+  alt,
+  seed,
+  label,
+}: {
+  src: string;
+  alt: string;
+  seed: string;
+  label: string;
+}) {
+  const [imgSrc, setImgSrc] = useState(src);
+  const [loaded, setLoaded] = useState(false);
+  const ref = useRef<HTMLImageElement | null>(null);
+  // A cached image can finish loading before React attaches onLoad, which would
+  // otherwise leave it stuck at opacity 0. Reconcile against the DOM on mount.
+  useEffect(() => {
+    if (ref.current?.complete) setLoaded(true);
+  }, []);
+  return (
+    <img
+      ref={ref}
+      src={imgSrc}
+      alt={alt}
+      loading="lazy"
+      onLoad={() => setLoaded(true)}
+      onError={() => {
+        setImgSrc(coverPlaceholder(seed, label));
+        setLoaded(true);
+      }}
+      className="w-full h-full object-cover transition duration-500 group-hover:scale-105"
+      style={{ opacity: loaded ? 1 : 0 }}
+    />
+  );
+}
 
 function PlaceCard({
   place,
@@ -115,11 +161,12 @@ function PlaceCard({
           aria-label={`View ${place.name}`}
         >
         <Card hover className="flex gap-4">
-          <div className="w-48 shrink-0">
-            <CardImage
+          <div className="w-48 shrink-0 relative overflow-hidden aspect-square bg-black/5 dark:bg-white/5">
+            <FadeImage
               src={getImageUrl(place.coverImage || place.images?.[0]) || coverPlaceholder(place.id, place.name)}
               alt={place.name}
-              aspect="square"
+              seed={place.id}
+              label={place.name}
             />
           </div>
           <CardContent className="flex-1 py-4 pr-4 pl-0">
@@ -179,11 +226,12 @@ function PlaceCard({
         aria-label={`View ${place.name}`}
       >
       <Card hover className="h-full flex flex-col">
-        <div className="relative">
-          <CardImage
+        <div className="relative overflow-hidden aspect-video bg-black/5 dark:bg-white/5">
+          <FadeImage
             src={getImageUrl(place.coverImage || place.images?.[0]) || coverPlaceholder(place.id, place.name)}
             alt={place.name}
-            aspect="video"
+            seed={place.id}
+            label={place.name}
           />
           <button
             onClick={handleLike}
@@ -254,12 +302,7 @@ function ForYouStrip() {
           return (
             <a key={it.placeId} href={`#/place/${p.id}`} className="shrink-0 w-44 snap-start group">
               <div className="relative w-44 h-28 rounded-xl overflow-hidden bg-black/5 dark:bg-white/5">
-                <img
-                  src={img}
-                  alt={p.name}
-                  loading="lazy"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
+                <FadeImage src={img} alt={p.name} seed={p.id} label={p.name} />
                 {Number(p.rating) > 0 && (
                   <span className="absolute bottom-1.5 left-1.5 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-white/95 text-[11px] font-bold text-gray-900">
                     <Star size={10} className="fill-amber-400 text-amber-400" /> {Number(p.rating).toFixed(1)}
@@ -402,6 +445,7 @@ export default function ExplorePage() {
 
   return (
     <div className="explore-page animate-fade-in" style={{ '--cat-tint': activeCat.tint } as React.CSSProperties}>
+      {!isLoggedIn() && <PublicMasthead active="explore" />}
       {/* Hero — atmospheric mesh, search baked in */}
       <header className="explore-hero">
         <div className="explore-hero-bg" aria-hidden="true" />
@@ -603,6 +647,7 @@ export default function ExplorePage() {
           </div>
         )}
       </div>
+      {!isLoggedIn() && <PublicFooter />}
     </div>
   );
 }
