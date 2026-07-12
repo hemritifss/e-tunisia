@@ -305,6 +305,9 @@ export const api = {
   // ── Passport ──────────────────────────────────────────────────
   getPassport: (handle: string) =>
     fetchWithAuth(`/api/v1/users/by-handle/${encodeURIComponent(handle)}`),
+  // "Your Summer in Tunisia" Wrapped — public, shareable recap.
+  getWrapped: (handle: string) =>
+    fetchWithAuth(`/api/v1/wrapped/${encodeURIComponent(handle)}`),
   checkHandle: (h: string) =>
     fetchWithAuth(`/api/v1/users/handle-available?h=${encodeURIComponent(h)}`),
   getPassportOgUrl: (handle: string, version?: string | number) => {

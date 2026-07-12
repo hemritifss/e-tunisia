@@ -6,9 +6,10 @@ import { User } from '../users/user.entity';
 import { Place } from '../places/place.entity';
 import { Post } from '../posts/post.entity';
 import { TripPlan } from '../itineraries/trip-plan.entity';
+import { WrappedModule } from '../wrapped/wrapped.module';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([User, Place, Post, TripPlan])],
+    imports: [TypeOrmModule.forFeature([User, Place, Post, TripPlan]), WrappedModule],
     controllers: [OgController],
     providers: [OgService],
     exports: [OgService],

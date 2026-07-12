@@ -8,6 +8,7 @@ import { Place } from '../places/place.entity';
 import { Post } from '../posts/post.entity';
 import { TripPlan } from '../itineraries/trip-plan.entity';
 import { OgService, QUIZ_ARCHETYPES } from './og.service';
+import { WrappedService } from '../wrapped/wrapped.service';
 
 /**
  * Crawler-visible link previews.
@@ -29,6 +30,7 @@ export class OgController {
         @InjectRepository(Post) private readonly posts: Repository<Post>,
         @InjectRepository(TripPlan) private readonly trips: Repository<TripPlan>,
         private readonly og: OgService,
+        private readonly wrapped: WrappedService,
     ) {}
 
     private webOrigin(): string {
@@ -156,6 +158,47 @@ export class OgController {
         try {
             if (!a) throw new Error('unknown archetype');
             res.send(await this.og.renderCityQuizCard(a));
+        } catch {
+            const transparent = Buffer.from(
+                '89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c4890000000a49444154789c63000000000200015c34a40d0000000049454e44ae426082',
+                'hex',
+            );
+            res.send(transparent);
+        }
+    }
+
+    /** "Your Summer in Tunisia" Wrapped — crawler-visible preview (GROWTH §6). */
+    @Get('wrapped/:handle')
+    @Header('Content-Type', 'text/html; charset=utf-8')
+    @Header('Cache-Control', 'public, max-age=1800, stale-while-revalidate=86400')
+    async wrappedOg(@Param('handle') rawHandle: string, @Req() req: Request, @Res() res: Response) {
+        const handle = (rawHandle || '').toLowerCase();
+        const w = await this.wrapped.build(handle).catch(() => null);
+        const name = w?.fullName || `@${handle}`;
+        res.send(renderOgHtml({
+            title: w ? `${name}'s ${w.period.label} in Tunisia — ${w.personality.label}` : 'Your Summer in Tunisia — Wrapped',
+            description: w && !w.isEmpty
+                ? `${w.stats.checkIns} check-ins · ${w.stats.citiesCount} cities · ${w.stats.governoratesCount} governorates. See the Wrapped and make yours on e-Tunisia.`
+                : 'Your summer across Tunisia, wrapped up: cities, check-ins and your traveler personality. Free on e-Tunisia.',
+            image: `${this.apiOrigin(req)}/api/v1/og/wrapped/${encodeURIComponent(handle)}/image.png`,
+            canonical: `${this.webOrigin()}/wrapped/${encodeURIComponent(handle)}`,
+            largeCard: true,
+        }));
+    }
+
+    /** 1200×630 PNG for the Wrapped card. */
+    @Get('wrapped/:handle/image.png')
+    @Header('Content-Type', 'image/png')
+    @Header('Cache-Control', 'public, max-age=1800, stale-while-revalidate=86400')
+    async wrappedImage(@Param('handle') rawHandle: string, @Res() res: Response) {
+        try {
+            const w = await this.wrapped.build((rawHandle || '').toLowerCase());
+            res.send(await this.og.renderWrappedCard({
+                fullName: w.fullName,
+                periodLabel: w.period.label,
+                personalityLabel: w.personality.label,
+                stats: w.stats,
+            }));
         } catch {
             const transparent = Buffer.from(
                 '89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c4890000000a49444154789c63000000000200015c34a40d0000000049454e44ae426082',
