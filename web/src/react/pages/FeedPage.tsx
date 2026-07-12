@@ -574,7 +574,7 @@ export default function FeedPage() {
   };
 
   return (
-    <div className="compass-shell animate-fade-in">
+    <div className="compass-shell animate-fade-in" data-design="carnet">
       {/* Top band: welcome/hero spans full width */}
       <div className="compass-top">
         <WelcomeStrip />

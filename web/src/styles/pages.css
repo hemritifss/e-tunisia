@@ -14917,6 +14917,7 @@ section[class^="hero-"] {
 }
 
 .toast {
+    /* Paper slip (carnet chrome): opaque print stock, hairline rule, slight tilt */
     --toast-accent: var(--terracotta);
     pointer-events: auto;
     display: grid;
@@ -14924,21 +14925,21 @@ section[class^="hero-"] {
     gap: 12px;
     align-items: center;
     padding: 12px 12px 12px 14px;
-    background: var(--surface);
-    border: 1px solid var(--border);
+    background: var(--paper-print);
+    border: 1px solid var(--rule);
     border-left: 3px solid var(--toast-accent);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-xl), 0 0 0 1px oklch(100% 0 0 / 0.04) inset;
+    border-radius: 2px;
+    box-shadow: var(--paper-shadow-lift);
     font-family: var(--font-sans);
-    color: var(--text-primary);
+    color: var(--ink);
     min-width: 280px;
+    rotate: 0.5deg;
     animation: toast-in 320ms var(--ease-spring) both;
-    backdrop-filter: blur(8px) saturate(140%);
 }
 .toast-success    { --toast-accent: var(--success); }
 .toast-error      { --toast-accent: var(--error); }
 .toast-info       { --toast-accent: var(--mediterranean); }
-.toast-achievement{ --toast-accent: var(--gold); box-shadow: var(--shadow-xl), var(--shadow-glow-gold); }
+.toast-achievement{ --toast-accent: var(--gold); }
 
 .toast-icon {
     width: 32px; height: 32px;
@@ -14958,11 +14959,11 @@ section[class^="hero-"] {
     font-family: var(--font-display);
     font-weight: 700;
     font-size: 14px;
-    color: var(--text-primary);
+    color: var(--ink);
 }
 .toast-body span {
     font-size: 13px;
-    color: var(--text-secondary);
+    color: var(--ink-soft);
     overflow: hidden;
     text-overflow: ellipsis;
     display: -webkit-box;
@@ -15006,12 +15007,9 @@ section[class^="hero-"] {
     to   { transform: translateX(120%); opacity: 0; }
 }
 
-@media (prefers-color-scheme: dark) {
-    .toast { background: oklch(20% 0.012 260); border-color: oklch(28% 0.012 260); color: oklch(95% 0 0); }
-    .toast-body strong { color: oklch(96% 0 0); }
-    .toast-body span { color: oklch(75% 0.008 60); }
-    .toast-close:hover { background: oklch(100% 0 0 / 0.08); color: oklch(96% 0 0); }
-}
+/* Paper/ink tokens follow [data-theme] — the old prefers-color-scheme override
+   (which mismatched the app's data-theme switch) is retired. */
+[data-theme="dark"] .toast-close:hover { background: oklch(100% 0 0 / 0.08); color: oklch(96% 0 0); }
 
 /* ============================================
    PREMIUM POLISH LAYER — ports the new passport/feed surfaces onto the
@@ -15138,38 +15136,94 @@ section[class^="hero-"] {
 }
 .mood-pill-text strong { font-family: var(--font-display); font-weight: 600; }
 
-/* ─── Tunisia Now panel — gradient-hero header, glass body ─── */
-.now-panel {
-    background: var(--surface);
-    border-color: var(--border-light);
-    border-radius: var(--radius-xl);
-    box-shadow: var(--shadow-xl);
-    overflow: hidden;
+/* ═══════════════════════════════════════════════════════════════════════
+   CARNET OVERRIDES — feed-top widgets (Phase 1)
+   Scoped to [data-design="carnet"] so only the opted feed changes. Converts
+   the dark aurora/neon/glass widgets to paper & ink so the logged-in feed is
+   continuous with the landing. Higher specificity → order-independent.
+   ═══════════════════════════════════════════════════════════════════════ */
+/* Guest hero → ink-dipped page */
+[data-design="carnet"] .hero-anon {
+    background: var(--paper-deep);
+    border: 1px solid var(--rule-strong);
+    box-shadow: var(--paper-shadow-lift);
 }
-.now-panel-head {
-    background:
-        radial-gradient(80% 100% at 0% 0%, oklch(58% 0.2 290 / 0.25), transparent 60%),
-        var(--gradient-hero);
+[data-design="carnet"] .hero-anon h1,
+[data-design="carnet"] .hero-anon p { color: var(--ink-on-deep); }
+[data-design="carnet"] .hero-anon-kicker,
+[data-design="carnet"] .hero-anon-cta .btn.ghost {
+    background: transparent;
+    border: 1px solid oklch(100% 0 0 / 0.25);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    color: var(--ink-on-deep);
 }
-.now-panel-title {
-    font-family: var(--font-display);
-    color: oklch(100% 0 0 / 0.92);
-    letter-spacing: var(--tracking-widest);
+[data-design="carnet"] .hero-anon-cta .btn.primary {
+    background: var(--paper);
+    color: var(--ink);
+    box-shadow: 3px 3px 0 oklch(100% 0 0 / 0.28);
 }
-.now-panel-tabs button.active {
-    color: var(--gold);
-    border-bottom-color: var(--gold);
-    text-shadow: 0 0 12px oklch(78% 0.17 80 / 0.5);
+[data-design="carnet"] .hero-anon-cta .btn.primary:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 5px 5px 0 oklch(100% 0 0 / 0.28);
 }
-.now-row a { border-radius: var(--radius-md); transition: all var(--duration-fast) var(--ease-out); }
-.now-row a:hover { background: var(--terracotta-pale); transform: translateX(2px); }
-.now-row-text strong { font-family: var(--font-display); font-weight: 600; }
-.now-panel-foot a {
-    font-family: var(--font-display);
-    font-weight: 600;
-    color: var(--accent);
+
+/* Welcome strip → clean paper card */
+[data-design="carnet"] .welcome-strip {
+    background: var(--paper-print);
+    border: 1px solid var(--rule);
+    box-shadow: var(--paper-shadow);
 }
-.now-panel-foot a:hover { color: var(--accent-hover); }
+[data-design="carnet"] .welcome-strip-avatar img,
+[data-design="carnet"] .welcome-strip-avatar-fallback { box-shadow: var(--paper-shadow); }
+[data-design="carnet"] .welcome-action-pill.primary {
+    background: var(--accent);
+    color: var(--accent-text);
+    border: 1.5px solid var(--ink);
+    box-shadow: 2px 2px 0 var(--ink);
+}
+[data-design="carnet"] .welcome-action-pill.primary:hover {
+    background: var(--accent);
+    transform: translate(-1px, -1px);
+    box-shadow: 3px 3px 0 var(--ink);
+}
+
+/* Tunisia Pulse → ink section, coral "live" dot (no neon) */
+[data-design="carnet"] .tunisia-pulse {
+    background: var(--paper-deep);
+    border: 1px solid var(--rule-strong);
+    box-shadow: var(--paper-shadow);
+}
+[data-design="carnet"] .tunisia-pulse-text strong,
+[data-design="carnet"] .tunisia-pulse-text { color: var(--ink-on-deep); }
+[data-design="carnet"] .tunisia-pulse-dot-core { background: var(--coral); box-shadow: none; }
+[data-design="carnet"] .tunisia-pulse-dot-ring { border-color: var(--coral); }
+[data-design="carnet"] .tunisia-pulse-link {
+    background: transparent;
+    border: 1px solid oklch(100% 0 0 / 0.25);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    color: var(--ink-on-deep);
+}
+
+/* Mood compass → clean paper card */
+[data-design="carnet"] .mood-compass {
+    background: var(--paper-print);
+    border: 1px solid var(--rule);
+    box-shadow: var(--paper-shadow);
+}
+
+/* Tunisia Now panel → clean paper card (carnet feed). Header blends with the
+   card; identity comes from the accent tab underline, not an ink/navy band. */
+[data-design="carnet"] .now-panel {
+    background: var(--paper-print);
+    border: 1px solid var(--rule);
+    box-shadow: var(--paper-shadow);
+}
+
+/* The full Tunisia Now panel is one clean, token-based block below (search
+   "TUNISIA NOW PANEL"). The old gradient-hero/gold override was retired for
+   the cleaner/app-like direction. */
 
 /* ─── Passport hero — full token integration ─── */
 .passport-hero {
@@ -15637,47 +15691,54 @@ section[class^="hero-"] {
 .mood-pill-text strong { font-size: 14px; color: var(--text-primary); }
 .mood-pill-text span { font-size: 11px; color: var(--text-muted, #5a6371); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-/* ─── TUNISIA NOW PANEL (right rail, single card with tabs) ── */
+/* ─── TUNISIA NOW PANEL (right rail, single card with tabs) ──
+   Clean/app-like: light card, blended header, terracotta tab underline.
+   Fully token-based → adapts to light/dark via [data-theme] automatically. */
 .now-panel {
     display: none;
     position: sticky;
-    top: 80px;
-    max-height: calc(100vh - 96px);
+    top: calc(var(--nav-height) + var(--space-4));
+    max-height: calc(100vh - var(--nav-height) - var(--space-8));
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 20px;
+    border-radius: var(--radius-xl);
     overflow: hidden;
-    box-shadow: 0 8px 24px rgba(11, 30, 63, 0.06);
+    box-shadow: var(--shadow-sm);
 }
-@media (min-width: 1100px) { .now-panel { display: flex; flex-direction: column; } }
+/* Show at 1024px to match .compass-body's 336px rail column (no empty gap). */
+@media (min-width: 1024px) { .now-panel { display: flex; flex-direction: column; } }
 
 .now-panel-head {
-    background: linear-gradient(135deg, #0b1e3f 0%, #1a3a73 100%);
-    color: #fff;
+    background: transparent;
+    color: var(--text-primary);
     padding: 14px 16px 0;
 }
 .now-panel-title {
     display: inline-flex; align-items: center; gap: 6px;
     font-size: 12px;
-    letter-spacing: 0.10em;
+    font-weight: 700;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: rgba(255,255,255,0.78);
+    color: var(--text-tertiary);
     margin-bottom: 12px;
 }
-.now-panel-tabs { display: flex; gap: 4px; }
+.now-panel-title svg { color: var(--accent); }
+.now-panel-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border-light); }
 .now-panel-tabs button {
     flex: 1;
     display: inline-flex; align-items: center; justify-content: center; gap: 6px;
     padding: 8px 6px 10px;
+    margin-bottom: -1px;
     background: transparent;
     border: none; border-bottom: 2px solid transparent;
-    color: rgba(255,255,255,0.65);
+    color: var(--text-secondary);
     font-size: 13px; font-weight: 500;
     cursor: pointer;
-    transition: all 150ms ease;
+    transition: color var(--duration-fast) var(--ease-out),
+                border-color var(--duration-fast) var(--ease-out);
 }
-.now-panel-tabs button:hover { color: rgba(255,255,255,0.9); }
-.now-panel-tabs button.active { color: #fff; border-bottom-color: #f4c542; }
+.now-panel-tabs button:hover { color: var(--text-primary); }
+.now-panel-tabs button.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
 
 .now-panel-body {
     flex: 1;
@@ -15688,72 +15749,68 @@ section[class^="hero-"] {
 .now-row a {
     display: flex; align-items: center; gap: 10px;
     padding: 8px 10px;
-    border-radius: 10px;
+    border-radius: var(--radius-md);
     text-decoration: none;
     color: var(--text-primary);
-    transition: background 120ms ease;
+    transition: background var(--duration-fast) var(--ease-out);
 }
-.now-row a:hover { background: rgba(212, 98, 58, 0.08); }
+.now-row a:hover { background: color-mix(in oklab, var(--accent) 8%, transparent); }
 .now-row img, .now-row-fallback {
     width: 34px; height: 34px; border-radius: 50%;
     object-fit: cover; flex-shrink: 0;
 }
 .now-row-fallback {
-    background: linear-gradient(135deg, #1a3a73, #d4623a);
-    color: #fff;
+    background: var(--accent-light);
+    color: var(--accent);
     display: inline-flex; align-items: center; justify-content: center;
     font-weight: 700; font-size: 13px;
 }
 .now-row-text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-.now-row-text strong { font-size: 13px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.now-row-text span { font-size: 11px; color: var(--text-muted, #9aa0a6); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.now-row-text em { font-style: normal; color: #d4623a; font-weight: 500; }
+.now-row-text strong { font-size: 13px; font-weight: 600; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.now-row-text span { font-size: 11px; color: var(--text-tertiary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.now-row-text em { font-style: normal; color: var(--accent); font-weight: 500; }
 .now-row-time, .now-row-points {
-    font-size: 11px; color: var(--text-muted, #9aa0a6);
+    font-size: 11px; color: var(--text-tertiary);
     flex-shrink: 0;
 }
 .now-row-rank {
     font-size: 12px; font-weight: 700;
-    color: #f4c542;
+    color: var(--accent);
     flex-shrink: 0;
 }
 .now-guide {
     display: inline-flex; align-items: center; justify-content: center;
     width: 14px; height: 14px; border-radius: 50%;
-    background: rgba(86,207,225,0.4); color: #14202b;
+    background: color-mix(in oklab, var(--mediterranean) 18%, transparent); color: var(--mediterranean);
     font-size: 9px; font-weight: 700; margin-left: 4px;
 }
-.now-empty { padding: 32px 16px; text-align: center; color: var(--text-muted, #9aa0a6); font-size: 13px; }
+.now-empty { padding: 32px 16px; text-align: center; color: var(--text-tertiary); font-size: 13px; }
 .now-skel { display: flex; flex-direction: column; gap: 6px; padding: 8px; }
 .now-skel-row {
-    height: 50px; border-radius: 10px;
-    background: linear-gradient(90deg, var(--bg-tertiary) 25%, var(--surface) 50%, var(--bg-tertiary) 75%);
+    height: 50px; border-radius: var(--radius-md);
+    background: linear-gradient(90deg, var(--surface-hover) 25%, var(--surface-active) 50%, var(--surface-hover) 75%);
     background-size: 200% 100%;
     animation: passport-shimmer 1.4s infinite;
 }
 .now-panel-foot {
     padding: 10px 16px;
-    background: rgba(0,0,0,0.03);
-    border-top: 1px solid var(--border, #e5e7eb);
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border-light);
     text-align: center;
 }
 .now-panel-foot a {
     font-size: 13px; font-weight: 600;
-    color: #d4623a; text-decoration: none;
+    color: var(--accent); text-decoration: none;
 }
-.now-panel-foot a:hover { color: #c25030; }
+.now-panel-foot a:hover { color: var(--accent-hover); }
 
-/* Dark mode */
+/* Dark mode — mood widgets still use OS-preference overrides here; the Tunisia
+   Now panel is fully token-based and adapts via [data-theme] automatically. */
 @media (prefers-color-scheme: dark) {
     .mood-compass { background: linear-gradient(135deg, rgba(244,197,66,0.06) 0%, rgba(86,207,225,0.05) 100%); border-color: rgba(212,98,58,0.25); }
     .mood-compass-head strong { color: #e8eaed; }
     .mood-pill { background: #1a1d23; border-color: #2a2f37; color: #e8eaed; }
     .mood-pill-text strong { color: #e8eaed; }
-    .now-panel { background: #14181f; border-color: #2a2f37; }
-    .now-row a { color: #e8eaed; }
-    .now-row a:hover { background: rgba(212, 98, 58, 0.14); }
-    .now-skel-row { background: linear-gradient(90deg, #1a1d23 25%, #20242a 50%, #1a1d23 75%); background-size: 200% 100%; }
-    .now-panel-foot { background: rgba(255,255,255,0.03); border-top-color: #2a2f37; }
 }
 
 /* ─── ANON HERO ────────────────────────────────────── */
@@ -16506,23 +16563,22 @@ section[class^="hero-"] {
 .story-composer-share:disabled { opacity: 0.6; cursor: default; }
 
 /* ---- Pro passport themes (hero gradient overrides — higher specificity wins) ---- */
+/* Pro passport "editions" — the carnet identity page tinted by hue.
+   Ink-dipped paper base + a single faint colour wash, not aurora gradients. */
 .passport-hero.passport-theme-sahara .passport-hero-bg {
     background:
-        radial-gradient(120% 80% at 0% 0%, rgba(224, 168, 74, 0.5), transparent 60%),
-        radial-gradient(100% 80% at 100% 100%, rgba(196, 92, 46, 0.55), transparent 60%),
-        linear-gradient(135deg, #5a2c12 0%, #b4571f 55%, #e0a84a 100%);
+        radial-gradient(120% 90% at 100% 100%, oklch(74% 0.18 60 / 0.16), transparent 62%),
+        var(--paper-deep);
 }
 .passport-hero.passport-theme-mediterranean .passport-hero-bg {
     background:
-        radial-gradient(120% 80% at 0% 0%, rgba(64, 182, 210, 0.45), transparent 60%),
-        radial-gradient(100% 80% at 100% 100%, rgba(20, 52, 110, 0.65), transparent 60%),
-        linear-gradient(135deg, #07203f 0%, #0e4a6e 50%, #2bb1c9 100%);
+        radial-gradient(120% 90% at 100% 100%, oklch(52% 0.14 240 / 0.2), transparent 62%),
+        var(--paper-deep);
 }
 .passport-hero.passport-theme-medina .passport-hero-bg {
     background:
-        radial-gradient(120% 80% at 0% 0%, rgba(240, 228, 200, 0.5), transparent 60%),
-        radial-gradient(100% 80% at 100% 100%, rgba(40, 86, 150, 0.6), transparent 60%),
-        linear-gradient(135deg, #16335e 0%, #3a6ea5 55%, #ecdfc4 100%);
+        radial-gradient(120% 90% at 100% 100%, oklch(57% 0.13 145 / 0.16), transparent 62%),
+        var(--paper-deep);
 }
 
 /* ---- Theme picker (Pro owners) ---- */
@@ -16833,12 +16889,11 @@ section[class^="hero-"] {
   text-wrap: balance;
 }
 
+/* Gradient text retired (carnet) — Fraunces italic gold ink. Kept in sync with explore.css. */
 .explore-hero-grad {
-  background: linear-gradient(120deg, var(--gold) 0%, var(--terracotta-light) 55%, var(--coral) 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: transparent;
+  font-style: italic;
+  font-weight: 600;
+  color: var(--gold);
 }
 
 .explore-hero p,
@@ -16869,21 +16924,21 @@ section[class^="hero-"] {
 .explore-search-input {
   width: 100%;
   padding: 14px 18px 14px 46px;
-  border-radius: var(--radius-full);
-  border: 1px solid var(--glass-border);
-  background: oklch(100% 0 0 / 0.12);
-  backdrop-filter: var(--glass-blur);
-  color: #fff;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--ink);
+  background: var(--paper-print);
+  backdrop-filter: none;
+  color: var(--ink);
   font-size: var(--text-base);
   font-family: var(--font-sans);
   transition: all var(--duration-fast) var(--ease-out);
 }
-.explore-search-input::placeholder { color: rgba(255, 255, 255, 0.6); }
+.explore-search-input::placeholder { color: var(--ink-faint); }
 .explore-search-input:focus {
   outline: none;
-  background: oklch(100% 0 0 / 0.18);
-  border-color: rgba(255, 255, 255, 0.5);
-  box-shadow: 0 0 0 4px oklch(100% 0 0 / 0.1);
+  background: var(--paper-print);
+  border-color: var(--ink);
+  box-shadow: 3px 3px 0 var(--gold);
 }
 .explore-search-clear {
   position: absolute;
@@ -16902,33 +16957,9 @@ section[class^="hero-"] {
 }
 .explore-search-clear:hover { background: oklch(100% 0 0 / 0.3); }
 
-/* Floating ambient orbs */
-.explore-hero-orbs { position: absolute; inset: 0; z-index: 1; overflow: hidden; pointer-events: none; }
-.explore-hero-orb {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(40px);
-  opacity: 0.5;
-  animation: explore-orb-float 14s ease-in-out infinite;
-}
-.explore-hero-orb:nth-child(1) {
-  width: 280px; height: 280px;
-  background: var(--terracotta);
-  top: -80px; left: -40px;
-}
-.explore-hero-orb:nth-child(2) {
-  width: 320px; height: 320px;
-  background: var(--mediterranean);
-  bottom: -120px; right: -60px;
-  animation-delay: -7s;
-}
-@keyframes explore-orb-float {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(20px, -16px) scale(1.08); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .explore-hero-orb { animation: none; }
-}
+/* Floating ambient orbs retired (carnet) — neutralised in both stylesheets */
+.explore-hero-orbs,
+.explore-hero-orb { display: none; }
 
 /* Search post results */
 .search-post-list { display: flex; flex-direction: column; gap: 0.75rem; }

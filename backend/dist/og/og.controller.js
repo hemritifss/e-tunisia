@@ -21,13 +21,15 @@ const user_entity_1 = require("../users/user.entity");
 const place_entity_1 = require("../places/place.entity");
 const post_entity_1 = require("../posts/post.entity");
 const trip_plan_entity_1 = require("../itineraries/trip-plan.entity");
+const og_service_1 = require("./og.service");
 let OgController = class OgController {
-    constructor(config, users, places, posts, trips) {
+    constructor(config, users, places, posts, trips, og) {
         this.config = config;
         this.users = users;
         this.places = places;
         this.posts = posts;
         this.trips = trips;
+        this.og = og;
     }
     webOrigin() {
         return (this.config.get('FRONTEND_URL') || 'http://localhost:5173').replace(/\/+$/, '');
@@ -104,6 +106,32 @@ let OgController = class OgController {
             largeCard: !!cover,
         }));
     }
+    async cityQuiz(rawSlug, req, res) {
+        const slug = (rawSlug || '').toLowerCase();
+        const a = og_service_1.QUIZ_ARCHETYPES[slug];
+        const title = a ? `I'm ${a.city} ${a.tagline ? `— ${a.tagline}` : ''} · Which Tunisian city are you?` : 'Which Tunisian city are you?';
+        res.send(renderOgHtml({
+            title,
+            description: a
+                ? `${a.traits.join(' · ')}. Take the 60-second quiz and find your Tunisian city on e-Tunisia.`
+                : 'Answer 7 quick questions and discover which Tunisian city matches your soul — free on e-Tunisia.',
+            image: a ? `${this.apiOrigin(req)}/api/v1/og/city-quiz/${encodeURIComponent(slug)}/image.png` : null,
+            canonical: a ? `${this.webOrigin()}/city-quiz?r=${encodeURIComponent(slug)}` : `${this.webOrigin()}/city-quiz`,
+            largeCard: !!a,
+        }));
+    }
+    async cityQuizImage(rawSlug, res) {
+        const a = og_service_1.QUIZ_ARCHETYPES[(rawSlug || '').toLowerCase()];
+        try {
+            if (!a)
+                throw new Error('unknown archetype');
+            res.send(await this.og.renderCityQuizCard(a));
+        }
+        catch {
+            const transparent = Buffer.from('89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c4890000000a49444154789c63000000000200015c34a40d0000000049454e44ae426082', 'hex');
+            res.send(transparent);
+        }
+    }
 };
 exports.OgController = OgController;
 __decorate([
@@ -150,6 +178,27 @@ __decorate([
     __metadata("design:paramtypes", [String, Object, Object]),
     __metadata("design:returntype", Promise)
 ], OgController.prototype, "trip", null);
+__decorate([
+    (0, common_1.Get)('city-quiz/:slug'),
+    (0, common_1.Header)('Content-Type', 'text/html; charset=utf-8'),
+    (0, common_1.Header)('Cache-Control', 'public, max-age=3600, stale-while-revalidate=86400'),
+    __param(0, (0, common_1.Param)('slug')),
+    __param(1, (0, common_1.Req)()),
+    __param(2, (0, common_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object, Object]),
+    __metadata("design:returntype", Promise)
+], OgController.prototype, "cityQuiz", null);
+__decorate([
+    (0, common_1.Get)('city-quiz/:slug/image.png'),
+    (0, common_1.Header)('Content-Type', 'image/png'),
+    (0, common_1.Header)('Cache-Control', 'public, max-age=86400, stale-while-revalidate=604800'),
+    __param(0, (0, common_1.Param)('slug')),
+    __param(1, (0, common_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
+], OgController.prototype, "cityQuizImage", null);
 exports.OgController = OgController = __decorate([
     (0, common_1.Controller)('og'),
     __param(1, (0, typeorm_1.InjectRepository)(user_entity_1.User)),
@@ -160,7 +209,8 @@ exports.OgController = OgController = __decorate([
         typeorm_2.Repository,
         typeorm_2.Repository,
         typeorm_2.Repository,
-        typeorm_2.Repository])
+        typeorm_2.Repository,
+        og_service_1.OgService])
 ], OgController);
 function esc(s) {
     return String(s ?? '')

@@ -7,6 +7,23 @@ import { Resvg } from '@resvg/resvg-js';
 import { PassportDto } from '../users/dto/passport.dto';
 
 /**
+ * Display data for the "Which Tunisian city are you?" quiz result cards
+ * (GROWTH §7). Single backend source of truth for the shared OG preview — the
+ * web quiz owns the questions/scoring; this only needs the result copy + colours.
+ */
+export interface QuizArchetype { city: string; tagline: string; traits: string[]; gradient: string; }
+export const QUIZ_ARCHETYPES: Record<string, QuizArchetype> = {
+    'sidi-bou-said': { city: 'Sidi Bou Saïd', tagline: 'The dreamer', traits: ['Artistic', 'Romantic', 'Calm-in-the-chaos'], gradient: 'linear-gradient(135deg,#0b3d91 0%,#2f6fd0 55%,#6f9fe0 100%)' },
+    tunis: { city: 'Tunis', tagline: 'The connector', traits: ['Ambitious', 'Social', 'Always-in-motion'], gradient: 'linear-gradient(135deg,#7a1f2b 0%,#c0492f 55%,#e7b64a 100%)' },
+    djerba: { city: 'Djerba', tagline: 'The easy soul', traits: ['Easygoing', 'Warm', 'Unbothered'], gradient: 'linear-gradient(135deg,#0f8a8a 0%,#2bc4c4 55%,#7fded1 100%)' },
+    douz: { city: 'Douz', tagline: 'The free spirit', traits: ['Adventurous', 'Fearless', 'Free'], gradient: 'linear-gradient(135deg,#a5561e 0%,#e0902f 55%,#f0c877 100%)' },
+    tozeur: { city: 'Tozeur', tagline: 'The mystic', traits: ['Mysterious', 'Old-soul', 'Magnetic'], gradient: 'linear-gradient(135deg,#6b3b12 0%,#b4762a 55%,#dcb877 100%)' },
+    hammamet: { city: 'Hammamet', tagline: 'The good time', traits: ['Fun', 'Magnetic', 'Sun-chaser'], gradient: 'linear-gradient(135deg,#0a7d6b 0%,#f26d6d 55%,#ffcf6e 100%)' },
+    kairouan: { city: 'Kairouan', tagline: 'The old soul', traits: ['Grounded', 'Loyal', 'Wise'], gradient: 'linear-gradient(135deg,#5a3d2b 0%,#a5794a 55%,#d4b788 100%)' },
+    tabarka: { city: 'Tabarka', tagline: 'The nature lover', traits: ['Down-to-earth', 'Creative', 'Wild-at-heart'], gradient: 'linear-gradient(135deg,#14532d 0%,#2f8f57 55%,#7cc48f 100%)' },
+};
+
+/**
  * Renders the shareable "Tunisia Passport" postcard.
  *
  * Pure-JS toolchain: satori produces SVG, resvg rasterises to PNG.
@@ -229,6 +246,55 @@ export class OgService implements OnModuleInit {
         const svg = await satori(node, {
             width: 1200,
             height: 630,
+            fonts: [
+                { name: 'Inter', data: this.regular, weight: 400, style: 'normal' },
+                { name: 'Inter', data: this.bold, weight: 700, style: 'normal' },
+            ],
+        });
+        const png = new Resvg(svg, { fitTo: { mode: 'width', value: 1200 } }).render().asPng();
+        return Buffer.from(png);
+    }
+
+    /** 1200×630 "You are <City>" quiz result card. Typographic (no emoji — only
+     *  Inter is loaded, so emoji would render as tofu). */
+    async renderCityQuizCard(a: QuizArchetype): Promise<Buffer> {
+        if (!this.regular || !this.bold) throw new Error('OG fonts not loaded');
+        const node: any = {
+            type: 'div',
+            props: {
+                style: {
+                    width: 1200, height: 630, display: 'flex', flexDirection: 'column',
+                    justifyContent: 'center', alignItems: 'center', textAlign: 'center',
+                    background: a.gradient, color: '#fff', padding: '72px', fontFamily: 'Inter',
+                    position: 'relative',
+                },
+                children: [
+                    { type: 'div', props: { style: { fontSize: 26, letterSpacing: 6, opacity: 0.85, fontWeight: 700 }, children: 'WHICH TUNISIAN CITY ARE YOU?' } },
+                    { type: 'div', props: { style: { fontSize: 30, marginTop: 28, opacity: 0.9 }, children: 'You are' } },
+                    { type: 'div', props: { style: { fontSize: 108, fontWeight: 700, lineHeight: 1.02, marginTop: 4, textShadow: '0 3px 18px rgba(0,0,0,0.28)' }, children: a.city } },
+                    { type: 'div', props: { style: { fontSize: 40, fontWeight: 700, marginTop: 8, opacity: 0.96 }, children: a.tagline } },
+                    {
+                        type: 'div',
+                        props: {
+                            style: { display: 'flex', gap: 16, marginTop: 34 },
+                            children: a.traits.map((tr) => ({
+                                type: 'div',
+                                props: {
+                                    style: {
+                                        fontSize: 26, fontWeight: 600, padding: '12px 28px', borderRadius: 999,
+                                        background: 'rgba(255,255,255,0.20)', border: '2px solid rgba(255,255,255,0.4)',
+                                    },
+                                    children: tr,
+                                },
+                            })),
+                        },
+                    },
+                    { type: 'div', props: { style: { position: 'absolute', bottom: 40, fontSize: 24, fontWeight: 600, opacity: 0.8 }, children: 'e-tunisia · take the quiz' } },
+                ],
+            },
+        };
+        const svg = await satori(node, {
+            width: 1200, height: 630,
             fonts: [
                 { name: 'Inter', data: this.regular, weight: 400, style: 'normal' },
                 { name: 'Inter', data: this.bold, weight: 700, style: 'normal' },

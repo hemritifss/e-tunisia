@@ -24,11 +24,14 @@
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Kufi+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <!-- Single consolidated font request (carnet identity: Fraunces display · Inter body ·
+       JetBrains Mono data · Caveat hand · Noto Kufi Arabic). Outfit + Plus Jakarta retired. -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Kufi+Arabic:wght@300;400;500;600;700&family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Caveat:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
   <!-- Icons rendered as inline SVGs via src/icons.ts -->
   <link rel="stylesheet" href="/src/styles/tokens.css" />
   <link rel="stylesheet" href="/src/styles/base.css" />
   <link rel="stylesheet" href="/src/styles/components.css" />
+  <link rel="stylesheet" href="/src/styles/carnet.css" />
   <link rel="stylesheet" href="/src/styles/pages.css" />
   <link rel="stylesheet" href="/src/styles/animations.css" />
   <link rel="stylesheet" href="/src/styles/messenger.css" />
@@ -54,17 +57,14 @@
         <a href="#/" class="nav-logo">
           <img src="/icon.png" alt="e-Tunisia" class="logo-mark-img" />
           <span class="logo-text">e-Tunisia</span>
+          <span class="logo-text-ar" lang="ar" aria-hidden="true">تونس</span>
         </a>
         <div class="nav-links" id="nav-links">
           <a href="#/" class="nav-link active" data-page="feed" data-i18n="nav.feed">Feed</a>
           <a href="#/explore" class="nav-link" data-page="explore" data-i18n="nav.explore">Explore</a>
+          <a href="#/map" class="nav-link" data-page="map" data-i18n="nav.map">Map</a>
           <a href="#/ai-planner" class="nav-link" data-page="ai-planner" data-i18n="nav.aiPlanner">AI Planner</a>
           <a href="#/reels" class="nav-link" data-page="reels" data-i18n="nav.reels">Reels</a>
-          <a href="#/events" class="nav-link" data-page="events" data-i18n="nav.events">Events</a>
-          <a href="#/tips" class="nav-link" data-page="tips" data-i18n="nav.tips">Tips</a>
-          <a href="#/map" class="nav-link" data-page="map" data-i18n="nav.map">Map</a>
-          <a href="#/itineraries" class="nav-link" data-page="itineraries" data-i18n="nav.itineraries">Itineraries</a>
-          <a href="#/collections" class="nav-link" data-page="collections" data-i18n="nav.collections">Collections</a>
         </div>
         <div class="nav-actions">
           <button class="nav-search-trigger" data-open-cmdk aria-label="Search anything (Ctrl+K)">

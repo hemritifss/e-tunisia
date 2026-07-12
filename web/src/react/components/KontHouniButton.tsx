@@ -5,13 +5,15 @@ import * as api from '../../api';
 import { requireAuth, showToast, isLoggedIn } from '../../ui-utils';
 import { track } from '../../analytics';
 import { useT } from '../../i18n/useT';
+import { stampSlam } from '../../stamp-slam';
+import { resolveGovernorate, GOVERNORATE_BY_ID } from '../../governorates';
 
 /**
  * "Kont houni" — the one-tap first rung of the contribution ladder.
  * Stamps the place into the visitor's passport (+5 XP on first-ever visit),
  * optimistic toggle, works anywhere a placeId exists (place page, map panel).
  */
-export function KontHouniButton({ placeId, compact = false }: { placeId: string; compact?: boolean }) {
+export function KontHouniButton({ placeId, placeName, city, compact = false }: { placeId: string; placeName?: string; city?: string; compact?: boolean }) {
     const t = useT();
     const qc = useQueryClient();
 
@@ -41,7 +43,14 @@ export function KontHouniButton({ placeId, compact = false }: { placeId: string;
             qc.setQueryData(['visited-ids'], arr);
             if (arr.includes(placeId)) {
                 track('visit', { placeId });
-                showToast(t('visit.stamped'));
+                // The signature moment: a rubber stamp thunks into the carnet.
+                // (The slam carries the confirmation; skip the plain toast.)
+                const gov = GOVERNORATE_BY_ID[resolveGovernorate(city, placeName) || ''];
+                stampSlam({
+                    title: placeName || 'KONT HOUNI',
+                    city,
+                    bottom: gov ? `GOUVERNORAT ${gov.name.toUpperCase()}` : undefined,
+                });
             } else {
                 showToast(t('visit.unstamped'));
             }

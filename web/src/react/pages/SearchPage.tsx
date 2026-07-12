@@ -93,7 +93,7 @@ export default function SearchPage() {
   const busy = isFetching || aiLoading;
 
   return (
-    <div className="search-page page-enter">
+    <div className="search-page page-enter" data-design="carnet">
       <header className="search-page-head">
         <span className="search-page-eyebrow"><Search /> Discover</span>
         <h1>Search Tunisia</h1>

@@ -7,6 +7,7 @@ import { User } from '../users/user.entity';
 import { Place } from '../places/place.entity';
 import { Post } from '../posts/post.entity';
 import { TripPlan } from '../itineraries/trip-plan.entity';
+import { OgService, QUIZ_ARCHETYPES } from './og.service';
 
 /**
  * Crawler-visible link previews.
@@ -27,6 +28,7 @@ export class OgController {
         @InjectRepository(Place) private readonly places: Repository<Place>,
         @InjectRepository(Post) private readonly posts: Repository<Post>,
         @InjectRepository(TripPlan) private readonly trips: Repository<TripPlan>,
+        private readonly og: OgService,
     ) {}
 
     private webOrigin(): string {
@@ -122,6 +124,45 @@ export class OgController {
             canonical: `${this.webOrigin()}/trip/${encodeURIComponent(slug)}`,
             largeCard: !!cover,
         }));
+    }
+
+    /** "Which Tunisian city are you?" quiz result — crawler-visible preview
+     *  (GROWTH §7). Unknown slugs fall back to the generic quiz card. */
+    @Get('city-quiz/:slug')
+    @Header('Content-Type', 'text/html; charset=utf-8')
+    @Header('Cache-Control', 'public, max-age=3600, stale-while-revalidate=86400')
+    async cityQuiz(@Param('slug') rawSlug: string, @Req() req: Request, @Res() res: Response) {
+        const slug = (rawSlug || '').toLowerCase();
+        const a = QUIZ_ARCHETYPES[slug];
+        const title = a ? `I'm ${a.city} ${a.tagline ? `— ${a.tagline}` : ''} · Which Tunisian city are you?` : 'Which Tunisian city are you?';
+        res.send(renderOgHtml({
+            title,
+            description: a
+                ? `${a.traits.join(' · ')}. Take the 60-second quiz and find your Tunisian city on e-Tunisia.`
+                : 'Answer 7 quick questions and discover which Tunisian city matches your soul — free on e-Tunisia.',
+            image: a ? `${this.apiOrigin(req)}/api/v1/og/city-quiz/${encodeURIComponent(slug)}/image.png` : null,
+            // The result is fun; the app value is the quiz itself — send visitors to take it.
+            canonical: a ? `${this.webOrigin()}/city-quiz?r=${encodeURIComponent(slug)}` : `${this.webOrigin()}/city-quiz`,
+            largeCard: !!a,
+        }));
+    }
+
+    /** 1200×630 PNG for the quiz result card. */
+    @Get('city-quiz/:slug/image.png')
+    @Header('Content-Type', 'image/png')
+    @Header('Cache-Control', 'public, max-age=86400, stale-while-revalidate=604800')
+    async cityQuizImage(@Param('slug') rawSlug: string, @Res() res: Response) {
+        const a = QUIZ_ARCHETYPES[(rawSlug || '').toLowerCase()];
+        try {
+            if (!a) throw new Error('unknown archetype');
+            res.send(await this.og.renderCityQuizCard(a));
+        } catch {
+            const transparent = Buffer.from(
+                '89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c4890000000a49444154789c63000000000200015c34a40d0000000049454e44ae426082',
+                'hex',
+            );
+            res.send(transparent);
+        }
     }
 }
 

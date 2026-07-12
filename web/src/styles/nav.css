@@ -4,27 +4,20 @@
    All values from tokens.css.
    ============================================ */
 
-/* ── Top nav (desktop) ─────────────────────── */
+/* ── Top nav: clean app bar ─────────────────────
+   Cleaner/app-like direction: opaque solid surface, hairline rule,
+   no glass blur. Paper/ink tokens are global + theme-aware. */
 .nav {
-    background: oklch(100% 0 0 / 0.78);
-    backdrop-filter: blur(24px) saturate(180%);
-    -webkit-backdrop-filter: blur(24px) saturate(180%);
-    border-bottom: 1px solid oklch(0% 0 0 / 0.06);
-    transition: background var(--duration-normal) var(--ease-out),
-                box-shadow var(--duration-normal) var(--ease-out),
+    background: var(--paper);
+    border-bottom: 1px solid var(--rule);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    transition: box-shadow var(--duration-normal) var(--ease-out),
                 border-color var(--duration-normal) var(--ease-out);
 }
-[data-theme="dark"] .nav {
-    background: oklch(13% 0.011 260 / 0.72);
-    border-bottom-color: oklch(100% 0 0 / 0.06);
-}
 .nav.scrolled {
-    background: oklch(100% 0 0 / 0.92);
-    box-shadow: var(--shadow-md);
-    border-bottom-color: var(--border);
-}
-[data-theme="dark"] .nav.scrolled {
-    background: oklch(13% 0.011 260 / 0.92);
+    box-shadow: var(--paper-shadow);
+    border-bottom-color: var(--rule-strong);
 }
 
 .nav-logo {
@@ -37,79 +30,78 @@
     border-radius: var(--radius-md);
 }
 
-/* ── Nav links with sliding underline indicator ── */
-.nav-link {
-    position: relative;
-    padding: var(--space-2) var(--space-3);
-    border-radius: var(--radius-md);
-    color: var(--text-secondary);
+/* Dual-script wordmark: serif Latin + Arabic companion */
+.nav .logo-text {
+    font-family: var(--font-editorial);
+    font-optical-sizing: auto;
+    font-weight: 620;
+    letter-spacing: var(--tracking-tight);
+    color: var(--ink);
+}
+.logo-text-ar {
+    font-family: 'Noto Kufi Arabic', sans-serif;
     font-size: var(--text-sm);
     font-weight: 500;
+    color: var(--ink-faint);
+    margin-inline-start: 2px;
+    translate: 0 -0.4em;
+}
+
+/* ── Nav links — clean pill tabs ─────────────────
+   App-like: sentence-case sans, soft hover pill, tinted active pill.
+   No mono/uppercase, no sliding underline. */
+.nav-link {
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-full);
+    color: var(--ink-soft);
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    letter-spacing: 0;
+    text-transform: none;
+    white-space: nowrap;
     transition: color var(--duration-fast) var(--ease-out),
                 background var(--duration-fast) var(--ease-out);
 }
-.nav-link::after {
-    content: '';
-    position: absolute;
-    left: 50%;
-    bottom: 4px;
-    width: 0;
-    height: 2px;
-    background: var(--accent);
-    border-radius: var(--radius-full);
-    transform: translateX(-50%);
-    transition: width var(--duration-normal) var(--ease-spring),
-                background var(--duration-fast) var(--ease-out);
-    pointer-events: none;
-}
 .nav-link:hover {
-    color: var(--text-primary);
-    background: transparent;
-}
-.nav-link:hover::after {
-    width: 16px;
-    background: var(--text-tertiary);
+    color: var(--ink);
+    background: var(--surface-hover);
 }
 .nav-link.active {
     color: var(--accent);
-    background: transparent;
+    background: var(--accent-light);
     font-weight: 600;
-}
-.nav-link.active::after {
-    width: calc(100% - var(--space-4));
-    background: var(--accent);
 }
 .nav-link:focus-visible {
     outline: 2px solid var(--accent);
     outline-offset: 2px;
 }
-@media (prefers-reduced-motion: reduce) {
-    .nav-link::after { transition: none; }
-}
 
-/* ── Nav search-trigger refinement ────────── */
+/* ── Nav search-trigger — soft rounded field ── */
 .nav-search-trigger {
     height: 38px;
-    padding: 0 var(--space-3) 0 var(--space-3);
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-light);
+    padding: 0 var(--space-2) 0 var(--space-3);
+    background: var(--surface-hover);
+    border: 1px solid transparent;
     border-radius: var(--radius-full);
-    color: var(--text-tertiary);
+    color: var(--ink-faint);
+    font-family: var(--font-sans);
     font-size: var(--text-sm);
+    letter-spacing: 0;
     display: inline-flex;
     align-items: center;
     gap: var(--space-2);
-    min-width: 220px;
-    max-width: 320px;
+    min-width: 200px;
+    max-width: 300px;
     cursor: text;
     transition: background var(--duration-fast) var(--ease-out),
                 border-color var(--duration-fast) var(--ease-out),
                 color var(--duration-fast) var(--ease-out);
 }
 .nav-search-trigger:hover {
-    background: var(--surface-elevated);
-    border-color: var(--border);
-    color: var(--text-secondary);
+    background: var(--surface-active);
+    border-color: var(--rule);
+    color: var(--ink-soft);
 }
 .nav-search-trigger:focus-visible {
     outline: 2px solid var(--accent);
@@ -123,14 +115,14 @@
     white-space: nowrap;
 }
 .nav-search-trigger-kbd {
-    font-family: var(--font-mono);
+    font-family: var(--font-sans);
     font-size: 11px;
-    color: var(--text-tertiary);
-    background: var(--surface);
-    border: 1px solid var(--border-light);
-    border-bottom-width: 2px;
-    border-radius: var(--radius-sm);
-    padding: 1px 6px;
+    font-weight: 600;
+    color: var(--ink-faint);
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-full);
+    padding: 2px 8px;
     line-height: 1;
 }
 
@@ -174,14 +166,16 @@
     padding: 2px;
     border: 2px solid transparent;
     border-radius: 50%;
-    background: var(--gradient-cta);
+    background: var(--rule-strong);
     cursor: pointer;
     transition: transform var(--duration-fast) var(--ease-spring),
+                background var(--duration-fast) var(--ease-out),
                 box-shadow var(--duration-fast) var(--ease-out);
 }
 .avatar-btn:hover {
     transform: scale(1.04);
-    box-shadow: var(--shadow-md);
+    background: var(--accent);
+    box-shadow: var(--paper-shadow);
 }
 .avatar-btn:focus-visible {
     outline: 2px solid var(--accent);
@@ -202,10 +196,10 @@
     right: 0;
     min-width: 280px;
     max-height: calc(100vh - var(--nav-height) - var(--space-6));
-    background: var(--surface-elevated);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-xl);
-    box-shadow: var(--shadow-2xl);
+    background: var(--paper-print);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    box-shadow: var(--paper-shadow-lift);
     padding: var(--space-2);
     z-index: var(--z-dropdown);
     overflow-y: auto;
@@ -293,15 +287,9 @@
 
 /* ── Mobile bottom nav refinement ─────────── */
 .mobile-nav {
-    background: oklch(100% 0 0 / 0.92);
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
-    border-top: 1px solid oklch(0% 0 0 / 0.06);
+    background: var(--paper);
+    border-top: 1px solid var(--rule);
     box-shadow: 0 -4px 16px oklch(0% 0 0 / 0.04);
-}
-[data-theme="dark"] .mobile-nav {
-    background: oklch(13% 0.011 260 / 0.92);
-    border-top-color: oklch(100% 0 0 / 0.06);
 }
 
 .mobile-nav-item {
@@ -330,9 +318,8 @@
     top: 0;
     left: 50%;
     width: 0;
-    height: 3px;
+    height: 2px;
     background: var(--accent);
-    border-radius: 0 0 var(--radius-full) var(--radius-full);
     transform: translateX(-50%);
     transition: width var(--duration-normal) var(--ease-spring);
 }
@@ -357,12 +344,12 @@
 
 /* ── Mobile drawer (hamburger panel) refinement ─ */
 .mobile-menu-panel {
-    background: var(--surface);
-    border-left: 1px solid var(--border-light);
-    box-shadow: var(--shadow-2xl);
+    background: var(--paper);
+    border-left: 1px solid var(--rule);
+    box-shadow: var(--paper-shadow-lift);
 }
 .mobile-menu-header {
-    border-bottom: 1px solid var(--border-light);
+    border-bottom: 1px solid var(--rule);
     padding: var(--space-4);
 }
 .mobile-menu-user {

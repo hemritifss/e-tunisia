@@ -7,13 +7,23 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 var OgService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.OgService = void 0;
+exports.OgService = exports.QUIZ_ARCHETYPES = void 0;
 const common_1 = require("@nestjs/common");
 const fs = require("fs");
 const path = require("path");
 const https = require("https");
 const satori_1 = require("satori");
 const resvg_js_1 = require("@resvg/resvg-js");
+exports.QUIZ_ARCHETYPES = {
+    'sidi-bou-said': { city: 'Sidi Bou Saïd', tagline: 'The dreamer', traits: ['Artistic', 'Romantic', 'Calm-in-the-chaos'], gradient: 'linear-gradient(135deg,#0b3d91 0%,#2f6fd0 55%,#6f9fe0 100%)' },
+    tunis: { city: 'Tunis', tagline: 'The connector', traits: ['Ambitious', 'Social', 'Always-in-motion'], gradient: 'linear-gradient(135deg,#7a1f2b 0%,#c0492f 55%,#e7b64a 100%)' },
+    djerba: { city: 'Djerba', tagline: 'The easy soul', traits: ['Easygoing', 'Warm', 'Unbothered'], gradient: 'linear-gradient(135deg,#0f8a8a 0%,#2bc4c4 55%,#7fded1 100%)' },
+    douz: { city: 'Douz', tagline: 'The free spirit', traits: ['Adventurous', 'Fearless', 'Free'], gradient: 'linear-gradient(135deg,#a5561e 0%,#e0902f 55%,#f0c877 100%)' },
+    tozeur: { city: 'Tozeur', tagline: 'The mystic', traits: ['Mysterious', 'Old-soul', 'Magnetic'], gradient: 'linear-gradient(135deg,#6b3b12 0%,#b4762a 55%,#dcb877 100%)' },
+    hammamet: { city: 'Hammamet', tagline: 'The good time', traits: ['Fun', 'Magnetic', 'Sun-chaser'], gradient: 'linear-gradient(135deg,#0a7d6b 0%,#f26d6d 55%,#ffcf6e 100%)' },
+    kairouan: { city: 'Kairouan', tagline: 'The old soul', traits: ['Grounded', 'Loyal', 'Wise'], gradient: 'linear-gradient(135deg,#5a3d2b 0%,#a5794a 55%,#d4b788 100%)' },
+    tabarka: { city: 'Tabarka', tagline: 'The nature lover', traits: ['Down-to-earth', 'Creative', 'Wild-at-heart'], gradient: 'linear-gradient(135deg,#14532d 0%,#2f8f57 55%,#7cc48f 100%)' },
+};
 let OgService = OgService_1 = class OgService {
     constructor() {
         this.logger = new common_1.Logger(OgService_1.name);
@@ -204,6 +214,53 @@ let OgService = OgService_1 = class OgService {
         const svg = await (0, satori_1.default)(node, {
             width: 1200,
             height: 630,
+            fonts: [
+                { name: 'Inter', data: this.regular, weight: 400, style: 'normal' },
+                { name: 'Inter', data: this.bold, weight: 700, style: 'normal' },
+            ],
+        });
+        const png = new resvg_js_1.Resvg(svg, { fitTo: { mode: 'width', value: 1200 } }).render().asPng();
+        return Buffer.from(png);
+    }
+    async renderCityQuizCard(a) {
+        if (!this.regular || !this.bold)
+            throw new Error('OG fonts not loaded');
+        const node = {
+            type: 'div',
+            props: {
+                style: {
+                    width: 1200, height: 630, display: 'flex', flexDirection: 'column',
+                    justifyContent: 'center', alignItems: 'center', textAlign: 'center',
+                    background: a.gradient, color: '#fff', padding: '72px', fontFamily: 'Inter',
+                    position: 'relative',
+                },
+                children: [
+                    { type: 'div', props: { style: { fontSize: 26, letterSpacing: 6, opacity: 0.85, fontWeight: 700 }, children: 'WHICH TUNISIAN CITY ARE YOU?' } },
+                    { type: 'div', props: { style: { fontSize: 30, marginTop: 28, opacity: 0.9 }, children: 'You are' } },
+                    { type: 'div', props: { style: { fontSize: 108, fontWeight: 700, lineHeight: 1.02, marginTop: 4, textShadow: '0 3px 18px rgba(0,0,0,0.28)' }, children: a.city } },
+                    { type: 'div', props: { style: { fontSize: 40, fontWeight: 700, marginTop: 8, opacity: 0.96 }, children: a.tagline } },
+                    {
+                        type: 'div',
+                        props: {
+                            style: { display: 'flex', gap: 16, marginTop: 34 },
+                            children: a.traits.map((tr) => ({
+                                type: 'div',
+                                props: {
+                                    style: {
+                                        fontSize: 26, fontWeight: 600, padding: '12px 28px', borderRadius: 999,
+                                        background: 'rgba(255,255,255,0.20)', border: '2px solid rgba(255,255,255,0.4)',
+                                    },
+                                    children: tr,
+                                },
+                            })),
+                        },
+                    },
+                    { type: 'div', props: { style: { position: 'absolute', bottom: 40, fontSize: 24, fontWeight: 600, opacity: 0.8 }, children: 'e-tunisia · take the quiz' } },
+                ],
+            },
+        };
+        const svg = await (0, satori_1.default)(node, {
+            width: 1200, height: 630,
             fonts: [
                 { name: 'Inter', data: this.regular, weight: 400, style: 'normal' },
                 { name: 'Inter', data: this.bold, weight: 700, style: 'normal' },

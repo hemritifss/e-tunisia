@@ -4,6 +4,107 @@
    Loaded after pages.css so refinements win.
    ============================================ */
 
+/* ── Governorate stamp album (The National Collection) ──────
+   The philatelic collectible: 24 rubber stamps, earned by check-in.
+   Carnet Journal dialect — this is a "moment" surface. */
+.gov-album-head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--space-4);
+    margin-bottom: var(--space-3);
+}
+.gov-album-title { font-size: var(--text-3xl); margin: 2px 0 0; }
+.gov-album-progress {
+    font-family: var(--font-mono);
+    font-size: var(--text-2xl);
+    font-weight: 600;
+    color: var(--stamp-ink);
+    white-space: nowrap;
+}
+.gov-album-progress span { color: var(--ink-faint); font-size: var(--text-lg); }
+.gov-album-bar {
+    height: 3px;
+    background: var(--rule);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+    margin-bottom: var(--space-6);
+}
+.gov-album-bar span {
+    display: block;
+    height: 100%;
+    background: var(--stamp-ink);
+    transition: width var(--duration-slow) var(--ease-out);
+}
+
+.gov-album-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
+    gap: var(--space-4);
+}
+.gov-stamp {
+    position: relative;
+    aspect-ratio: 1;
+    display: grid;
+    place-items: center;
+    padding: var(--space-1);
+}
+/* Earned — the inked rubber stamp, slight per-item tilt for the pressed feel. */
+.gov-stamp.is-earned { color: var(--stamp-ink); }
+.gov-stamp.is-earned .gov-stamp-ink { display: block; width: 100%; }
+.gov-stamp.is-earned .gov-stamp-ink svg { width: 100%; height: 100%; display: block; }
+.gov-stamp.is-earned:nth-child(3n)   { rotate: -3deg; }
+.gov-stamp.is-earned:nth-child(3n+1) { rotate: 2deg; }
+.gov-stamp.is-earned:nth-child(3n+2) { rotate: -1.5deg; }
+.gov-stamp.is-earned { transition: transform var(--duration-fast) var(--ease-spring); }
+@media (hover: hover) {
+    .gov-stamp.is-earned:hover { rotate: 0deg; transform: scale(1.06); z-index: 1; }
+}
+
+/* Locked — faint pencil placeholder: dashed ring + number + name. */
+.gov-stamp-locked {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    text-align: center;
+    border: 1.5px dashed var(--rule-strong);
+    border-radius: 50%;
+    color: var(--ink-faint);
+    opacity: 0.55;
+    padding: var(--space-2);
+}
+.gov-stamp-locked-num {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.06em;
+}
+.gov-stamp-locked-name {
+    font-family: var(--font-editorial);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    line-height: 1.05;
+    color: var(--ink-soft);
+}
+.gov-stamp-locked-ar {
+    font-family: 'Noto Kufi Arabic', sans-serif;
+    font-size: 11px;
+}
+
+.gov-album-cta { margin-top: var(--space-6); align-self: flex-start; }
+
+@media (max-width: 640px) {
+    .gov-album-grid { grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: var(--space-3); }
+    .gov-album-title { font-size: var(--text-2xl); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .gov-stamp.is-earned:hover { transform: none; }
+}
+
+
 .passport-page {
     max-width: 960px;
     margin-inline: auto;
@@ -14,72 +115,66 @@
 }
 
 /* ── Hero ────────────────────────────────── */
+/* ── Passport identity page (carnet) ──
+   The inside cover of a real passport: ink-dipped paper, guilloché security
+   print, cream ink. Aurora mesh + orbs retired (UNIQUENESS Phase 2). */
 .passport-page .passport-hero {
     position: relative;
     overflow: hidden;
-    border-radius: 0 0 var(--radius-2xl) var(--radius-2xl);
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
     margin: 0 calc(var(--page-padding) * -1);
-    padding: clamp(var(--space-8), 6vw, var(--space-12)) clamp(var(--space-5), 4vw, var(--space-10));
-    color: oklch(98% 0 0);
+    padding: clamp(var(--space-10), 7vw, var(--space-16)) clamp(var(--space-5), 4vw, var(--space-10)) clamp(var(--space-8), 6vw, var(--space-12));
+    color: var(--ink-on-deep);
     isolation: isolate;
-    box-shadow: var(--shadow-xl);
+    box-shadow: var(--paper-shadow-lift);
+    border-bottom: 3px double var(--rule-strong);
+}
+/* Bilingual passport masthead strip */
+.passport-page .passport-hero::before {
+    content: 'RÉPUBLIQUE TUNISIENNE · PASSEPORT · جواز سفر';
+    position: absolute;
+    top: var(--space-4);
+    left: 0; right: 0;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0.18em;
+    color: var(--ink-on-deep);
+    opacity: 0.5;
+    pointer-events: none;
 }
 .passport-page .passport-hero-bg {
     position: absolute;
     inset: 0;
     z-index: -2;
-    background: var(--gradient-hero);
+    background: var(--paper-deep);
 }
+/* Guilloché — fine engraved registration lines, the security-print texture */
 .passport-page .passport-hero-mesh {
     position: absolute;
     inset: 0;
     z-index: -1;
-    background: var(--gradient-dark-mesh);
     pointer-events: none;
+    opacity: 0.5;
+    background-image:
+        repeating-linear-gradient(45deg, var(--rule-faint) 0 1px, transparent 1px 11px),
+        repeating-linear-gradient(-45deg, var(--rule-faint) 0 1px, transparent 1px 11px);
 }
-.passport-hero-orbs {
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    overflow: hidden;
-    pointer-events: none;
-}
-.passport-hero-orb {
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(70px);
-    opacity: 0.42;
-    animation: passport-orb 16s var(--ease-in-out) infinite;
-}
-.passport-hero-orb:nth-child(1) {
-    width: 360px;
-    height: 360px;
-    top: -120px;
-    left: -60px;
-    background: var(--mediterranean);
-}
-.passport-hero-orb:nth-child(2) {
-    width: 320px;
-    height: 320px;
-    bottom: -120px;
-    right: -40px;
-    background: var(--gold);
-    animation-delay: -8s;
-}
-@keyframes passport-orb {
-    0%, 100% { transform: translate(0, 0) scale(1); }
-    50%      { transform: translate(32px, -22px) scale(1.08); }
-}
-@media (prefers-reduced-motion: reduce) {
-    .passport-hero-orb { animation: none; }
-}
+/* Orbs retired */
+.passport-hero-orbs,
+.passport-hero-orb { display: none; }
 
-/* Pro hero variant — gold/terracotta/amber gradient + amber orbs */
-.passport-page .passport-hero.is-pro .passport-hero-bg {
-    background: linear-gradient(135deg, var(--gold) 0%, var(--terracotta) 50%, var(--amber) 100%);
+/* Pro hero variant — gold-leaf embossed edge on the same paper ground */
+.passport-page .passport-hero.is-pro {
+    border-bottom-color: var(--gold);
+    box-shadow: var(--paper-shadow-lift), inset 0 3px 0 var(--gold);
 }
-.passport-page .passport-hero.is-pro .passport-hero-orb:nth-child(1) { background: var(--amber); }
-.passport-page .passport-hero.is-pro .passport-hero-orb:nth-child(2) { background: var(--terracotta); }
+.passport-page .passport-hero.is-pro .passport-hero-mesh {
+    background-image:
+        repeating-linear-gradient(45deg, var(--gold-glow) 0 1px, transparent 1px 11px),
+        repeating-linear-gradient(-45deg, var(--gold-glow) 0 1px, transparent 1px 11px);
+    opacity: 0.35;
+}
 
 .passport-page .passport-hero-content {
     position: relative;

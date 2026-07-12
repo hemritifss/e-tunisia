@@ -398,7 +398,7 @@ export default function PlaceDetailPage() {
 
   if (placeQ.isLoading || !place) {
     return (
-      <div className="place-detail-page page-enter" id="place-detail-page" data-place-id={placeId}>
+      <div className="place-detail-page page-enter" id="place-detail-page" data-design="carnet" data-place-id={placeId}>
         <div className="place-detail-loading"><div className="spinner" /><p>Loading place details…</p></div>
       </div>
     );
@@ -447,7 +447,7 @@ export default function PlaceDetailPage() {
   const reviewTotal = place.reviewCount || reviews.length;
 
   return (
-    <div className="place-detail-page page-enter" id="place-detail-page" data-place-id={placeId}>
+    <div className="place-detail-page page-enter" id="place-detail-page" data-design="carnet" data-place-id={placeId}>
       <div className="place-detail-hero" ref={heroRef}>
         <motion.img src={cover} alt={place.name} className="place-detail-hero-img" style={{ scale: heroScale }} onError={(e) => { (e.currentTarget as HTMLImageElement).style.background = 'linear-gradient(135deg, var(--terracotta-pale), var(--mediterranean-pale))'; }} />
         <div className="place-detail-hero-overlay" />
@@ -467,7 +467,7 @@ export default function PlaceDetailPage() {
             <h1 className="place-detail-name">{place.name}</h1>
             <div className="place-detail-location">
               <MapPin /> {place.location || place.city || ''}
-              <KontHouniButton placeId={placeId} />
+              <KontHouniButton placeId={placeId} placeName={place.name} city={place.city || place.location} />
             </div>
             <div className="place-detail-rating">
               <div className="place-detail-stars"><Stars rating={Math.round(ratingValue)} /></div>

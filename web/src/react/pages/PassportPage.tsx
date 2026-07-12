@@ -15,8 +15,9 @@ import { Award, Trophy, Sparkles, X, Check, MapPin } from 'lucide-react';
 import { TierBadge } from '../components/TierBadge';
 import { Skeleton } from '../components/Skeleton';
 import { ProGate } from '../components/ProGate';
-import { TUNISIA_CITIES } from '../components/tunisia-cities';
-import { Pencil, UserPlus, UserCheck, Stamp } from 'lucide-react';
+import { GOVERNORATES, governoratesFromCities } from '../../governorates';
+import { renderStampSVG } from '../../stamp';
+import { Pencil, UserPlus, UserCheck } from 'lucide-react';
 
 function handleFromHash(): string {
     const m = currentRoute().match(/^\/u\/([^/?]+)/);
@@ -115,33 +116,61 @@ function PassportAnalytics() {
     );
 }
 
-/** Collectible stamps for the 14 iconic Tunisian destinations — earned from visited cities. */
-function PassportStamps({ visited, isOwner, rarity }: { visited: string[]; isOwner: boolean; rarity?: Record<string, number> }) {
-    const set = new Set((visited || []).map((c) => c.toLowerCase()));
-    const rarityByCity = new Map(Object.entries(rarity || {}).map(([k, v]) => [k.toLowerCase(), v]));
-    const count = TUNISIA_CITIES.filter((c) => set.has(c.name.toLowerCase())).length;
-    const total = TUNISIA_CITIES.length;
+/** The philatelic collection: one rubber stamp per governorate, earned by
+ *  checking into a place within it. Completing all 24 = "the whole country". */
+function GovernorateAlbum({ visited, isOwner }: { visited: string[]; isOwner: boolean }) {
+    const earned = governoratesFromCities(visited);
+    const count = earned.size;
+    const total = GOVERNORATES.length;
+    const pct = Math.round((count / total) * 100);
     return (
-        <section className="passport-section">
-            <div className="passport-stamps-head">
-                <h2 className="passport-section-title">Passport stamps</h2>
-                <span className="passport-stamps-progress">{count} / {total} iconic destinations</span>
+        <section className="passport-section" data-design="carnet">
+            <div className="gov-album-head">
+                <div>
+                    <span className="cn-kicker">Nº 01 — The National Collection</span>
+                    <h2 className="cn-title gov-album-title">Governorate stamps</h2>
+                </div>
+                <span className="gov-album-progress cn-num">{count} <span>/ {total}</span></span>
             </div>
-            <div className="passport-stamps-grid">
-                {TUNISIA_CITIES.map((c) => {
-                    const got = set.has(c.name.toLowerCase());
-                    const explorers = got ? rarityByCity.get(c.name.toLowerCase()) : undefined;
+            <div className="gov-album-bar" aria-hidden="true"><span style={{ width: `${pct}%` }} /></div>
+            <div className="gov-album-grid">
+                {GOVERNORATES.map((g) => {
+                    const got = earned.has(g.id);
+                    const num = `Nº ${String(g.n).padStart(2, '0')}`;
                     return (
-                        <div key={c.name} className={`passport-stamp${got ? ' is-earned' : ''}`} title={got ? `Stamped: ${c.name}` : `Not yet stamped: ${c.name}`}>
-                            <span className="passport-stamp-ink"><Stamp size={16} /></span>
-                            <span className="passport-stamp-name">{c.name}</span>
-                            {got && explorers ? <span className="passport-stamp-rarity">{explorers} explorer{explorers === 1 ? '' : 's'}</span> : null}
+                        <div
+                            key={g.id}
+                            className={`gov-stamp${got ? ' is-earned' : ' is-locked'}`}
+                            title={got ? `Stamped: ${g.name}` : `Not yet: ${g.name}`}
+                        >
+                            {got ? (
+                                <span
+                                    className="gov-stamp-ink"
+                                    aria-label={`${g.name} stamp, collected`}
+                                    dangerouslySetInnerHTML={{
+                                        __html: renderStampSVG({
+                                            title: g.name,
+                                            city: g.nameAr,
+                                            top: 'GOUVERNORAT',
+                                            bottom: `${num} · TUNISIE`,
+                                        }),
+                                    }}
+                                />
+                            ) : (
+                                <span className="gov-stamp-locked" aria-label={`${g.name}, not yet collected`}>
+                                    <span className="gov-stamp-locked-num">{num}</span>
+                                    <span className="gov-stamp-locked-name">{g.name}</span>
+                                    <span className="gov-stamp-locked-ar" lang="ar">{g.nameAr}</span>
+                                </span>
+                            )}
                         </div>
                     );
                 })}
             </div>
             {isOwner && count < total && (
-                <a className="passport-stamps-cta" href="#/explore">Find your next stamp →</a>
+                <a className="cn-btn cn-btn--quiet gov-album-cta" href="#/explore">
+                    {count === 0 ? 'Collect your first stamp' : `${total - count} governorates left — keep exploring`} →
+                </a>
             )}
         </section>
     );
@@ -273,7 +302,7 @@ export default function PassportPage() {
 
     return (
         <main className="passport-page">
-            <section className={`passport-hero${isPro ? ' is-pro' : ''}${p.passportTheme ? ` passport-theme-${p.passportTheme}` : ''}`}>
+            <section data-design="carnet" className={`passport-hero${isPro ? ' is-pro' : ''}${p.passportTheme ? ` passport-theme-${p.passportTheme}` : ''}`}>
                 <div className="passport-hero-bg" aria-hidden="true" />
                 <div className="passport-hero-mesh" aria-hidden="true" />
                 <div className="passport-hero-orbs" aria-hidden="true">
@@ -396,7 +425,7 @@ export default function PassportPage() {
                 />
             </section>
 
-            <PassportStamps visited={p.visitedCities} isOwner={isOwner} rarity={p.stampRarity} />
+            <GovernorateAlbum visited={p.visitedCities} isOwner={isOwner} />
 
             <section className="passport-section">
                 <h2 className="passport-section-title">Badges</h2>

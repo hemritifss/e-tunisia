@@ -402,7 +402,7 @@ export default function ExplorePage() {
   const hasFilter = activeCategory !== 'all' || searchQuery.trim() !== '' || minRating > 0 || verifiedOnly;
 
   return (
-    <div className="explore-page animate-fade-in" style={{ '--cat-tint': activeCat.tint } as React.CSSProperties}>
+    <div className="explore-page animate-fade-in" data-design="carnet" style={{ '--cat-tint': activeCat.tint } as React.CSSProperties}>
       {/* Hero — atmospheric mesh, search baked in */}
       <header className="explore-hero">
         <div className="explore-hero-bg" aria-hidden="true" />
