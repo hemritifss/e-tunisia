@@ -13,6 +13,7 @@ import { useMoney } from '../lib/useCurrency';
 import { shareUrl, toggleSaved, isSaved, showToast } from '../../ui-utils';
 import * as tripCart from '../../trip-cart';
 import { Reveal } from '../components/Reveal';
+import TunisiaLoader from '../components/TunisiaLoader';
 import { KontHouniButton } from '../components/KontHouniButton';
 import { currentPath, query as routeQuery, absoluteUrl, onRouteChange } from '../../router';
 import { addVisitedCity, isAnonymous } from '../../passport-draft';
@@ -398,7 +399,7 @@ export default function PlaceDetailPage() {
   if (placeQ.isLoading || !place) {
     return (
       <div className="place-detail-page page-enter" id="place-detail-page" data-place-id={placeId}>
-        <div className="place-detail-loading"><div className="spinner" /><p>Loading place details…</p></div>
+        <div className="place-detail-loading"><TunisiaLoader size={56} label="Loading place details…" /></div>
       </div>
     );
   }

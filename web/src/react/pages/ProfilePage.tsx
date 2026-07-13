@@ -9,6 +9,7 @@ import {
 import * as api from '../../api';
 import { goTo } from '../../router';
 import { TravelPersonalityCard } from '../components/TravelPersonalityCard';
+import TunisiaLoader from '../components/TunisiaLoader';
 
 // Migrated from vanilla pages/profile.ts — own profile (cover, identity, XP, stats, quick links).
 
@@ -35,7 +36,7 @@ export default function ProfilePage() {
   if (userQ.isLoading) {
     return (
       <div className="profile-page-v2 page-enter" data-design="sleek">
-        <div className="up-loading" style={{ paddingTop: 120 }}><div className="spinner" /><p>Loading profile…</p></div>
+        <div className="up-loading" style={{ paddingTop: 120 }}><TunisiaLoader size={56} label="Loading profile…" /></div>
       </div>
     );
   }

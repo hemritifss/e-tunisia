@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Heart, MapPin, Star, Compass } from 'lucide-react';
 import * as api from '../../api';
 import { toggleFlag, isFlagged } from '../../ui-utils';
+import TunisiaLoader from '../components/TunisiaLoader';
 
 // Migrated from vanilla pages/favorites.ts — same classes, same data merge
 // (server favoriteIds + local flags), same mock fallback.
@@ -88,8 +89,7 @@ export default function FavoritesPage() {
       <div className="favorites-grid">
         {isLoading ? (
           <div className="favorites-loading">
-            <div className="spinner" />
-            <p>Loading saved places...</p>
+            <TunisiaLoader size={52} label="Loading saved places..." />
           </div>
         ) : !saved || saved.length === 0 ? (
           <Empty />

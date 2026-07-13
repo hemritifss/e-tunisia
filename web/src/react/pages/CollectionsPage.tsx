@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Layers, MapPin, X, Compass, Map as MapIcon } from 'lucide-react';
 import * as api from '../../api';
+import TunisiaLoader from '../components/TunisiaLoader';
 
 // Migrated from vanilla pages/collections.ts — same classes, same data +
 // mock fallback, same detail modal (portaled to body, enter/exit animation).
@@ -108,7 +109,7 @@ export default function CollectionsPage() {
 
       <div className="collections-grid">
         {isLoading ? (
-          <div className="collections-loading"><div className="spinner" /><p>Loading collections…</p></div>
+          <div className="collections-loading"><TunisiaLoader size={56} label="Loading collections…" /></div>
         ) : (
           (collections || []).map((col) => {
             const count = placeCount(col);

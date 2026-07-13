@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Trophy, Globe, Building2, Check, Sparkles, BadgeCheck } from 'lucide-react';
 import * as api from '../../api';
+import TunisiaLoader from '../components/TunisiaLoader';
 
 // Migrated from the vanilla pages/leaderboard.ts — same markup classes, same
 // data calls + mock fallback, same data-user-* attrs (drive the right-click
@@ -130,7 +131,7 @@ function CityRow({ entry }: { entry: any }) {
 function Loading({ label }: { label: string }) {
   return (
     <div className="leaderboard-loading">
-      <div className="spinner" />
+      <TunisiaLoader size={52} />
       <p>{label}</p>
     </div>
   );

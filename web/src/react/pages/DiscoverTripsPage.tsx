@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Compass, MapPin, CalendarDays, Flame, Clock, Users, Eye, SearchX } from 'lucide-react';
 import * as api from '../../api';
+import TunisiaLoader from '../components/TunisiaLoader';
 
 // Migrated from vanilla pages/discover-trips.ts — community trip browse with
 // sort tabs + debounced city filter + duration select.
@@ -147,7 +148,7 @@ export default function DiscoverTripsPage() {
 
       <div className="discover-trips-grid">
         {isLoading ? (
-          <div className="discover-trips-loading"><div className="spinner" /><p>Loading trips…</p></div>
+          <div className="discover-trips-loading"><TunisiaLoader size={56} label="Loading trips…" /></div>
         ) : isError ? (
           <p className="text-muted" style={{ padding: 'var(--space-3)' }}>Could not load trips.</p>
         ) : (data || []).length === 0 ? (

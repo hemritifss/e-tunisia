@@ -8,6 +8,7 @@ import { showToast, requireAuth, toggleSaved } from '../../ui-utils';
 import { coverPlaceholder } from '../../shared/placeholder';
 import PublicMasthead from '../components/public/PublicMasthead';
 import PublicFooter from '../components/public/PublicFooter';
+import TunisiaLoader from '../components/TunisiaLoader';
 
 // Migrated from vanilla pages/itineraries.ts — same classes, same data + mock
 // fallback, same detail modal (portaled to body).
@@ -154,7 +155,7 @@ export default function ItinerariesPage() {
 
       <div className="itineraries-grid">
         {isLoading ? (
-          <div className="itineraries-loading"><div className="spinner" /><p>Loading itineraries…</p></div>
+          <div className="itineraries-loading"><TunisiaLoader size={56} label="Loading itineraries…" /></div>
         ) : (
           (itineraries || []).map((it) => {
             const diff = (it.difficulty || 'easy').toLowerCase();
