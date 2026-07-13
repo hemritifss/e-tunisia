@@ -1,9 +1,31 @@
 # Landing ULTRA — "Le Carnet Vivant" (the journal that writes itself)
 
-> **Status: PLANNED — not yet implemented.** Supersedes the *motion & narrative* layer of
-> [landing.md](landing.md) when shipped; the visual identity (paper/ink tokens, ephemera
-> components, banned-tells list) carries over 100% intact. This is not a re-skin — it is
-> the choreography, depth, and art-direction pass the current page is missing.
+> **Status: SHIPPED (Jul 13 2026).** Supersedes the *motion & narrative* layer of
+> [landing.md](landing.md); the visual identity (paper/ink tokens, ephemera
+> components, banned-tells list) carries over 100% intact.
+>
+> **As built** — code in `web/src/react/pages/landing/` (LandingPage orchestrator +
+> Scene* files + choreo.ts + TunisiaMap.tsx), styles in `web/src/styles/landing-ultra.css`
+> (additive on landing-editorial.css), photos in `web/public/img/journey/` (12 Wikimedia
+> shots + `night.jpg`). Deviations from plan: the final CTA gained a full-bleed
+> ink-washed Grand Erg night photo (user request — the pure-ink page felt empty);
+> postcards flip once on viewport entry (hover flip-back was cut as gimmicky); the
+> odometer interpolates the stops' real cumulative road km so the number always agrees
+> with the stop on screen; place-card covers always prefer the API's 960px thumb over
+> the multi-MB original (LCP). QA'd via headless Edge: desktop/mobile/dark/reduced-motion,
+> zero console errors, zero mobile horizontal overflow.
+>
+> **Polish pass (same day):** all landing photos re-encoded to sized WebP (~7 MB → ~1.3 MB;
+> hero LCP print 1027 KB → 200 KB); every Wikimedia photo carries its real author + license
+> in the caption (CC compliance as a design feature); Djerba's satellite lead image replaced
+> with Djerbahood (Galerie Itinerrance); Traversée stops resolve to real catalog places at
+> runtime (`?search=` → stretched link + "in the index →" chip, progressive enhancement);
+> philatelic mini-stamps pop onto the map as the route passes each stop (governorate-stamp
+> mechanic teased — note: SVG positioning must live on an outer group, CSS animation on an
+> inner one, or the animation clobbers the transform attribute); scroll-depth funnel events
+> (`landing_scene_view`, `landing_traversee_complete`, hero/final CTA clicks) via
+> `analytics.track()`; hero P.S. marginalia randomizes per visit. Journey originals (.jpg)
+> deleted — only .webp ships; PWA precache glob excludes jpg/webp so no SW bloat.
 
 ---
 

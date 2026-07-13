@@ -1,0 +1,724 @@
+/* ============================================================
+   LANDING ULTRA — "LE CARNET VIVANT"
+   Choreography + depth layer on top of landing-editorial.css.
+   Additive only (.ej-ultra namespace guards overrides); the visual
+   identity (paper/ink/ephemera) is inherited, not redefined.
+   Spec: design-system/pages/landing-ultra.md
+   ============================================================ */
+
+/* ── Masked line-rise headlines ──────────────────────────── */
+.ej-line {
+    display: block;
+    overflow: hidden;
+    /* keep the hand-drawn underline's overhang inside the mask */
+    padding-bottom: 0.16em;
+    margin-bottom: -0.16em;
+}
+.ej-line-in { display: inline-block; will-change: transform; }
+
+.ej-ultra .ej-hero-title {
+    font-size: clamp(3rem, 6.9vw, 5.7rem);
+    line-height: 0.99;
+}
+
+/* Hero stamp — positioning lives on the wrapper so the thunk
+   transform composes with the printed tilt */
+.ej-hero-stamp-wrap {
+    position: absolute;
+    right: -2%;
+    bottom: 14%;
+    z-index: 5;
+    width: clamp(96px, 10vw, 132px);
+    rotate: -14deg;
+    display: block;
+    pointer-events: none;
+}
+.ej-hero-stamp-wrap .ej-stamp {
+    position: static;
+    width: 100%;
+    rotate: none;
+}
+
+/* ── Folio bookmark (right page edge) ────────────────────── */
+.ej-folio-corner {
+    position: fixed;
+    right: 12px;
+    top: 50%;
+    translate: 0 -50%;
+    z-index: 900;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    pointer-events: none;
+}
+.ej-folio-label {
+    writing-mode: vertical-rl;
+    font-family: var(--font-mono);
+    font-size: 0.58rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    max-height: 300px;
+    overflow: hidden;
+    white-space: nowrap;
+}
+.ej-folio-rail {
+    width: 2px;
+    height: 170px;
+    background: var(--rule);
+    position: relative;
+}
+.ej-folio-rule {
+    position: absolute;
+    inset: 0;
+    background: var(--terracotta);
+    transform-origin: top;
+}
+@media (max-width: 1023px) {
+    .ej-folio-label { display: none; }
+    .ej-folio-rail { height: 110px; }
+}
+
+/* ── Oversized chapter folios behind section heads ───────── */
+.ej-head-folio { position: relative; }
+.ej-folio-bg {
+    position: absolute;
+    top: -0.3em;
+    right: 0;
+    z-index: 0;
+    font-family: var(--font-editorial);
+    font-optical-sizing: auto;
+    font-size: clamp(6rem, 13vw, 10.5rem);
+    font-weight: 620;
+    line-height: 1;
+    color: var(--ink);
+    opacity: 0.05;
+    pointer-events: none;
+    user-select: none;
+}
+.ej-head-folio > *:not(.ej-folio-bg) { position: relative; z-index: 1; }
+
+/* ============================================================
+   Nº 00 — LA TRAVERSÉE (pinned map journey)
+   ============================================================ */
+.ej-trav-wrap { height: 380vh; position: relative; }
+.ej-trav {
+    position: sticky;
+    top: 0;
+    height: 100dvh;
+    overflow: clip;
+    display: flex;
+    flex-direction: column;
+}
+.ej-trav-warmth {
+    position: absolute;
+    inset: 0;
+    background: color-mix(in oklab, var(--paper-warm) 86%, var(--gold) 14%);
+    pointer-events: none;
+    z-index: 0;
+}
+.ej-trav-inner {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: calc(88px + var(--space-4)) var(--space-6) var(--space-5);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    min-height: 0;
+}
+.ej-trav-head .ej-h2 { margin-bottom: 0; }
+.ej-trav-stage {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1.02fr) minmax(0, 0.98fr);
+    gap: clamp(var(--space-6), 4vw, var(--space-12));
+    align-items: center;
+}
+
+/* map */
+.ej-trav-map-box {
+    position: relative;
+    height: 100%;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.ej-map {
+    height: 100%;
+    max-height: calc(100dvh - 250px);
+    width: auto;
+    max-width: 100%;
+}
+.ej-map-wash { fill: var(--paper-warm); opacity: 0.55; }
+.ej-map-outline {
+    fill: none;
+    stroke: var(--ink);
+    stroke-width: 2;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+    opacity: 0.6;
+}
+.ej-map-route-ghost {
+    fill: none;
+    stroke: var(--ink-faint);
+    stroke-width: 1.4;
+    stroke-dasharray: 5 8;
+    stroke-linecap: round;
+    opacity: 0.55;
+}
+.ej-map-route {
+    fill: none;
+    stroke: var(--terracotta);
+    stroke-width: 2.6;
+    stroke-linecap: round;
+}
+.ej-map-stop-dot { fill: var(--ink-faint); transition: fill 0.3s var(--ease-out); }
+.ej-map-stop-ring {
+    fill: none;
+    stroke: var(--stamp-ink);
+    stroke-width: 1.3;
+    stroke-dasharray: 3 3;
+    opacity: 0;
+    transform-box: fill-box;
+    transform-origin: center;
+}
+.ej-map-label {
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    letter-spacing: 0.12em;
+    fill: var(--ink-faint);
+    opacity: 0.55;
+    transition: opacity 0.3s var(--ease-out), fill 0.3s var(--ease-out);
+}
+.ej-map-stop.is-passed .ej-map-stop-dot { fill: var(--terracotta); }
+.ej-map-stop.is-passed .ej-map-stop-ring { opacity: 0.85; animation: ej-ring-pop 0.4s var(--ease-out) both; }
+.ej-map-stop.is-passed .ej-map-label { fill: var(--ink); opacity: 0.92; }
+.ej-map-stop.is-active .ej-map-stop-dot { fill: var(--stamp-ink); }
+@keyframes ej-ring-pop {
+    from { transform: scale(1.7); opacity: 0; }
+    to   { transform: scale(1);   opacity: 0.85; }
+}
+.ej-map-compass { color: var(--ink-faint); opacity: 0.6; }
+
+/* philatelic mini-stamps — pop in as the route reaches each stop */
+.ej-map-ministamp {
+    opacity: 0;
+    transform-box: fill-box;
+    transform-origin: center;
+}
+.ej-map-stop.is-passed .ej-map-ministamp {
+    opacity: 1;
+    animation: ej-ministamp-thunk 0.38s var(--ease-out) both;
+}
+@keyframes ej-ministamp-thunk {
+    0%   { transform: scale(1.5) rotate(-2deg); opacity: 0; }
+    62%  { transform: scale(0.94); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+}
+.ej-map-ministamp-paper { fill: var(--paper-print); stroke: var(--rule-strong); stroke-width: 1; }
+.ej-map-ministamp-frame { fill: none; stroke: var(--stamp-ink); stroke-width: 0.9; stroke-dasharray: 2 2; }
+.ej-map-ministamp-no {
+    font-family: var(--font-mono);
+    font-size: 8.5px;
+    font-weight: 700;
+    fill: var(--stamp-ink);
+    letter-spacing: 0.06em;
+}
+.ej-map-ministamp-tn {
+    font-family: 'Noto Kufi Arabic', var(--font-sans);
+    font-size: 5.5px;
+    fill: var(--ink-faint);
+}
+
+/* odometer — position-mapped to scroll, not a fake counter */
+.ej-trav-km {
+    position: absolute;
+    left: 2px;
+    bottom: 4px;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    font-family: var(--font-mono);
+}
+.ej-trav-km-label, .ej-trav-km-unit {
+    font-size: 0.58rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+}
+.ej-trav-km-num {
+    font-size: 1.45rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink);
+}
+
+/* the developing print + copy */
+.ej-trav-panel {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: var(--space-4);
+    min-height: 0;
+    min-width: 0;
+}
+.ej-trav-print {
+    position: relative;
+    margin: 0;
+    background: var(--paper-print);
+    border: 1px solid var(--rule);
+    padding: 10px 10px 12px;
+    box-shadow: var(--paper-shadow);
+    rotate: -1.4deg;
+    width: min(100%, 470px);
+}
+.ej-trav-print::before {
+    content: '';
+    position: absolute;
+    top: -11px;
+    left: 50%;
+    translate: -50% 0;
+    rotate: -2.5deg;
+    width: 86px;
+    height: 24px;
+    background: var(--tape);
+    box-shadow: 0 1px 2px oklch(0% 0 0 / 0.06);
+}
+.ej-trav-print img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 3 / 2;
+    object-fit: cover;
+    filter: saturate(0.9) contrast(1.02) sepia(0.04);
+}
+.ej-trav-print figcaption {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding-top: 8px;
+}
+.ej-trav-print figcaption .ej-hand { font-size: 1.28rem; color: var(--ink-soft); }
+.ej-trav-print-meta {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-3);
+    font-family: var(--font-mono);
+    font-size: 0.56rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+}
+.ej-trav-day {
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--terracotta);
+}
+.ej-trav-copy h3 {
+    font-family: var(--font-editorial);
+    font-optical-sizing: auto;
+    font-size: clamp(1.4rem, 2.2vw, 1.85rem);
+    font-weight: 580;
+    letter-spacing: -0.015em;
+    color: var(--ink);
+    margin: 4px 0 2px;
+}
+.ej-trav-ar {
+    font-family: 'Noto Kufi Arabic', var(--font-sans);
+    font-size: 0.62em;
+    font-weight: 500;
+    color: var(--ink-soft);
+    margin-inline-start: 10px;
+}
+.ej-trav-count {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+}
+.ej-trav-link {
+    opacity: 0;
+    translate: 0 8px;
+    transition: opacity 0.35s var(--ease-out), translate 0.35s var(--ease-out);
+    pointer-events: none;
+    align-self: flex-start;
+}
+.ej-trav-link.is-shown { opacity: 1; translate: 0 0; pointer-events: auto; }
+
+/* the print links to the real catalog place when the backend knows it */
+.ej-trav-print-link {
+    position: absolute;
+    inset: 0;
+    display: block;
+}
+.ej-trav-print-chip {
+    position: absolute;
+    right: 10px;
+    bottom: 12px;
+    font-family: var(--font-mono);
+    font-size: 0.58rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--terracotta);
+    background: var(--paper-print);
+    border: 1px solid var(--terracotta);
+    padding: 3px 8px;
+    border-radius: 2px;
+    opacity: 0;
+    translate: 0 4px;
+    transition: opacity 0.25s var(--ease-out), translate 0.25s var(--ease-out);
+}
+.ej-trav-print:hover .ej-trav-print-chip,
+.ej-trav-print-link:focus-visible .ej-trav-print-chip { opacity: 1; translate: 0 0; }
+@media (pointer: coarse) {
+    .ej-trav-print-chip { opacity: 1; translate: 0 0; }
+}
+
+/* static (reduced-motion) variant */
+.ej-trav-static-head { padding-bottom: var(--space-6); }
+.ej-trav-static-grid {
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 0 var(--space-6);
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    gap: var(--space-10);
+    align-items: start;
+}
+.ej-trav-static-grid .ej-trav-map-box { position: sticky; top: 100px; height: auto; }
+.ej-trav-static-grid .ej-map { max-height: calc(100dvh - 160px); }
+.ej-trav-static-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-10);
+}
+.ej-trav-cta { display: flex; justify-content: center; padding: var(--space-10) 0 var(--space-12); }
+
+/* ============================================================
+   Nº 02 — ticket punch + barcode scan
+   ============================================================ */
+.ej-ticket-stub::before,
+.ej-ticket-stub::after { scale: 0; }
+.ej-ticket.is-punched .ej-ticket-stub::before { animation: ej-punch 0.3s var(--ease-out) forwards; }
+.ej-ticket.is-punched .ej-ticket-stub::after  { animation: ej-punch 0.3s var(--ease-out) 0.08s forwards; }
+@keyframes ej-punch {
+    0%   { scale: 0; }
+    62%  { scale: 1.3; }
+    100% { scale: 1; }
+}
+.ej-ticket-barcode { position: relative; overflow: hidden; }
+.ej-ticket-scan {
+    position: absolute;
+    left: -4px;
+    right: -4px;
+    top: 0;
+    height: 2px;
+    background: var(--terracotta);
+    opacity: 0;
+}
+.ej-ticket.is-punched .ej-ticket-scan { animation: ej-scan 0.55s ease-in-out 0.18s; }
+@keyframes ej-scan {
+    0%   { opacity: 0.9; transform: translateY(0); }
+    100% { opacity: 0;   transform: translateY(170px); }
+}
+
+/* ============================================================
+   Nº 03 — the postcard rack (pinned horizontal journey)
+   ============================================================ */
+.ej-moods-wrap { height: 250vh; position: relative; }
+.ej-moods-pin {
+    position: sticky;
+    top: 0;
+    height: 100dvh;
+    overflow: clip;
+    display: flex;
+    flex-direction: column;
+}
+.ej-moods-pin-inner {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    padding-top: calc(88px + var(--space-4));
+    padding-bottom: var(--space-4);
+}
+.ej-moods-pin-inner .ej-section-head { margin-bottom: var(--space-4); }
+.ej-moods-window {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+}
+.ej-moods-track {
+    display: flex;
+    align-items: flex-start;
+    gap: clamp(var(--space-5), 3vw, var(--space-8));
+    padding: var(--space-6) 0 var(--space-8);
+    will-change: transform;
+}
+.ej-moods-track .ej-mood {
+    flex: 0 0 auto;
+    width: clamp(250px, 24vw, 330px);
+    margin: 0 !important;
+    grid-column: unset;
+}
+.ej-moods-track .ej-mood:nth-child(even) { translate: 0 var(--space-6); }
+.ej-mood-meta {
+    display: block;
+    margin-top: 7px;
+    font-family: var(--font-mono);
+    font-size: 0.56rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+}
+.ej-mood-credit {
+    display: block;
+    margin-top: 3px;
+    font-family: var(--font-mono);
+    font-size: 0.5rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: color-mix(in oklab, var(--ink-faint) 72%, transparent);
+}
+.ej-ticker--rail { rotate: 0deg; width: 100%; margin: 0; }
+
+/* flat (mobile / reduced-motion) variant: native snap rack */
+.ej-moods-track--snap {
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding: var(--space-5) var(--space-2) var(--space-8);
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+}
+.ej-moods-track--snap .ej-mood {
+    width: min(76vw, 320px);
+    scroll-snap-align: center;
+}
+.ej-moods-track--snap .ej-mood:nth-child(even) { translate: 0 var(--space-3); }
+.ej-scene-moods--flat .ej-ticker { margin: var(--space-6) 0 0; }
+
+/* ============================================================
+   Nº 04 — manifesto insert (different paper stock, torn edges)
+   ============================================================ */
+.ej-torn { display: block; width: 100%; height: 22px; }
+.ej-torn--flip { transform: scaleY(-1); }
+.ej-manifesto-insert { margin: var(--space-12) 0; }
+.ej-manifesto-insert .ej-manifesto {
+    background: var(--paper-warm);
+    border-top: none;
+    max-width: none;
+    padding-inline: max(var(--space-6), calc((100vw - 1240px) / 2));
+    margin: 0;
+}
+.ej-quote-word {
+    color: color-mix(in oklab, var(--ink) 18%, transparent);
+    transition: color 0.35s var(--ease-out);
+}
+.ej-quote-word.is-inked { color: var(--ink); }
+
+/* ============================================================
+   Nº 05 — postcard 3D flips
+   ============================================================ */
+.ej-postcards { perspective: 1400px; }
+.ej-flip { position: relative; rotate: var(--tilt, 0deg); transition: rotate var(--duration-normal) var(--ease-spring); }
+.ej-flip:nth-child(3n+1) { --tilt: -1.1deg; }
+.ej-flip:nth-child(3n+2) { --tilt: 0.8deg; margin-top: var(--space-4); }
+.ej-flip:nth-child(3n)   { --tilt: -0.4deg; }
+.ej-flip:hover { rotate: 0deg; }
+.ej-flip-inner {
+    display: grid;
+    transform-style: preserve-3d;
+    height: 100%;
+}
+.ej-flip-face {
+    grid-area: 1 / 1;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+.ej-flip-back { transform: rotateY(180deg); }
+.ej-flip .ej-postcard { margin: 0 !important; rotate: 0deg; }
+.ej-flip .ej-postcard:hover { box-shadow: var(--paper-shadow-lift); }
+
+/* the address side */
+.ej-postcard-title {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-3);
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: var(--space-3);
+}
+.ej-postcard-title span { font-family: 'Noto Kufi Arabic', var(--font-sans); letter-spacing: 0; }
+.ej-postcard-address {
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-top: var(--space-8);
+    padding-right: 56px;
+}
+.ej-postcard-address .ej-hand {
+    font-size: 1.32rem;
+    color: var(--ink-soft);
+    rotate: -1deg;
+}
+.ej-postcard-addr-line { border-bottom: 1px solid var(--rule-strong); height: 1px; }
+
+/* ============================================================
+   Nightfall + the last page
+   ============================================================ */
+.ej-nightfall {
+    position: relative;
+    height: 36vh;
+    min-height: 250px;
+    margin-top: var(--space-16);
+    overflow: hidden;
+}
+.ej-nightfall-ink {
+    position: absolute;
+    inset: 0;
+    background: var(--paper-deep);
+    display: grid;
+    place-items: center;
+}
+.ej-nightfall-line {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    text-align: center;
+    padding: 0 var(--space-6);
+}
+.ej-nightfall-line .ej-hand {
+    font-size: 1.5rem;
+    color: color-mix(in oklab, var(--ink-on-deep) 85%, transparent);
+    rotate: -1.2deg;
+}
+.ej-nightfall-ar {
+    font-family: 'Noto Kufi Arabic', var(--font-sans);
+    font-size: 0.85rem;
+    color: color-mix(in oklab, var(--ink-on-deep) 55%, transparent);
+}
+.ej-ultra .ej-cta { margin-top: 0; padding-block: clamp(var(--space-16), 11vw, var(--space-24)); }
+
+/* night over the Grand Erg — a photo washed in ink, edges melt into the
+   page so nightfall above and the colophon below stay clean */
+.ej-cta-bg {
+    position: absolute;
+    inset: 0;
+    background-image: url('/img/journey/night.webp');
+    background-size: cover;
+    background-position: center 32%;
+    opacity: 0.42;
+    filter: saturate(0.8) contrast(1.04);
+}
+.ej-cta-bg::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        180deg,
+        var(--paper-deep) 0%,
+        color-mix(in oklab, var(--paper-deep) 46%, transparent) 42%,
+        color-mix(in oklab, var(--paper-deep) 72%, transparent) 80%,
+        var(--paper-deep) 100%
+    );
+}
+.ej-cta--night .ej-cta-inner { position: relative; z-index: 1; }
+.ej-cta-credit {
+    position: absolute;
+    right: var(--space-5);
+    bottom: var(--space-3);
+    z-index: 1;
+    font-family: var(--font-mono);
+    font-size: 0.56rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: color-mix(in oklab, var(--ink-on-deep) 40%, transparent);
+}
+
+.ej-cta-stamp-wrap {
+    position: absolute;
+    top: -56px;
+    right: -2%;
+    width: clamp(96px, 10vw, 132px);
+    rotate: 10deg;
+    display: block;
+    pointer-events: none;
+}
+.ej-cta-stamp-wrap .ej-stamp {
+    position: static;
+    width: 100%;
+    rotate: none;
+    color: var(--ink-on-deep);
+    opacity: 0.24;
+    mix-blend-mode: normal;
+}
+.ej-ultra .ej-cta h2 .ej-line { padding-bottom: 0.22em; margin-bottom: -0.22em; }
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+@media (max-width: 900px) {
+    .ej-trav-wrap { height: 340vh; }
+    .ej-trav-inner { padding-top: calc(64px + var(--space-4)); gap: var(--space-2); }
+    .ej-trav-head .ej-h2 { font-size: clamp(1.45rem, 5.4vw, 1.9rem); }
+    .ej-trav-stage {
+        grid-template-columns: 1fr;
+        grid-template-rows: minmax(0, 0.8fr) minmax(0, 1.2fr);
+        gap: var(--space-3);
+        align-items: start;
+    }
+    .ej-map { max-height: 100%; }
+    .ej-trav-km { left: auto; right: 0; bottom: auto; top: -4px; }
+    .ej-trav-km-num { font-size: 1.1rem; }
+    .ej-trav-print { width: 100%; }
+    .ej-trav-print img { aspect-ratio: 16 / 9; }
+    .ej-trav-print figcaption .ej-hand { font-size: 1.12rem; }
+    .ej-trav-panel { justify-content: flex-start; gap: var(--space-3); }
+    .ej-trav-static-grid { grid-template-columns: 1fr; }
+    .ej-trav-static-grid .ej-trav-map-box { position: static; }
+    .ej-trav-static-grid .ej-map { max-height: 46dvh; }
+    .ej-folio-corner { right: 6px; }
+}
+
+@media (max-width: 640px) {
+    .ej-ultra .ej-hero-title { font-size: clamp(2.6rem, 11.5vw, 3.4rem); }
+    .ej-folio-bg { font-size: 5rem; top: -0.2em; }
+    .ej-cta-stamp-wrap { display: none; }
+    .ej-nightfall { height: 34vh; min-height: 220px; }
+}
+
+/* ============================================================
+   Reduced motion — belt & braces on top of the JS branches
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+    .ej-ticket-stub::before,
+    .ej-ticket-stub::after { scale: 1; animation: none !important; }
+    .ej-ticket-scan { display: none; }
+    .ej-quote-word { color: var(--ink); transition: none; }
+    .ej-flip, .ej-flip:hover { rotate: var(--tilt, 0deg); transition: none; }
+    .ej-trav-link { opacity: 1; translate: 0 0; pointer-events: auto; transition: none; }
+    .ej-map-stop-ring { animation: none !important; }
+    .ej-folio-rule { display: none; }
+    .ej-line { overflow: visible; }
+}

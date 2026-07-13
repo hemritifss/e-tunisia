@@ -25,10 +25,11 @@ export function TunisiaMap({ visited, emptyCta }: Props) {
                 <path d={TUNISIA_OUTLINE_PATH} className="passport-map-outline" />
                 {TUNISIA_CITIES.map((c) => {
                     const isVisited = visitedSet.has(c.name.toLowerCase());
+                    const anchor = c.align ?? 'start';
                     return (
                         <g key={c.name} className={isVisited ? 'passport-city visited' : 'passport-city'}>
                             <circle cx={c.x} cy={c.y} r={isVisited ? 2.2 : 1.4} />
-                            <text x={c.x + 2.6} y={c.y + 1.2}>{c.name}</text>
+                            <text x={anchor === 'end' ? c.x - 2.6 : c.x + 2.6} y={c.y + (c.ly ?? 1.2)} textAnchor={anchor}>{c.name}</text>
                         </g>
                     );
                 })}
