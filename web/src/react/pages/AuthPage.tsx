@@ -1,5 +1,5 @@
 import '../../styles/auth.css';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { User, Mail, Globe2, Lock, Eye, EyeOff, AlertCircle, Check, ArrowRight, UserPlus, LogIn, MapPin, Sparkles } from 'lucide-react';
 import * as api from '../../api';
@@ -43,6 +43,21 @@ export default function AuthPage() {
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+
+  // Sign in and Sign up forms differ in height (~190px: name + country + strength
+  // bar). Measure the live form and drive an explicit height on the viewport so
+  // the card tweens between the two instead of snapping.
+  const formMeasureRef = useRef<HTMLDivElement>(null);
+  const [formHeight, setFormHeight] = useState<number | 'auto'>('auto');
+  useEffect(() => {
+    const el = formMeasureRef.current;
+    if (!el || typeof ResizeObserver === 'undefined') return;
+    const measure = () => setFormHeight(el.offsetHeight);
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   // Switch mode in place + keep the URL in sync for deep-linking (no full reload).
   const switchMode = (next: Mode) => {
@@ -136,6 +151,7 @@ export default function AuthPage() {
     : { title: 'Ahlan wa sahlan', subtitle: 'Welcome back. Your Tunisia adventure continues.', cta: 'Sign in', busyLabel: 'Signing in…', altText: "Don't have an account?", altLabel: 'Create one', altMode: 'register' as Mode, eyebrow: 'Sign in' };
 
   const layoutTransition = reduce ? { duration: 0 } : { type: 'spring' as const, stiffness: 260, damping: 30 };
+  const heightTransition = reduce ? { duration: 0 } : { type: 'tween' as const, duration: 0.34, ease: [0.22, 1, 0.36, 1] as const };
 
   return (
     <div className="auth-page page-enter" data-mode={mode}>
@@ -153,7 +169,7 @@ export default function AuthPage() {
 
         <section className="auth-split" data-mode={mode}>
           {/* Imagery / welcome panel - slides to the opposite side on toggle */}
-          <motion.aside className="auth-visual" layout transition={layoutTransition}>
+          <motion.aside className="auth-visual" layout="position" transition={layoutTransition}>
             <div className="auth-visual-media" aria-hidden="true">
               <img src={isRegister ? '/img/hero3.png' : '/img/hero1.png'} alt="" />
               <div className="auth-visual-scrim" />
@@ -181,7 +197,7 @@ export default function AuthPage() {
           </motion.aside>
 
           {/* Form panel */}
-          <motion.div className="auth-formside" layout transition={layoutTransition}>
+          <motion.div className="auth-formside" layout="position" transition={layoutTransition}>
             <div className="auth-card">
               <header className="auth-head">
                 <span className="auth-eyebrow">{isRegister ? <UserPlus /> : <LogIn />} {cfg.eyebrow}</span>
@@ -205,17 +221,24 @@ export default function AuthPage() {
                 </>
               )}
 
-              <AnimatePresence mode="wait" initial={false}>
-                <motion.form
-                  key={mode}
-                  className="auth-form"
-                  onSubmit={isRegister ? onRegister : onLogin}
-                  noValidate
-                  initial={reduce ? false : { opacity: 0, x: isRegister ? 24 : -24 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={reduce ? { opacity: 0 } : { opacity: 0, x: isRegister ? -24 : 24 }}
-                  transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-                >
+              <motion.div
+                className="auth-form-viewport"
+                style={{ overflow: 'hidden' }}
+                animate={{ height: formHeight }}
+                transition={heightTransition}
+              >
+                <div ref={formMeasureRef}>
+                  <AnimatePresence mode="wait" initial={false}>
+                    <motion.form
+                      key={mode}
+                      className="auth-form"
+                      onSubmit={isRegister ? onRegister : onLogin}
+                      noValidate
+                      initial={reduce ? false : { opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={reduce ? { opacity: 0 } : { opacity: 0, y: -8 }}
+                      transition={{ duration: 0.26, ease: [0.22, 1, 0.36, 1] }}
+                    >
                   {isRegister && (
                     <div className="auth-field">
                       <label htmlFor="fullname" className="auth-field-label">Full name</label>
@@ -287,8 +310,10 @@ export default function AuthPage() {
                     <span className="auth-submit-label">{busy ? cfg.busyLabel : cfg.cta}</span>
                     <ArrowRight className="auth-submit-icon" />
                   </button>
-                </motion.form>
-              </AnimatePresence>
+                    </motion.form>
+                  </AnimatePresence>
+                </div>
+              </motion.div>
 
               <div className="auth-alt">
                 {cfg.altText} <button type="button" className="auth-link-bold" onClick={() => switchMode(cfg.altMode)}>{cfg.altLabel}</button>
