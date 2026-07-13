@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import {
     Compass, Map, Bookmark, Trophy, Globe2, IdCard,
     Heart, Briefcase, Send, Calendar, Crown, Lightbulb, Award,
-    ChevronDown, ChevronUp, Clapperboard, Sparkles, Route, Layers, Shield, Gem, Bus, Waves, Wand2, Gift,
+    ChevronDown, ChevronUp, Clapperboard, Sparkles, Route, Layers, Shield, Gem, Bus, Waves, Wand2, Gift, Swords,
 } from 'lucide-react';
 import { api, getImageUrl } from '../../shared/api';
 import { useAuthStore } from '../stores/auth-store';
@@ -53,6 +53,7 @@ const SECONDARY: ShortcutItem[] = [
     { id: 'jellyfish', icon: <Waves size={18} />,     label: 'Beach report 🪼', href: '#/jellyfish' },
     { id: 'city-quiz', icon: <Wand2 size={18} />,     label: 'Which city are you?', href: '#/city-quiz' },
     { id: 'wrapped',   icon: <Gift size={18} />,      label: 'Summer Wrapped ✨', href: '#/wrapped' },
+    { id: 'mapping',   icon: <Swords size={18} />,    label: 'Mapping Weekend 🗺️', href: '#/mapping-weekend' },
     { id: 'owner',     icon: <Briefcase size={18} />, label: 'Owner Tools',  href: '#/owner', creatorOnly: true },
     { id: 'premium',   icon: <Crown size={18} />,     label: 'Go Premium',   href: '#/premium' },
 ];

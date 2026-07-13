@@ -23,8 +23,9 @@ const post_entity_1 = require("../posts/post.entity");
 const trip_plan_entity_1 = require("../itineraries/trip-plan.entity");
 const og_service_1 = require("./og.service");
 const wrapped_service_1 = require("../wrapped/wrapped.service");
+const mapping_service_1 = require("../mapping/mapping.service");
 let OgController = class OgController {
-    constructor(config, users, places, posts, trips, og, wrapped) {
+    constructor(config, users, places, posts, trips, og, wrapped, mapping) {
         this.config = config;
         this.users = users;
         this.places = places;
@@ -32,6 +33,7 @@ let OgController = class OgController {
         this.trips = trips;
         this.og = og;
         this.wrapped = wrapped;
+        this.mapping = mapping;
     }
     webOrigin() {
         return (this.config.get('FRONTEND_URL') || 'http://localhost:5173').replace(/\/+$/, '');
@@ -163,6 +165,35 @@ let OgController = class OgController {
             res.send(transparent);
         }
     }
+    async mappingOg(req, res) {
+        const s = await this.mapping.standings().catch(() => null);
+        const leader = s?.governorates?.[0];
+        res.send(renderOgHtml({
+            title: s ? s.event.title : 'The Great Tunisia Mapping Weekend',
+            description: s && leader
+                ? `${leader.governorate} leads with ${leader.points} pts · ${s.totals.contributors} mappers · ${s.totals.gems} gems. Help your governorate win — on e-Tunisia.`
+                : 'Every governorate racing to map Tunisia\'s hidden treasures. Join the live leaderboard on e-Tunisia.',
+            image: `${this.apiOrigin(req)}/api/v1/og/mapping-weekend/image.png`,
+            canonical: `${this.webOrigin()}/mapping-weekend`,
+            largeCard: true,
+        }));
+    }
+    async mappingImage(res) {
+        try {
+            const s = await this.mapping.standings();
+            const statusLabel = s.status === 'live' ? 'Live leaderboard' : s.status === 'upcoming' ? 'Starting soon' : 'Final results';
+            res.send(await this.og.renderMappingCard({
+                title: s.event.title,
+                statusLabel,
+                leaders: s.governorates.map((g) => ({ governorate: g.governorate, points: g.points })),
+                totals: { contributors: s.totals.contributors, gems: s.totals.gems },
+            }));
+        }
+        catch {
+            const transparent = Buffer.from('89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c4890000000a49444154789c63000000000200015c34a40d0000000049454e44ae426082', 'hex');
+            res.send(transparent);
+        }
+    }
 };
 exports.OgController = OgController;
 __decorate([
@@ -251,6 +282,25 @@ __decorate([
     __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", Promise)
 ], OgController.prototype, "wrappedImage", null);
+__decorate([
+    (0, common_1.Get)('mapping-weekend'),
+    (0, common_1.Header)('Content-Type', 'text/html; charset=utf-8'),
+    (0, common_1.Header)('Cache-Control', 'public, max-age=120, stale-while-revalidate=600'),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", Promise)
+], OgController.prototype, "mappingOg", null);
+__decorate([
+    (0, common_1.Get)('mapping-weekend/image.png'),
+    (0, common_1.Header)('Content-Type', 'image/png'),
+    (0, common_1.Header)('Cache-Control', 'public, max-age=120, stale-while-revalidate=600'),
+    __param(0, (0, common_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], OgController.prototype, "mappingImage", null);
 exports.OgController = OgController = __decorate([
     (0, common_1.Controller)('og'),
     __param(1, (0, typeorm_1.InjectRepository)(user_entity_1.User)),
@@ -263,7 +313,8 @@ exports.OgController = OgController = __decorate([
         typeorm_2.Repository,
         typeorm_2.Repository,
         og_service_1.OgService,
-        wrapped_service_1.WrappedService])
+        wrapped_service_1.WrappedService,
+        mapping_service_1.MappingService])
 ], OgController);
 function esc(s) {
     return String(s ?? '')

@@ -7,6 +7,7 @@ import { Post } from '../posts/post.entity';
 import { TripPlan } from '../itineraries/trip-plan.entity';
 import { OgService } from './og.service';
 import { WrappedService } from '../wrapped/wrapped.service';
+import { MappingService } from '../mapping/mapping.service';
 export declare class OgController {
     private readonly config;
     private readonly users;
@@ -15,7 +16,8 @@ export declare class OgController {
     private readonly trips;
     private readonly og;
     private readonly wrapped;
-    constructor(config: ConfigService, users: Repository<User>, places: Repository<Place>, posts: Repository<Post>, trips: Repository<TripPlan>, og: OgService, wrapped: WrappedService);
+    private readonly mapping;
+    constructor(config: ConfigService, users: Repository<User>, places: Repository<Place>, posts: Repository<Post>, trips: Repository<TripPlan>, og: OgService, wrapped: WrappedService, mapping: MappingService);
     private webOrigin;
     private apiOrigin;
     private absolutize;
@@ -27,4 +29,6 @@ export declare class OgController {
     cityQuizImage(rawSlug: string, res: Response): Promise<void>;
     wrappedOg(rawHandle: string, req: Request, res: Response): Promise<void>;
     wrappedImage(rawHandle: string, res: Response): Promise<void>;
+    mappingOg(req: Request, res: Response): Promise<void>;
+    mappingImage(res: Response): Promise<void>;
 }

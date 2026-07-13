@@ -28,4 +28,16 @@ export declare class OgService implements OnModuleInit {
             reviews: number;
         };
     }): Promise<Buffer>;
+    renderMappingCard(m: {
+        title: string;
+        statusLabel: string;
+        leaders: Array<{
+            governorate: string;
+            points: number;
+        }>;
+        totals: {
+            contributors: number;
+            gems: number;
+        };
+    }): Promise<Buffer>;
 }

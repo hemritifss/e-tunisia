@@ -310,6 +310,55 @@ let OgService = OgService_1 = class OgService {
         const png = new resvg_js_1.Resvg(svg, { fitTo: { mode: 'width', value: 1200 } }).render().asPng();
         return Buffer.from(png);
     }
+    async renderMappingCard(m) {
+        if (!this.regular || !this.bold)
+            throw new Error('OG fonts not loaded');
+        const medals = ['1.', '2.', '3.'];
+        const node = {
+            type: 'div',
+            props: {
+                style: {
+                    width: 1200, height: 630, display: 'flex', flexDirection: 'column',
+                    background: 'linear-gradient(135deg,#1a6a8a 0%,#0b3d5c 55%,#d4623a 100%)',
+                    color: '#fff', padding: '56px 64px', fontFamily: 'Inter', position: 'relative',
+                },
+                children: [
+                    { type: 'div', props: { style: { fontSize: 24, letterSpacing: 4, opacity: 0.85, fontWeight: 700 }, children: m.statusLabel.toUpperCase() } },
+                    { type: 'div', props: { style: { fontSize: 52, fontWeight: 800, marginTop: 8, lineHeight: 1.05 }, children: m.title } },
+                    {
+                        type: 'div',
+                        props: {
+                            style: { display: 'flex', flexDirection: 'column', gap: 14, marginTop: 34 },
+                            children: (m.leaders.length ? m.leaders : [{ governorate: 'Be the first', points: 0 }]).slice(0, 3).map((g, i) => ({
+                                type: 'div',
+                                props: {
+                                    style: {
+                                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                        background: 'rgba(255,255,255,0.12)', border: '2px solid rgba(255,255,255,0.25)',
+                                        borderRadius: 16, padding: '16px 28px', fontSize: 34, fontWeight: 700,
+                                    },
+                                    children: [
+                                        { type: 'div', props: { style: { display: 'flex', gap: 18 }, children: `${medals[i] || ''} ${g.governorate}` } },
+                                        { type: 'div', props: { children: `${g.points} pts` } },
+                                    ],
+                                },
+                            })),
+                        },
+                    },
+                    { type: 'div', props: { style: { position: 'absolute', bottom: 40, left: 64, fontSize: 24, fontWeight: 600, opacity: 0.85 }, children: `${m.totals.contributors} mappers · ${m.totals.gems} gems · e-tunisia` } },
+                ],
+            },
+        };
+        const svg = await (0, satori_1.default)(node, {
+            width: 1200, height: 630,
+            fonts: [
+                { name: 'Inter', data: this.regular, weight: 400, style: 'normal' },
+                { name: 'Inter', data: this.bold, weight: 700, style: 'normal' },
+            ],
+        });
+        const png = new resvg_js_1.Resvg(svg, { fitTo: { mode: 'width', value: 1200 } }).render().asPng();
+        return Buffer.from(png);
+    }
 };
 exports.OgService = OgService;
 exports.OgService = OgService = OgService_1 = __decorate([

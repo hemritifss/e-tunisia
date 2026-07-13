@@ -308,6 +308,9 @@ export const api = {
   // "Your Summer in Tunisia" Wrapped — public, shareable recap.
   getWrapped: (handle: string) =>
     fetchWithAuth(`/api/v1/wrapped/${encodeURIComponent(handle)}`),
+  // The Great Tunisia Mapping Weekend — live leaderboard (auth optional adds `me`).
+  getMappingWeekend: () =>
+    fetchWithAuth('/api/v1/mapping-weekend'),
   checkHandle: (h: string) =>
     fetchWithAuth(`/api/v1/users/handle-available?h=${encodeURIComponent(h)}`),
   getPassportOgUrl: (handle: string, version?: string | number) => {

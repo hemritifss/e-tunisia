@@ -9,6 +9,7 @@ import { Post } from '../posts/post.entity';
 import { TripPlan } from '../itineraries/trip-plan.entity';
 import { OgService, QUIZ_ARCHETYPES } from './og.service';
 import { WrappedService } from '../wrapped/wrapped.service';
+import { MappingService } from '../mapping/mapping.service';
 
 /**
  * Crawler-visible link previews.
@@ -31,6 +32,7 @@ export class OgController {
         @InjectRepository(TripPlan) private readonly trips: Repository<TripPlan>,
         private readonly og: OgService,
         private readonly wrapped: WrappedService,
+        private readonly mapping: MappingService,
     ) {}
 
     private webOrigin(): string {
@@ -198,6 +200,46 @@ export class OgController {
                 periodLabel: w.period.label,
                 personalityLabel: w.personality.label,
                 stats: w.stats,
+            }));
+        } catch {
+            const transparent = Buffer.from(
+                '89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c4890000000a49444154789c63000000000200015c34a40d0000000049454e44ae426082',
+                'hex',
+            );
+            res.send(transparent);
+        }
+    }
+
+    /** The Great Tunisia Mapping Weekend — crawler-visible live-leaderboard preview (GROWTH §8). */
+    @Get('mapping-weekend')
+    @Header('Content-Type', 'text/html; charset=utf-8')
+    @Header('Cache-Control', 'public, max-age=120, stale-while-revalidate=600')
+    async mappingOg(@Req() req: Request, @Res() res: Response) {
+        const s = await this.mapping.standings().catch(() => null);
+        const leader = s?.governorates?.[0];
+        res.send(renderOgHtml({
+            title: s ? s.event.title : 'The Great Tunisia Mapping Weekend',
+            description: s && leader
+                ? `${leader.governorate} leads with ${leader.points} pts · ${s.totals.contributors} mappers · ${s.totals.gems} gems. Help your governorate win — on e-Tunisia.`
+                : 'Every governorate racing to map Tunisia\'s hidden treasures. Join the live leaderboard on e-Tunisia.',
+            image: `${this.apiOrigin(req)}/api/v1/og/mapping-weekend/image.png`,
+            canonical: `${this.webOrigin()}/mapping-weekend`,
+            largeCard: true,
+        }));
+    }
+
+    @Get('mapping-weekend/image.png')
+    @Header('Content-Type', 'image/png')
+    @Header('Cache-Control', 'public, max-age=120, stale-while-revalidate=600')
+    async mappingImage(@Res() res: Response) {
+        try {
+            const s = await this.mapping.standings();
+            const statusLabel = s.status === 'live' ? 'Live leaderboard' : s.status === 'upcoming' ? 'Starting soon' : 'Final results';
+            res.send(await this.og.renderMappingCard({
+                title: s.event.title,
+                statusLabel,
+                leaders: s.governorates.map((g) => ({ governorate: g.governorate, points: g.points })),
+                totals: { contributors: s.totals.contributors, gems: s.totals.gems },
             }));
         } catch {
             const transparent = Buffer.from(
