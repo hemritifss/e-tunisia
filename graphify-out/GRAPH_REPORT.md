@@ -1,11 +1,11 @@
-# Graph Report - .  (2026-07-13)
+# Graph Report - .  (2026-07-14)
 
 ## Corpus Check
-- 177 files · ~1,279,304 words
+- 24 files · ~1,327,288 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 4996 nodes · 8648 edges · 407 communities (348 shown, 59 thin omitted)
+- 5014 nodes · 8667 edges · 409 communities (350 shown, 59 thin omitted)
 - Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 124 edges (avg confidence: 0.82)
 - Token cost: 0 input · 0 output
 
@@ -186,8 +186,8 @@
 - [[_COMMUNITY_Community 173|Community 173]]
 - [[_COMMUNITY_Community 174|Community 174]]
 - [[_COMMUNITY_Community 175|Community 175]]
+- [[_COMMUNITY_Community 176|Community 176]]
 - [[_COMMUNITY_Community 177|Community 177]]
-- [[_COMMUNITY_Community 178|Community 178]]
 - [[_COMMUNITY_Community 179|Community 179]]
 - [[_COMMUNITY_Community 180|Community 180]]
 - [[_COMMUNITY_Community 181|Community 181]]
@@ -380,8 +380,8 @@
 - [[_COMMUNITY_Community 368|Community 368]]
 - [[_COMMUNITY_Community 369|Community 369]]
 - [[_COMMUNITY_Community 370|Community 370]]
+- [[_COMMUNITY_Community 371|Community 371]]
 - [[_COMMUNITY_Community 372|Community 372]]
-- [[_COMMUNITY_Community 373|Community 373]]
 - [[_COMMUNITY_Community 374|Community 374]]
 - [[_COMMUNITY_Community 375|Community 375]]
 - [[_COMMUNITY_Community 376|Community 376]]
@@ -397,8 +397,10 @@
 - [[_COMMUNITY_Community 386|Community 386]]
 - [[_COMMUNITY_Community 387|Community 387]]
 - [[_COMMUNITY_Community 388|Community 388]]
-- [[_COMMUNITY_Community 404|Community 404]]
+- [[_COMMUNITY_Community 389|Community 389]]
+- [[_COMMUNITY_Community 392|Community 392]]
 - [[_COMMUNITY_Community 406|Community 406]]
+- [[_COMMUNITY_Community 408|Community 408]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `api()` - 129 edges
@@ -428,497 +430,517 @@
 - 3-file cycle: `backend/src/notifications/notifications.module.ts -> backend/src/queues/queues.module.ts -> backend/src/users/users.module.ts -> backend/src/notifications/notifications.module.ts`
 
 ## Hyperedges (group relationships)
-- **Carnet Identity System** — uniqueness_one_living_carnet, master_carnet_primary, landing_carnet_de_voyage, landing-ultra_carnet_vivant [INFERRED 0.85]
+- **La Traversee Waypoint Photo Set** — journey_sidi-bou-said_webp, journey_medina-tunis_webp, journey_kairouan_webp, journey_el-jem_webp, journey_chott-el-djerid_webp, journey_djerba_webp [EXTRACTED 1.00]
 
-## Communities (407 total, 59 thin omitted)
+## Communities (409 total, 59 thin omitted)
 
 ### Community 0 - "Web API Client"
 Cohesion: 0.03
 Nodes (135): addPostComment(), addReview(), addTip(), aiAssist(), aiSearch(), AiSearchResult, api(), attendEvent() (+127 more)
 
 ### Community 1 - "Analytics & AI Modules"
-Cohesion: 0.07
-Nodes (32): AIModule, AnalyticsEvent, TimeRange, BADGE_DEFINITIONS, BadgeDefinition, BadgeEvent, BEACH_CITIES, DESERT_CITIES (+24 more)
+Cohesion: 0.05
+Nodes (39): deal, draw, EASE_SETTLE, lineRise, settle, SPRING_SCRUB, SPRING_SOFT, SPRING_THUNK (+31 more)
 
 ### Community 2 - "Landing Choreography (Carnet Vivant)"
-Cohesion: 0.06
-Nodes (36): deal, draw, EASE_SETTLE, lineRise, settle, SPRING_SCRUB, SPRING_SOFT, SPRING_THUNK (+28 more)
+Cohesion: 0.07
+Nodes (21): AuditInterceptor, inferTargetType(), AuditLog, isAdmin(), isSuperAdmin(), SuperAdminGuard, AnalyticsEvent, AnalyticsModule (+13 more)
 
 ### Community 3 - "Feed & Places Backend"
-Cohesion: 0.07
-Nodes (25): FeedOpts, FeedSort, TripPlan, OgModule, SavedPost, Review, ReviewsService, ActivityActor (+17 more)
-
-### Community 4 - "Activity Feed UI"
 Cohesion: 0.05
 Nodes (48): ActivityFeedPage(), Actor, actorHref(), ActorLink(), Entry, EntryRow(), FeedMode, isAnon() (+40 more)
+
+### Community 4 - "Activity Feed UI"
+Cohesion: 0.08
+Nodes (24): BADGE_DEFINITIONS, BadgeDefinition, BadgeEvent, BEACH_CITIES, DESERT_CITIES, MEDINA_CITIES, BadgesModule, BADGE_BY_ID (+16 more)
 
 ### Community 5 - "Web App Router & Pages"
 Cohesion: 0.07
 Nodes (57): AboutPage, AdminPage, AITravelPlanner, AuthPage, BadgesPage, CityQuizPage, CollectionsPage, CreditsPage (+49 more)
 
 ### Community 6 - "Package Dependencies"
-Cohesion: 0.04
-Nodes (51): dependencies, @anthropic-ai/sdk, @aws-sdk/client-s3, @aws-sdk/s3-request-presigner, bcrypt, bcryptjs, better-sqlite3, bullmq (+43 more)
+Cohesion: 0.06
+Nodes (37): AdCard(), AdItem, Avatar, AvatarProps, Button, ButtonProps, Card, CardContent() (+29 more)
 
 ### Community 7 - "Auth & Notifications"
 Cohesion: 0.07
-Nodes (11): Notification, NotificationType, NotificationsService, BulkNotificationJobData, NotificationJobData, QueuesService, Activity, ActivityType (+3 more)
+Nodes (17): ItinerariesController, ItinerariesService, Itinerary, TripMember, TripPlan, TripStop, BatchInquiryInput, UpsertInput (+9 more)
 
 ### Community 8 - "Email & Booking Jobs"
-Cohesion: 0.06
-Nodes (17): EmailPayload, EmailService, BookingProcessor, CancelBookingData, ConfirmBookingData, ReminderData, BookingConfirmationData, EmailJobData (+9 more)
+Cohesion: 0.05
+Nodes (33): FeedShortcuts(), MiniPassport, PRIMARY, SECONDARY, ShortcutItem, Sponsor, SponsorsStrip(), TIER_ORDER (+25 more)
 
 ### Community 9 - "Chat & Messaging"
 Cohesion: 0.06
-Nodes (6): ChatRoom, Message, MessagesController, MessagesModule, MessagesService, EventsGateway
+Nodes (7): ChatRoom, Message, MessagesController, MessagesModule, MessagesService, EventsGateway, WebSocketModule
 
 ### Community 10 - "Onboarding & Profile UI"
-Cohesion: 0.08
-Nodes (36): avatarFallback(), Interest, INTERESTS, OnboardingPage(), LikeButton(), METER_ICON, fmt(), FollowButton() (+28 more)
+Cohesion: 0.04
+Nodes (51): dependencies, @anthropic-ai/sdk, @aws-sdk/client-s3, @aws-sdk/s3-request-presigner, bcrypt, bcryptjs, better-sqlite3, bullmq (+43 more)
 
 ### Community 11 - "Ads, Booking & UI Kit"
-Cohesion: 0.06
-Nodes (30): AdCard(), AdItem, BookingFlow(), BookingFlowProps, Step, Button, ButtonProps, Card (+22 more)
-
-### Community 12 - "3D Camera Controller"
 Cohesion: 0.05
 Nodes (24): CameraController, ambientLight, animate(), camera, clock, controls, cube, cubeGeometry (+16 more)
 
+### Community 12 - "3D Camera Controller"
+Cohesion: 0.04
+Nodes (3): AdminController, AdminService, UpdateUserDto
+
 ### Community 13 - "Auth UI & Onboarding Banner"
 Cohesion: 0.06
-Nodes (31): openChat(), OnboardingBanner(), AuthPage(), Mode, passwordStrengthTier(), STRENGTH_LABEL, NewPasswordForm(), PasswordResetPage() (+23 more)
+Nodes (31): openChat(), OnboardingBanner(), AuthPage(), Mode, passwordStrengthTier(), STRENGTH_LABEL, NewPasswordForm(), METER_ICON (+23 more)
 
 ### Community 14 - "Community 14"
 Cohesion: 0.09
-Nodes (15): CreditBalance, CreditTransaction, CreditTxKind, DepositDto, DonateDto, GiftDto, CreditsService, GIFT_CATALOG (+7 more)
+Nodes (19): FeedOpts, FeedSort, ActivityActor, ActivityEntry, ActivityService, ActivityType, effectivePlan(), Endorsement (+11 more)
 
 ### Community 15 - "Community 15"
-Cohesion: 0.06
-Nodes (28): FeedShortcuts(), MiniPassport, PRIMARY, SECONDARY, ShortcutItem, Sponsor, SponsorsStrip(), TIER_ORDER (+20 more)
+Cohesion: 0.08
+Nodes (16): BeachReport, BeachesController, BeachReportDto, BeachesService, BeachReportInput, COASTAL, CROWD, JELLYFISH (+8 more)
 
 ### Community 16 - "Community 16"
-Cohesion: 0.07
-Nodes (9): HealthController, AnalyticsProcessor, ComputeTrendingData, TrackEventData, InitiatePayoutData, PayoutProcessor, RetryFailedData, RedisHealthIndicator (+1 more)
+Cohesion: 0.06
+Nodes (25): DiscoveryCard(), DiscoveryPlace, Props, REACTION_BY_ID, ReactionPicker(), REACTIONS, ReactionType, GroundedPlace (+17 more)
 
 ### Community 17 - "Community 17"
-Cohesion: 0.09
-Nodes (8): CreatePlaceDto, QueryPlacesDto, Place, BoostListingDto, PlacesController, BOOST_TIERS, BoostTier, PlacesService
+Cohesion: 0.12
+Nodes (18): BillingService, upgradeError(), amountFor(), BUSINESS_CAPS, capsFor(), displayCurrency(), effectivePlanFor(), FeatureCaps (+10 more)
 
 ### Community 18 - "Community 18"
-Cohesion: 0.08
-Nodes (19): BeachReport, BeachesModule, BeachReportInput, COASTAL, CROWD, JELLYFISH, WATER, SubmitGemDto (+11 more)
-
-### Community 19 - "Community 19"
 Cohesion: 0.10
 Nodes (22): bool, str, main(), R3FComponentGenerator, Generate TypeScript props interface., Generate props parameter signature., Generate event handler props., Generate basic box component. (+14 more)
 
+### Community 19 - "Community 19"
+Cohesion: 0.10
+Nodes (32): LikeButton(), fmt(), FollowButton(), isProPlan(), PostTile(), TIER_ICONS, tierFor(), timeAgo() (+24 more)
+
 ### Community 20 - "Community 20"
-Cohesion: 0.12
-Nodes (21): AnalyticsModule, AuthModule, CreditsModule, getDatabaseConfig(), DigestModule, EmailModule, FeedModule, CustomThrottlerGuard (+13 more)
-
-### Community 21 - "Community 21"
-Cohesion: 0.08
-Nodes (24): ActiveConversationsLauncher(), ActiveConversationsRail(), ConversationRow(), ConversationsList(), isPro(), myId(), otherOf(), OtherUser (+16 more)
-
-### Community 22 - "Community 22"
 Cohesion: 0.07
 Nodes (21): ADMIN_FORBIDDEN, AdminForbidden, adminGet(), adminMutate(), token(), unwrap(), AdminLocked(), QueueAction (+13 more)
 
+### Community 21 - "Community 21"
+Cohesion: 0.08
+Nodes (7): CreatePlaceDto, QueryPlacesDto, BoostListingDto, PlacesController, BOOST_TIERS, BoostTier, PlacesService
+
+### Community 22 - "Community 22"
+Cohesion: 0.08
+Nodes (15): deriveLevel(), PassportDto, PassportLevel, PassportStats, OgService, QUIZ_ARCHETYPES, QuizArchetype, statTile() (+7 more)
+
 ### Community 23 - "Community 23"
-Cohesion: 0.10
-Nodes (15): OptionalJwtAuthGuard, ItinerariesModule, Itinerary, TripMember, TripStop, BatchInquiryInput, UpsertInput, CreateInquiryDto (+7 more)
-
-### Community 24 - "Community 24"
-Cohesion: 0.08
-Nodes (16): deriveLevel(), PassportDto, PassportLevel, PassportStats, OgService, QUIZ_ARCHETYPES, QuizArchetype, statTile() (+8 more)
-
-### Community 25 - "Community 25"
-Cohesion: 0.10
-Nodes (7): MarketplaceController, MarketplaceModule, MarketplaceService, Order, OrderStatus, Product, ProductCategory
-
-### Community 26 - "Community 26"
-Cohesion: 0.08
-Nodes (16): RoutingController, RoutingModule, OptimizeResult, RouteLeg, RouteResult, RoutingService, APPLY, ARRAY_COLS (+8 more)
-
-### Community 27 - "Community 27"
-Cohesion: 0.09
-Nodes (27): CATEGORIES, CATEGORY_TINTS, CategoryDef, EventCard(), eventImages, EventsPage(), tintStyle(), getLocallySavedPlaceIds() (+19 more)
-
-### Community 28 - "Community 28"
-Cohesion: 0.08
-Nodes (24): glow(), LEVEL_COLORS, passportCardBlob(), PassportCardData, renderPassportCard(), roundRect(), spacedText(), stamp() (+16 more)
-
-### Community 29 - "Community 29"
 Cohesion: 0.11
 Nodes (10): Challenge, ChallengeCategory, ChallengeType, ChallengesController, ChallengesModule, ChallengesService, LeaderboardEntry, UserStreak (+2 more)
 
-### Community 30 - "Community 30"
+### Community 24 - "Community 24"
+Cohesion: 0.10
+Nodes (7): MarketplaceController, MarketplaceModule, MarketplaceService, Order, OrderStatus, Product, ProductCategory
+
+### Community 25 - "Community 25"
+Cohesion: 0.08
+Nodes (16): RoutingController, RoutingModule, OptimizeResult, RouteLeg, RouteResult, RoutingService, APPLY, ARRAY_COLS (+8 more)
+
+### Community 26 - "Community 26"
+Cohesion: 0.08
+Nodes (29): useCity(), CATEGORIES, CATEGORY_TINTS, CategoryDef, EventCard(), eventImages, EventsPage(), tintStyle() (+21 more)
+
+### Community 27 - "Community 27"
 Cohesion: 0.12
 Nodes (19): bool, main(), str, MotionAnimationGenerator, Generate TypeScript props interface., Generate hover animation component., Generate tap animation component., Generate drag animation component. (+11 more)
 
-### Community 32 - "Community 32"
-Cohesion: 0.07
-Nodes (6): BatchInquiryDto, StopDto, TripsController, UpsertTripDto, cleanDate(), TripsService
+### Community 28 - "Community 28"
+Cohesion: 0.09
+Nodes (22): BookingFlow(), BookingFlowProps, Step, ALLOWED_VIDEO, Props, ReelComposer(), TUNISIAN_LOCATIONS, RollingNumber() (+14 more)
 
-### Community 34 - "Community 34"
+### Community 29 - "Community 29"
+Cohesion: 0.09
+Nodes (22): AdminModule, AdsModule, AIModule, AuthModule, BeachesModule, BillingModule, BookingsModule, getDatabaseConfig() (+14 more)
+
+### Community 30 - "Community 30"
+Cohesion: 0.10
+Nodes (9): ALLOWED_MIME_TYPES, MediaController, MediaModule, Notification, PushModule, QueuesModule, QueuesService, StorageModule (+1 more)
+
+### Community 32 - "Community 32"
 Cohesion: 0.06
 Nodes (32): dependencies, clsx, framer-motion, leaflet, leaflet.markercluster, lucide-react, react, react-dom (+24 more)
 
-### Community 35 - "Community 35"
-Cohesion: 0.10
-Nodes (6): Ad, AdPlacement, AdsController, AdsModule, AdsService, LEGACY_FAKE_ADVERTISERS
-
-### Community 36 - "Community 36"
+### Community 33 - "Community 33"
 Cohesion: 0.06
 Nodes (31): notes, sweetSpots, gems, itineraries, regions, gems, itineraries, meta (+23 more)
 
-### Community 37 - "Community 37"
+### Community 34 - "Community 34"
+Cohesion: 0.08
+Nodes (16): FollowEntry, FollowList(), Props, PassportStats(), Props, Props, SignupGate(), CityCoord (+8 more)
+
+### Community 35 - "Community 35"
 Cohesion: 0.10
 Nodes (16): main(), Add a label to the timeline., Add a callback to the timeline., Interactive timeline builder., Parse property input (preset or custom properties)., Get GSAP method name from step type number., Visualize timeline structure., Generate GSAP timeline code. (+8 more)
 
-### Community 39 - "Community 39"
+### Community 36 - "Community 36"
 Cohesion: 0.08
-Nodes (16): Catalog, CatalogPlan, Cycle, fmtPrice(), PLAN_FALLBACK, Tier, usePlanCatalog(), fallbackItineraries (+8 more)
+Nodes (3): TripsController, cleanDate(), TripsService
 
-### Community 40 - "Community 40"
-Cohesion: 0.16
-Nodes (10): BillingService, upgradeError(), amountFor(), capsFor(), effectivePlanFor(), FeatureCaps, getPlan(), PlanId (+2 more)
+### Community 37 - "Community 37"
+Cohesion: 0.09
+Nodes (7): AnalyticsProcessor, ComputeTrendingData, TrackEventData, InitiatePayoutData, PayoutProcessor, RetryFailedData, RedisService
 
-### Community 41 - "Community 41"
+### Community 38 - "Community 38"
+Cohesion: 0.12
+Nodes (7): DigestController, DigestModule, DigestData, DigestService, ScheduledModule, ScheduledTasksService, WeeklyDigestRunner
+
+### Community 39 - "Community 39"
 Cohesion: 0.12
 Nodes (17): bool, int, str, Any, main(), Generate variant code., Generate JavaScript variant code., Generate TypeScript variant code. (+9 more)
 
-### Community 43 - "Community 43"
+### Community 40 - "Community 40"
+Cohesion: 0.14
+Nodes (12): CreditBalance, CreditTransaction, CreditTxKind, CreditsModule, GIFT_CATALOG, PLATFORM_FEE_PERCENT, Donation, ReferralReward (+4 more)
+
+### Community 41 - "Community 41"
+Cohesion: 0.10
+Nodes (17): ChatMessage, ChatWindow(), isMessagesRoute(), myId(), OpenChat, avatarFor(), groupByDay(), MessagesPage() (+9 more)
+
+### Community 42 - "Community 42"
 Cohesion: 0.13
 Nodes (17): bool, str, interactive_mode(), main(), R3FSceneSetup, Generate complete scene code., Generate import statements., Generate lighting setup component. (+9 more)
 
-### Community 44 - "Community 44"
-Cohesion: 0.11
-Nodes (5): Sponsor, SponsorTier, SponsorsController, SponsorsModule, SponsorsService
+### Community 43 - "Community 43"
+Cohesion: 0.10
+Nodes (12): EmailModule, EmailPayload, EmailService, BookingProcessor, CancelBookingData, ConfirmBookingData, ReminderData, BookingConfirmationData (+4 more)
 
-### Community 46 - "Community 46"
+### Community 44 - "Community 44"
 Cohesion: 0.08
 Nodes (24): create_html_template(), generate_birds(), generate_cells(), generate_clouds(), generate_effect(), generate_globe(), generate_rings(), generate_topology() (+16 more)
 
-### Community 47 - "Community 47"
-Cohesion: 0.08
-Nodes (6): FlouciService, PaymentsController, PaymentIntent, PaymentsService, PayoutRequest, Stripe
+### Community 45 - "Community 45"
+Cohesion: 0.12
+Nodes (22): KontHouniButton(), DICTIONARIES, Locale, applyTranslations(), BUILT_IN, commit(), detect(), dictHash() (+14 more)
 
-### Community 48 - "Community 48"
-Cohesion: 0.10
-Nodes (7): ALLOWED_MIME_TYPES, MediaController, GenerateThumbnailsData, ImageProcessor, OptimizeImageData, StorageService, UploadedFile
+### Community 46 - "Community 46"
+Cohesion: 0.13
+Nodes (8): BookingAddon, BookingGuest, InventoryController, AvailabilityRule, BlockedDate, InventoryItem, InventoryModule, InventoryService
 
 ### Community 49 - "Community 49"
-Cohesion: 0.10
-Nodes (5): Badge, GamificationController, GamificationModule, GamificationService, UserBadge
-
-### Community 50 - "Community 50"
-Cohesion: 0.11
-Nodes (14): ICON, Opt, TransportOptions(), useCurrency(), useMoney(), POPULAR, CartView(), DayBlocks() (+6 more)
-
-### Community 51 - "Community 51"
 Cohesion: 0.13
 Nodes (25): close(), CommandItem, commit(), escapeHtml(), fetchPeople(), fetchPlaces(), filterActions(), filterPages() (+17 more)
 
-### Community 52 - "Community 52"
-Cohesion: 0.09
-Nodes (17): DiscoverTrip, DiscoverTrips(), DiscoveryCard(), DiscoveryPlace, FeaturedPlace, FeaturedPlaces(), PostImageCarousel(), Props (+9 more)
-
-### Community 53 - "Community 53"
+### Community 51 - "Community 51"
 Cohesion: 0.10
 Nodes (25): Google Fonts Import (Inter, Noto Kufi Arabic; Fraunces + Caveat via tokens.css), HeroPage.tsx (.ej-* landing markup), AI Compose Assist (Phase 3: improve + FR/AR/EN translate), Web App Shell (index.html), Mobile Menu Drawer + Bottom Nav, Main Nav Shell (#main-nav), Notifications Panel, Post Composer Modal (+17 more)
 
-### Community 54 - "Community 54"
-Cohesion: 0.10
-Nodes (12): FollowEntry, FollowList(), Props, PassportStats(), Props, Props, SignupGate(), currentUser() (+4 more)
-
-### Community 55 - "Community 55"
+### Community 52 - "Community 52"
 Cohesion: 0.11
 Nodes (19): currentUserId(), StoriesStrip(), StoryAuthor, StoryItem, StoryViewer(), timeAgo(), COLORS, EMOJIS (+11 more)
 
-### Community 56 - "Community 56"
+### Community 53 - "Community 53"
 Cohesion: 0.10
-Nodes (13): BoostModal(), Earnings(), fmtDate(), InquiryCard(), PackageEditorModal(), PackageManagerModal(), Status, STATUS_ORDER (+5 more)
+Nodes (18): ComposeBox(), Props, coordCache, DAY_COLORS, fmtDur(), fmtKm(), Located, Props (+10 more)
+
+### Community 54 - "Community 54"
+Cohesion: 0.15
+Nodes (5): Booking, BookingsService, BookingAddonDto, BookingGuestDto, CreateBookingDto
+
+### Community 55 - "Community 55"
+Cohesion: 0.16
+Nodes (10): ALLOW, ModerationAction, ModerationVerdict, Block, Report, ReportReason, ReportStatus, ReportTargetType (+2 more)
+
+### Community 56 - "Community 56"
+Cohesion: 0.09
+Nodes (16): ICON_MAP, getLocallySavedPlaceIds(), loadFavorites(), addUserPost(), Badge, badges, categories, comments (+8 more)
 
 ### Community 57 - "Community 57"
+Cohesion: 0.11
+Nodes (15): t(), Archetype, ARCHETYPES, BY_SLUG, Option, Question, QUESTIONS, Slug (+7 more)
+
+### Community 58 - "Community 58"
 Cohesion: 0.16
 Nodes (23): bool, str, create_about_html(), create_contact_html(), create_css(), create_index_html(), create_main_js(), create_package_json() (+15 more)
 
-### Community 58 - "Community 58"
-Cohesion: 0.12
-Nodes (5): CreateStoryDto, StoriesController, StoriesModule, StoriesService, Story
-
-### Community 60 - "Community 60"
-Cohesion: 0.15
-Nodes (4): Collection, CollectionsController, CollectionsModule, CollectionsService
-
-### Community 61 - "Community 61"
-Cohesion: 0.13
-Nodes (16): Avatar, AvatarProps, CardContent(), CardFooter(), CardHeader(), CardImage(), CardProps, PlaceCardSkeleton() (+8 more)
-
-### Community 62 - "Community 62"
-Cohesion: 0.12
-Nodes (14): CityCompleteness(), GemConfirmBlock(), Props, PullToRefresh(), useCity(), CATEGORIES, CategoryDef, ExplorePage() (+6 more)
-
-### Community 63 - "Community 63"
-Cohesion: 0.21
-Nodes (19): addStop(), CartState, CartStop, clearCart(), emptyState(), getCart(), inCart(), moveStopToDay() (+11 more)
-
-### Community 64 - "Community 64"
-Cohesion: 0.13
-Nodes (21): bool, generate_animation_component(), generate_basic_component(), generate_interactive_component(), generate_physics_component(), interactive_mode(), main(), str (+13 more)
-
-### Community 65 - "Community 65"
-Cohesion: 0.11
-Nodes (20): generate_animation_component(), generate_basic_component(), generate_component(), generate_interactive_component(), generate_physics_component(), interactive_mode(), main(), generate_controller_component() (+12 more)
-
-### Community 66 - "Community 66"
-Cohesion: 0.14
-Nodes (13): audit_file(), DesignAuditor, interactive_mode(), main(), Audit for performance issues., Audit for SEO basics., Audit for responsive design., Audit for modern design practices. (+5 more)
-
-### Community 67 - "Community 67"
-Cohesion: 0.09
-Nodes (21): dependencies, leva, react, react-dom, @react-three/drei, @react-three/fiber, three, devDependencies (+13 more)
-
-### Community 69 - "Community 69"
-Cohesion: 0.16
-Nodes (6): ContactController, Contact, ContactStatus, ContactType, ContactModule, ContactService
-
-### Community 70 - "Community 70"
-Cohesion: 0.13
-Nodes (4): Event, EventsController, EventsModule, EventsService
-
-### Community 71 - "Community 71"
+### Community 59 - "Community 59"
 Cohesion: 0.15
 Nodes (5): AuthController, AuthService, GoogleLoginDto, LoginDto, RegisterDto
 
-### Community 73 - "Community 73"
-Cohesion: 0.20
-Nodes (8): Block, Report, ReportReason, ReportStatus, ReportTargetType, ReportDto, SafetyModule, SafetyService
+### Community 60 - "Community 60"
+Cohesion: 0.11
+Nodes (12): BoostModal(), fmtDate(), InquiryCard(), PackageEditorModal(), PackageManagerModal(), Status, STATUS_ORDER, timeAgo() (+4 more)
+
+### Community 61 - "Community 61"
+Cohesion: 0.13
+Nodes (8): Badge, GamificationModule, UserBadge, NotificationType, NotificationsModule, NotificationsService, BulkNotificationJobData, NotificationJobData
+
+### Community 62 - "Community 62"
+Cohesion: 0.12
+Nodes (5): CreateStoryDto, StoriesController, StoriesModule, StoriesService, Story
+
+### Community 63 - "Community 63"
+Cohesion: 0.16
+Nodes (6): ContactController, Contact, ContactStatus, ContactType, ContactModule, ContactService
+
+### Community 65 - "Community 65"
+Cohesion: 0.15
+Nodes (4): Collection, CollectionsController, CollectionsModule, CollectionsService
+
+### Community 66 - "Community 66"
+Cohesion: 0.19
+Nodes (6): CurrentUser, JwtAuthGuard, OptionalJwtAuthGuard, BatchInquiryDto, StopDto, UpsertTripDto
+
+### Community 67 - "Community 67"
+Cohesion: 0.21
+Nodes (19): addStop(), CartState, CartStop, clearCart(), emptyState(), getCart(), inCart(), moveStopToDay() (+11 more)
+
+### Community 68 - "Community 68"
+Cohesion: 0.13
+Nodes (21): bool, generate_animation_component(), generate_basic_component(), generate_interactive_component(), generate_physics_component(), interactive_mode(), main(), str (+13 more)
+
+### Community 69 - "Community 69"
+Cohesion: 0.11
+Nodes (20): generate_animation_component(), generate_basic_component(), generate_component(), generate_interactive_component(), generate_physics_component(), interactive_mode(), main(), generate_controller_component() (+12 more)
+
+### Community 70 - "Community 70"
+Cohesion: 0.14
+Nodes (13): audit_file(), DesignAuditor, interactive_mode(), main(), Audit for performance issues., Audit for SEO basics., Audit for responsive design., Audit for modern design practices. (+5 more)
+
+### Community 71 - "Community 71"
+Cohesion: 0.09
+Nodes (21): dependencies, leva, react, react-dom, @react-three/drei, @react-three/fiber, three, devDependencies (+13 more)
+
+### Community 72 - "Community 72"
+Cohesion: 0.17
+Nodes (5): Activity, ActivityType, Follow, SocialModule, SocialService
 
 ### Community 74 - "Community 74"
+Cohesion: 0.10
+Nodes (5): PaymentsController, PaymentIntent, PaymentsService, PayoutRequest, Stripe
+
+### Community 75 - "Community 75"
+Cohesion: 0.18
+Nodes (17): isMessagesRoute(), PasswordResetPage(), avatarOf(), CommentThread(), fmtCount(), linkedHtml(), PostDetailPage(), postIdFromPath() (+9 more)
+
+### Community 76 - "Community 76"
+Cohesion: 0.14
+Nodes (17): GovernorateAlbum(), CITY_ALIASES, COMBINING, deaccent(), Governorate, GOVERNORATE_BY_ID, GOVERNORATES, governoratesFromCities() (+9 more)
+
+### Community 77 - "Community 77"
+Cohesion: 0.13
+Nodes (3): GemsController, SubmitGemDto, GemsService
+
+### Community 79 - "Community 79"
 Cohesion: 0.12
 Nodes (20): create_html_template(), generate_3d_cube(), generate_basic_shapes(), generate_icon_grid(), generate_illustration(), generate_particle_system(), generate_robot(), generate_spiral() (+12 more)
 
-### Community 75 - "Community 75"
+### Community 80 - "Community 80"
 Cohesion: 0.12
 Nodes (19): interactive_mode(), main(), generate_360_scene(), generate_ar_scene(), generate_basic_scene(), generate_environment_scene(), generate_networked_scene(), generate_physics_scene() (+11 more)
 
-### Community 76 - "Community 76"
-Cohesion: 0.18
-Nodes (18): isMessagesRoute(), isMessagesRoute(), avatarOf(), CommentThread(), fmtCount(), linkedHtml(), PostDetailPage(), postIdFromPath() (+10 more)
-
-### Community 77 - "Community 77"
+### Community 81 - "Community 81"
 Cohesion: 0.14
-Nodes (18): categoryColor(), categoryColors, categoryIcon(), categoryIcons, esc(), KNOWN_COLORS, KNOWN_ICONS, mapCategories (+10 more)
+Nodes (3): EventsController, EventsModule, EventsService
 
-### Community 78 - "Community 78"
+### Community 82 - "Community 82"
+Cohesion: 0.14
+Nodes (13): ActiveConversationsLauncher(), ActiveConversationsRail(), ConversationRow(), ConversationsList(), isPro(), myId(), otherOf(), OtherUser (+5 more)
+
+### Community 83 - "Community 83"
+Cohesion: 0.18
+Nodes (17): glow(), LEVEL_COLORS, passportCardBlob(), PassportCardData, renderPassportCard(), roundRect(), spacedText(), stamp() (+9 more)
+
+### Community 84 - "Community 84"
+Cohesion: 0.16
+Nodes (5): PushController, SubscribeDto, UnsubscribeDto, PushService, PushSubscription
+
+### Community 85 - "Community 85"
 Cohesion: 0.16
 Nodes (4): Tip, TipsController, TipsModule, TipsService
 
-### Community 79 - "Community 79"
+### Community 86 - "Community 86"
 Cohesion: 0.10
 Nodes (19): compilerOptions, baseUrl, esModuleInterop, forceConsistentCasingInFileNames, isolatedModules, jsx, module, moduleResolution (+11 more)
 
-### Community 80 - "Community 80"
+### Community 87 - "Community 87"
+Cohesion: 0.18
+Nodes (4): Ad, AdPlacement, AdsService, LEGACY_FAKE_ADVERTISERS
+
+### Community 88 - "Community 88"
 Cohesion: 0.13
 Nodes (18): main(), Create complete HTML template for PlayCanvas, create_html_template(), generate_basic_scene(), generate_first_person(), generate_model_viewer(), generate_particle_system(), generate_physics_scene() (+10 more)
 
-### Community 81 - "Community 81"
+### Community 89 - "Community 89"
 Cohesion: 0.11
 Nodes (18): compilerOptions, allowSyntheticDefaultImports, baseUrl, declaration, emitDecoratorMetadata, experimentalDecorators, forceConsistentCasingInFileNames, incremental (+10 more)
 
-### Community 82 - "Community 82"
-Cohesion: 0.18
-Nodes (4): DigestController, DigestData, DigestService, WeeklyDigestRunner
-
-### Community 83 - "Community 83"
-Cohesion: 0.16
-Nodes (16): SharePassport(), clamp(), isPro(), MenuPanel(), Position, positionFromAnchor(), profileHref(), profileUrl() (+8 more)
-
-### Community 84 - "Community 84"
+### Community 90 - "Community 90"
 Cohesion: 0.15
-Nodes (5): I18nController, I18nModule, I18nService, LANG_NAMES, ScheduledTasksService
+Nodes (4): CreatePackageDto, PackagesController, UpdatePackageDto, PackagesService
 
-### Community 85 - "Community 85"
+### Community 91 - "Community 91"
+Cohesion: 0.19
+Nodes (16): CAT_BY_ID, CATEGORIES, CategoryMeta, catMeta(), timeAgo(), tintStyle(), TipCard(), tips (+8 more)
+
+### Community 92 - "Community 92"
+Cohesion: 0.15
+Nodes (11): Cond, DailyForecast, WeatherBadge(), wmo(), useCurrency(), CartView(), fmtPrice(), SavedTripView() (+3 more)
+
+### Community 93 - "Community 93"
 Cohesion: 0.15
 Nodes (18): str, cli_mode(), generate_animated_sprite(), generate_basic_sprite(), generate_interactive_sprite(), generate_masked_sprite(), generate_spritesheet_atlas(), generate_tiled_sprites() (+10 more)
 
-### Community 86 - "Community 86"
-Cohesion: 0.16
-Nodes (16): BUSINESS_CAPS, chargeCurrency(), displayCurrency(), FREE_CAPS, PLAN_CATALOG, PlanCatalogEntry, PRO_CAPS, THREE_DECIMAL (+8 more)
-
-### Community 87 - "Community 87"
-Cohesion: 0.11
-Nodes (14): ICON_MAP, addUserPost(), Badge, badges, categories, comments, Event, generateId() (+6 more)
-
-### Community 88 - "Community 88"
+### Community 94 - "Community 94"
 Cohesion: 0.11
 Nodes (13): centerSphere, demoIllo, demoModel, globe1, heroCube, heroIllo, icon1, icon2 (+5 more)
 
-### Community 90 - "Community 90"
-Cohesion: 0.18
-Nodes (6): Subscription, SubStatus, SubscriptionsController, SubscriptionsModule, PLAN_PRICES, SubscriptionsService
+### Community 95 - "Community 95"
+Cohesion: 0.19
+Nodes (4): Sponsor, SponsorTier, SponsorsModule, SponsorsService
 
-### Community 91 - "Community 91"
+### Community 96 - "Community 96"
+Cohesion: 0.12
+Nodes (5): CreditsController, DepositDto, DonateDto, GiftDto, DonationTarget
+
+### Community 97 - "Community 97"
 Cohesion: 0.14
 Nodes (18): Docker Compose Override (QA synchronize OFF), Production Deployment Checklist, Production Environment Variables, Infrastructure Requirements (Postgres/Redis/MinIO/Meilisearch/Nginx/PM2), Nginx Reverse Proxy Configuration, Pre-Deployment Security Audit, Bug B4: Dev CORS Rejects Vite Port 5174, Bug B3: credit_transactions simple-enum Sync Crash-Loop (+10 more)
 
-### Community 92 - "Community 92"
-Cohesion: 0.16
-Nodes (4): CreatePackageDto, PackagesController, UpdatePackageDto, PackagesService
-
-### Community 93 - "Community 93"
-Cohesion: 0.18
-Nodes (17): format_config_object(), generate_html_template(), generate_js_code(), get_bool_input(), get_number_input(), get_user_choice(), interactive_config(), main() (+9 more)
-
-### Community 94 - "Community 94"
-Cohesion: 0.18
-Nodes (17): int, str, cli_mode(), generate_explosion_particles(), generate_fire_particles(), generate_fountain_particles(), generate_snow_particles(), generate_stars_particles() (+9 more)
-
-### Community 95 - "Community 95"
-Cohesion: 0.18
-Nodes (15): DICTIONARIES, Locale, applyTranslations(), BUILT_IN, commit(), detect(), dictHash(), ensurePack() (+7 more)
-
-### Community 96 - "Community 96"
-Cohesion: 0.11
-Nodes (17): dependencies, framer-motion, react, react-dom, devDependencies, @types/react, @types/react-dom, vite (+9 more)
-
-### Community 97 - "Community 97"
+### Community 98 - "Community 98"
 Cohesion: 0.20
 Nodes (15): reviewClosers, reviewerEmail(), reviewers, ReviewerSeed, reviewSnippets, Sentiment, bucketFor(), distinctTokens() (+7 more)
 
 ### Community 99 - "Community 99"
-Cohesion: 0.12
-Nodes (4): BookingsController, BookingAddonDto, BookingGuestDto, CreateBookingDto
+Cohesion: 0.15
+Nodes (4): GenerateThumbnailsData, ImageProcessor, OptimizeImageData, StorageService
 
 ### Community 100 - "Community 100"
+Cohesion: 0.18
+Nodes (17): format_config_object(), generate_html_template(), generate_js_code(), get_bool_input(), get_number_input(), get_user_choice(), interactive_config(), main() (+9 more)
+
+### Community 101 - "Community 101"
+Cohesion: 0.18
+Nodes (17): int, str, cli_mode(), generate_explosion_particles(), generate_fire_particles(), generate_fountain_particles(), generate_snow_particles(), generate_stars_particles() (+9 more)
+
+### Community 102 - "Community 102"
+Cohesion: 0.11
+Nodes (17): dependencies, framer-motion, react, react-dom, devDependencies, @types/react, @types/react-dom, vite (+9 more)
+
+### Community 103 - "Community 103"
 Cohesion: 0.16
 Nodes (17): Collection card (full-bleed image), Collections-as-editorial rationale, Collection modal (shared chrome), Collections page (#/collections), Trip card (cover collage), Discover-trips filter rail, Discover trips page (#/discover-trips), Single-city data-model constraint (+9 more)
 
-### Community 101 - "Community 101"
-Cohesion: 0.13
-Nodes (13): coordCache, DAY_COLORS, fmtDur(), fmtKm(), Located, Props, RoadData, routeCache (+5 more)
-
-### Community 102 - "Community 102"
+### Community 104 - "Community 104"
 Cohesion: 0.18
 Nodes (4): BillingController, normalizeCycle(), BillingCycle, Public()
 
-### Community 103 - "Community 103"
+### Community 105 - "Community 105"
 Cohesion: 0.21
 Nodes (4): CategoriesController, CategoriesModule, CategoriesService, Category
 
-### Community 105 - "Community 105"
-Cohesion: 0.16
-Nodes (10): ErrorResponse, GlobalExceptionFilter, ApiResponse, TransformInterceptor, AppModule, bootstrap(), backfillPlaceVisits(), EnvRequirement (+2 more)
-
 ### Community 106 - "Community 106"
-Cohesion: 0.17
-Nodes (10): MOOD_DEFS, MOOD_LIST, MoodDef, moodFromHash(), SLUG_ALIASES, MoodCompass(), Guide, MoodPage() (+2 more)
+Cohesion: 0.15
+Nodes (11): MOOD_DEFS, MOOD_LIST, MoodDef, moodFromHash(), SLUG_ALIASES, MoodCompass(), Guide, MoodPage() (+3 more)
 
 ### Community 107 - "Community 107"
-Cohesion: 0.14
-Nodes (9): mountMessengerGlobals(), MountOptions, rootMap, queryClient, Props, Step, STEPS, TutorialPopup() (+1 more)
+Cohesion: 0.12
+Nodes (5): fallbackItineraries, fallbackPlaces, GOVERNORATES, Place, TESTIMONIALS
 
 ### Community 108 - "Community 108"
-Cohesion: 0.30
-Nodes (3): esc(), OgController, renderOgHtml()
+Cohesion: 0.15
+Nodes (11): GemConfirmBlock(), Reveal(), arriveByLabel(), fmtDuration(), mockComments, parseCloseMinutes(), PlaceDetailPage(), placeIdFromPath() (+3 more)
 
 ### Community 109 - "Community 109"
-Cohesion: 0.20
-Nodes (11): ComposeBox(), Props, KontHouniButton(), getLocale(), useT(), FeedSortBar(), BlockedList(), SettingsPage() (+3 more)
+Cohesion: 0.18
+Nodes (13): buildMenu(), convertFromTND(), CURRENCIES, CurrencyDef, currentDef(), FALLBACK_RATES, formatMoney(), getCurrency() (+5 more)
 
 ### Community 110 - "Community 110"
-Cohesion: 0.17
-Nodes (10): Reveal(), arriveByLabel(), fmtDuration(), mockComments, parseCloseMinutes(), PlaceDetailPage(), placeIdFromPath(), whatsappLink() (+2 more)
+Cohesion: 0.30
+Nodes (3): esc(), OgController, renderOgHtml()
 
 ### Community 111 - "Community 111"
 Cohesion: 0.12
 Nodes (15): dependencies, @babylonjs/core, @babylonjs/havok, @babylonjs/loaders, description, devDependencies, vite, name (+7 more)
 
 ### Community 112 - "Community 112"
-Cohesion: 0.19
-Nodes (13): buildMenu(), convertFromTND(), CURRENCIES, CurrencyDef, currentDef(), FALLBACK_RATES, formatMoney(), getCurrency() (+5 more)
+Cohesion: 0.15
+Nodes (8): mountMessengerGlobals(), MountOptions, rootMap, queryClient, Props, Step, STEPS, TutorialPopup()
 
 ### Community 113 - "Community 113"
+Cohesion: 0.21
+Nodes (4): HealthController, HealthModule, RedisHealthIndicator, RedisModule
+
+### Community 114 - "Community 114"
 Cohesion: 0.23
 Nodes (14): analyze_directory(), check_pillow(), generate_lod_levels(), get_file_size_mb(), main(), optimize_directory(), print_manual_instructions(), Optimize all textures in a directory.      Args:         input_dir (str): Inp (+6 more)
 
-### Community 114 - "Community 114"
+### Community 115 - "Community 115"
 Cohesion: 0.15
 Nodes (5): avatarFor(), CityRow(), GlobalRow(), Mode, leaderboard
-
-### Community 115 - "Community 115"
-Cohesion: 0.16
-Nodes (14): Broken Auth Token Storage Bug, Accessibility Rules (Non-negotiable), Activity Entry Types & Tints, Activity Feed Page Design, Anti-pattern: No Social-Login Buttons, Auth Pages Design (login/register), Password Strength Meter, Design System MASTER (+6 more)
-
-### Community 116 - "Community 116"
-Cohesion: 0.18
-Nodes (14): Broken BookingFlow Export Bug, Dual Rendering System (React Islands + Vanilla TS), Engagement Loop / Addiction Engineering, Full Strategic Audit & Competitive Analysis, Hardcoded localhost:3000 in Production, PWA Self-Destructing Service Worker, 90-Day War Plan, Algorithmic Feed (For You) (+6 more)
 
 ### Community 118 - "Community 118"
 Cohesion: 0.15
 Nodes (14): Attend button (is-attended state), Event date-block primitive, Featured-first card variant, Events page (#/events), Baked-in hero search, Explore page (#/explore), PlaceCard (ExplorePage.tsx), Leaflet integration (CartoDB Voyager) (+6 more)
 
 ### Community 119 - "Community 119"
-Cohesion: 0.18
-Nodes (10): COPY, featureToCap, ProGate(), Props, FeatureCaps, FREE_FALLBACK, isAuthed(), PlanId (+2 more)
+Cohesion: 0.16
+Nodes (14): Broken Auth Token Storage Bug, Accessibility Rules (Non-negotiable), Activity Entry Types & Tints, Activity Feed Page Design, Anti-pattern: No Social-Login Buttons, Auth Pages Design (login/register), Password Strength Meter, Design System MASTER (+6 more)
 
 ### Community 120 - "Community 120"
-Cohesion: 0.24
-Nodes (11): INTEREST_OPTIONS, PassportOnboarding(), Props, addInterest(), addVisitedCity(), clearDraft(), PassportDraft, readDraft() (+3 more)
+Cohesion: 0.18
+Nodes (14): Broken BookingFlow Export Bug, Dual Rendering System (React Islands + Vanilla TS), Engagement Loop / Addiction Engineering, Full Strategic Audit & Competitive Analysis, Hardcoded localhost:3000 in Production, PWA Self-Destructing Service Worker, 90-Day War Plan, Algorithmic Feed (For You) (+6 more)
 
 ### Community 121 - "Community 121"
 Cohesion: 0.18
-Nodes (7): CompleteOpts, LlmMessage, LlmResult, LlmService, LlmTool, ALLOW, ModerationAction
+Nodes (8): ErrorResponse, GlobalExceptionFilter, ApiResponse, TransformInterceptor, AppModule, EnvRequirement, REQUIREMENTS, validateEnv()
 
 ### Community 122 - "Community 122"
+Cohesion: 0.18
+Nodes (10): COPY, featureToCap, ProGate(), Props, FeatureCaps, FREE_FALLBACK, isAuthed(), PlanId (+2 more)
+
+### Community 123 - "Community 123"
+Cohesion: 0.20
+Nodes (11): Catalog, CatalogPlan, Cycle, fmtPrice(), PLAN_FALLBACK, Tier, usePlanCatalog(), ICONS (+3 more)
+
+### Community 124 - "Community 124"
+Cohesion: 0.24
+Nodes (11): INTEREST_OPTIONS, PassportOnboarding(), Props, addInterest(), addVisitedCity(), clearDraft(), PassportDraft, readDraft() (+3 more)
+
+### Community 125 - "Community 125"
 Cohesion: 0.22
 Nodes (13): generate_base_integration(), generate_react_integration(), generate_vue_integration(), get_bool_input(), get_user_choice(), main(), print_header(), print_patterns() (+5 more)
 
-### Community 123 - "Community 123"
+### Community 126 - "Community 126"
 Cohesion: 0.26
 Nodes (13): calculate_critical_friction(), calculate_damping_ratio(), classify_damping(), display_config(), estimate_settle_time(), interactive_mode(), main(), Run calculator in interactive mode. (+5 more)
 
-### Community 125 - "Community 125"
+### Community 127 - "Community 127"
 Cohesion: 0.27
 Nodes (13): animateContactForm(), animateFeatures(), animateGallery(), animateHero(), animateTextReveal(), initAnimations(), setupHorizontalScroll(), setupNavigation() (+5 more)
 
-### Community 126 - "Community 126"
+### Community 128 - "Community 128"
 Cohesion: 0.15
 Nodes (13): devDependencies, @nestjs/cli, @nestjs/schematics, ts-node, @types/bcrypt, @types/compression, @types/express, @types/multer (+5 more)
-
-### Community 127 - "Community 127"
-Cohesion: 0.21
-Nodes (3): BeachesController, BeachReportDto, BeachesService
 
 ### Community 129 - "Community 129"
 Cohesion: 0.15
 Nodes (12): Badge, Category, Collection, Event, Itinerary, ItineraryDay, LeaderboardEntry, PaginatedResponse (+4 more)
 
 ### Community 130 - "Community 130"
+Cohesion: 0.15
+Nodes (13): Photo: Brik Pastry Dish (Muckster), Photo: Dougga Roman Ruins (Emna Trabelsi), Photo: Douz Sahara Dunes (McKay Savage), Photo: Hero Print 1 — Sidi Bou Said (house asset, WebP), Photo: Hero Print 2 — Desert Sunset (house asset, WebP), Photo: Hero Print 3 — El Jem Golden Hour (house asset, WebP), Photo: Matmata Hillside Sign (Colin Kenworthy), Photo: Grand Erg Oriental Dunes at Dusk (Elced77) (+5 more)
+
+### Community 131 - "Community 131"
 Cohesion: 0.21
 Nodes (13): Public Passport Page (/#/u/:handle), Signup Gate + Onboarding Flow, badge-definitions.ts (icon+tint data tokens), BadgeGrid Component, Sub-components (combined doc), EndorseModal Component, PassportOnboarding Component, PassportStats Component (+5 more)
 
-### Community 131 - "Community 131"
+### Community 132 - "Community 132"
 Cohesion: 0.18
 Nodes (12): bcrypt, CAT, { Client }, detailExtras, IMG, main(), PG, pick() (+4 more)
-
-### Community 132 - "Community 132"
-Cohesion: 0.17
-Nodes (6): ErrorBoundary, Props, State, mountIsland(), rootMap, unmountAllIslands()
 
 ### Community 133 - "Community 133"
 Cohesion: 0.15
 Nodes (12): dependencies, locomotive-scroll, description, devDependencies, vite, name, scripts, build (+4 more)
 
 ### Community 134 - "Community 134"
-Cohesion: 0.29
-Nodes (5): AdminGuard, isAdmin(), isSuperAdmin(), SuperAdminGuard, UpdateUserDto
+Cohesion: 0.15
+Nodes (12): Cap Blanc & Bizerte Coast, url, via, Carpet Souks of Kairouan, url, via, Mides Canyon, url (+4 more)
 
 ### Community 135 - "Community 135"
-Cohesion: 0.15
-Nodes (12): Bambalouni - Tunisian Doughnut, url, via, Cap Blanc & Bizerte Coast, url, via, Mides Canyon, url (+4 more)
+Cohesion: 0.17
+Nodes (6): ErrorBoundary, Props, State, mountIsland(), rootMap, unmountAllIslands()
 
 ### Community 136 - "Community 136"
 Cohesion: 0.35
@@ -929,826 +951,814 @@ Cohesion: 0.36
 Nodes (12): Nabeul Beach with Straw Parasols on the Mediterranean, Ceramic Vase Monument Topped with Oranges (Nabeul Roundabout), Nabeul, Tunisia (Cap Bon), Traditional Tunisian Couscous with Dried Fruits, Egg and Meat, Covered Souk Interior with Market Stalls, Tiled Arched Gateway to the Nabeul Medina / Market Quarter, Nabeul Municipality Building (Neo-Moorish Civic Architecture), Roman Ruins of Neapolis Archaeological Site (+4 more)
 
 ### Community 138 - "Community 138"
-Cohesion: 0.26
-Nodes (11): interactive_mode(), main(), generate_camera_code(), generate_imports(), generate_scene_code(), generate_scene_file(), Generate camera setup code., Generate scene setup code based on type. (+3 more)
-
-### Community 139 - "Community 139"
 Cohesion: 0.17
 Nodes (12): scripts, build, migration:generate, migration:revert, migration:run, migration:show, seed, seed:gems (+4 more)
 
 ### Community 142 - "Community 142"
-Cohesion: 0.17
-Nodes (3): CreateReviewDto, HostReplyDto, ReviewsController
-
-### Community 144 - "Community 144"
 Cohesion: 0.20
 Nodes (12): Four Growth Pillars (viral/activation/retention/trust), Billing API (checkout/portal/upgrade), Checkout Flow (Stripe + manual pending), plan-catalog.ts (Price Book Source of Truth), ProUpgradePage React Island, Premium · Business · Admin Strategic Plan, Feature Gating Spine (billing.service, ProGate, TierBadge), Verified Business Owner Dashboard (+4 more)
 
-### Community 145 - "Community 145"
+### Community 144 - "Community 144"
 Cohesion: 0.30
 Nodes (11): format_value(), generate_js_config(), generate_react_config(), interactive_mode(), list_presets(), main(), Format configuration value for JavaScript output., Generate JavaScript AOS initialization code. (+3 more)
 
-### Community 146 - "Community 146"
+### Community 145 - "Community 145"
 Cohesion: 0.29
 Nodes (11): format_prop_value(), generate_jsx_code(), generate_tsx_code(), interactive_mode(), list_available_components(), main(), Format prop value based on type., Generate TypeScript/JSX code for component. (+3 more)
 
-### Community 147 - "Community 147"
-Cohesion: 0.29
-Nodes (5): AdminModule, AuditInterceptor, inferTargetType(), AuditLog, GemsModule
+### Community 146 - "Community 146"
+Cohesion: 0.26
+Nodes (11): interactive_mode(), main(), generate_camera_code(), generate_imports(), generate_scene_code(), generate_scene_file(), Generate camera setup code., Generate scene setup code based on type. (+3 more)
 
-### Community 148 - "Community 148"
+### Community 147 - "Community 147"
 Cohesion: 0.23
 Nodes (9): ARTICLES, CACHE, leadImage(), readCache(), resolveAll(), ROOT, SEED_FILES, sleep() (+1 more)
 
 ### Community 149 - "Community 149"
-Cohesion: 0.29
-Nodes (11): CATEGORIES array (events.ts), Event category palette (loop-aligned), Explore category palette, Explore↔Mood tint loop, categoryColors OKLCH-literal map (map.ts), Custom SVG markers + pulse, Dual color-delivery path rationale, --mood-tint inline token (+3 more)
-
-### Community 150 - "Community 150"
-Cohesion: 0.20
-Nodes (11): overflow-menu rule (§9), Avatar dropdown menu, Mobile bottom nav (5 tabs), Mobile hamburger drawer, initScrollNav() scroll-state (main.ts), Top nav (.nav, glass background), Navigation chrome (global nav), Bell + badge flash animation (+3 more)
-
-### Community 151 - "Community 151"
-Cohesion: 0.18
-Nodes (6): BENEFITS, BUSINESS_TYPES, PARTNER_LOGOS, STEPS, TESTIMONIALS, TIERS
-
-### Community 152 - "Community 152"
-Cohesion: 0.22
-Nodes (11): AI Planner Active-Link State (orange accent + underline indicator), e-Tunisia Brand Logo and Wordmark, Command Palette Pattern (Cmd+K keyboard shortcut affordance), Dark-Theme Navbar Design with Single Orange Accent Color, Nav Surfaces Core Product Areas (Map, AI Planner, Itineraries, Collections promoted to top-level), Global Search Input ('Search anything...' with Cmd+K shortcut hint), e-Tunisia Top Navigation Bar (dark theme), Notification Bell Icon (+3 more)
-
-### Community 153 - "Community 153"
-Cohesion: 0.22
-Nodes (7): ENDORSEMENT_TOPICS, EndorsementTopic, TOPIC_BY_ID, EndorseModal(), Props, TopEndorsementsStrip(), TOPIC_ICON
-
-### Community 154 - "Community 154"
-Cohesion: 0.27
-Nodes (8): GOVERNORATE_BY_ID, esc(), MOTIFS, renderStampSVG(), stampSlam(), StampSlamOptions, StampOptions, titleSize()
-
-### Community 155 - "Community 155"
-Cohesion: 0.18
-Nodes (7): Archetype, ARCHETYPES, BY_SLUG, Option, Question, QUESTIONS, Slug
-
-### Community 156 - "Community 156"
-Cohesion: 0.22
-Nodes (11): CTA Row (Request a quote), Place Detail Hero (Ken Burns), Inquiry Modal (openInquiryModal), Place Detail Page, Reviews List + Host Reply, Verified-Booking Badge, Global UserActionMenu (data-user-* contract), trip-cart-ui (Global Floating Cart) (+3 more)
-
-### Community 157 - "Community 157"
-Cohesion: 0.25
-Nodes (11): Emoji-to-Lucide Removal (MASTER §4), Premium / Pro Upgrade Page, Avatar Edit Overlay, Profile Completeness Meter, Profile Edit Page, Settings Page, Custom iOS-style Toggle Switch, Utility-Page Quiet Layout (no hero) (+3 more)
-
-### Community 158 - "Community 158"
 Cohesion: 0.33
 Nodes (10): main(), generate_custom_timeline(), generate_timeline(), interactive_mode(), list_presets(), print_header(), List all available timeline presets, Generate timeline code for given preset (+2 more)
 
-### Community 160 - "Community 160"
-Cohesion: 0.24
-Nodes (9): GovernorateAlbum(), CITY_ALIASES, COMBINING, deaccent(), Governorate, GOVERNORATES, governoratesFromCities(), Motif (+1 more)
+### Community 151 - "Community 151"
+Cohesion: 0.29
+Nodes (11): CATEGORIES array (events.ts), Event category palette (loop-aligned), Explore category palette, Explore↔Mood tint loop, categoryColors OKLCH-literal map (map.ts), Custom SVG markers + pulse, Dual color-delivery path rationale, --mood-tint inline token (+3 more)
 
-### Community 161 - "Community 161"
-Cohesion: 0.31
-Nodes (10): assemblePassport (UsersService), Passport Cache (5min TTL + invalidation), PassportDto + deriveLevel, User Handle (public URL-safe identifier), OG Postcard Service (satori + resvg), Reserved Handles Blocklist, Tunisia Passport Phase 1 — Implementation Plan, Tunisia Passport — Phase 1 Design Spec (+2 more)
+### Community 152 - "Community 152"
+Cohesion: 0.20
+Nodes (11): overflow-menu rule (§9), Avatar dropdown menu, Mobile bottom nav (5 tabs), Mobile hamburger drawer, initScrollNav() scroll-state (main.ts), Top nav (.nav, glass background), Navigation chrome (global nav), Bell + badge flash animation (+3 more)
+
+### Community 153 - "Community 153"
+Cohesion: 0.27
+Nodes (4): I18nController, I18nModule, I18nService, LANG_NAMES
+
+### Community 154 - "Community 154"
+Cohesion: 0.22
+Nodes (11): AI Planner Active-Link State (orange accent + underline indicator), e-Tunisia Brand Logo and Wordmark, Command Palette Pattern (Cmd+K keyboard shortcut affordance), Dark-Theme Navbar Design with Single Orange Accent Color, Nav Surfaces Core Product Areas (Map, AI Planner, Itineraries, Collections promoted to top-level), Global Search Input ('Search anything...' with Cmd+K shortcut hint), e-Tunisia Top Navigation Bar (dark theme), Notification Bell Icon (+3 more)
+
+### Community 155 - "Community 155"
+Cohesion: 0.18
+Nodes (6): BENEFITS, BUSINESS_TYPES, PARTNER_LOGOS, STEPS, TESTIMONIALS, TIERS
+
+### Community 156 - "Community 156"
+Cohesion: 0.22
+Nodes (7): ENDORSEMENT_TOPICS, EndorsementTopic, TOPIC_BY_ID, EndorseModal(), Props, TopEndorsementsStrip(), TOPIC_ICON
+
+### Community 157 - "Community 157"
+Cohesion: 0.22
+Nodes (11): CTA Row (Request a quote), Place Detail Hero (Ken Burns), Inquiry Modal (openInquiryModal), Place Detail Page, Reviews List + Host Reply, Verified-Booking Badge, Global UserActionMenu (data-user-* contract), trip-cart-ui (Global Floating Cart) (+3 more)
+
+### Community 158 - "Community 158"
+Cohesion: 0.25
+Nodes (11): Emoji-to-Lucide Removal (MASTER §4), Premium / Pro Upgrade Page, Avatar Edit Overlay, Profile Completeness Meter, Profile Edit Page, Settings Page, Custom iOS-style Toggle Switch, Utility-Page Quiet Layout (no hero) (+3 more)
+
+### Community 159 - "Community 159"
+Cohesion: 0.22
+Nodes (5): CompleteOpts, LlmMessage, LlmResult, LlmService, LlmTool
 
 ### Community 162 - "Community 162"
-Cohesion: 0.33
-Nodes (9): generate_preset_json(), interactive_mode(), main(), print_preset_info(), print_usage_example(), Print information about a preset., Generate preset JSON configuration., Print usage example for the generated preset. (+1 more)
-
-### Community 163 - "Community 163"
-Cohesion: 0.27
-Nodes (8): buildToast(), ensureContainer(), ICONS, initToasts(), showToast(), toast, ToastOptions, ToastType
-
-### Community 164 - "Community 164"
 Cohesion: 0.20
 Nodes (7): Embedded Travel Dataset (DATA: 120 gems, 8 regions, 7 itineraries, tips; compiled 2026-06), Tunisia 120 Hidden Gems Photo Gallery (self-contained viewer), Eight-Region Tunisia Taxonomy (tunis-cap, cap-bon, bizerte-north, northwest, centre-sahel, jerid-sahara, dahar-ksour, djerba-south), Wikimedia Commons Photo Attribution Policy, Search Overlay (trending Tunisian destinations), gemsData, GemSeed
 
+### Community 163 - "Community 163"
+Cohesion: 0.29
+Nodes (8): clamp(), isPro(), MenuPanel(), Position, positionFromAnchor(), profileHref(), profileUrl(), UserMenuPayload
+
+### Community 164 - "Community 164"
+Cohesion: 0.31
+Nodes (10): assemblePassport (UsersService), Passport Cache (5min TTL + invalidation), PassportDto + deriveLevel, User Handle (public URL-safe identifier), OG Postcard Service (satori + resvg), Reserved Handles Blocklist, Tunisia Passport Phase 1 — Implementation Plan, Tunisia Passport — Phase 1 Design Spec (+2 more)
+
 ### Community 165 - "Community 165"
+Cohesion: 0.33
+Nodes (9): generate_preset_json(), interactive_mode(), main(), print_preset_info(), print_usage_example(), Print information about a preset., Generate preset JSON configuration., Print usage example for the generated preset. (+1 more)
+
+### Community 166 - "Community 166"
+Cohesion: 0.27
+Nodes (8): buildToast(), ensureContainer(), ICONS, initToasts(), showToast(), toast, ToastOptions, ToastType
+
+### Community 167 - "Community 167"
 Cohesion: 0.39
 Nodes (9): Adobe Watchtower with Stone Base and Arched Doorways, Curved Date Palm Tree, Desert Camp / Eco-Lodge Grounds, Ksar Ghilane Desert Oasis, Oasis Vegetation (Olive Trees and Desert Shrubs), Ksar Ghilane Oasis Photo, Saharan Vernacular Architecture (Southern Tunisia), Sandy Path with Footprints (+1 more)
 
-### Community 166 - "Community 166"
+### Community 168 - "Community 168"
 Cohesion: 0.42
 Nodes (8): main(), generate_animation(), interactive_mode(), list_animation_types(), print_header(), List all available animation types, Generate animation code for given type, Run in interactive mode
-
-### Community 167 - "Community 167"
-Cohesion: 0.28
-Nodes (9): Missing createBooking API, AI Travel Planner (OpenAI GPT-4o), Platform Architecture Overview, Booking Engine (Expedia Core), Marketplace & Ads Commerce Engine, Payments (Stripe + Mock Mode), Complete Platform Transformation Summary, Revenue Streams (Bookings, Subscriptions, Marketplace, Ads) (+1 more)
-
-### Community 168 - "Community 168"
-Cohesion: 0.33
-Nodes (9): Backend Tests & Build Job, API Service Container, Docker Compose Dev Override (Watch Mode), Docker Compose (API + Postgres + Redis + MinIO), MinIO Service (S3 Storage), PostgreSQL Service (postgres:16-alpine), Redis Service (redis:7-alpine), Database Migration Infrastructure (+1 more)
 
 ### Community 169 - "Community 169"
 Cohesion: 0.31
 Nodes (9): Post card (.post-card-v2), is-pro Pro flair convention (§12), is-pro post variant rules, Connect step (suggested users), Passport hero + meta chips, Search page (#/search), data-user-* attribute contract, TierBadge mini-circle vocabulary (+1 more)
 
-### Community 171 - "Community 171"
-Cohesion: 0.31
-Nodes (5): avatarFor(), groupByDay(), MessagesPage(), subRouteOf(), ThreadPane()
-
-### Community 172 - "Community 172"
-Cohesion: 0.31
-Nodes (6): BADGE_DISPLAY_ORDER, BadgeDisplay, BADGES, BadgeGrid(), ICON_MAP, Props
-
-### Community 173 - "Community 173"
-Cohesion: 0.28
-Nodes (8): export_all_web(), export_mobile_optimized(), main(), print_texture_sets(), Export with aggressive mobile optimization.      Features:     - 512×512 reso, Print all texture sets in the current project., Main entry point when script is executed directly., Export all texture sets with web-optimized settings.      Args:         expor
-
-### Community 174 - "Community 174"
+### Community 170 - "Community 170"
 Cohesion: 0.22
 Nodes (8): AIItinerary, AssistAction, ChatMessage, GroundedPlace, GUEST_AI_DAILY, ItineraryDay, KNOWN_CATEGORIES, LANG_NAMES
 
-### Community 175 - "Community 175"
+### Community 171 - "Community 171"
+Cohesion: 0.36
+Nodes (8): chargeCurrency(), PLAN_CATALOG, toStripeMinorUnits(), CYCLES, ensurePrice(), ensureProduct(), main(), Stripe
+
+### Community 172 - "Community 172"
+Cohesion: 0.28
+Nodes (9): Missing createBooking API, AI Travel Planner (OpenAI GPT-4o), Platform Architecture Overview, Booking Engine (Expedia Core), Marketplace & Ads Commerce Engine, Payments (Stripe + Mock Mode), Complete Platform Transformation Summary, Revenue Streams (Bookings, Subscriptions, Marketplace, Ads) (+1 more)
+
+### Community 173 - "Community 173"
+Cohesion: 0.33
+Nodes (9): Backend Tests & Build Job, API Service Container, Docker Compose Dev Override (Watch Mode), Docker Compose (API + Postgres + Redis + MinIO), MinIO Service (S3 Storage), PostgreSQL Service (postgres:16-alpine), Redis Service (redis:7-alpine), Database Migration Infrastructure (+1 more)
+
+### Community 174 - "Community 174"
+Cohesion: 0.31
+Nodes (6): BADGE_DISPLAY_ORDER, BadgeDisplay, BADGES, BadgeGrid(), ICON_MAP, Props
+
+### Community 176 - "Community 176"
+Cohesion: 0.28
+Nodes (8): export_all_web(), export_mobile_optimized(), main(), print_texture_sets(), Export with aggressive mobile optimization.      Features:     - 512×512 reso, Print all texture sets in the current project., Main entry point when script is executed directly., Export all texture sets with web-optimized settings.      Args:         expor
+
+### Community 177 - "Community 177"
 Cohesion: 0.31
 Nodes (8): bool, str, float, generate_transition(), interactive_mode(), main(), Generate transition code based on type and options., Run generator in interactive mode with prompts.
 
-### Community 177 - "Community 177"
-Cohesion: 0.25
-Nodes (8): Frontend Build Job, e-Tunisia CI/CD Workflow, NestJS Backend API, Flutter Mobile App (Original), e-Tunisia README, Web App (Vite + TypeScript), Technology Stack (NestJS + React 19 + PostgreSQL/Redis), Mobile App (React Native / Capacitor)
-
-### Community 179 - "Community 179"
+### Community 180 - "Community 180"
 Cohesion: 0.29
 Nodes (8): DM bubble shapes (mine/theirs), Messages inbox (#/messages), Presence dot (pulsing), ActiveConversationsRail + Launcher, ChatPopupManager, Presence-dot raw-OKLCH deviation, Messenger surfaces (chat popups + widgets), Shimmer skeleton pattern (200% sweep)
 
-### Community 180 - "Community 180"
+### Community 181 - "Community 181"
 Cohesion: 0.25
 Nodes (8): Compose box (.compose-v2), Feed page (#/), FeedRightRail / TunisiaNowPanel, Nature Distilled style (§2a), Onboarding progress indicator, Onboarding step model (Welcome→Done), Onboarding wizard (#/onboarding), 72px accent-light icon-chip empty state
 
-### Community 181 - "Community 181"
+### Community 182 - "Community 182"
 Cohesion: 0.25
-Nodes (3): PassportTabs(), Props, Tab
+Nodes (8): Frontend Build Job, e-Tunisia CI/CD Workflow, NestJS Backend API, Flutter Mobile App (Original), e-Tunisia README, Web App (Vite + TypeScript), Technology Stack (NestJS + React 19 + PostgreSQL/Redis), Mobile App (React Native / Capacitor)
 
 ### Community 183 - "Community 183"
-Cohesion: 0.29
-Nodes (8): Gold Gradient Border Primitive, Own Profile Page, Pro Flair (gold ring + sparkles), Quick Links Grid (data-tint palette), Tier System (tierFor helper), Action Row Variants (self/other/guest), Follow Button (hover-rename to Unfollow), Public User Profile Page
+Cohesion: 0.25
+Nodes (8): Parchment Fog-of-Exploration Map, Photo: Chott el Djerid Salt Lake (Kais photographies), Photo: Djerbahood 'THE HOOD' Sign, Erriadh (Galerie Itinerrance), Photo: El Jem Amphitheatre (Carole Raddato), Photo: Great Mosque of Kairouan (Marek Szarejko), Photo: Medina of Tunis Rooftops (IssamBarhoumi), Photo: Sidi Bou Said Blue Doors (M. M. Mosbah), La Traversee Pinned Map Scene
 
 ### Community 184 - "Community 184"
 Cohesion: 0.25
-Nodes (8): 8 Starter Badges, Backend Badge Definitions + BadgesService, Tips Category Palette (Events/Explore/Mood loop), tunisia-travel-data.json (machine-readable companion), Tunisia: 120 Hidden Gems Travel Guide, 8 Regions of Hidden Gems, Travel Guide Sources (web research), Traveller Tips (money/safety/transport/etiquette)
+Nodes (3): PassportTabs(), Props, Tab
+
+### Community 185 - "Community 185"
+Cohesion: 0.29
+Nodes (8): Gold Gradient Border Primitive, Own Profile Page, Pro Flair (gold ring + sparkles), Quick Links Grid (data-tint palette), Tier System (tierFor helper), Action Row Variants (self/other/guest), Follow Button (hover-rename to Unfollow), Public User Profile Page
 
 ### Community 186 - "Community 186"
-Cohesion: 0.43
-Nodes (7): generate_html(), interactive_mode(), list_templates(), main(), List all available templates., Generate HTML from template., Run interactive HTML generator.
-
-### Community 187 - "Community 187"
-Cohesion: 0.46
-Nodes (6): createDemoObjects(), initApp(), setupScene(), setupUI(), update(), updateStats()
+Cohesion: 0.25
+Nodes (8): 8 Starter Badges, Backend Badge Definitions + BadgesService, Tips Category Palette (Events/Explore/Mood loop), tunisia-travel-data.json (machine-readable companion), Tunisia: 120 Hidden Gems Travel Guide, 8 Regions of Hidden Gems, Travel Guide Sources (web research), Traveller Tips (money/safety/transport/etiquette)
 
 ### Community 188 - "Community 188"
 Cohesion: 0.43
-Nodes (7): interactive_mode(), main(), print_magic_ui_instructions(), print_react_bits_instructions(), Print installation instructions for Magic UI component., Print installation instructions for React Bits component., Run interactive component selector.
+Nodes (7): generate_html(), interactive_mode(), list_templates(), main(), List all available templates., Generate HTML from template., Run interactive HTML generator.
 
 ### Community 189 - "Community 189"
-Cohesion: 0.36
-Nodes (7): generate_animation(), generate_imports(), generate_wrapper(), main(), Generate GSAP animation code based on arguments., Generate import statements based on framework., Wrap code with framework-specific setup.
+Cohesion: 0.46
+Nodes (6): createDemoObjects(), initApp(), setupScene(), setupUI(), update(), updateStats()
 
 ### Community 190 - "Community 190"
 Cohesion: 0.43
-Nodes (7): generate_imports(), generate_mesh_code(), interactive_mode(), main(), Generate mesh creation code., Generate imports for mesh builders., Interactive CLI for mesh building.
+Nodes (7): interactive_mode(), main(), print_magic_ui_instructions(), print_react_bits_instructions(), Print installation instructions for Magic UI component., Print installation instructions for React Bits component., Run interactive component selector.
 
 ### Community 191 - "Community 191"
-Cohesion: 0.32
-Nodes (7): main(), optimize_lottie(), optimize_object(), Round number to specified precision., Recursively optimize object by rounding numbers., Optimize Lottie JSON file., round_number()
+Cohesion: 0.36
+Nodes (7): generate_animation(), generate_imports(), generate_wrapper(), main(), Generate GSAP animation code based on arguments., Generate import statements based on framework., Wrap code with framework-specific setup.
 
 ### Community 192 - "Community 192"
 Cohesion: 0.43
-Nodes (7): generate_pattern(), interactive_mode(), list_patterns(), main(), List all available patterns., Generate pattern code., Interactive pattern generation.
+Nodes (7): generate_imports(), generate_mesh_code(), interactive_mode(), main(), Generate mesh creation code., Generate imports for mesh builders., Interactive CLI for mesh building.
 
 ### Community 193 - "Community 193"
-Cohesion: 0.43
-Nodes (6): t(), buildMenu(), getCity(), initCityFilter(), renderPillLabel(), setCity()
+Cohesion: 0.32
+Nodes (7): main(), optimize_lottie(), optimize_object(), Round number to specified precision., Recursively optimize object by rounding numbers., Optimize Lottie JSON file., round_number()
 
-### Community 195 - "Community 195"
-Cohesion: 0.48
-Nodes (3): isHandleFormatValid(), isHandleReserved(), RESERVED_HANDLES
+### Community 194 - "Community 194"
+Cohesion: 0.43
+Nodes (7): generate_pattern(), interactive_mode(), list_patterns(), main(), List all available patterns., Generate pattern code., Interactive pattern generation.
 
 ### Community 196 - "Community 196"
-Cohesion: 0.38
-Nodes (5): coverOf(), DIFF_TINT, diffStyle(), ItineraryModal(), mockItineraries
-
-### Community 197 - "Community 197"
-Cohesion: 0.33
-Nodes (4): Sort, SORT_TABS, timeAgo(), TripCard()
-
-### Community 198 - "Community 198"
 Cohesion: 0.43
 Nodes (5): ago(), Entry, shortDate(), summarize(), TunisiaPulse()
 
+### Community 197 - "Community 197"
+Cohesion: 0.48
+Nodes (3): isHandleFormatValid(), isHandleReserved(), RESERVED_HANDLES
+
+### Community 198 - "Community 198"
+Cohesion: 0.38
+Nodes (5): coverOf(), DIFF_TINT, diffStyle(), ItineraryModal(), mockItineraries
+
 ### Community 199 - "Community 199"
+Cohesion: 0.33
+Nodes (4): Sort, SORT_TABS, timeAgo(), TripCard()
+
+### Community 200 - "Community 200"
+Cohesion: 0.33
+Nodes (5): ICON, Opt, TransportOptions(), useMoney(), Earnings()
+
+### Community 201 - "Community 201"
 Cohesion: 0.43
 Nodes (6): Bbox, latToTileY(), lonToTileX(), prefetchTripOffline(), TILE_HOSTS, tilesForBbox()
 
-### Community 200 - "Community 200"
+### Community 202 - "Community 202"
 Cohesion: 0.38
 Nodes (6): init_skill(), main(), # TODO: Add actual script logic here, Convert hyphenated skill name to Title Case for display., Initialize a new skill directory with template SKILL.md.      Args:         s, title_case_skill_name()
 
-### Community 201 - "Community 201"
+### Community 203 - "Community 203"
 Cohesion: 0.33
 Nodes (5): main(), package_skill(), Package a skill folder into a zip file.      Args:         skill_path: Path t, Basic validation of a skill, validate_skill()
 
-### Community 202 - "Community 202"
+### Community 204 - "Community 204"
 Cohesion: 0.33
 Nodes (5): collection, compilerOptions, deleteOutDir, $schema, sourceRoot
 
-### Community 204 - "Community 204"
-Cohesion: 0.40
-Nodes (4): CityCoord, TUNISIA_CITIES, Props, TunisiaMap()
-
 ### Community 205 - "Community 205"
-Cohesion: 0.40
-Nodes (4): Cond, DailyForecast, WeatherBadge(), wmo()
+Cohesion: 0.53
+Nodes (5): bootstrap(), backfillHandles(), candidateFromName(), randomSuffix(), backfillPlaceVisits()
 
 ### Community 207 - "Community 207"
+Cohesion: 0.40
+Nodes (4): avatarFallback(), Interest, INTERESTS, OnboardingPage()
+
+### Community 210 - "Community 210"
 Cohesion: 0.53
 Nodes (5): generate_component(), interactive_mode(), main(), Run interactive mode to gather component parameters., Generate component code based on parameters.
 
-### Community 208 - "Community 208"
+### Community 211 - "Community 211"
 Cohesion: 0.53
 Nodes (5): generate_animation(), interactive_mode(), main(), Generate React Spring animation code., Run generator in interactive mode.
 
-### Community 209 - "Community 209"
-Cohesion: 0.40
-Nodes (5): Earned-First Sorting (Motivational), Badges Page Design, BullMQ Queue Workers (6 Processors), Challenges, Streaks & Leaderboards (Viral Engine), Passport 2.0 (Social Currency)
-
-### Community 210 - "Community 210"
+### Community 212 - "Community 212"
 Cohesion: 0.50
 Nodes (5): Anon CTA pill, Profile completion bar (owner), PassportPage.tsx (React island), Passport page (#/u/<handle>), user-profile.ts (lightweight profile)
 
-### Community 212 - "Community 212"
-Cohesion: 0.40
-Nodes (3): PRIVACY, Section, TERMS
-
 ### Community 213 - "Community 213"
-Cohesion: 0.50
-Nodes (4): PlanLike, Props, resolvePlan(), TierBadge()
+Cohesion: 0.40
+Nodes (5): Earned-First Sorting (Motivational), Badges Page Design, BullMQ Queue Workers (6 Processors), Challenges, Streaks & Leaderboards (Viral Engine), Passport 2.0 (Social Currency)
 
-### Community 214 - "Community 214"
+### Community 215 - "Community 215"
 Cohesion: 0.60
 Nodes (3): fmtDate(), InquiryCard(), timeAgo()
 
-### Community 215 - "Community 215"
+### Community 216 - "Community 216"
+Cohesion: 0.40
+Nodes (3): PRIVACY, Section, TERMS
+
+### Community 217 - "Community 217"
+Cohesion: 0.50
+Nodes (4): PlanLike, Props, resolvePlan(), TierBadge()
+
+### Community 218 - "Community 218"
 Cohesion: 0.50
 Nodes (3): CollectionModal(), mockCollections, placeCount()
 
-### Community 216 - "Community 216"
+### Community 219 - "Community 219"
 Cohesion: 0.50
 Nodes (4): ReactionType, CreatePostDto, ReactPostDto, VotePostDto
 
-### Community 217 - "Community 217"
+### Community 220 - "Community 220"
 Cohesion: 0.40
 Nodes (5): computedHash, skillPath, source, sourceType, gsap-scrolltrigger
 
-### Community 218 - "Community 218"
+### Community 221 - "Community 221"
 Cohesion: 0.40
 Nodes (5): computedHash, skillPath, source, sourceType, lightweight-3d-effects
 
-### Community 219 - "Community 219"
+### Community 222 - "Community 222"
 Cohesion: 0.40
 Nodes (5): computedHash, skillPath, source, sourceType, pixijs-2d
 
-### Community 220 - "Community 220"
+### Community 223 - "Community 223"
 Cohesion: 0.40
 Nodes (5): computedHash, skillPath, source, sourceType, playcanvas-engine
 
-### Community 221 - "Community 221"
+### Community 224 - "Community 224"
 Cohesion: 0.40
 Nodes (5): computedHash, skillPath, source, sourceType, react-three-fiber
 
-### Community 222 - "Community 222"
+### Community 225 - "Community 225"
 Cohesion: 0.40
 Nodes (5): computedHash, skillPath, source, sourceType, aframe-webxr
 
-### Community 223 - "Community 223"
+### Community 226 - "Community 226"
 Cohesion: 0.40
 Nodes (5): computedHash, skillPath, source, sourceType, animated-component-libraries
 
-### Community 224 - "Community 224"
+### Community 227 - "Community 227"
 Cohesion: 0.40
 Nodes (5): computedHash, skillPath, source, sourceType, animejs
 
-### Community 225 - "Community 225"
+### Community 228 - "Community 228"
 Cohesion: 0.40
 Nodes (5): computedHash, skillPath, source, sourceType, babylonjs-engine
 
-### Community 226 - "Community 226"
+### Community 229 - "Community 229"
 Cohesion: 0.40
 Nodes (5): computedHash, skillPath, source, sourceType, barba-js
 
-### Community 227 - "Community 227"
+### Community 230 - "Community 230"
 Cohesion: 0.40
 Nodes (5): computedHash, skillPath, source, sourceType, blender-web-pipeline
 
-### Community 228 - "Community 228"
+### Community 231 - "Community 231"
 Cohesion: 0.40
 Nodes (5): computedHash, skillPath, source, sourceType, gsap-core
 
-### Community 229 - "Community 229"
+### Community 232 - "Community 232"
 Cohesion: 0.40
 Nodes (5): computedHash, skillPath, source, sourceType, gsap-frameworks
 
-### Community 230 - "Community 230"
+### Community 233 - "Community 233"
 Cohesion: 0.40
 Nodes (5): computedHash, skillPath, source, sourceType, gsap-performance
 
-### Community 231 - "Community 231"
+### Community 234 - "Community 234"
 Cohesion: 0.40
 Nodes (5): computedHash, skillPath, source, sourceType, gsap-plugins
 
-### Community 232 - "Community 232"
+### Community 235 - "Community 235"
 Cohesion: 0.40
 Nodes (5): computedHash, skillPath, source, sourceType, gsap-react
 
-### Community 233 - "Community 233"
+### Community 236 - "Community 236"
 Cohesion: 0.40
 Nodes (5): computedHash, skillPath, source, sourceType, gsap-timeline
 
-### Community 234 - "Community 234"
+### Community 237 - "Community 237"
 Cohesion: 0.40
 Nodes (5): computedHash, skillPath, source, sourceType, gsap-utils
 
-### Community 235 - "Community 235"
+### Community 238 - "Community 238"
 Cohesion: 0.40
 Nodes (5): computedHash, skillPath, source, sourceType, locomotive-scroll
 
-### Community 236 - "Community 236"
+### Community 239 - "Community 239"
 Cohesion: 0.40
 Nodes (5): computedHash, skillPath, source, sourceType, lottie-animations
 
-### Community 237 - "Community 237"
+### Community 240 - "Community 240"
 Cohesion: 0.40
 Nodes (5): computedHash, skillPath, source, sourceType, modern-web-design
 
-### Community 238 - "Community 238"
+### Community 241 - "Community 241"
 Cohesion: 0.40
 Nodes (5): computedHash, skillPath, source, sourceType, motion-framer
 
-### Community 239 - "Community 239"
+### Community 242 - "Community 242"
 Cohesion: 0.40
 Nodes (5): computedHash, skillPath, source, sourceType, react-spring-physics
 
-### Community 240 - "Community 240"
+### Community 243 - "Community 243"
 Cohesion: 0.40
 Nodes (5): computedHash, skillPath, source, sourceType, rive-interactive
 
-### Community 241 - "Community 241"
+### Community 244 - "Community 244"
 Cohesion: 0.40
 Nodes (5): computedHash, skillPath, source, sourceType, scroll-reveal-libraries
 
-### Community 242 - "Community 242"
+### Community 245 - "Community 245"
 Cohesion: 0.40
 Nodes (5): computedHash, skillPath, source, sourceType, skill-creator
 
-### Community 243 - "Community 243"
+### Community 246 - "Community 246"
 Cohesion: 0.40
 Nodes (5): spline-interactive, computedHash, skillPath, source, sourceType
 
-### Community 244 - "Community 244"
+### Community 247 - "Community 247"
 Cohesion: 0.40
 Nodes (5): substance-3d-texturing, computedHash, skillPath, source, sourceType
 
-### Community 245 - "Community 245"
+### Community 248 - "Community 248"
 Cohesion: 0.40
 Nodes (5): web3d-integration-patterns, computedHash, skillPath, source, sourceType
 
-### Community 246 - "Community 246"
+### Community 249 - "Community 249"
 Cohesion: 0.40
 Nodes (5): web-design-guidelines, computedHash, skillPath, source, sourceType
 
-### Community 247 - "Community 247"
+### Community 250 - "Community 250"
 Cohesion: 0.40
 Nodes (5): threejs-webgl, computedHash, skillPath, source, sourceType
 
-### Community 248 - "Community 248"
+### Community 251 - "Community 251"
 Cohesion: 0.60
 Nodes (3): addSprites(), clearSprites(), updateSpriteCount()
 
-### Community 249 - "Community 249"
-Cohesion: 0.40
-Nodes (5): Parchment Fog-of-Exploration Map, Landing ULTRA 'Le Carnet Vivant', La Traversee Pinned Map Scene, Paper Physics Motion Grammar, One Living Carnet Strategy
-
-### Community 250 - "Community 250"
+### Community 253 - "Community 253"
 Cohesion: 0.67
 Nodes (3): generate_component(), main(), Generate component code
 
-### Community 251 - "Community 251"
+### Community 254 - "Community 254"
 Cohesion: 0.67
 Nodes (3): main(), Create complete project structure with all necessary files, create_project_structure()
 
-### Community 252 - "Community 252"
-Cohesion: 0.50
-Nodes (4): Short-Form Video (Reels/TikTok Parity), Snap Map for Travelers (Differentiator), Stories as Primary UI, Winning Formula: Instagram for Travel + Snap Map + TikTok
-
-### Community 254 - "Community 254"
+### Community 256 - "Community 256"
 Cohesion: 0.50
 Nodes (4): Medal system (Lucide rank chips), no-emoji-icons rule (§4), Search emoji-removal summary, Passport icon-discipline emoji fix
 
-### Community 255 - "Community 255"
-Cohesion: 0.83
-Nodes (3): backfillHandles(), candidateFromName(), randomSuffix()
-
 ### Community 257 - "Community 257"
+Cohesion: 0.50
+Nodes (4): Short-Form Video (Reels/TikTok Parity), Snap Map for Travelers (Differentiator), Stories as Primary UI, Winning Formula: Instagram for Travel + Snap Map + TikTok
+
+### Community 259 - "Community 259"
 Cohesion: 0.50
 Nodes (4): googleLogin(), login(), register(), setToken()
 
-### Community 259 - "Community 259"
+### Community 261 - "Community 261"
 Cohesion: 0.67
 Nodes (3): generate_scene(), main(), Generate Three.js scene code based on arguments.
 
-### Community 265 - "Community 265"
+### Community 267 - "Community 267"
 Cohesion: 0.67
 Nodes (3): Cold-Start Growth Flywheel, Lead With the Tool, Not the Network, 24 Governorate Stamp Set
 
-### Community 267 - "Community 267"
+### Community 269 - "Community 269"
 Cohesion: 0.67
 Nodes (3): e-Tunisia App Icon (Map Pin + Tunisia Silhouette), Tunisian Flag Crescent Badge, Tunisia Country Silhouette Motif
 
-### Community 270 - "Community 270"
+### Community 272 - "Community 272"
 Cohesion: 0.67
 Nodes (3): donate-modal Component, Share-your-tip Gold CTA (only filled gold in app), Credits Page (gold wallet)
 
-### Community 271 - "Community 271"
+### Community 273 - "Community 273"
 Cohesion: 0.67
 Nodes (3): e-Tunisia Platform, Kill Remaining Fakery (Trust Audit), Tiered Roadmap (Tier 0 Trust First)
 
-### Community 275 - "Community 275"
+### Community 277 - "Community 277"
 Cohesion: 0.67
 Nodes (3): Aghlabid Basins, url, via
 
-### Community 276 - "Community 276"
+### Community 278 - "Community 278"
 Cohesion: 0.67
 Nodes (3): Ain Draham, url, via
 
-### Community 277 - "Community 277"
+### Community 279 - "Community 279"
 Cohesion: 0.67
 Nodes (3): Amphitheatre of El Jem, url, via
 
-### Community 278 - "Community 278"
+### Community 280 - "Community 280"
 Cohesion: 0.67
 Nodes (3): Anantara Tozeur Resort, url, via
 
-### Community 279 - "Community 279"
-Cohesion: 0.67
-Nodes (3): Bardo National Museum, url, via
-
-### Community 280 - "Community 280"
-Cohesion: 0.67
-Nodes (3): Bizerte Old Port, url, via
-
 ### Community 281 - "Community 281"
 Cohesion: 0.67
-Nodes (3): Borj el Kebir (Mahdia), url, via
+Nodes (3): Bambalouni - Tunisian Doughnut, url, via
 
 ### Community 282 - "Community 282"
 Cohesion: 0.67
-Nodes (3): Bouhedma National Park, url, via
+Nodes (3): Bardo National Museum, url, via
 
 ### Community 283 - "Community 283"
 Cohesion: 0.67
-Nodes (3): Bulla Regia, url, via
+Nodes (3): Bizerte Old Port, url, via
 
 ### Community 284 - "Community 284"
 Cohesion: 0.67
-Nodes (3): Cafe des Nattes (Sidi Bou Said), url, via
+Nodes (3): Borj el Kebir (Mahdia), url, via
 
 ### Community 285 - "Community 285"
 Cohesion: 0.67
-Nodes (3): Café des Délices, url, via
+Nodes (3): Bouhedma National Park, url, via
 
 ### Community 286 - "Community 286"
 Cohesion: 0.67
-Nodes (3): Café Sidi Chabaane, url, via
+Nodes (3): Bulla Regia, url, via
 
 ### Community 287 - "Community 287"
 Cohesion: 0.67
-Nodes (3): Cap Angela, url, via
+Nodes (3): Cafe des Nattes (Sidi Bou Said), url, via
 
 ### Community 288 - "Community 288"
 Cohesion: 0.67
-Nodes (3): Cap Bon Peninsula, url, via
+Nodes (3): Café des Délices, url, via
 
 ### Community 289 - "Community 289"
 Cohesion: 0.67
-Nodes (3): Cap Bon, url, via
+Nodes (3): Café Sidi Chabaane, url, via
 
 ### Community 290 - "Community 290"
 Cohesion: 0.67
-Nodes (3): Carpet Souks of Kairouan, url, via
+Nodes (3): Cap Angela, url, via
 
 ### Community 291 - "Community 291"
 Cohesion: 0.67
-Nodes (3): Carpet Workshop of Kairouan, url, via
+Nodes (3): Cap Bon Peninsula, url, via
 
 ### Community 292 - "Community 292"
 Cohesion: 0.67
-Nodes (3): Carthage Archaeological Site, url, via
+Nodes (3): Cap Bon, url, via
 
 ### Community 293 - "Community 293"
 Cohesion: 0.67
-Nodes (3): Carthage International Festival, url, via
+Nodes (3): Carpet Workshop of Kairouan, url, via
 
 ### Community 294 - "Community 294"
 Cohesion: 0.67
-Nodes (3): Chebika Mountain Oasis, url, via
+Nodes (3): Carthage Archaeological Site, url, via
 
 ### Community 295 - "Community 295"
 Cohesion: 0.67
-Nodes (3): Chebika Oasis, url, via
+Nodes (3): Carthage International Festival, url, via
 
 ### Community 296 - "Community 296"
 Cohesion: 0.67
-Nodes (3): Chemtou (Simitthus), url, via
+Nodes (3): Chebika Mountain Oasis, url, via
 
 ### Community 297 - "Community 297"
 Cohesion: 0.67
-Nodes (3): Chenini, url, via
+Nodes (3): Chebika Oasis, url, via
 
 ### Community 298 - "Community 298"
 Cohesion: 0.67
-Nodes (3): Chott el Djerid, url, via
+Nodes (3): Chemtou (Simitthus), url, via
 
 ### Community 299 - "Community 299"
 Cohesion: 0.67
-Nodes (3): Chott el Jerid, url, via
+Nodes (3): Chenini, url, via
 
 ### Community 300 - "Community 300"
 Cohesion: 0.67
-Nodes (3): Dar Ben Gacem, url, via
+Nodes (3): Chott el Djerid, url, via
 
 ### Community 301 - "Community 301"
 Cohesion: 0.67
-Nodes (3): Dar El Jeld Restaurant, url, via
+Nodes (3): Chott el Jerid, url, via
 
 ### Community 302 - "Community 302"
 Cohesion: 0.67
-Nodes (3): Dar El Medina, url, via
+Nodes (3): Dar Ben Gacem, url, via
 
 ### Community 303 - "Community 303"
 Cohesion: 0.67
-Nodes (3): Djerba Island, url, via
+Nodes (3): Dar El Jeld Restaurant, url, via
 
 ### Community 304 - "Community 304"
 Cohesion: 0.67
-Nodes (3): Djerbahood (Erriadh), url, via
+Nodes (3): Dar El Medina, url, via
 
 ### Community 305 - "Community 305"
 Cohesion: 0.67
-Nodes (3): Dougga (Thugga), url, via
+Nodes (3): Djerba Island, url, via
 
 ### Community 306 - "Community 306"
 Cohesion: 0.67
-Nodes (3): Douiret, url, via
+Nodes (3): Djerbahood (Erriadh), url, via
 
 ### Community 307 - "Community 307"
 Cohesion: 0.67
-Nodes (3): Douz — Gateway to the Sahara, url, via
+Nodes (3): Dougga (Thugga), url, via
 
 ### Community 308 - "Community 308"
 Cohesion: 0.67
-Nodes (3): Douz Sahara Festival, url, via
+Nodes (3): Douiret, url, via
 
 ### Community 309 - "Community 309"
 Cohesion: 0.67
-Nodes (3): El Ghriba Synagogue, url, via
+Nodes (3): Douz — Gateway to the Sahara, url, via
 
 ### Community 310 - "Community 310"
 Cohesion: 0.67
-Nodes (3): El Haouaria Caves, url, via
+Nodes (3): Douz Sahara Festival, url, via
 
 ### Community 311 - "Community 311"
 Cohesion: 0.67
-Nodes (3): El Walima, url, via
+Nodes (3): El Ghriba Synagogue, url, via
 
 ### Community 312 - "Community 312"
 Cohesion: 0.67
-Nodes (3): Fondouk El Attarine, url, via
+Nodes (3): El Haouaria Caves, url, via
 
 ### Community 313 - "Community 313"
 Cohesion: 0.67
-Nodes (3): Gammarth Beach, url, via
+Nodes (3): El Walima, url, via
 
 ### Community 314 - "Community 314"
 Cohesion: 0.67
-Nodes (3): Ghomrassen, url, via
+Nodes (3): Fondouk El Attarine, url, via
 
 ### Community 315 - "Community 315"
 Cohesion: 0.67
-Nodes (3): Great Mosque of Kairouan, url, via
+Nodes (3): Gammarth Beach, url, via
 
 ### Community 316 - "Community 316"
 Cohesion: 0.67
-Nodes (3): Guellala Heritage Museum, url, via
+Nodes (3): Ghomrassen, url, via
 
 ### Community 317 - "Community 317"
 Cohesion: 0.67
-Nodes (3): Hammamet Beach, url, via
+Nodes (3): Great Mosque of Kairouan, url, via
 
 ### Community 318 - "Community 318"
 Cohesion: 0.67
-Nodes (3): Haïdra (Ammaedara), url, via
+Nodes (3): Guellala Heritage Museum, url, via
 
 ### Community 319 - "Community 319"
 Cohesion: 0.67
-Nodes (3): Ichkeul National Park, url, via
+Nodes (3): Hammamet Beach, url, via
 
 ### Community 320 - "Community 320"
 Cohesion: 0.67
-Nodes (3): Jebel Chambi, url, via
+Nodes (3): Haïdra (Ammaedara), url, via
 
 ### Community 321 - "Community 321"
 Cohesion: 0.67
-Nodes (3): Kairouan Great Mosque, url, via
+Nodes (3): Ichkeul National Park, url, via
 
 ### Community 322 - "Community 322"
 Cohesion: 0.67
-Nodes (3): Kasbah of Sousse, url, via
+Nodes (3): Jebel Chambi, url, via
 
 ### Community 323 - "Community 323"
 Cohesion: 0.67
-Nodes (3): Kasbah of Tunis, url, via
+Nodes (3): Kairouan Great Mosque, url, via
 
 ### Community 324 - "Community 324"
 Cohesion: 0.67
-Nodes (3): Kerkennah Islands, url, via
+Nodes (3): Kasbah of Sousse, url, via
 
 ### Community 325 - "Community 325"
 Cohesion: 0.67
-Nodes (3): Kerkouane, url, via
+Nodes (3): Kasbah of Tunis, url, via
 
 ### Community 326 - "Community 326"
 Cohesion: 0.67
-Nodes (3): Korbous Thermal Baths, url, via
+Nodes (3): Kerkennah Islands, url, via
 
 ### Community 327 - "Community 327"
 Cohesion: 0.67
-Nodes (3): Ksar Ghilane, url, via
+Nodes (3): Kerkouane, url, via
 
 ### Community 328 - "Community 328"
 Cohesion: 0.67
-Nodes (3): Ksar Ghilane Oasis, url, via
+Nodes (3): Korbous Thermal Baths, url, via
 
 ### Community 329 - "Community 329"
 Cohesion: 0.67
-Nodes (3): Ksar Hadada, url, via
+Nodes (3): Ksar Ghilane, url, via
 
 ### Community 330 - "Community 330"
 Cohesion: 0.67
-Nodes (3): Ksar Ouled Soltane, url, via
+Nodes (3): Ksar Ghilane Oasis, url, via
 
 ### Community 331 - "Community 331"
 Cohesion: 0.67
-Nodes (3): La Badira Hotel, url, via
+Nodes (3): Ksar Hadada, url, via
 
 ### Community 332 - "Community 332"
 Cohesion: 0.67
-Nodes (3): La Marsa Beach, url, via
+Nodes (3): Ksar Ouled Soltane, url, via
 
 ### Community 333 - "Community 333"
 Cohesion: 0.67
-Nodes (3): La Marsa Promenade, url, via
+Nodes (3): La Badira Hotel, url, via
 
 ### Community 334 - "Community 334"
 Cohesion: 0.67
-Nodes (3): Lablabi Street Food, url, via
+Nodes (3): La Marsa Beach, url, via
 
 ### Community 335 - "Community 335"
 Cohesion: 0.67
-Nodes (3): Mahdia Old Town, url, via
+Nodes (3): La Marsa Promenade, url, via
 
 ### Community 336 - "Community 336"
 Cohesion: 0.67
-Nodes (3): Maktar (Mactaris), url, via
+Nodes (3): Lablabi Street Food, url, via
 
 ### Community 337 - "Community 337"
 Cohesion: 0.67
-Nodes (3): Marché Central de Tunis, url, via
+Nodes (3): Mahdia Old Town, url, via
 
 ### Community 338 - "Community 338"
 Cohesion: 0.67
-Nodes (3): Matmata (Troglodyte Homes), url, via
+Nodes (3): Maktar (Mactaris), url, via
 
 ### Community 339 - "Community 339"
 Cohesion: 0.67
-Nodes (3): Matmata (Troglodyte Houses), url, via
+Nodes (3): Marché Central de Tunis, url, via
 
 ### Community 340 - "Community 340"
 Cohesion: 0.67
-Nodes (3): Matmata Troglodyte Village, url, via
+Nodes (3): Matmata (Troglodyte Homes), url, via
 
 ### Community 341 - "Community 341"
 Cohesion: 0.67
-Nodes (3): Mausoleum of Habib Bourguiba, url, via
+Nodes (3): Matmata (Troglodyte Houses), url, via
 
 ### Community 342 - "Community 342"
 Cohesion: 0.67
-Nodes (3): Medina of Kairouan, url, via
+Nodes (3): Matmata Troglodyte Village, url, via
 
 ### Community 343 - "Community 343"
 Cohesion: 0.67
-Nodes (3): Medina of Sousse, url, via
+Nodes (3): Mausoleum of Habib Bourguiba, url, via
 
 ### Community 344 - "Community 344"
 Cohesion: 0.67
-Nodes (3): Medina of Tunis, url, via
+Nodes (3): Medina of Kairouan, url, via
 
 ### Community 345 - "Community 345"
 Cohesion: 0.67
-Nodes (3): Medina of Tunis Souks, url, via
+Nodes (3): Medina of Sousse, url, via
 
 ### Community 346 - "Community 346"
 Cohesion: 0.67
-Nodes (3): Mos Espa Set, url, via
+Nodes (3): Medina of Tunis, url, via
 
 ### Community 347 - "Community 347"
 Cohesion: 0.67
-Nodes (3): Mosque of the Three Doors, url, via
+Nodes (3): Medina of Tunis Souks, url, via
 
 ### Community 348 - "Community 348"
 Cohesion: 0.67
-Nodes (3): Nabeul Pottery Market, url, via
+Nodes (3): Mos Espa Set, url, via
 
 ### Community 349 - "Community 349"
 Cohesion: 0.67
-Nodes (3): Ong Jemal, url, via
+Nodes (3): Mosque of the Three Doors, url, via
 
 ### Community 350 - "Community 350"
 Cohesion: 0.67
-Nodes (3): Oudhna (Uthina), url, via
+Nodes (3): Nabeul Pottery Market, url, via
 
 ### Community 351 - "Community 351"
 Cohesion: 0.67
-Nodes (3): Oued Zitoun Waterfalls, url, via
+Nodes (3): Ong Jemal, url, via
 
 ### Community 352 - "Community 352"
 Cohesion: 0.67
-Nodes (3): Port El Kantaoui, url, via
+Nodes (3): Oudhna (Uthina), url, via
 
 ### Community 353 - "Community 353"
 Cohesion: 0.67
-Nodes (3): Ribat of Monastir, url, via
+Nodes (3): Oued Zitoun Waterfalls, url, via
 
 ### Community 354 - "Community 354"
 Cohesion: 0.67
-Nodes (3): Ribat of Sousse, url, via
+Nodes (3): Port El Kantaoui, url, via
 
 ### Community 355 - "Community 355"
 Cohesion: 0.67
-Nodes (3): Sbeitla (Sufetula), url, via
+Nodes (3): Ribat of Monastir, url, via
 
 ### Community 356 - "Community 356"
 Cohesion: 0.67
-Nodes (3): Sidi Bou Said, url, via
+Nodes (3): Ribat of Sousse, url, via
 
 ### Community 357 - "Community 357"
 Cohesion: 0.67
-Nodes (3): Souk El Berka (Slave Market), url, via
+Nodes (3): Sbeitla (Sufetula), url, via
 
 ### Community 358 - "Community 358"
 Cohesion: 0.67
-Nodes (3): Tabarka, url, via
+Nodes (3): Sidi Bou Said, url, via
 
 ### Community 359 - "Community 359"
 Cohesion: 0.67
-Nodes (3): Tabarka & Coral Coast, url, via
+Nodes (3): Souk El Berka (Slave Market), url, via
 
 ### Community 360 - "Community 360"
 Cohesion: 0.67
-Nodes (3): Tabarka Jazz Festival, url, via
+Nodes (3): Tabarka, url, via
 
 ### Community 361 - "Community 361"
 Cohesion: 0.67
-Nodes (3): Takrouna Berber Village, url, via
+Nodes (3): Tabarka & Coral Coast, url, via
 
 ### Community 362 - "Community 362"
 Cohesion: 0.67
-Nodes (3): Tamerza Canyon, url, via
+Nodes (3): Tabarka Jazz Festival, url, via
 
 ### Community 363 - "Community 363"
 Cohesion: 0.67
-Nodes (3): Tamezret, url, via
+Nodes (3): Takrouna Berber Village, url, via
 
 ### Community 364 - "Community 364"
 Cohesion: 0.67
-Nodes (3): The Residence Tunis, url, via
+Nodes (3): Tamerza Canyon, url, via
 
 ### Community 365 - "Community 365"
 Cohesion: 0.67
-Nodes (3): Thuburbo Majus, url, via
+Nodes (3): Tamezret, url, via
 
 ### Community 366 - "Community 366"
 Cohesion: 0.67
-Nodes (3): Toujane, url, via
+Nodes (3): The Residence Tunis, url, via
 
 ### Community 367 - "Community 367"
 Cohesion: 0.67
-Nodes (3): Tozeur Oasis, url, via
+Nodes (3): Thuburbo Majus, url, via
 
 ### Community 368 - "Community 368"
 Cohesion: 0.67
-Nodes (3): Utica, url, via
+Nodes (3): Toujane, url, via
 
 ### Community 369 - "Community 369"
 Cohesion: 0.67
-Nodes (3): Younga (Iunca Maritima), url, via
+Nodes (3): Tozeur Oasis, url, via
 
 ### Community 370 - "Community 370"
+Cohesion: 0.67
+Nodes (3): Utica, url, via
+
+### Community 371 - "Community 371"
+Cohesion: 0.67
+Nodes (3): Younga (Iunca Maritima), url, via
+
+### Community 372 - "Community 372"
 Cohesion: 0.67
 Nodes (3): Zaghouan Water Temple, url, via
 
@@ -1761,7 +1771,7 @@ Nodes (3): Zaghouan Water Temple, url, via
   ULTRA_PRO_UPGRADE_PLAN.md · relation: conceptually_related_to
 
 ## Knowledge Gaps
-- **1111 isolated node(s):** `scene`, `name`, `private`, `version`, `type` (+1106 more)
+- **1126 isolated node(s):** `scene`, `name`, `private`, `version`, `type` (+1121 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **59 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
@@ -1774,11 +1784,11 @@ _Questions this graph is uniquely positioned to answer:_
   _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
 - **What is the exact relationship between `Flutter Mobile App (Original)` and `Mobile App (React Native / Capacitor)`?**
   _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
-- **Why does `BillingService` connect `Community 40` to `Analytics & AI Modules`, `Community 102`, `Community 174`, `Community 14`, `Community 86`, `Community 23`, `Community 56`?**
+- **Why does `BillingService` connect `Community 17` to `Activity Feed UI`, `Auth & Notifications`, `Community 104`, `Community 40`, `Community 170`, `Community 60`?**
   _High betweenness centrality (0.152) - this node is a cross-community bridge._
-- **Why does `User` connect `Analytics & AI Modules` to `Feed & Places Backend`, `Auth & Notifications`, `Community 14`, `Community 17`, `Community 18`, `Community 147`, `Community 20`, `Community 23`, `Community 24`, `Community 25`, `Community 29`, `Community 38`, `Community 40`, `Community 170`, `Community 49`, `Community 58`, `Community 60`, `Community 68`, `Community 70`, `Community 73`, `Community 78`, `Community 82`, `Community 90`, `Community 97`, `Community 102`, `Community 255`?**
+- **Why does `User` connect `Activity Feed UI` to `Landing Choreography (Carnet Vivant)`, `Auth & Notifications`, `3D Camera Controller`, `Community 14`, `Community 15`, `Community 17`, `Community 21`, `Community 22`, `Community 23`, `Community 24`, `Community 29`, `Community 30`, `Community 38`, `Community 40`, `Community 46`, `Community 47`, `Community 54`, `Community 55`, `Community 61`, `Community 62`, `Community 65`, `Community 72`, `Community 73`, `Community 205`, `Community 85`, `Community 98`, `Community 104`?**
   _High betweenness centrality (0.076) - this node is a cross-community bridge._
-- **Why does `BatchInquiryModal()` connect `Community 56` to `Community 50`?**
+- **Why does `BatchInquiryModal()` connect `Community 60` to `Community 92`?**
   _High betweenness centrality (0.042) - this node is a cross-community bridge._
 - **What connects `scene`, `Generate basic component template`, `Generate interactive component with events` to the rest of the system?**
-  _1419 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _1435 weakly-connected nodes found - possible documentation gaps or missing edges._
