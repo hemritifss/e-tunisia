@@ -190,6 +190,8 @@ loading indicator identity (subtle ink-fill animation).
    Ambassador titles as embossed seals per city.
 7. **Louage tickets** (`LouagePage`) — the transport lookup renders results as real louage
    tickets (stub + perforation). Peak Tunisia; zero competitors.
+   **✓ SHIPPED Jul 13 2026** — see `design-system/pages/louage.md` (mode stripes match
+   real louage livery; TripPage keeps the compact list).
 8. **Empty states = blank journal pages** — faint page rules + Caveat prompt
    ("This page is still blank…" / "هذه الصفحة مازالت فارغة") + one letterpress CTA.
 9. **Pencil-sketch skeletons** — loading states as faint pencil layout drawings.
