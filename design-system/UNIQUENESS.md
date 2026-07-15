@@ -223,6 +223,15 @@ loading indicator identity (subtle ink-fill animation).
     `currentRoute()` (hash is normalized onto pathname). Tracks `404_view`.
 11. **Onboarding = "Start your carnet"** — pick interests as sticker sheet, first check-in
     tutorial ends with the user's first stamp.
+    **✓ SHIPPED Jul 15 2026 (the ceremony):** `PassportOnboarding` step 3 no longer ends on
+    a Star badge + rainbow confetti (both retired). It stamps the card **CARNET OUVERT** with
+    the traveler's first name + today's date, then "Your carnet is open." over a Caveat
+    "page one — the rest of Tunisia is yours to fill." **Design note: the stamp thunks onto
+    the card, NOT via the full-screen `stampSlam` — that idiom is for check-ins; here the
+    card sits centre-screen and the slam lands right on top of the copy (caught by driving
+    the real signup).** Reuses `renderStampSVG` + the shared `stamp-thunk` keyframes;
+    reduced motion gets the settled stamp. `stampSlam()` gained a `top` option so moments can
+    re-voice the arc (defaults to KONT HOUNI). Interests-as-sticker-sheet: still TODO.
 12. **Pro upsell = First Class** (`ProUpgradePage`) — gilt-edged page, gold ticket, no neon.
 
 ---
