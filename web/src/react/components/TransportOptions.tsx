@@ -32,11 +32,13 @@ export function TransportOptions({
   const money = useMoney();
   const { data } = useQuery({
     queryKey: ['transport', from.join(','), to.join(','), fromCity, toCity],
-    queryFn: () => {
+    queryFn: async () => {
       const qs = new URLSearchParams({ from: from.join(','), to: to.join(',') });
       if (fromCity) qs.set('fromCity', fromCity);
       if (toCity) qs.set('toCity', toCity);
-      return fetch(`/api/v1/routing/transport?${qs.toString()}`).then((r) => r.json());
+      const json = await fetch(`/api/v1/routing/transport?${qs.toString()}`).then((r) => r.json());
+      // The API wraps payloads in { success, data } — unwrap either shape.
+      return json?.data ?? json;
     },
     staleTime: 60 * 60_000,
   });
