@@ -81,10 +81,43 @@ export class OgController {
             title: place ? `${place.name} — ${place.city}, Tunisia` : 'Discover Tunisia',
             description: (place as any)?.description?.slice(0, 200)
                 || 'Places, tips and reviews from travelers across Tunisia.',
-            image: this.absolutize(place?.coverImage || place?.images?.[0], req),
+            // Branded carnet postcard (falls back to the raw photo if it can't render).
+            image: place
+                ? `${this.apiOrigin(req)}/api/v1/og/place/${encodeURIComponent(id)}/image.png`
+                : this.absolutize(place?.coverImage || place?.images?.[0], req),
             canonical: `${this.webOrigin()}/place/${encodeURIComponent(id)}`,
             largeCard: true,
         }));
+    }
+
+    /** 1200×630 carnet postcard for a place share. */
+    @Get('place/:id/image.png')
+    @Header('Content-Type', 'image/png')
+    @Header('Cache-Control', 'public, max-age=86400, stale-while-revalidate=604800')
+    async placeImage(@Param('id') id: string, @Req() req: Request, @Res() res: Response) {
+        const place = await this.places.findOne({ where: { id } }).catch(() => null);
+        const rawPhoto = this.absolutize(place?.coverImage || place?.images?.[0], req);
+        try {
+            if (!place) throw new Error('not found');
+            res.send(await this.og.renderPlacePostcard({
+                id: place.id,
+                name: place.name,
+                city: place.city,
+                governorate: place.governorate,
+                rating: place.rating,
+                reviewCount: place.reviewCount,
+                imageUrl: rawPhoto,
+            }));
+        } catch {
+            // Postcard render failed — fall back to the raw photo so the social
+            // preview still shows something, not a blank pixel.
+            if (rawPhoto) { res.redirect(302, rawPhoto); return; }
+            res.setHeader('Content-Type', 'image/png');
+            res.send(Buffer.from(
+                '89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c4890000000a49444154789c63000000000200015c34a40d0000000049454e44ae426082',
+                'hex',
+            ));
+        }
     }
 
     @Get('post/:id')
@@ -96,10 +129,41 @@ export class OgController {
         res.send(renderOgHtml({
             title: post?.title || (author ? `${author} on e-Tunisia` : 'A moment from Tunisia'),
             description: post?.body?.slice(0, 200) || 'Shared on e-Tunisia — Tunisia, told by the people who live it.',
-            image: this.absolutize(post?.images?.[0] || post?.author?.avatar, req),
+            // Postcard from the traveler when the post has a photo; else the raw avatar.
+            image: post?.images?.length
+                ? `${this.apiOrigin(req)}/api/v1/og/post/${encodeURIComponent(id)}/image.png`
+                : this.absolutize(post?.author?.avatar, req),
             canonical: `${this.webOrigin()}/post/${encodeURIComponent(id)}`,
             largeCard: !!post?.images?.length,
         }));
+    }
+
+    /** 1200×630 carnet postcard for a post share. */
+    @Get('post/:id/image.png')
+    @Header('Content-Type', 'image/png')
+    @Header('Cache-Control', 'public, max-age=86400, stale-while-revalidate=604800')
+    async postImage(@Param('id') id: string, @Req() req: Request, @Res() res: Response) {
+        const post = await this.posts.findOne({ where: { id } }).catch(() => null);
+        const rawPhoto = this.absolutize(post?.images?.[0], req);
+        try {
+            if (!post) throw new Error('not found');
+            res.send(await this.og.renderPostPostcard({
+                id: post.id,
+                title: post.title,
+                body: post.body,
+                location: post.location,
+                authorName: post.author?.fullName,
+                authorHandle: post.author?.handle,
+                imageUrl: rawPhoto,
+            }));
+        } catch {
+            if (rawPhoto) { res.redirect(302, rawPhoto); return; }
+            res.setHeader('Content-Type', 'image/png');
+            res.send(Buffer.from(
+                '89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c4890000000a49444154789c63000000000200015c34a40d0000000049454e44ae426082',
+                'hex',
+            ));
+        }
     }
 
     @Get('trip/:slug')
@@ -124,10 +188,42 @@ export class OgController {
             description: trip
                 ? `${parts.join(' · ')}. See the route, drive times and stops on e-Tunisia.`
                 : 'Build a day-by-day Tunisia itinerary with real road routes — free on e-Tunisia.',
-            image: this.absolutize(cover, req),
+            // The route as a carnet postcard when the trip has any stop cover.
+            image: cover
+                ? `${this.apiOrigin(req)}/api/v1/og/trip/${encodeURIComponent(slug)}/image.png`
+                : null,
             canonical: `${this.webOrigin()}/trip/${encodeURIComponent(slug)}`,
             largeCard: !!cover,
         }));
+    }
+
+    /** 1200×630 carnet postcard for a trip share. */
+    @Get('trip/:slug/image.png')
+    @Header('Content-Type', 'image/png')
+    @Header('Cache-Control', 'public, max-age=3600, stale-while-revalidate=86400')
+    async tripImage(@Param('slug') slug: string, @Req() req: Request, @Res() res: Response) {
+        const trip = await this.trips.findOne({ where: { slug } }).catch(() => null);
+        const stops = Array.isArray(trip?.stops) ? trip!.stops : [];
+        const rawCover = this.absolutize(stops.map((s) => s.placeCover).find(Boolean), req);
+        try {
+            if (!trip) throw new Error('not found');
+            res.send(await this.og.renderTripPostcard({
+                slug: trip.slug,
+                title: trip.title,
+                days: trip.days || 1,
+                stops: stops.map((s) => ({
+                    placeCity: s.placeCity,
+                    placeCover: this.absolutize(s.placeCover, req) || undefined,
+                })),
+            }));
+        } catch {
+            if (rawCover) { res.redirect(302, rawCover); return; }
+            res.setHeader('Content-Type', 'image/png');
+            res.send(Buffer.from(
+                '89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c4890000000a49444154789c63000000000200015c34a40d0000000049454e44ae426082',
+                'hex',
+            ));
+        }
     }
 
     /** "Which Tunisian city are you?" quiz result — crawler-visible preview

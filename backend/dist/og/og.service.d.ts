@@ -11,6 +11,9 @@ export declare class OgService implements OnModuleInit {
     private readonly logger;
     private regular;
     private bold;
+    private fraunces;
+    private caveat;
+    private kufi;
     onModuleInit(): Promise<void>;
     private loadFont;
     private fetchBinary;
@@ -39,5 +42,36 @@ export declare class OgService implements OnModuleInit {
             contributors: number;
             gems: number;
         };
+    }): Promise<Buffer>;
+    private fetchImageDataUri;
+    private fetchImage;
+    private buildPostcard;
+    private rasterize;
+    renderPlacePostcard(p: {
+        id: string;
+        name: string;
+        city?: string;
+        governorate?: string;
+        rating?: number;
+        reviewCount?: number;
+        imageUrl?: string | null;
+    }): Promise<Buffer>;
+    renderPostPostcard(p: {
+        id: string;
+        title?: string;
+        body?: string;
+        location?: string;
+        authorName?: string;
+        authorHandle?: string;
+        imageUrl?: string | null;
+    }): Promise<Buffer>;
+    renderTripPostcard(t: {
+        slug: string;
+        title: string;
+        days: number;
+        stops: Array<{
+            placeCity?: string;
+            placeCover?: string;
+        }>;
     }): Promise<Buffer>;
 }

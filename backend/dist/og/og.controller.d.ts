@@ -23,8 +23,11 @@ export declare class OgController {
     private absolutize;
     user(rawHandle: string, req: Request, res: Response): Promise<void>;
     place(id: string, req: Request, res: Response): Promise<void>;
+    placeImage(id: string, req: Request, res: Response): Promise<void>;
     post(id: string, req: Request, res: Response): Promise<void>;
+    postImage(id: string, req: Request, res: Response): Promise<void>;
     trip(slug: string, req: Request, res: Response): Promise<void>;
+    tripImage(slug: string, req: Request, res: Response): Promise<void>;
     cityQuiz(rawSlug: string, req: Request, res: Response): Promise<void>;
     cityQuizImage(rawSlug: string, res: Response): Promise<void>;
     wrappedOg(rawHandle: string, req: Request, res: Response): Promise<void>;

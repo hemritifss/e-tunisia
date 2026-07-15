@@ -70,10 +70,37 @@ let OgController = class OgController {
             title: place ? `${place.name} — ${place.city}, Tunisia` : 'Discover Tunisia',
             description: place?.description?.slice(0, 200)
                 || 'Places, tips and reviews from travelers across Tunisia.',
-            image: this.absolutize(place?.coverImage || place?.images?.[0], req),
+            image: place
+                ? `${this.apiOrigin(req)}/api/v1/og/place/${encodeURIComponent(id)}/image.png`
+                : this.absolutize(place?.coverImage || place?.images?.[0], req),
             canonical: `${this.webOrigin()}/place/${encodeURIComponent(id)}`,
             largeCard: true,
         }));
+    }
+    async placeImage(id, req, res) {
+        const place = await this.places.findOne({ where: { id } }).catch(() => null);
+        const rawPhoto = this.absolutize(place?.coverImage || place?.images?.[0], req);
+        try {
+            if (!place)
+                throw new Error('not found');
+            res.send(await this.og.renderPlacePostcard({
+                id: place.id,
+                name: place.name,
+                city: place.city,
+                governorate: place.governorate,
+                rating: place.rating,
+                reviewCount: place.reviewCount,
+                imageUrl: rawPhoto,
+            }));
+        }
+        catch {
+            if (rawPhoto) {
+                res.redirect(302, rawPhoto);
+                return;
+            }
+            res.setHeader('Content-Type', 'image/png');
+            res.send(Buffer.from('89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c4890000000a49444154789c63000000000200015c34a40d0000000049454e44ae426082', 'hex'));
+        }
     }
     async post(id, req, res) {
         const post = await this.posts.findOne({ where: { id } }).catch(() => null);
@@ -81,10 +108,37 @@ let OgController = class OgController {
         res.send(renderOgHtml({
             title: post?.title || (author ? `${author} on e-Tunisia` : 'A moment from Tunisia'),
             description: post?.body?.slice(0, 200) || 'Shared on e-Tunisia — Tunisia, told by the people who live it.',
-            image: this.absolutize(post?.images?.[0] || post?.author?.avatar, req),
+            image: post?.images?.length
+                ? `${this.apiOrigin(req)}/api/v1/og/post/${encodeURIComponent(id)}/image.png`
+                : this.absolutize(post?.author?.avatar, req),
             canonical: `${this.webOrigin()}/post/${encodeURIComponent(id)}`,
             largeCard: !!post?.images?.length,
         }));
+    }
+    async postImage(id, req, res) {
+        const post = await this.posts.findOne({ where: { id } }).catch(() => null);
+        const rawPhoto = this.absolutize(post?.images?.[0], req);
+        try {
+            if (!post)
+                throw new Error('not found');
+            res.send(await this.og.renderPostPostcard({
+                id: post.id,
+                title: post.title,
+                body: post.body,
+                location: post.location,
+                authorName: post.author?.fullName,
+                authorHandle: post.author?.handle,
+                imageUrl: rawPhoto,
+            }));
+        }
+        catch {
+            if (rawPhoto) {
+                res.redirect(302, rawPhoto);
+                return;
+            }
+            res.setHeader('Content-Type', 'image/png');
+            res.send(Buffer.from('89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c4890000000a49444154789c63000000000200015c34a40d0000000049454e44ae426082', 'hex'));
+        }
     }
     async trip(slug, req, res) {
         const trip = await this.trips.findOne({ where: { slug } }).catch(() => null);
@@ -105,10 +159,38 @@ let OgController = class OgController {
             description: trip
                 ? `${parts.join(' · ')}. See the route, drive times and stops on e-Tunisia.`
                 : 'Build a day-by-day Tunisia itinerary with real road routes — free on e-Tunisia.',
-            image: this.absolutize(cover, req),
+            image: cover
+                ? `${this.apiOrigin(req)}/api/v1/og/trip/${encodeURIComponent(slug)}/image.png`
+                : null,
             canonical: `${this.webOrigin()}/trip/${encodeURIComponent(slug)}`,
             largeCard: !!cover,
         }));
+    }
+    async tripImage(slug, req, res) {
+        const trip = await this.trips.findOne({ where: { slug } }).catch(() => null);
+        const stops = Array.isArray(trip?.stops) ? trip.stops : [];
+        const rawCover = this.absolutize(stops.map((s) => s.placeCover).find(Boolean), req);
+        try {
+            if (!trip)
+                throw new Error('not found');
+            res.send(await this.og.renderTripPostcard({
+                slug: trip.slug,
+                title: trip.title,
+                days: trip.days || 1,
+                stops: stops.map((s) => ({
+                    placeCity: s.placeCity,
+                    placeCover: this.absolutize(s.placeCover, req) || undefined,
+                })),
+            }));
+        }
+        catch {
+            if (rawCover) {
+                res.redirect(302, rawCover);
+                return;
+            }
+            res.setHeader('Content-Type', 'image/png');
+            res.send(Buffer.from('89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c4890000000a49444154789c63000000000200015c34a40d0000000049454e44ae426082', 'hex'));
+        }
     }
     async cityQuiz(rawSlug, req, res) {
         const slug = (rawSlug || '').toLowerCase();
@@ -219,6 +301,17 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], OgController.prototype, "place", null);
 __decorate([
+    (0, common_1.Get)('place/:id/image.png'),
+    (0, common_1.Header)('Content-Type', 'image/png'),
+    (0, common_1.Header)('Cache-Control', 'public, max-age=86400, stale-while-revalidate=604800'),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Req)()),
+    __param(2, (0, common_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object, Object]),
+    __metadata("design:returntype", Promise)
+], OgController.prototype, "placeImage", null);
+__decorate([
     (0, common_1.Get)('post/:id'),
     (0, common_1.Header)('Content-Type', 'text/html; charset=utf-8'),
     (0, common_1.Header)('Cache-Control', 'public, max-age=3600, stale-while-revalidate=86400'),
@@ -230,6 +323,17 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], OgController.prototype, "post", null);
 __decorate([
+    (0, common_1.Get)('post/:id/image.png'),
+    (0, common_1.Header)('Content-Type', 'image/png'),
+    (0, common_1.Header)('Cache-Control', 'public, max-age=86400, stale-while-revalidate=604800'),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Req)()),
+    __param(2, (0, common_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object, Object]),
+    __metadata("design:returntype", Promise)
+], OgController.prototype, "postImage", null);
+__decorate([
     (0, common_1.Get)('trip/:slug'),
     (0, common_1.Header)('Content-Type', 'text/html; charset=utf-8'),
     (0, common_1.Header)('Cache-Control', 'public, max-age=3600, stale-while-revalidate=86400'),
@@ -240,6 +344,17 @@ __decorate([
     __metadata("design:paramtypes", [String, Object, Object]),
     __metadata("design:returntype", Promise)
 ], OgController.prototype, "trip", null);
+__decorate([
+    (0, common_1.Get)('trip/:slug/image.png'),
+    (0, common_1.Header)('Content-Type', 'image/png'),
+    (0, common_1.Header)('Cache-Control', 'public, max-age=3600, stale-while-revalidate=86400'),
+    __param(0, (0, common_1.Param)('slug')),
+    __param(1, (0, common_1.Req)()),
+    __param(2, (0, common_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object, Object]),
+    __metadata("design:returntype", Promise)
+], OgController.prototype, "tripImage", null);
 __decorate([
     (0, common_1.Get)('city-quiz/:slug'),
     (0, common_1.Header)('Content-Type', 'text/html; charset=utf-8'),

@@ -182,7 +182,28 @@ loading indicator identity (subtle ink-fill animation).
 4. **OG postcard generator** — shares render as postcards: place photo print + city
    postmark + governorate postage stamp + user's caption in Caveat + dual-script wordmark.
    Every share becomes a brand artifact in the feed of every social network. (Extends the
-   existing ogShareUrl pipeline.)
+   existing ogShareUrl pipeline.) **✓ SHIPPED Jul 14 2026 (place shares):**
+   `GET /api/v1/og/place/:id/image.png` → carnet postcard via satori/resvg
+   (`OgService.renderPlacePostcard`): warm paper, tilted photo print (white matte + shadow),
+   Caveat "wish you were here" caption, Fraunces name, terracotta "TUNISIE Nº<gov>" postage
+   stamp, city postmark, drawn gold stars, review count, dual-script wordmark. The place OG
+   HTML now points `og:image` at it (raw-photo 302 fallback on render failure). **Caveat:
+   Arabic is omitted — satori's opentype.js crashes on Noto Kufi's ligature tables; all
+   Arabic stays guarded on a `kufi` buffer that's intentionally not loaded.** Fonts
+   (Fraunces/Caveat) vendored via the existing loadFont CDN-cache path; Wikimedia photos
+   fetched with a policy-compliant UA (generic UAs get 429'd).
+   **✓ Post shares too (same day):** `GET /api/v1/og/post/:id/image.png` →
+   `renderPostPostcard` = "a postcard from a traveler" (their photo, "greetings from <city>"
+   caption, post title in Fraunces, "— @handle · Name" as sender, governorate stamp from the
+   post's location). The layout is now a shared `buildPostcard(opts)` + `rasterize(node)`;
+   place/post both compose opts through it (title font steps down by length so it never
+   overflows). Post OG HTML points `og:image` at it when the post has a photo (avatar else).
+   **✓ Trip shares too:** `GET /api/v1/og/trip/:slug/image.png` → `renderTripPostcard` =
+   the route as a postcard (first stop's cover, "Tunis to Djerba" caption from the distinct
+   stop cities, "N days · M stops" meta, stamp from the start city's governorate).
+   **Glyph rule for OG cards — the loaded faces (Inter/Fraunces/Caveat) have NO `★`, `→` or
+   emoji: they render as tofu boxes.** Stars are drawn as SVG (`starsSvgDataUri`); routes say
+   "to", not "→". Em-dash `—` and `°` are safe. User postcards: the passport card covers it.
 5. **Trips as boarding passes** (`TripPage`, `ItinerariesPage`, `DiscoverTripsPage`) —
    already designed on landing; bring the BoardingPass component in-app. Collaborative
    trips: co-editors sign the manifest (Caveat signatures).
@@ -196,6 +217,10 @@ loading indicator identity (subtle ink-fill animation).
    ("This page is still blank…" / "هذه الصفحة مازالت فارغة") + one letterpress CTA.
 9. **Pencil-sketch skeletons** — loading states as faint pencil layout drawings.
 10. **404 / error = lost letter** — returned-to-sender envelope, stamped "ADDRESS UNKNOWN".
+    **✓ SHIPPED Jul 13 2026** — `NotFoundPage.tsx` + `not-found.css`; router previously
+    dumped unknown paths on the feed/blank, now falls through to the lost letter
+    (island catch-all in main.ts; known routes regression-checked). Reads the route via
+    `currentRoute()` (hash is normalized onto pathname). Tracks `404_view`.
 11. **Onboarding = "Start your carnet"** — pick interests as sticker sheet, first check-in
     tutorial ends with the user's first stamp.
 12. **Pro upsell = First Class** (`ProUpgradePage`) — gilt-edged page, gold ticket, no neon.
