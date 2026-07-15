@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../../shared/api';
 import { readDraft, clearDraft } from '../../passport-draft';
-import { MapPin, Star } from 'lucide-react';
+import { MapPin } from 'lucide-react';
 import { goTo } from '../../router';
+import { renderStampSVG } from '../../stamp';
 
 interface Props { handle: string; fullName: string; onDone(): void; }
 
@@ -12,7 +13,6 @@ export function PassportOnboarding({ handle, fullName, onDone }: Props) {
     const [step, setStep] = useState<1 | 2 | 3>(1);
     const [country, setCountry] = useState('Tunisia');
     const [interests, setInterests] = useState<string[]>([]);
-    const [showConfetti, setShowConfetti] = useState(false);
 
     useEffect(() => {
         const d = readDraft();
@@ -42,16 +42,24 @@ export function PassportOnboarding({ handle, fullName, onDone }: Props) {
         } catch {}
         clearDraft();
         setStep(3);
-        setShowConfetti(true);
         window.setTimeout(() => {
             goTo(`/u/${handle}`);
             onDone();
-        }, 2200);
+        }, 2600);
     };
+
+    // The ceremony (UNIQUENESS §6.11): onboarding ends with the user's first
+    // real stamp — the carnet being opened. It thunks onto the card itself
+    // rather than the full-screen slam (which is for check-ins, where nothing
+    // sits centre-screen to collide with).
+    const firstStamp = renderStampSVG({
+        top: 'CARNET OUVERT',
+        title: fullName.split(' ')[0] || handle,
+        bottom: `${new Date().toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()} · TUNISIE`,
+    });
 
     return (
         <div className="passport-onb">
-            {showConfetti && <Confetti />}
             <div className="passport-onb-card">
                 {step === 1 && (
                     <>
@@ -85,11 +93,14 @@ export function PassportOnboarding({ handle, fullName, onDone }: Props) {
                 )}
                 {step === 3 && (
                     <div className="passport-onb-celebrate">
-                        <div className="passport-onb-badge" aria-hidden="true">
-                            <Star size={32} strokeWidth={1.75} fill="currentColor" />
-                        </div>
-                        <h2>You earned <em>New Explorer</em></h2>
-                        <p>Your passport is live. Taking you there…</p>
+                        <div
+                            className="passport-onb-stamp"
+                            aria-hidden="true"
+                            dangerouslySetInnerHTML={{ __html: firstStamp }}
+                        />
+                        <h2>Your carnet is open.</h2>
+                        <p className="passport-onb-hand">page one — the rest of Tunisia is yours to fill.</p>
+                        <p className="passport-onb-taking">Taking you to your passport…</p>
                     </div>
                 )}
             </div>
@@ -97,39 +108,3 @@ export function PassportOnboarding({ handle, fullName, onDone }: Props) {
     );
 }
 
-/** Lightweight CSS-only confetti.
- *  Colors are OKLCH literals matching the brand tokens (terracotta /
- *  mediterranean / gold / cyan / violet). Inline because each piece sets
- *  its background via the `style` attribute — CSS vars would resolve but
- *  add an extra reflow per piece, so we keep them flat. */
-function Confetti() {
-    const pieces = Array.from({ length: 60 });
-    const colors = [
-        'oklch(55% 0.16 30)',   // --terracotta
-        'oklch(52% 0.14 240)',  // --mediterranean
-        'oklch(78% 0.17 80)',   // --gold
-        'oklch(72% 0.18 200)',  // --cyan
-        'oklch(58% 0.2 290)',   // --violet
-    ];
-    return (
-        <div className="confetti" aria-hidden>
-            {pieces.map((_, i) => {
-                const left = Math.random() * 100;
-                const delay = Math.random() * 0.6;
-                const dur = 1.4 + Math.random() * 1.4;
-                const bg = colors[i % colors.length];
-                return (
-                    <span
-                        key={i}
-                        style={{
-                            left: `${left}%`,
-                            animationDelay: `${delay}s`,
-                            animationDuration: `${dur}s`,
-                            background: bg,
-                        }}
-                    />
-                );
-            })}
-        </div>
-    );
-}

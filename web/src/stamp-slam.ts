@@ -9,6 +9,9 @@ import { renderStampSVG } from './stamp';
 export interface StampSlamOptions {
   title: string;
   city?: string;
+  /** Top arc text; defaults to the check-in's "KONT HOUNI".
+   *  Other moments re-voice it (e.g. onboarding stamps "CARNET OUVERT"). */
+  top?: string;
   /** Bottom arc text; defaults to today's date · TUNISIE. */
   bottom?: string;
   /** Governorate motif glyph engraved on the stamp. */
@@ -35,7 +38,7 @@ export function stampSlam(opts: StampSlamOptions): void {
     <div class="stamp-slam-stage">
       <span class="stamp-slam-ripple" aria-hidden="true"></span>
       <div class="stamp-slam-disc">
-        ${renderStampSVG({ title: opts.title, city: opts.city, bottom: opts.bottom || `${dateStr} · TUNISIE`, motif: opts.motif })}
+        ${renderStampSVG({ title: opts.title, city: opts.city, top: opts.top, bottom: opts.bottom || `${dateStr} · TUNISIE`, motif: opts.motif })}
       </div>
     </div>`;
   document.body.appendChild(overlay);

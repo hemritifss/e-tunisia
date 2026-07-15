@@ -16774,7 +16774,36 @@ section[class^="hero-"] {
 .passport-chip { padding: 8px 14px; border-radius: 999px; border: 1px solid var(--border, #e5e7eb); background: transparent; cursor: pointer; font-size: 14px; color: var(--text-primary); transition: all 120ms; }
 .passport-chip:hover { border-color: #d4623a; }
 .passport-chip.on { background: #0b1e3f; color: #fff; border-color: #0b1e3f; }
-.passport-onb-celebrate { text-align: center; }
+.passport-onb-celebrate { text-align: center; padding: 8px 0 4px; }
+/* The first stamp thunks onto the card — the card IS the carnet page, so it
+   stamps in place rather than using the full-screen slam (that idiom is for
+   check-ins, where nothing sits centre-screen to collide with).
+   Reuses the shared `stamp-thunk` keyframes from carnet.css. */
+.passport-onb-stamp {
+    width: clamp(140px, 42%, 178px);
+    margin: 0 auto 10px;
+    color: var(--stamp-ink);
+    animation: stamp-thunk 340ms var(--ease-out) both;
+}
+.passport-onb-stamp svg { width: 100%; height: auto; display: block; }
+@media (prefers-reduced-motion: reduce) {
+    .passport-onb-stamp { animation: none; transform: rotate(-3deg); }
+}
+.passport-onb-celebrate h2 { font-family: var(--font-display); }
+.passport-onb-card .passport-onb-hand {
+    font-family: var(--font-hand);
+    font-size: 1.4rem;
+    line-height: 1.25;
+    color: var(--text-secondary);
+    margin: 10px 0 0;
+    rotate: -1deg;
+}
+.passport-onb-card .passport-onb-taking {
+    font-size: 0.82rem;
+    letter-spacing: 0.04em;
+    opacity: 0.65;
+    margin: 18px 0 0;
+}
 .passport-onb-badge { font-size: 72px; animation: badge-pop 700ms cubic-bezier(.34,1.56,.64,1); }
 @keyframes badge-pop { from { transform: scale(0.3); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
