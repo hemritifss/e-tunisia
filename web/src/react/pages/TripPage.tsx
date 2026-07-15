@@ -2,6 +2,7 @@ import '../../styles/trip-schedule.css';
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { currentUser } from '../../shared/current-user';
 import { Luggage, Send, Share2, Compass, Link as LinkIcon, Copy, X, Package, MapPin, SearchX, ShieldCheck, CheckCircle2, PlaneLanding, PlaneTakeoff, Clock, CalendarDays, Download, UserPlus, Pencil, Users } from 'lucide-react';
 import * as api from '../../api';
 import { ogShareUrl } from '../../shared/api';
@@ -172,10 +173,12 @@ function BatchInquiryModal({ trip, onClose }: { trip: any; onClose: () => void }
   const uniqueHosts = new Set(trip.stops.map((s: any) => s.placeId)).size;
 
   let prefName = '', prefEmail = '', prefPhone = '';
-  try {
-    const cached = localStorage.getItem('etunisia_user');
-    if (cached) { const u = JSON.parse(cached); prefName = u?.fullName || u?.name || ''; prefEmail = u?.email || ''; prefPhone = u?.phone || ''; }
-  } catch { /* ignore */ }
+  const cachedUser = currentUser();
+  if (cachedUser) {
+    prefName = cachedUser.fullName || cachedUser.name || '';
+    prefEmail = cachedUser.email || '';
+    prefPhone = cachedUser.phone || '';
+  }
 
   useEffect(() => {
     document.body.style.overflow = 'hidden';

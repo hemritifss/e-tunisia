@@ -117,6 +117,67 @@
     pointer-events: none;
     z-index: 0;
 }
+/* scroll HUD — an always-present, unmistakable "keep scrolling" affordance so
+   the pinned scene never reads as frozen or finished. A paper tag pinned to the
+   scene (carnet-native, no glass): animated scroll-mouse glyph + a label that
+   names the action and the stops remaining. */
+.ej-trav-hud {
+    position: absolute;
+    bottom: clamp(16px, 3.4vh, 36px);
+    left: 50%;
+    translate: -50% 0;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 18px 8px 13px;
+    background: var(--paper-print);
+    border: 1px solid var(--rule);
+    border-radius: 5px;
+    box-shadow: var(--paper-shadow);
+    pointer-events: none;
+    max-width: calc(100vw - 32px);
+}
+.ej-trav-hud-mouse {
+    flex: none;
+    width: 22px;
+    height: 34px;
+    border: 2px solid var(--ink-soft);
+    border-radius: 12px;
+    position: relative;
+}
+.ej-trav-hud-wheel {
+    position: absolute;
+    top: 6px;
+    left: 50%;
+    translate: -50% 0;
+    width: 3px;
+    height: 7px;
+    border-radius: 2px;
+    background: var(--terracotta);
+    animation: ej-trav-hud-wheel 1.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+@keyframes ej-trav-hud-wheel {
+    0%   { opacity: 0; translate: -50% -4px; }
+    28%  { opacity: 1; }
+    70%  { opacity: 1; translate: -50% 8px; }
+    100% { opacity: 0; translate: -50% 8px; }
+}
+.ej-trav-hud-label {
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    white-space: nowrap;
+    line-height: 1.2;
+}
+/* arrival: the crossing is done — nudge the eye onward, out of the pin */
+.ej-trav-hud.is-end .ej-trav-hud-label { color: var(--terracotta); }
+.ej-trav-hud.is-end .ej-trav-hud-mouse { border-color: var(--terracotta); }
+@media (prefers-reduced-motion: reduce) {
+    .ej-trav-hud-wheel { animation: none; opacity: 0.8; translate: -50% 4px; }
+}
 .ej-trav-inner {
     position: relative;
     z-index: 1;
@@ -344,6 +405,29 @@
     letter-spacing: 0.16em;
     text-transform: uppercase;
     color: var(--ink-faint);
+}
+/* route progress rail — persistent journey position so the pinned scroll
+   never reads as stuck or ended (segments fill as the crossing advances) */
+.ej-trav-progress {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    width: min(100%, 470px);
+}
+.ej-trav-progressbar {
+    display: flex;
+    gap: 6px;
+}
+.ej-trav-seg {
+    flex: 1;
+    height: 3px;
+    border-radius: 3px;
+    background: color-mix(in oklab, var(--ink) 15%, transparent);
+    transition: background 0.45s var(--ease-out);
+}
+.ej-trav-seg.is-on { background: var(--terracotta); }
+@media (prefers-reduced-motion: reduce) {
+    .ej-trav-seg { transition: none; }
 }
 .ej-trav-link {
     opacity: 0;
@@ -695,6 +779,12 @@
     .ej-trav-print img { aspect-ratio: 16 / 9; }
     .ej-trav-print figcaption .ej-hand { font-size: 1.12rem; }
     .ej-trav-panel { justify-content: flex-start; gap: var(--space-3); }
+    /* keep the HUD clear of the stacked panel / CTA */
+    .ej-trav-inner { padding-bottom: 62px; }
+    .ej-trav-hud { bottom: 10px; gap: 9px; padding: 6px 13px 6px 10px; }
+    .ej-trav-hud-mouse { width: 18px; height: 28px; border-radius: 10px; }
+    .ej-trav-hud-wheel { top: 5px; height: 6px; }
+    .ej-trav-hud-label { font-size: 0.58rem; letter-spacing: 0.1em; }
     .ej-trav-static-grid { grid-template-columns: 1fr; }
     .ej-trav-static-grid .ej-trav-map-box { position: static; }
     .ej-trav-static-grid .ej-map { max-height: 46dvh; }

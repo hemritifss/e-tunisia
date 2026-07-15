@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api, getImageUrl } from '../../shared/api';
+import { currentUser as readCurrentUser } from '../../shared/current-user';
 import { FogMap } from '../components/FogMap';
 import '../../styles/fog-map.css';
 import { BadgeGrid } from '../components/BadgeGrid';
@@ -26,12 +27,9 @@ function handleFromHash(): string {
 }
 
 function currentUser(): { id: string; handle: string | null; fullName: string } | null {
-    try {
-        const raw = localStorage.getItem('etunisia_user') || localStorage.getItem('auth_user');
-        if (!raw) return null;
-        const u = JSON.parse(raw);
-        return u && u.id ? { id: u.id, handle: u.handle ?? null, fullName: u.fullName || u.name || u.email || 'You' } : null;
-    } catch { return null; }
+    const u = readCurrentUser();
+    if (!u?.id) return null;
+    return { id: u.id, handle: u.handle ?? null, fullName: u.fullName || u.name || u.email || 'You' };
 }
 
 const THEMES: { id: string; label: string }[] = [

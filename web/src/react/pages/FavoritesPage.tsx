@@ -99,7 +99,7 @@ export default function FavoritesPage() {
               <a href={`#/place/${p.id}`} className="place-card-link">
                 <img src={placeImage(p)} alt={p.name} className="place-card-img" loading="lazy" />
                 <div className="place-card-body">
-                  <div className="place-card-category">{p.category || ''}</div>
+                  <div className="place-card-category">{p.category?.name || p.category || ''}</div>
                   <h4 className="place-card-title">{p.name}</h4>
                   <div className="place-card-location">
                     <MapPin />

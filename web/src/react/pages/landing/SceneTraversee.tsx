@@ -50,7 +50,7 @@ function StopPrint({ stop, instant = false }: { stop: (typeof TRAV_STOPS)[number
         <span className="ej-hand">{stop.caption}</span>
         <span className="ej-trav-print-meta">
           <span>{stop.coords}</span>
-          <span>photo — {stop.credit}</span>
+          {stop.credit && <span>photo — {stop.credit}</span>}
         </span>
       </figcaption>
       {place?.id && (
@@ -94,6 +94,20 @@ export default function SceneTraversee() {
 
   const stop = TRAV_STOPS[idx];
 
+  // Scroll HUD — a pinned scene reads as a frozen page, so an unmissable,
+  // always-present affordance carries the visitor the whole way: an animated
+  // scroll-mouse glyph plus a label that names exactly what to do and how much
+  // is left. The three phases answer both fears — "am I stuck?" and "did it
+  // end?" — and the arrival phase points them out of the pin.
+  const remaining = N - 1 - idx;
+  const hudPhase = idx === 0 ? 'intro' : remaining > 0 ? 'go' : 'end';
+  const hudLabel =
+    hudPhase === 'intro'
+      ? 'Scroll to travel the route'
+      : hudPhase === 'go'
+        ? `Keep scrolling · ${remaining} ${remaining === 1 ? 'stop' : 'stops'} to go`
+        : "You've arrived — keep scrolling";
+
   /* Reduced motion / no-JS-scrub fallback: the full journey, statically. */
   if (reduced) {
     return (
@@ -128,6 +142,25 @@ export default function SceneTraversee() {
         {/* desert warmth overlay */}
         <motion.div className="ej-trav-warmth" style={{ opacity: warmth }} aria-hidden="true" />
 
+        {/* scroll HUD — always present through the whole pin so the scene
+            never reads as stuck or ended; the label names the action and the
+            stops remaining, and flips to an "arrived" cue at the last stop */}
+        <div className={`ej-trav-hud is-${hudPhase}`} aria-hidden="true">
+          <span className="ej-trav-hud-mouse"><span className="ej-trav-hud-wheel" /></span>
+          <AnimatePresence mode="wait">
+            <motion.span
+              key={hudPhase}
+              className="ej-trav-hud-label"
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -5, transition: { duration: 0.16 } }}
+              transition={{ duration: 0.26, ease: EASE_SETTLE }}
+            >
+              {hudLabel}
+            </motion.span>
+          </AnimatePresence>
+        </div>
+
         <div className="ej-trav-inner">
           <header className="ej-trav-head">
             <p className="ej-kicker"><span className="ej-no">Nº 00</span> La traversée</p>
@@ -159,9 +192,23 @@ export default function SceneTraversee() {
                 >
                   <span className="ej-trav-day">{stop.day}</span>
                   <h3>{stop.name} <span className="ej-trav-ar">{stop.arabic}</span></h3>
-                  <span className="ej-trav-count">stop {String(idx + 1).padStart(2, '0')} / {String(TRAV_STOPS.length).padStart(2, '0')}</span>
                 </motion.div>
               </AnimatePresence>
+
+              {/* route progress — a stable rail (kept out of the per-stop
+                  AnimatePresence so it advances smoothly rather than flashing).
+                  Tells the visitor "you're on stop N of M, more ahead", so the
+                  pinned scroll never feels stuck or finished early. */}
+              <div className="ej-trav-progress">
+                <div className="ej-trav-progressbar" aria-hidden="true">
+                  {TRAV_STOPS.map((s, i) => (
+                    <span key={s.id} className={`ej-trav-seg${i <= idx ? ' is-on' : ''}`} />
+                  ))}
+                </div>
+                <span className="ej-trav-count">
+                  stop {String(idx + 1).padStart(2, '0')} / {String(N).padStart(2, '0')}
+                </span>
+              </div>
               <a
                 className={`ej-link ej-trav-link${idx === TRAV_STOPS.length - 1 ? ' is-shown' : ''}`}
                 href="#/itineraries"

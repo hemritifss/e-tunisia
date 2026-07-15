@@ -1,0 +1,295 @@
+/* ── Profile hover card ──────────────────────────────────────
+   Hover preview over any [data-user-id]. Pointer-only; touch
+   devices keep the long-press UserActionMenu.
+   Rendered by ProfileHoverCard.tsx.
+   ──────────────────────────────────────────────────────────── */
+
+.phc {
+    position: fixed;
+    width: 320px;
+    max-width: calc(100vw - 16px);
+    background: var(--surface-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-xl);
+    z-index: var(--z-tooltip);
+    padding: var(--space-3);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    transform-origin: top left;
+    animation: phc-in var(--duration-fast) var(--ease-spring);
+}
+
+.phc.is-flipped {
+    transform-origin: bottom left;
+}
+
+@keyframes phc-in {
+    from { transform: translateY(-4px) scale(0.97); opacity: 0; }
+    to   { transform: translateY(0)    scale(1);    opacity: 1; }
+}
+
+.phc.is-flipped {
+    animation-name: phc-in-flipped;
+}
+
+@keyframes phc-in-flipped {
+    from { transform: translateY(4px) scale(0.97); opacity: 0; }
+    to   { transform: translateY(0)   scale(1);    opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .phc { animation: none; }
+}
+
+/* ── Header ── */
+.phc-head {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    text-decoration: none;
+    color: inherit;
+    border-radius: var(--radius-md);
+}
+
+.phc-head:hover .phc-name {
+    text-decoration: underline;
+}
+
+.phc-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: var(--bg-tertiary);
+    flex: 0 0 auto;
+    display: inline-block;
+}
+
+.phc-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.phc-avatar-fallback {
+    width: 100%;
+    height: 100%;
+    display: grid;
+    place-items: center;
+    color: var(--text-secondary);
+    font-weight: 700;
+    font-size: var(--text-lg);
+    font-family: var(--font-display);
+}
+
+.phc-avatar.is-pro {
+    background: var(--gradient-gold);
+    padding: 2px;
+}
+
+.phc-avatar.is-pro img,
+.phc-avatar.is-pro .phc-avatar-fallback {
+    border-radius: 50%;
+    background: var(--surface-elevated);
+}
+
+.phc-identity {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    line-height: 1.25;
+    gap: 1px;
+}
+
+.phc-name {
+    font-size: var(--text-base);
+    font-weight: 600;
+    color: var(--text-primary);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.phc-pro {
+    color: var(--gold, #c9a227);
+    flex: 0 0 auto;
+}
+
+.phc-handle {
+    font-size: var(--text-xs);
+    color: var(--text-secondary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.phc-founder {
+    font-size: var(--text-xs);
+    color: var(--gold, #c9a227);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+/* ── Body ── */
+.phc-bio {
+    margin: 0;
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    line-height: 1.45;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.phc-meta {
+    margin: 0;
+    font-size: var(--text-xs);
+    color: var(--text-tertiary, var(--text-secondary));
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.phc-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    font-size: var(--text-xs);
+    color: var(--text-secondary);
+}
+
+.phc-stat b {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.phc-stats[aria-busy='true'] .phc-stat b {
+    opacity: 0.45;
+}
+
+/* ── Mutuals ── */
+.phc-mutuals {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding-top: var(--space-2);
+    border-top: 1px solid var(--border-light);
+}
+
+.phc-mutual-avatars {
+    display: inline-flex;
+    flex: 0 0 auto;
+}
+
+.phc-mutual-avatars img,
+.phc-mutual-fallback {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--surface-elevated);
+    background: var(--bg-tertiary);
+    display: block;
+}
+
+.phc-mutual-avatars > * + * {
+    margin-left: -7px;
+}
+
+.phc-mutual-fallback {
+    display: grid;
+    place-items: center;
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+}
+
+.phc-mutuals small {
+    font-size: var(--text-xs);
+    color: var(--text-secondary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.phc-badge-followsyou {
+    align-self: flex-start;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-sm);
+    padding: 2px 6px;
+}
+
+/* ── Actions ── */
+.phc-actions {
+    display: flex;
+    gap: var(--space-2);
+    margin-top: var(--space-1);
+}
+
+.phc-btn {
+    flex: 1 1 0;
+    min-width: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 10px;
+    font-size: var(--text-sm);
+    font-weight: 600;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: background var(--duration-fast) ease, border-color var(--duration-fast) ease;
+}
+
+.phc-btn:hover:not(:disabled) {
+    background: var(--bg-tertiary);
+}
+
+.phc-btn:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+
+.phc-btn:focus-visible {
+    outline: 2px solid var(--accent, currentColor);
+    outline-offset: 2px;
+}
+
+.phc-btn-primary {
+    background: var(--text-primary);
+    color: var(--surface-elevated);
+    border-color: var(--text-primary);
+}
+
+.phc-btn-primary:hover:not(:disabled) {
+    opacity: 0.9;
+    background: var(--text-primary);
+}
+
+/* Already following reads as the neutral/secondary state. */
+.phc-btn-primary.is-following {
+    background: var(--surface);
+    color: var(--text-primary);
+    border-color: var(--border);
+}
+
+.phc-btn-primary.is-following:hover:not(:disabled) {
+    background: var(--bg-tertiary);
+}

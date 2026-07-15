@@ -256,6 +256,26 @@ export const api = {
     fetchWithAuth(`/api/v1/stories/${id}/highlight`, { method: 'POST' }),
   getStoryHighlights: (handle: string) =>
     fetchWithAuth(`/api/v1/stories/highlights/${encodeURIComponent(handle)}`),
+  /** Set or replace your reaction. Emoji must be one of STORY_REACTIONS. */
+  reactToStory: (id: string, emoji: string) =>
+    fetchWithAuth(`/api/v1/stories/${id}/react`, {
+      method: 'POST',
+      body: JSON.stringify({ emoji }),
+    }),
+  unreactStory: (id: string) =>
+    fetchWithAuth(`/api/v1/stories/${id}/react`, { method: 'DELETE' }),
+  /** Reply to a story — delivered as a DM to the author. */
+  replyToStory: (id: string, text: string) =>
+    fetchWithAuth(`/api/v1/stories/${id}/reply`, {
+      method: 'POST',
+      body: JSON.stringify({ text }),
+    }),
+  /** Author-only: who watched a story, with their reactions. */
+  getStoryViewers: (id: string) =>
+    fetchWithAuth(`/api/v1/stories/${id}/viewers`),
+  /** Author-only: soft-delete your own story. */
+  deleteStory: (id: string) =>
+    fetchWithAuth(`/api/v1/stories/${id}`, { method: 'DELETE' }),
 
   // Credits & donations
   getMyCredits: () => fetchWithAuth('/api/v1/credits/me'),

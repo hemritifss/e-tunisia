@@ -4,6 +4,7 @@ import * as api from '../../api';
 import { isUserOnline, emitDmTyping } from '../../realtime';
 import { X, Minus, Maximize2, Send, Sparkles } from 'lucide-react';
 import { goTo, currentPath, onRouteChange } from '../../router';
+import { currentUserId } from '../../shared/current-user';
 
 /**
  * Messenger-style floating chat popups.
@@ -57,14 +58,9 @@ function isMessagesRoute(): boolean {
     return currentPath().startsWith('/messages');
 }
 
-function myId(): string | null {
-    try {
-        const raw = localStorage.getItem('etunisia_user') || localStorage.getItem('auth_user');
-        if (!raw) return null;
-        const u = JSON.parse(raw);
-        return u?.id ?? null;
-    } catch { return null; }
-}
+// Identifies which messages are "mine" vs the other participant's — a null id
+// here mislabels the whole thread. Read the canonical auth store.
+const myId = currentUserId;
 
 function timeAgoShort(d: string): string {
     if (!d) return '';

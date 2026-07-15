@@ -27,8 +27,12 @@ export class SocialService {
       throw new ConflictException('Cannot follow yourself');
     }
 
+    // `followedId` is the canonical column: both this service and the
+    // handle-based users/follows.service always write it, while `followingId`
+    // is only set here. Reads must key off followedId or they miss follows
+    // created from the profile page.
     const exists = await this.followRepo.findOne({
-      where: { followerId, followingId },
+      where: { followerId, followedId: followingId },
     });
 
     if (exists) {
@@ -65,7 +69,7 @@ export class SocialService {
 
   async unfollow(followerId: string, followingId: string): Promise<void> {
     const follow = await this.followRepo.findOne({
-      where: { followerId, followingId },
+      where: { followerId, followedId: followingId },
     });
 
     if (!follow) throw new NotFoundException('Not following this user');
@@ -78,7 +82,7 @@ export class SocialService {
 
   async getFollowers(userId: string): Promise<User[]> {
     const follows = await this.followRepo.find({
-      where: { followingId: userId },
+      where: { followedId: userId },
     });
 
     const followerIds = follows.map((f) => f.followerId);
@@ -95,7 +99,7 @@ export class SocialService {
       where: { followerId: userId },
     });
 
-    const followingIds = follows.map((f) => f.followingId);
+    const followingIds = follows.map((f) => f.followedId).filter(Boolean);
     if (followingIds.length === 0) return [];
 
     return this.userRepo.find({
@@ -106,7 +110,7 @@ export class SocialService {
 
   async isFollowing(followerId: string, followingId: string): Promise<boolean> {
     const follow = await this.followRepo.findOne({
-      where: { followerId, followingId },
+      where: { followerId, followedId: followingId },
     });
     return !!follow;
   }
@@ -116,11 +120,84 @@ export class SocialService {
     following: number;
   }> {
     const [followers, following] = await Promise.all([
-      this.followRepo.count({ where: { followingId: userId } }),
+      this.followRepo.count({ where: { followedId: userId } }),
       this.followRepo.count({ where: { followerId: userId } }),
     ]);
 
     return { followers, following };
+  }
+
+  /**
+   * Compact public profile summary for the hover card — one round-trip so a
+   * hover does not fan out into separate profile / counts / is-following calls.
+   */
+  async getProfileOverview(viewerId: string | null, targetId: string) {
+    const user = await this.userRepo.findOne({ where: { id: targetId } });
+    if (!user) throw new NotFoundException('User not found');
+
+    const isSelf = !!viewerId && viewerId === targetId;
+    const relational = !!viewerId && !isSelf;
+
+    const [counts, isFollowing, followsYou, mutuals] = await Promise.all([
+      this.getFollowCounts(targetId),
+      relational ? this.isFollowing(viewerId, targetId) : Promise.resolve(false),
+      relational ? this.isFollowing(targetId, viewerId) : Promise.resolve(false),
+      relational ? this.getMutuals(viewerId, targetId) : Promise.resolve({ count: 0, sample: [] }),
+    ]);
+
+    return {
+      id: user.id,
+      fullName: user.fullName,
+      handle: user.handle || null,
+      avatar: user.avatar || null,
+      bio: user.bio || null,
+      country: user.country || null,
+      plan: user.plan,
+      role: user.role,
+      points: user.points || 0,
+      badgeCount: Array.isArray(user.badges) ? user.badges.length : 0,
+      placesVisited: Array.isArray(user.visitedPlaceIds) ? user.visitedPlaceIds.length : 0,
+      founderNumber: user.founderNumber ?? null,
+      createdAt: user.createdAt,
+      followers: counts.followers,
+      following: counts.following,
+      isSelf,
+      isFollowing,
+      followsYou,
+      mutuals,
+    };
+  }
+
+  /** People the viewer follows who also follow the target ("mutuals"). */
+  private async getMutuals(viewerId: string, targetId: string, sampleSize = 3) {
+    const [viewerFollows, targetFollowers] = await Promise.all([
+      this.followRepo.find({ where: { followerId: viewerId }, select: ['followedId'] }),
+      this.followRepo.find({ where: { followedId: targetId }, select: ['followerId'] }),
+    ]);
+
+    const viewerFollowing = new Set(
+      viewerFollows.map((f) => f.followedId).filter((id): id is string => !!id),
+    );
+    const mutualIds = targetFollowers
+      .map((f) => f.followerId)
+      .filter((id): id is string => !!id && viewerFollowing.has(id));
+
+    if (!mutualIds.length) return { count: 0, sample: [] };
+
+    const sample = await this.userRepo.find({
+      where: { id: In(mutualIds.slice(0, sampleSize)) },
+      select: ['id', 'fullName', 'avatar', 'handle'],
+    });
+
+    return {
+      count: mutualIds.length,
+      sample: sample.map((u) => ({
+        id: u.id,
+        fullName: u.fullName,
+        avatar: u.avatar || null,
+        handle: u.handle || null,
+      })),
+    };
   }
 
   // ---- Activity Feed ----

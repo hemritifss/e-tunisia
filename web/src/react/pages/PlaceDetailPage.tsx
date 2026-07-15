@@ -2,6 +2,7 @@ import '../../styles/place-detail.css';
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, useScroll, useTransform, useReducedMotion } from 'framer-motion';
+import { currentUser } from '../../shared/current-user';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   ArrowLeft, Heart, Share2, MapPin, Star, Send, Phone, MessageCircle, ExternalLink,
@@ -224,10 +225,12 @@ function InquiryModal({ place, placeId, pkg, onClose }: { place: any; placeId: s
   const today = new Date().toISOString().slice(0, 10);
 
   let prefName = '', prefEmail = '', prefPhone = '';
-  try {
-    const cached = localStorage.getItem('etunisia_user');
-    if (cached) { const u = JSON.parse(cached); prefName = u?.fullName || u?.name || ''; prefEmail = u?.email || ''; prefPhone = u?.phone || ''; }
-  } catch { /* ignore */ }
+  const cachedUser = currentUser();
+  if (cachedUser) {
+    prefName = cachedUser.fullName || cachedUser.name || '';
+    prefEmail = cachedUser.email || '';
+    prefPhone = cachedUser.phone || '';
+  }
 
   useEffect(() => {
     document.body.style.overflow = 'hidden';

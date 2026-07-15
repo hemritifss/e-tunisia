@@ -174,7 +174,7 @@ export default function LandingPage() {
       <div data-folio="Nº 03 — pick a mood"><SceneMoods /></div>
       <div data-folio="Nº 04 — why we built this"><SceneManifesto /></div>
       <div data-folio="Nº 05 — postcards"><ScenePostcards /></div>
-      <div data-folio="✳ — the letter"><SceneLetter /></div>
+      <div data-folio="Nº 06 — the letter"><SceneLetter /></div>
       <div data-folio="the last page"><SceneFinale /></div>
 
       {/* ── Colophon ── */}

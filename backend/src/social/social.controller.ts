@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { SocialService } from './social.service';
 
@@ -65,6 +66,13 @@ export class SocialController {
   @ApiOperation({ summary: 'Check if following a user' })
   isFollowing(@CurrentUser('id') followerId: string, @Param('userId') followingId: string) {
     return this.socialService.isFollowing(followerId, followingId);
+  }
+
+  @Get('overview/:userId')
+  @UseGuards(OptionalJwtAuthGuard)
+  @ApiOperation({ summary: 'Compact profile summary for the hover card' })
+  overview(@CurrentUser('id') viewerId: string | null, @Param('userId') userId: string) {
+    return this.socialService.getProfileOverview(viewerId, userId);
   }
 
   @Get('feed')

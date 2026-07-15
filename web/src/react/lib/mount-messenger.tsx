@@ -5,6 +5,7 @@ import { queryClient } from './query-client';
 import ChatPopupManager from '../components/ChatPopupManager';
 import ActiveConversationsLauncher from '../components/ActiveConversations';
 import UserActionMenu from '../components/UserActionMenu';
+import ProfileHoverCard from '../components/ProfileHoverCard';
 import { PopupHost } from '../components/popups';
 
 /**
@@ -27,6 +28,7 @@ export function mountMessengerGlobals() {
             <ChatPopupManager />
             <ActiveConversationsLauncher />
             <UserActionMenu />
+            <ProfileHoverCard />
             <PopupHost />
         </QueryClientProvider>,
     );

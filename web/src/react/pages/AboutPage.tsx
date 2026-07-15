@@ -1,4 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
+// The .tn-landing / partner-v3 / about-v3 styles live in landing.css. It used to
+// be linked globally in index.html but was de-linked when the editorial landing
+// (.ej-*, landing-editorial.css) shipped — leaving this page unstyled. Import it
+// here so it loads with the page (same pattern as LandingPage → landing-editorial.css).
+import '../../styles/landing.css';
 
 // Rebuilt on the .tn-landing cinematic system (shares the partner-v3 photo-hero
 // template): photo hero, a story split with imagery, count-up stats, values, the

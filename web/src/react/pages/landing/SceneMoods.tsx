@@ -22,7 +22,6 @@ function Ticker() {
         {[...GOVERNORATES, ...GOVERNORATES].map((g, i) => (
           <React.Fragment key={i}>
             <span className="ej-ticker-item">{g}</span>
-            <span className="ej-ticker-sep" aria-hidden="true">✳</span>
           </React.Fragment>
         ))}
       </div>

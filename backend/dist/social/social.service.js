@@ -35,7 +35,7 @@ let SocialService = class SocialService {
             throw new common_1.ConflictException('Cannot follow yourself');
         }
         const exists = await this.followRepo.findOne({
-            where: { followerId, followingId },
+            where: { followerId, followedId: followingId },
         });
         if (exists) {
             throw new common_1.ConflictException('Already following this user');
@@ -57,7 +57,7 @@ let SocialService = class SocialService {
     }
     async unfollow(followerId, followingId) {
         const follow = await this.followRepo.findOne({
-            where: { followerId, followingId },
+            where: { followerId, followedId: followingId },
         });
         if (!follow)
             throw new common_1.NotFoundException('Not following this user');
@@ -67,7 +67,7 @@ let SocialService = class SocialService {
     }
     async getFollowers(userId) {
         const follows = await this.followRepo.find({
-            where: { followingId: userId },
+            where: { followedId: userId },
         });
         const followerIds = follows.map((f) => f.followerId);
         if (followerIds.length === 0)
@@ -81,7 +81,7 @@ let SocialService = class SocialService {
         const follows = await this.followRepo.find({
             where: { followerId: userId },
         });
-        const followingIds = follows.map((f) => f.followingId);
+        const followingIds = follows.map((f) => f.followedId).filter(Boolean);
         if (followingIds.length === 0)
             return [];
         return this.userRepo.find({
@@ -91,16 +91,75 @@ let SocialService = class SocialService {
     }
     async isFollowing(followerId, followingId) {
         const follow = await this.followRepo.findOne({
-            where: { followerId, followingId },
+            where: { followerId, followedId: followingId },
         });
         return !!follow;
     }
     async getFollowCounts(userId) {
         const [followers, following] = await Promise.all([
-            this.followRepo.count({ where: { followingId: userId } }),
+            this.followRepo.count({ where: { followedId: userId } }),
             this.followRepo.count({ where: { followerId: userId } }),
         ]);
         return { followers, following };
+    }
+    async getProfileOverview(viewerId, targetId) {
+        const user = await this.userRepo.findOne({ where: { id: targetId } });
+        if (!user)
+            throw new common_1.NotFoundException('User not found');
+        const isSelf = !!viewerId && viewerId === targetId;
+        const relational = !!viewerId && !isSelf;
+        const [counts, isFollowing, followsYou, mutuals] = await Promise.all([
+            this.getFollowCounts(targetId),
+            relational ? this.isFollowing(viewerId, targetId) : Promise.resolve(false),
+            relational ? this.isFollowing(targetId, viewerId) : Promise.resolve(false),
+            relational ? this.getMutuals(viewerId, targetId) : Promise.resolve({ count: 0, sample: [] }),
+        ]);
+        return {
+            id: user.id,
+            fullName: user.fullName,
+            handle: user.handle || null,
+            avatar: user.avatar || null,
+            bio: user.bio || null,
+            country: user.country || null,
+            plan: user.plan,
+            role: user.role,
+            points: user.points || 0,
+            badgeCount: Array.isArray(user.badges) ? user.badges.length : 0,
+            placesVisited: Array.isArray(user.visitedPlaceIds) ? user.visitedPlaceIds.length : 0,
+            founderNumber: user.founderNumber ?? null,
+            createdAt: user.createdAt,
+            followers: counts.followers,
+            following: counts.following,
+            isSelf,
+            isFollowing,
+            followsYou,
+            mutuals,
+        };
+    }
+    async getMutuals(viewerId, targetId, sampleSize = 3) {
+        const [viewerFollows, targetFollowers] = await Promise.all([
+            this.followRepo.find({ where: { followerId: viewerId }, select: ['followedId'] }),
+            this.followRepo.find({ where: { followedId: targetId }, select: ['followerId'] }),
+        ]);
+        const viewerFollowing = new Set(viewerFollows.map((f) => f.followedId).filter((id) => !!id));
+        const mutualIds = targetFollowers
+            .map((f) => f.followerId)
+            .filter((id) => !!id && viewerFollowing.has(id));
+        if (!mutualIds.length)
+            return { count: 0, sample: [] };
+        const sample = await this.userRepo.find({
+            where: { id: (0, typeorm_2.In)(mutualIds.slice(0, sampleSize)) },
+            select: ['id', 'fullName', 'avatar', 'handle'],
+        });
+        return {
+            count: mutualIds.length,
+            sample: sample.map((u) => ({
+                id: u.id,
+                fullName: u.fullName,
+                avatar: u.avatar || null,
+                handle: u.handle || null,
+            })),
+        };
     }
     async createActivity(userId, type, data) {
         const activity = this.activityRepo.create({

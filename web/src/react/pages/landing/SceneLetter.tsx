@@ -82,7 +82,7 @@ export default function SceneLetter() {
       <section className="ej-section">
         <div className="ej-letter">
           <motion.div variants={settle} initial="hidden" whileInView="show" viewport={VIEWPORT_ONCE}>
-            <p className="ej-kicker"><span className="ej-no">✳</span> For business owners</p>
+            <p className="ej-kicker"><span className="ej-no">For business owners</span></p>
             <h2 className="ej-h2">Run a riad, a table, a tour? <em>Write to us.</em></h2>
             <p className="ej-letter-arabic">وصل للسياح اللي يستحقو</p>
             <p className="ej-lede">Hotels, riads, restaurants, guides, artisans — whatever you do, there's a traveler looking for you. Join 890+ Tunisian businesses already on the platform.</p>

@@ -22,19 +22,24 @@ export interface TravStop {
   labelDy?: number;
   stampDx?: number;
   stampDy?: number;
-  credit: string;
+  /** Photo attribution. Optional — omitted stops render no credit line
+      (used for images whose author/license we haven't verified yet). */
+  credit?: string;
 }
 
 export const TRAV_STOPS: TravStop[] = [
   { id: 'sidi-bou-said', name: 'Sidi Bou Saïd', arabic: 'سيدي بو سعيد', day: 'Day 1 — 07:14', caption: 'Coffee at the blue café, before the crowds wake up.', coords: '36.87°N 10.34°E', km: 0, img: '/img/journey/sidi-bou-said.webp', x: 258, y: 58, labelDx: 14, labelDy: -12, stampDx: 16, stampDy: 10, credit: 'M. M. Mosbah · CC BY-SA 3.0' },
   { id: 'medina-tunis', name: 'Medina of Tunis', arabic: 'مدينة تونس', day: 'Day 1 — noon', caption: 'Get lost on purpose. Streets from 698 AD know the way.', coords: '36.79°N 10.17°E', km: 21, img: '/img/journey/medina-tunis.webp', x: 246, y: 65, labelDx: -8, labelDy: 14, stampDx: -50, stampDy: -36, credit: 'IssamBarhoumi · CC BY-SA 3.0' },
-  { id: 'kairouan', name: 'Kairouan', arabic: 'القيروان', day: 'Day 2', caption: 'Four holy doors, a thousand years of prayer.', coords: '35.68°N 10.10°E', km: 178, img: '/img/journey/kairouan.webp', x: 241, y: 160, labelDx: -10, labelDy: 4, stampDx: -54, stampDy: -34, credit: 'Marek Szarejko · CC BY-SA 2.0' },
-  { id: 'el-jem', name: 'El Jem', arabic: 'الجم', day: 'Day 3 — dawn', caption: '35,000 Roman seats. Zero queue at first light.', coords: '35.30°N 10.71°E', km: 250, img: '/img/journey/el-jem.webp', x: 285, y: 193, labelDx: -10, labelDy: 4, stampDx: 14, stampDy: -38, credit: 'Carole Raddato · CC BY-SA 2.0' },
-  { id: 'chott-el-djerid', name: 'Chott el Djerid', arabic: 'شط الجريد', day: 'Day 4', caption: 'A salt lake that mirrors the sky — then swallows it.', coords: '33.92°N 8.13°E', km: 601, img: '/img/journey/chott-el-djerid.webp', x: 102, y: 311, labelDx: 6, labelDy: 18, stampDx: -34, stampDy: -46, credit: 'Kais photographies · CC BY-SA 4.0' },
-  { id: 'djerba', name: 'Djerba', arabic: 'جربة', day: 'Day 5', caption: 'Erriadh, a whole village turned open-air gallery. Stay a while.', coords: '33.80°N 10.86°E', km: 1015, img: '/img/journey/djerba.webp', x: 295, y: 322, labelDx: 4, labelDy: 26, stampDx: 18, stampDy: -32, credit: 'Galerie Itinerrance · CC BY-SA 4.0' },
+  { id: 'dougga', name: 'Dougga', arabic: 'دقّة', day: 'Day 1 — dusk', caption: 'The best-preserved Roman town in Africa — a hilltop all to yourself.', coords: '36.42°N 9.22°E', km: 130, img: '/img/journey/dougga.webp', x: 179, y: 97, labelDx: -12, labelDy: 2, stampDx: -50, stampDy: -8 },
+  { id: 'kairouan', name: 'Kairouan', arabic: 'القيروان', day: 'Day 2', caption: 'Four holy doors, a thousand years of prayer.', coords: '35.68°N 10.10°E', km: 270, img: '/img/journey/kairouan.webp', x: 241, y: 160, labelDx: -10, labelDy: 4, stampDx: -54, stampDy: -34, credit: 'Marek Szarejko · CC BY-SA 2.0' },
+  { id: 'el-jem', name: 'El Jem', arabic: 'الجم', day: 'Day 3 — dawn', caption: '35,000 Roman seats. Zero queue at first light.', coords: '35.30°N 10.71°E', km: 340, img: '/img/journey/el-jem.webp', x: 285, y: 193, labelDx: -10, labelDy: 4, stampDx: 14, stampDy: -38, credit: 'Carole Raddato · CC BY-SA 2.0' },
+  { id: 'chott-el-djerid', name: 'Chott el Djerid', arabic: 'شط الجريد', day: 'Day 4', caption: 'A salt lake that mirrors the sky — then swallows it.', coords: '33.92°N 8.13°E', km: 690, img: '/img/journey/chott-el-djerid.webp', x: 102, y: 311, labelDx: 6, labelDy: 18, stampDx: -34, stampDy: -46, credit: 'Kais photographies · CC BY-SA 4.0' },
+  { id: 'douz', name: 'Douz', arabic: 'دوز', day: 'Day 4 — dusk', caption: 'The last palm before the Sahara. The dunes begin where the road ends.', coords: '33.47°N 9.02°E', km: 780, img: '/img/journey/douz.webp', x: 165, y: 350, labelDx: -12, labelDy: 6, stampDx: -34, stampDy: 14 },
+  { id: 'matmata', name: 'Matmata', arabic: 'مطماطة', day: 'Day 5 — dawn', caption: 'Homes carved into the earth, cool against the desert sun.', coords: '33.54°N 9.97°E', km: 900, img: '/img/journey/matmata.webp', x: 232, y: 344, labelDx: 4, labelDy: 20, stampDx: -8, stampDy: 20 },
+  { id: 'djerba', name: 'Djerba', arabic: 'جربة', day: 'Day 5', caption: 'Erriadh, a whole village turned open-air gallery. Stay a while.', coords: '33.80°N 10.86°E', km: 1080, img: '/img/journey/djerba.webp', x: 295, y: 322, labelDx: 4, labelDy: 26, stampDx: 18, stampDy: -32, credit: 'Galerie Itinerrance · CC BY-SA 4.0' },
 ];
 
-export const TRAV_TOTAL_KM = 1015;
+export const TRAV_TOTAL_KM = 1080;
 
 /* Mainland — real border, closed path (Bizerte → Cap Bon → Sahel → Gulf of
    Gabès → Libyan then Algerian borders and back up the north-west coast) */
@@ -59,9 +64,11 @@ const KERKENNAH =
   'M322.9 233.3 C322.9 233.6 323.3 235.2 323.2 235.5 C323.1 235.8 322.5 235 322.4 235.1 C322.4 235.3 323.2 236.2 322.9 236.5 C322.6 236.8 320.8 236.7 320.6 237.1 C320.5 237.5 321.7 238.1 321.8 238.7 C321.9 239.2 321.7 240.1 321.3 240.4 C320.9 240.8 320 241.1 319.4 240.8 C318.7 240.6 317.6 239 317.4 239 C317.2 239 318.4 239.9 318.2 240.8 C318 241.6 316.5 243.4 315.9 244 C315.3 244.6 315.1 243.8 314.8 244.4 C314.5 244.9 313.4 247.5 314.2 247.5 C315 247.5 318.3 244.8 319.7 244.1 C321.2 243.4 322.4 243.7 322.9 243.4 C323.5 243.1 322.9 242.4 323.1 242.3 C323.2 242.2 323.5 242.7 324 242.6 C324.4 242.4 325.4 241.6 325.8 241.5 C326.3 241.4 326.5 242.2 326.7 242.1 C326.9 241.9 327.3 241.4 326.9 240.7 C326.6 240 324.7 238.2 324.6 237.6 C324.5 237.1 326.1 238 326.3 237.6 C326.4 237.3 325.4 235.7 325.6 235.4 C325.9 235 328 235.9 327.9 235.7 C327.8 235.5 325.4 234.1 324.9 234.1 C324.4 234.1 325.3 235.7 325.1 235.5 C324.9 235.4 324 233.5 323.6 233.1 C323.3 232.8 323 232.9 322.9 233.3 Z ' +
   'M311.8 246.9 C310.3 246.7 306.3 246.5 304.8 246.7 C303.3 246.9 302.3 247.2 302.9 248.1 C303.6 248.9 307.3 251.6 308.7 251.8 C310.1 252 310.3 249.9 311.2 249.2 C312.1 248.6 314 248.2 314.1 247.8 C314.2 247.4 313.4 247 311.8 246.9 Z';
 
-/* The route through the six stops — one continuous pen line */
+/* The route through the nine stops — one continuous pen line
+   (Catmull-Rom through the waypoints; the Dougga hook west and the
+   Chott→Douz→Matmata sweep across the south are real detours). */
 export const ROUTE =
-  'M258 58 C 254 58, 249 61, 246 65 C 239 94, 242 130, 241 160 C 254 176, 269 186, 285 193 C 255 232, 155 280, 102 311 C 155 350, 233 354, 295 322';
+  'M258 58 C256 59, 259 59, 246 65 C233 72, 180 81, 179 97 C178 113, 223 144, 241 160 C259 176, 308 168, 285 193 C262 218, 122 285, 102 311 C82 337, 143 345, 165 350 C187 356, 210 349, 232 344 C254 339, 285 326, 295 322';
 
 interface Props {
   /** 0→1 scroll progress; drives the pen line. */

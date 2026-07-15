@@ -739,6 +739,36 @@ export async function isFollowing(userId: string) {
   return api<{ isFollowing: boolean } | boolean>(`/social/is-following/${userId}`);
 }
 
+export interface ProfileOverview {
+  id: string;
+  fullName: string;
+  handle: string | null;
+  avatar: string | null;
+  bio: string | null;
+  country: string | null;
+  plan: string | null;
+  role: string | null;
+  points: number;
+  badgeCount: number;
+  placesVisited: number;
+  founderNumber: number | null;
+  createdAt: string;
+  followers: number;
+  following: number;
+  isSelf: boolean;
+  isFollowing: boolean;
+  followsYou: boolean;
+  mutuals: {
+    count: number;
+    sample: { id: string; fullName: string; avatar: string | null; handle: string | null }[];
+  };
+}
+
+/** Compact profile summary powering the hover card — one request per user. */
+export async function getProfileOverview(userId: string) {
+  return api<ProfileOverview>(`/social/overview/${userId}`);
+}
+
 export async function getUserPosts(userId: string, limit = 12) {
   return api<{ data: any[]; meta: any }>(
     `/posts/by-user/${userId}?limit=${limit}`,
