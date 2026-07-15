@@ -35,5 +35,7 @@ gold = drive. Alternating ±0.5° tilts, hover straightens + lifts.
 
 - Backend `/api/v1/routing/transport` must be up for tickets to render
   (component returns null offline — page still reads fine without them).
-  Verified against a stubbed response (backend/Docker were down at ship time);
-  re-verify against the live endpoint when Docker is back.
+  **Live-verified Jul 14 2026** — which surfaced a pre-existing bug: the API
+  wraps payloads in `{ success, data }` but TransportOptions read the raw
+  json's `.options` → transport options were silently invisible everywhere
+  (TripPage included). Fixed by unwrapping `json.data ?? json`.

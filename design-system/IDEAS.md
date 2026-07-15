@@ -8,7 +8,18 @@
 
 ## Collection A — The map as a national treasure
 
-### A1. Parchment fog-of-exploration ★★★★★ · M · Phase 2
+### A1. Parchment fog-of-exploration ★★★★★ · M · Phase 2 — ✓ SHIPPED Jul 14 2026
+> Built as `web/src/react/components/FogMap.tsx` + `styles/fog-map.css`, replacing the
+> old city-dot `TunisiaMap` (removed — it carried a terracotta glow AI-tell) in the
+> passport "Tunisia journey" section. Geometry: geoBoundaries TUN ADM1 (24 governorates,
+> simplified), projected onto the same plate-carrée transform as the passport outline
+> (`x=17.42·lon−116.53, y=−21.01·lat+789.78`, max-err 1.4 in the 100×160 viewBox),
+> Douglas-Peucker eps 0.35 → `web/src/react/components/tunisia-governorates.ts` (9.5 KB
+> of path data). Unvisited = pencil-hatch parchment fog + faint name; a check-in inks the
+> region terracotta (fill-opacity + fog-fade transition, 700ms) with white name + `Nº n`;
+> `governoratesFromCities()` resolves visited cities→gov ids. Hover tooltip (name/Arabic/
+> status), "N / 24 inked" counter matching the stamp album directly below it, progress bar,
+> all-fog empty state. Both themes + reduced-motion verified.
 The user's personal map: **unvisited governorates render as blank parchment** with faint
 pencil hatching and their name in light mono; a check-in "inks in" the region — color,
 label, tiny illustrated motif appear with an ink-bleed transition. The whole country

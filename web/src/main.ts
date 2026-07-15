@@ -69,6 +69,7 @@ const SearchPage = React.lazy(() => import('./react/pages/SearchPage'));
 const BadgesPage = React.lazy(() => import('./react/pages/BadgesPage'));
 const ProfileEditPage = React.lazy(() => import('./react/pages/ProfileEditPage'));
 const HeroPage = React.lazy(() => import('./react/pages/HeroPage'));
+const NotFoundPage = React.lazy(() => import('./react/pages/NotFoundPage'));
 const AboutPage = React.lazy(() => import('./react/pages/AboutPage'));
 const PartnerPage = React.lazy(() => import('./react/pages/PartnerPage'));
 const LegalPage = React.lazy(() => import('./react/pages/LegalPage'));
@@ -234,7 +235,8 @@ function getRoute(route: string): Route {
     '/terms':        { render: () => '', init: () => {}, page: 'hero', isReact: true },
   };
 
-  return routes[path] || routes['/'];
+  // Unknown address → the lost letter (404), not a silent dump on the feed.
+  return routes[path] || { render: () => '', init: () => {}, page: 'not-found', isReact: true };
 }
 
 function navigate() {
@@ -416,6 +418,9 @@ function navigate() {
         currentUnmount = mountIsland(LegalPage, islandRoot, { kind: 'privacy' });
       } else if (path === '/terms') {
         currentUnmount = mountIsland(LegalPage, islandRoot, { kind: 'terms' });
+      } else {
+        // No island matched — the letter is undeliverable.
+        currentUnmount = mountIsland(NotFoundPage, islandRoot);
       }
     }
   } else {

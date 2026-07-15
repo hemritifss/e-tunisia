@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api, getImageUrl } from '../../shared/api';
-import { TunisiaMap } from '../components/TunisiaMap';
+import { FogMap } from '../components/FogMap';
+import '../../styles/fog-map.css';
 import { BadgeGrid } from '../components/BadgeGrid';
 import { PassportStats } from '../components/PassportStats';
 import { SharePassport } from '../components/SharePassport';
@@ -302,7 +303,7 @@ export default function PassportPage() {
     const isPro = p.plan === 'premium' || p.plan === 'business' || p.plan === 'admin';
 
     return (
-        <main className="passport-page">
+        <main className="passport-page" data-design="carnet">
             <section data-design="carnet" className={`passport-hero${isPro ? ' is-pro' : ''}${p.passportTheme ? ` passport-theme-${p.passportTheme}` : ''}`}>
                 <div className="passport-hero-bg" aria-hidden="true" />
                 <div className="passport-hero-mesh" aria-hidden="true" />
@@ -420,7 +421,7 @@ export default function PassportPage() {
 
             <section className="passport-section">
                 <h2 className="passport-section-title">Tunisia journey</h2>
-                <TunisiaMap
+                <FogMap
                     visited={p.visitedCities}
                     emptyCta={isOwner ? { label: 'Start exploring', href: '#/explore' } : undefined}
                 />

@@ -677,3 +677,101 @@
         height: 96px;
     }
 }
+
+/* ============================================================
+   CARNET MID-SECTIONS (UNIQUENESS Phase 2g)
+   The stretch between the identity hero and the colophon joins
+   the journal: sections become paper sheets, titles become mono
+   kickers, stats become an almanac row, and the completion card
+   loses its mesh/neon tells. Scoped to the opted-in root.
+   ============================================================ */
+.passport-page[data-design="carnet"] .passport-section {
+    background: var(--paper-print);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    box-shadow: var(--paper-shadow);
+}
+.passport-page[data-design="carnet"] .passport-section-title {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    gap: var(--space-3);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+}
+.passport-page[data-design="carnet"] .passport-section-title::after {
+    content: '';
+    flex: 1;
+    border-top: 1px solid var(--rule);
+}
+
+/* stats → almanac row: hairline-ruled, mono tabular, honest & static */
+.passport-page[data-design="carnet"] .passport-stats {
+    gap: 0;
+    border-top: 1.5px solid var(--rule-strong);
+    border-bottom: 1px solid var(--rule);
+}
+.passport-page[data-design="carnet"] .passport-stat {
+    background: transparent;
+    border: none;
+    border-left: 1px solid var(--rule);
+    border-radius: 0;
+    box-shadow: none;
+    padding: var(--space-4) var(--space-4);
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+}
+.passport-page[data-design="carnet"] .passport-stat:first-child { border-left: none; }
+.passport-page[data-design="carnet"] .passport-stat:hover { transform: none; }
+.passport-page[data-design="carnet"] .passport-stat svg { color: var(--ink-faint); align-self: center; }
+.passport-page[data-design="carnet"] .passport-stat strong {
+    font-family: var(--font-mono);
+    font-size: 1.55rem;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink);
+}
+.passport-page[data-design="carnet"] .passport-stat span {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+}
+
+/* completion → a to-do note pinned in the journal (no mesh, no glow) */
+.passport-page[data-design="carnet"] .passport-completion {
+    background: var(--paper-warm);
+    border: 1.5px dashed var(--rule-strong);
+    border-radius: 3px;
+}
+.passport-page[data-design="carnet"] .passport-completion::before { background: none; }
+.passport-page[data-design="carnet"] .passport-completion-head strong {
+    font-family: var(--font-editorial);
+    font-optical-sizing: auto;
+    font-weight: 580;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+}
+.passport-page[data-design="carnet"] .passport-completion-head span { color: var(--ink-soft); }
+.passport-page[data-design="carnet"] .passport-completion-bar {
+    height: 6px;
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+}
+.passport-page[data-design="carnet"] .passport-completion-bar span {
+    background: var(--terracotta);
+    box-shadow: none;
+    border-radius: 0;
+}
+.passport-page[data-design="carnet"] .passport-completion-dismiss {
+    border-radius: 3px;
+    border-color: var(--rule-strong);
+    color: var(--ink-soft);
+}
