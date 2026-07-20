@@ -20,6 +20,31 @@ export declare class SocialService {
         followers: number;
         following: number;
     }>;
+    getProfileOverview(viewerId: string | null, targetId: string): Promise<{
+        id: string;
+        fullName: string;
+        handle: string;
+        avatar: string;
+        bio: string;
+        country: string;
+        plan: import("../users/user.entity").UserPlan;
+        role: import("../users/user.entity").UserRole;
+        points: number;
+        badgeCount: number;
+        placesVisited: number;
+        founderNumber: number;
+        createdAt: Date;
+        followers: number;
+        following: number;
+        isSelf: boolean;
+        isFollowing: boolean;
+        followsYou: boolean;
+        mutuals: {
+            count: number;
+            sample: any[];
+        };
+    }>;
+    private getMutuals;
     createActivity(userId: string, type: ActivityType, data: any): Promise<Activity>;
     getActivityFeed(userId: string, page?: number, limit?: number): Promise<{
         data: Activity[];

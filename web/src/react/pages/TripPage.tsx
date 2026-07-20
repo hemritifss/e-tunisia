@@ -1,13 +1,14 @@
 import '../../styles/trip-schedule.css';
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { useQuery } from '@tanstack/react-query';
-import { Luggage, Send, Share2, Compass, Link as LinkIcon, Copy, X, Package, MapPin, SearchX, ShieldCheck, CheckCircle2, PlaneLanding, PlaneTakeoff, Clock, CalendarDays, Download } from 'lucide-react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { currentUser } from '../../shared/current-user';
+import { Luggage, Send, Share2, Compass, Link as LinkIcon, Copy, X, Package, MapPin, SearchX, ShieldCheck, CheckCircle2, PlaneLanding, PlaneTakeoff, Clock, CalendarDays, Download, UserPlus, Pencil, Users } from 'lucide-react';
 import * as api from '../../api';
 import { ogShareUrl } from '../../shared/api';
 import * as cart from '../../trip-cart';
-import { showToast } from '../../ui-utils';
-import { currentPath, goTo, absoluteUrl, onRouteChange } from '../../router';
+import { showToast, requireAuth } from '../../ui-utils';
+import { currentPath, goTo, absoluteUrl, onRouteChange, query as routeQuery } from '../../router';
 import { TripRouteMap, TripDayChips } from '../components/TripRouteMap';
 import { WeatherBadge } from '../components/WeatherBadge';
 import { TransportOptions } from '../components/TransportOptions';
@@ -172,10 +173,12 @@ function BatchInquiryModal({ trip, onClose }: { trip: any; onClose: () => void }
   const uniqueHosts = new Set(trip.stops.map((s: any) => s.placeId)).size;
 
   let prefName = '', prefEmail = '', prefPhone = '';
-  try {
-    const cached = localStorage.getItem('etunisia_user');
-    if (cached) { const u = JSON.parse(cached); prefName = u?.fullName || u?.name || ''; prefEmail = u?.email || ''; prefPhone = u?.phone || ''; }
-  } catch { /* ignore */ }
+  const cachedUser = currentUser();
+  if (cachedUser) {
+    prefName = cachedUser.fullName || cachedUser.name || '';
+    prefEmail = cachedUser.email || '';
+    prefPhone = cachedUser.phone || '';
+  }
 
   useEffect(() => {
     document.body.style.overflow = 'hidden';
@@ -293,6 +296,26 @@ function CartView() {
     }
   };
 
+  // Co-editing a shared trip: save writes BACK to the same slug (last write wins).
+  const saveChanges = async () => {
+    if (!state.editingSlug || savingBtn) return;
+    setSavingBtn(true);
+    try {
+      await api.updateTrip(state.editingSlug, serialize(state));
+      showToast('Changes saved to the shared trip ✓');
+      cart.setEditingSlug(null);
+      cart.clearCart();
+      goTo(`/trip/${state.editingSlug}`);
+    } catch (err: any) {
+      setSavingBtn(false);
+      showToast(err?.message || 'Could not save changes', { type: 'error' });
+    }
+  };
+  const detach = () => {
+    cart.setEditingSlug(null);
+    showToast('Detached — saving will now create your own copy');
+  };
+
   const total = cart.calcTotal(state);
 
   return (
@@ -314,10 +337,22 @@ function CartView() {
               />
             </label>
             <button className="btn btn-primary" type="button" onClick={requestAll}><Send /> Request quotes for all</button>
-            <button className="btn btn-outline" type="button" disabled={savingBtn} onClick={saveAndShare}><Share2 /> Save &amp; share</button>
+            {state.editingSlug ? (
+              <button className="btn btn-primary" type="button" disabled={savingBtn} onClick={saveChanges}><CheckCircle2 /> Save changes</button>
+            ) : (
+              <button className="btn btn-outline" type="button" disabled={savingBtn} onClick={saveAndShare}><Share2 /> Save &amp; share</button>
+            )}
           </div>
         )}
       </header>
+
+      {state.editingSlug && (
+        <aside className="trip-editing-banner">
+          <Pencil size={14} />
+          <span>You're editing a <strong>shared trip</strong> — "Save changes" updates it for everyone.</span>
+          <button className="btn btn-ghost" type="button" onClick={detach}>Detach as my own copy</button>
+        </aside>
+      )}
 
       {state.stops.length === 0 ? (
         <div className="empty-state">
@@ -376,10 +411,48 @@ function offsetFromToday(dt: Date): number {
 
 function SavedTripView({ slug }: { slug: string }) {
   const [inquiry, setInquiry] = useState<any | null>(null);
+  const queryClient = useQueryClient();
   const { data: trip, isLoading, isError, error } = useQuery({
     queryKey: ['trip', slug],
     queryFn: () => api.getTripBySlug(slug),
   });
+
+  // Collaborative planning: who's on this trip + can the viewer edit it.
+  const { data: crew } = useQuery({
+    queryKey: ['trip-members', slug],
+    queryFn: () => api.getTripMembers(slug).catch(() => null),
+  });
+  const inviteCodeParam = routeQuery().get('invite');
+  const [joining, setJoining] = useState(false);
+  const showJoinBanner = !!inviteCodeParam && !!crew && !crew.canEdit;
+
+  const joinTrip = async () => {
+    if (!requireAuth('join this trip')) return;
+    if (!inviteCodeParam || joining) return;
+    setJoining(true);
+    try {
+      await api.joinTrip(slug, inviteCodeParam);
+      showToast("You're in! You can now edit this trip 🎒");
+      queryClient.invalidateQueries({ queryKey: ['trip-members', slug] });
+    } catch (err: any) {
+      showToast(err?.message || 'Invite link is invalid or expired', { type: 'error' });
+    } finally {
+      setJoining(false);
+    }
+  };
+
+  const invite = async () => {
+    try {
+      const { code } = await api.inviteTrip(slug);
+      const url = absoluteUrl(`/trip/${slug}?invite=${encodeURIComponent(code)}`);
+      const data = { title: 'Plan this Tunisia trip with me', text: 'Join me as co-planner — you can edit the trip directly.', url };
+      if ((navigator as any).share) { try { await (navigator as any).share(data); return; } catch { /* cancelled */ } }
+      await navigator.clipboard.writeText(url);
+      showToast('Invite link copied — send it to your travel buddies!');
+    } catch (err: any) {
+      showToast(err?.message || 'Could not create the invite', { type: 'error' });
+    }
+  };
 
   if (isLoading) {
     return <div className="trip-page page-enter" data-design="sleek" id="trip-root"><div className="trip-skeleton"><div className="sk-title skeleton-block" /><div className="sk-subtitle skeleton-block" /></div></div>;
@@ -397,7 +470,7 @@ function SavedTripView({ slug }: { slug: string }) {
     );
   }
 
-  const clone = () => {
+  const loadIntoCart = (editSlug: string | null) => {
     cart.clearCart();
     cart.setTitle(trip.title);
     cart.setTravelers(trip.travelers);
@@ -410,9 +483,11 @@ function SavedTripView({ slug }: { slug: string }) {
         packageId: s.packageId, packageTitle: s.packageTitle, pricePerPerson: s.pricePerPerson, currency: s.currency, dayIndex: s.dayIndex, timeSlot: (s as any).timeSlot,
       });
     }
-    showToast('Loaded into your trip cart');
+    cart.setEditingSlug(editSlug);
+    showToast(editSlug ? 'Editing the shared trip — changes save back to it' : 'Loaded into your trip cart');
     goTo('/trip');
   };
+  const clone = () => loadIntoCart(null);
 
   const copyLink = async () => {
     // Share the OG route so WhatsApp/Facebook/X render a rich preview card.
@@ -454,9 +529,43 @@ function SavedTripView({ slug }: { slug: string }) {
           <button className="btn btn-outline" type="button" onClick={saveOffline} disabled={offline === 'saving'}>
             <Download /> {offline === 'saving' ? 'Saving…' : offline === 'done' ? 'Available offline' : 'Save offline'}
           </button>
-          <button className="btn btn-primary" type="button" onClick={clone}><Copy /> Use as my trip</button>
+          {crew?.isOwner && (
+            <button className="btn btn-outline" type="button" onClick={invite}><UserPlus /> Invite co-planners</button>
+          )}
+          {crew?.canEdit ? (
+            <button className="btn btn-primary" type="button" onClick={() => loadIntoCart(slug)}><Pencil /> Edit this trip</button>
+          ) : (
+            <button className="btn btn-primary" type="button" onClick={clone}><Copy /> Use as my trip</button>
+          )}
         </div>
       </header>
+
+      {showJoinBanner && (
+        <aside className="trip-join-banner">
+          <div>
+            <strong>You're invited to co-plan this trip 🎒</strong>
+            <p>Join and you can edit the stops, days and schedule directly.</p>
+          </div>
+          <button className="btn btn-primary" type="button" onClick={joinTrip} disabled={joining}>
+            {joining ? 'Joining…' : 'Join as co-planner'}
+          </button>
+        </aside>
+      )}
+
+      {crew && crew.members.length > 1 && (
+        <div className="trip-crew" aria-label="Planning together">
+          <Users size={14} />
+          <span className="trip-crew-label">Planning together:</span>
+          {crew.members.map((m) => (
+            <a key={m.id} className="trip-crew-member" href={m.handle ? `#/u/${m.handle}` : '#'} title={m.fullName}>
+              {m.avatar
+                ? <img src={api.getImageUrl(m.avatar)} alt="" />
+                : <span className="trip-crew-initial">{(m.fullName || '?').charAt(0)}</span>}
+              <span className="trip-crew-name">{m.fullName.split(' ')[0]}{m.isOwner ? ' ★' : ''}</span>
+            </a>
+          ))}
+        </div>
+      )}
 
       <TripMapSection stops={trip.stops} />
       <DayBlocks stops={trip.stops} editable={false} startDate={(trip as any).startDate} />

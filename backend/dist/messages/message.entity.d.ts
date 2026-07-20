@@ -6,5 +6,7 @@ export declare class Message {
     type: string;
     metadata: Record<string, unknown>;
     isRead: boolean;
+    isDeleted: boolean;
+    deletedAt: Date | null;
     createdAt: Date;
 }

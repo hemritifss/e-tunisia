@@ -35,6 +35,8 @@ export const StarRating = ({
             key={i}
             type="button"
             disabled={!interactive}
+            aria-label={`Rate ${starValue} ${starValue === 1 ? 'star' : 'stars'}`}
+            aria-pressed={interactive ? numericRating >= starValue : undefined}
             className={cn(
               'transition-transform duration-150',
               interactive && 'cursor-pointer hover:scale-110',

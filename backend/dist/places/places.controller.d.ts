@@ -42,7 +42,7 @@ export declare class PlacesController {
     }>;
     findBySlug(slug: string): Promise<import("./place.entity").Place>;
     findOne(id: string): Promise<import("./place.entity").Place>;
-    create(dto: CreatePlaceDto): Promise<import("./place.entity").Place>;
+    create(req: any, dto: CreatePlaceDto): Promise<import("./place.entity").Place>;
     getByIds(body: {
         ids: string[];
     }): Promise<import("./place.entity").Place[]>;

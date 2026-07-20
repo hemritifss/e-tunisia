@@ -1,3 +1,4 @@
+import { GemsService } from '../gems/gems.service';
 import { Repository } from 'typeorm';
 import { User } from '../users/user.entity';
 import { Place } from '../places/place.entity';
@@ -7,6 +8,7 @@ import { Event } from '../events/event.entity';
 import { Tip } from '../tips/tip.entity';
 import { AuditLog } from './audit-log.entity';
 export declare class AdminService {
+    private readonly gems;
     private usersRepo;
     private placesRepo;
     private reviewsRepo;
@@ -14,7 +16,7 @@ export declare class AdminService {
     private eventsRepo;
     private tipsRepo;
     private auditRepo;
-    constructor(usersRepo: Repository<User>, placesRepo: Repository<Place>, reviewsRepo: Repository<Review>, subsRepo: Repository<Subscription>, eventsRepo: Repository<Event>, tipsRepo: Repository<Tip>, auditRepo: Repository<AuditLog>);
+    constructor(gems: GemsService, usersRepo: Repository<User>, placesRepo: Repository<Place>, reviewsRepo: Repository<Review>, subsRepo: Repository<Subscription>, eventsRepo: Repository<Event>, tipsRepo: Repository<Tip>, auditRepo: Repository<AuditLog>);
     getStats(): Promise<{
         totalUsers: number;
         totalPlaces: number;

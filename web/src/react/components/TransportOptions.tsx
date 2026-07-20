@@ -21,24 +21,70 @@ interface Opt {
 /**
  * "How do I get there?" — estimated louage / bus / train / drive / walk options
  * between two points (Tier 2.4). Costs flip with the display currency (2.10).
+ *
+ * `ticket` renders each option as a louage ticket stub (carnet Journal
+ * dialect, UNIQUENESS §6.7) — used by the louage magnet page; the default
+ * compact list stays for TripPage.
  */
 export function TransportOptions({
-  from, to, fromCity, toCity,
-}: { from: [number, number]; to: [number, number]; fromCity?: string; toCity?: string }) {
+  from, to, fromCity, toCity, ticket = false,
+}: { from: [number, number]; to: [number, number]; fromCity?: string; toCity?: string; ticket?: boolean }) {
   const money = useMoney();
   const { data } = useQuery({
     queryKey: ['transport', from.join(','), to.join(','), fromCity, toCity],
-    queryFn: () => {
+    queryFn: async () => {
       const qs = new URLSearchParams({ from: from.join(','), to: to.join(',') });
       if (fromCity) qs.set('fromCity', fromCity);
       if (toCity) qs.set('toCity', toCity);
-      return fetch(`/api/v1/routing/transport?${qs.toString()}`).then((r) => r.json());
+      const json = await fetch(`/api/v1/routing/transport?${qs.toString()}`).then((r) => r.json());
+      // The API wraps payloads in { success, data } — unwrap either shape.
+      return json?.data ?? json;
     },
     staleTime: 60 * 60_000,
   });
 
   const options: Opt[] = data?.options || [];
   if (!options.length) return null;
+
+  if (ticket) {
+    return (
+      <div className="lt-rack">
+        <div className="lt-rack-head">
+          <span>{fromCity || 'Here'} ⇢ {toCity || 'there'}</span>
+          {data?.distanceKm ? <span className="lt-rack-km">~{data.distanceKm} km by road</span> : null}
+        </div>
+        <ul className="lt-list">
+          {options.map((o) => {
+            const Icon = ICON[o.mode] || Car;
+            const hasCost = o.cost && o.cost.highTnd > 0;
+            const fareLabel = !hasCost ? 'no fare' : o.mode === 'drive' ? 'est. fuel' : 'per seat';
+            return (
+              <li key={o.mode} className={`lt-ticket lt-ticket--${o.mode}`}>
+                <div className="lt-stub">
+                  {hasCost ? (
+                    <span className="lt-fare">{money(o.cost!.lowTnd)}<em> – {money(o.cost!.highTnd)}</em></span>
+                  ) : (
+                    <span className="lt-fare">{fmtDur(o.durationMin)}</span>
+                  )}
+                  <span className="lt-fare-label">{fareLabel}</span>
+                  <span className="lt-stub-route">{fromCity || '·'} ⇢ {toCity || '·'}</span>
+                </div>
+                <div className="lt-body">
+                  <div className="lt-mode">
+                    <Icon size={15} />
+                    <h3>{o.label}</h3>
+                    <span className="lt-dur">{fmtDur(o.durationMin)}</span>
+                  </div>
+                  <p className="lt-note">{o.note}</p>
+                </div>
+                <div className="lt-barcode" aria-hidden="true" />
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    );
+  }
 
   return (
     <div className="transport-options">

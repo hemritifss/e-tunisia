@@ -4,7 +4,7 @@ import React, { useRef, useState } from 'react';
 // (smooth on touch), animated dot indicators, and a count pill. A single image
 // renders as a plain tappable frame. Tapping a slide opens the post.
 
-export function PostImageCarousel({ images, onOpen }: { images: string[]; onOpen: () => void }) {
+export function PostImageCarousel({ images, onOpen, priority = false }: { images: string[]; onOpen: () => void; priority?: boolean }) {
   const trackRef = useRef<HTMLDivElement>(null);
   const [idx, setIdx] = useState(0);
   // Distinguish a tap (→ open the post) from a swipe (→ just scroll).
@@ -27,7 +27,13 @@ export function PostImageCarousel({ images, onOpen }: { images: string[]; onOpen
   if (images.length === 1) {
     return (
       <button type="button" className="post-carousel post-carousel-single" onClick={onOpen} aria-label="Open post">
-        <img src={images[0]} alt="" loading="lazy" />
+        {/* The first post's image is usually the page's LCP — don't lazy it. */}
+        <img
+          src={images[0]}
+          alt=""
+          loading={priority ? 'eager' : 'lazy'}
+          fetchPriority={priority ? 'high' : undefined}
+        />
       </button>
     );
   }

@@ -209,6 +209,74 @@ export async function getVisitedIds() {
   return api<string[]>('/users/visited');
 }
 
+// ── COLLABORATIVE TRIPS (invite co-planners) ─
+export async function inviteTrip(slug: string) {
+  return api<{ code: string }>(`/trips/${encodeURIComponent(slug)}/invite`, { method: 'POST' });
+}
+export async function joinTrip(slug: string, code: string) {
+  return api<{ joined: boolean; title?: string; alreadyOwner?: boolean }>(
+    `/trips/${encodeURIComponent(slug)}/join`, { method: 'POST', body: JSON.stringify({ code }) },
+  );
+}
+export async function getTripMembers(slug: string) {
+  return api<{
+    members: Array<{ id: string; handle: string | null; fullName: string; avatar: string | null; isOwner: boolean }>;
+    canEdit: boolean; isOwner: boolean;
+  }>(`/trips/${encodeURIComponent(slug)}/members`);
+}
+
+// ── GEMS (community contribution engine) ─────
+export interface GemSubmitResult {
+  duplicate: boolean;
+  place: { id: string; name: string; slug: string; city?: string; governorate?: string };
+  needsConfirmations?: number;
+}
+export async function submitGem(payload: {
+  name: string; description: string; latitude: number; longitude: number;
+  images?: string[]; city?: string; governorate?: string; categoryId?: string;
+}) {
+  return api<GemSubmitResult>('/gems/submit', { method: 'POST', body: JSON.stringify(payload) });
+}
+export async function confirmGem(placeId: string) {
+  return api<{ confirmations: number; wentLive: boolean; approved: boolean }>(
+    `/gems/${encodeURIComponent(placeId)}/confirm`, { method: 'POST' },
+  );
+}
+export async function getGemStatus(placeId: string) {
+  return api<{ confirmations: number; confirmedByMe: boolean; pending: boolean; needed: number; isMine: boolean }>(
+    `/gems/${encodeURIComponent(placeId)}/status`,
+  );
+}
+export async function getCompleteness() {
+  return api<Array<{ governorate: string; count: number; target: number; pct: number; missing: number }>>(
+    '/gems/completeness',
+  );
+}
+export interface GemUser { id: string; handle: string | null; fullName: string; avatar: string | null }
+export async function getAmbassadors() {
+  return api<{
+    month: string;
+    ambassadors: Array<{ governorate: string; gems: number; user: GemUser }>;
+    topHunters: Array<{ gems: number; user: GemUser }>;
+  }>('/gems/ambassadors');
+}
+
+// ── BEACHES (jellyfish report — famma 9nadel?) ─
+export async function getBeaches(governorate?: string) {
+  const qs = governorate ? `?governorate=${encodeURIComponent(governorate)}` : '';
+  return api<any[]>(`/beaches${qs}`);
+}
+export async function getBeach(placeId: string) {
+  return api<any>(`/beaches/${encodeURIComponent(placeId)}`);
+}
+export async function reportBeach(placeId: string, payload: {
+  jellyfish: 'none' | 'few' | 'lots'; water?: string; crowd?: string; note?: string;
+}) {
+  return api<{ id: string; awarded: boolean }>(
+    `/beaches/${encodeURIComponent(placeId)}/report`, { method: 'POST', body: JSON.stringify(payload) },
+  );
+}
+
 // ── ROUTING (real roads via OSRM/Mapbox) ─────
 export async function getRoute(coords: [number, number][]) {
   const path = coords.map((c) => c.join(',')).join(';');
@@ -616,6 +684,11 @@ export async function markRoomRead(roomId: string) {
   return api<{ ok: boolean }>(`/messages/rooms/${roomId}/read`, { method: 'POST' });
 }
 
+/** Unsend your own message. Soft-delete — the thread keeps a tombstone. */
+export async function deleteMessage(messageId: string) {
+  return api<{ ok: true; id: string }>(`/messages/${messageId}`, { method: 'DELETE' });
+}
+
 export async function getUnreadMessagesCount() {
   return api<number | { count: number }>('/messages/unread-count');
 }
@@ -669,6 +742,36 @@ export async function getFollowCounts(userId: string) {
 
 export async function isFollowing(userId: string) {
   return api<{ isFollowing: boolean } | boolean>(`/social/is-following/${userId}`);
+}
+
+export interface ProfileOverview {
+  id: string;
+  fullName: string;
+  handle: string | null;
+  avatar: string | null;
+  bio: string | null;
+  country: string | null;
+  plan: string | null;
+  role: string | null;
+  points: number;
+  badgeCount: number;
+  placesVisited: number;
+  founderNumber: number | null;
+  createdAt: string;
+  followers: number;
+  following: number;
+  isSelf: boolean;
+  isFollowing: boolean;
+  followsYou: boolean;
+  mutuals: {
+    count: number;
+    sample: { id: string; fullName: string; avatar: string | null; handle: string | null }[];
+  };
+}
+
+/** Compact profile summary powering the hover card — one request per user. */
+export async function getProfileOverview(userId: string) {
+  return api<ProfileOverview>(`/social/overview/${userId}`);
 }
 
 export async function getUserPosts(userId: string, limit = 12) {

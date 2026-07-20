@@ -109,7 +109,14 @@ function ChallengeCard({ challenge, onClaim }: { challenge: Challenge; onClaim: 
                       {isCompleted ? 'Completed!' : `${Math.round(percent)}%`}
                     </span>
                   </div>
-                  <div className="h-2 bg-black/5 dark:bg-white/5 rounded-full overflow-hidden">
+                  <div
+                    className="h-2 bg-black/5 dark:bg-white/5 rounded-full overflow-hidden"
+                    role="progressbar"
+                    aria-valuemin={0}
+                    aria-valuemax={target}
+                    aria-valuenow={progress}
+                    aria-label={`${challenge.title || 'Challenge'} progress`}
+                  >
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${percent}%` }}
@@ -270,8 +277,8 @@ export default function ChallengesPage() {
         </CardContent>
       </Card>
 
-      {/* Tabs */}
-      <div className="flex gap-2 p-1 bg-surface rounded-xl shadow-sm">
+      {/* Tabs — role=tab/aria-selected to match Events, Explore, Leaderboard, Reels. */}
+      <div role="tablist" aria-label="Challenges view" className="flex gap-2 p-1 bg-surface rounded-xl shadow-sm">
         {[
           { id: 'daily' as const, label: 'Daily', icon: <Calendar size={14} /> },
           { id: 'streaks' as const, label: 'Streaks', icon: <Flame size={14} /> },
@@ -279,6 +286,8 @@ export default function ChallengesPage() {
         ].map((tab) => (
           <button
             key={tab.id}
+            role="tab"
+            aria-selected={activeTab === tab.id}
             onClick={() => setActiveTab(tab.id)}
             className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-sm font-medium transition-all ${
               activeTab === tab.id
@@ -446,7 +455,7 @@ export default function ChallengesPage() {
             ) : (
               <div className="text-center py-12">
                 <TrendingUp size={48} className="mx-auto text-muted-foreground mb-3" />
-                <p className="text-muted-foreground">Leaderboard loading...</p>
+                <p className="text-muted-foreground">Leaderboard loading…</p>
               </div>
             )}
           </motion.div>

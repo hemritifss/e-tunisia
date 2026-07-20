@@ -96,15 +96,25 @@ export default function BadgesPage() {
       </section>
 
       <section className="badges-grid-section">
-        <div className="badges-grid" id="badges-grid">
-          {isLoading ? (
-            <div className="badges-skeleton">
-              <div className="sk-grid">{Array.from({ length: 6 }).map((_, i) => <div className="sk-badge-card skeleton-block" key={i} />)}</div>
-            </div>
-          ) : (
-            sorted.map((b: any) => <BadgeCard key={b.id || b.name} b={b} />)
-          )}
-        </div>
+        {!isLoading && badges.length === 0 ? (
+          // Empty catalog rendered nothing before — hero floating over blank space.
+          <div className="badges-empty">
+            <div className="badges-empty-icon" aria-hidden="true"><Award /></div>
+            <h2>No badges yet</h2>
+            <p>Badges appear here as you explore Tunisia — check in to places, write reviews, and plan trips to start earning them.</p>
+            <a href="#/explore" className="btn btn-primary"><Compass size={16} /> Start exploring</a>
+          </div>
+        ) : (
+          <div className="badges-grid" id="badges-grid">
+            {isLoading ? (
+              <div className="badges-skeleton">
+                <div className="sk-grid">{Array.from({ length: 6 }).map((_, i) => <div className="sk-badge-card skeleton-block" key={i} />)}</div>
+              </div>
+            ) : (
+              sorted.map((b: any) => <BadgeCard key={b.id || b.name} b={b} />)
+            )}
+          </div>
+        )}
       </section>
     </div>
   );

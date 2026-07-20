@@ -107,3 +107,69 @@
     .transport-opt { grid-template-columns: 18px 1fr auto; }
     .transport-opt-note { display: none; }
 }
+
+/* ── Collaborative trips (GROWTH §6.1) ─────────────────────── */
+.trip-join-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+    margin: var(--space-3) 0;
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-xl);
+    border: 1px solid color-mix(in oklab, var(--accent) 35%, var(--border));
+    background: color-mix(in oklab, var(--accent) 8%, var(--surface-elevated));
+}
+.trip-join-banner strong { color: var(--text-primary); display: block; }
+.trip-join-banner p { margin: 2px 0 0; color: var(--text-secondary); font-size: var(--text-sm); }
+
+.trip-crew {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+    margin: var(--space-2) 0 var(--space-3);
+    color: var(--text-secondary);
+    font-size: var(--text-sm);
+}
+.trip-crew > svg { color: var(--accent); }
+.trip-crew-label { font-weight: 600; }
+.trip-crew-member {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 10px 2px 3px;
+    border-radius: var(--radius-full);
+    background: var(--surface-hover);
+    color: var(--text-primary);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: var(--text-xs);
+}
+.trip-crew-member img, .trip-crew-initial {
+    width: 20px; height: 20px;
+    border-radius: var(--radius-full);
+    object-fit: cover;
+    display: inline-grid;
+    place-items: center;
+    background: var(--accent);
+    color: #fff;
+    font-size: 11px;
+}
+
+.trip-editing-banner {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+    margin: var(--space-3) 0;
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-lg);
+    border: 1px dashed color-mix(in oklab, var(--accent) 45%, var(--border));
+    background: color-mix(in oklab, var(--accent) 6%, transparent);
+    color: var(--text-secondary);
+    font-size: var(--text-sm);
+}
+.trip-editing-banner svg { color: var(--accent); }
+.trip-editing-banner .btn { margin-left: auto; }

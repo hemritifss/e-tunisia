@@ -1,6 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as api from '../../api';
 import { showToast } from '../../ui-utils';
+// partner-v3 / tn-landing styles live in landing.css (de-linked from index.html
+// when the editorial landing shipped). Import it here so this page stays styled.
+import '../../styles/landing.css';
 
 // Rebuilt on the .tn-landing design system so the partner page shares the
 // landing page's cinematic, photo-driven vibe: a Ken-Burns photo hero, count-up

@@ -5,6 +5,7 @@ import { Sparkles, Landmark, Bus, Banknote, ShieldCheck, Utensils, Compass, Plus
 import * as api from '../../api';
 import { shareUrl, isFlagged, toggleFlag, requireAuth } from '../../ui-utils';
 import { absoluteUrl } from '../../router';
+import { formatShortDate } from '../../shared/dates';
 
 // Migrated from vanilla pages/tips.ts — filters + like/share cards + submit modal.
 
@@ -40,7 +41,7 @@ function timeAgo(iso: string): string {
   if (h < 24) return `${h}h`;
   const d = Math.floor(h / 24);
   if (d < 7) return `${d}d`;
-  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  return formatShortDate(iso);
 }
 
 function TipCard({ tip }: { tip: any }) {
@@ -239,11 +240,12 @@ export default function TipsPage() {
         {list.length === 0 ? (
           <div className="tips2-empty">
             <div className="tips2-empty-icon"><Sparkles /></div>
-            <h3>No {activeLabel.toLowerCase()} tips yet</h3>
+            {/* 'all' already means every tip — avoid "No all tips tips yet". */}
+            <h3>{cat === 'all' ? 'No tips yet' : `No ${activeLabel.toLowerCase()} tips yet`}</h3>
             <p>Be the first to share one — your tip helps the next traveler.</p>
             <div className="tips2-empty-actions">
               <button type="button" className="btn btn-primary" onClick={openModal}><Plus /> Share your tip</button>
-              <button type="button" className="btn btn-outline" onClick={() => setCat('all')}><Compass /> Show all tips</button>
+              {cat !== 'all' && <button type="button" className="btn btn-outline" onClick={() => setCat('all')}><Compass /> Show all tips</button>}
             </div>
           </div>
         ) : (

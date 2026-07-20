@@ -1,0 +1,235 @@
+/* "Your Summer in Tunisia" — Wrapped story deck (GROWTH §6). */
+
+.wrapped-page {
+  position: relative;
+  max-width: 480px;
+  margin: 12px auto;
+  min-height: min(760px, 86vh);
+  border-radius: var(--radius-3xl);
+  overflow: hidden;
+  color: #fff;
+  background: linear-gradient(160deg, #0b1e3f 0%, #1a6a8a 52%, #d4623a 100%);
+  box-shadow: var(--shadow-2xl);
+  display: flex;
+  flex-direction: column;
+}
+
+/* The deck lives on a dark gradient — force headings white (global h1/h2 rules
+   otherwise stamp them with a dark text token, rendering them near-invisible). */
+.wrapped-page h1,
+.wrapped-page h2,
+.wrapped-page strong { color: #fff; }
+
+/* ── Story progress bars ─────────────────────────────────── */
+.wrapped-bars {
+  display: flex;
+  gap: 5px;
+  padding: 14px 14px 0;
+  z-index: 3;
+}
+.wrapped-bar {
+  flex: 1;
+  height: 3px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.28);
+  transition: background .3s;
+}
+.wrapped-bar.is-done { background: #fff; }
+
+/* ── Stage / slide ───────────────────────────────────────── */
+.wrapped-stage {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 28px 96px;
+  animation: ws-in .45s cubic-bezier(.22, 1, .36, 1);
+}
+@keyframes ws-in {
+  from { opacity: 0; transform: translateY(14px) scale(.98); }
+  to   { opacity: 1; transform: none; }
+}
+.wrapped-slide {
+  width: 100%;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.wrapped-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  opacity: .9;
+  background: rgba(255, 255, 255, 0.16);
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  margin-bottom: 10px;
+}
+
+.ws-cover h1 {
+  font-size: var(--text-5xl);
+  line-height: 1.05;
+  margin: 6px 0;
+  text-shadow: 0 2px 16px rgba(0, 0, 0, .3);
+}
+.ws-sub { font-size: var(--text-lg); opacity: .9; }
+
+/* Big-number stat slides */
+.ws-label {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  opacity: .9;
+}
+.ws-big {
+  font-size: clamp(88px, 30vw, 150px);
+  font-weight: 800;
+  line-height: 1;
+  margin: 4px 0;
+  text-shadow: 0 4px 22px rgba(0, 0, 0, .32);
+  animation: ws-pop .5s cubic-bezier(.34, 1.56, .64, 1);
+}
+@keyframes ws-pop { from { transform: scale(.6); opacity: 0; } to { transform: none; opacity: 1; } }
+.ws-unit {
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  opacity: .95;
+  margin-top: -4px;
+}
+.ws-note {
+  font-size: var(--text-base);
+  line-height: 1.5;
+  opacity: .92;
+  max-width: 32ch;
+  margin-top: 16px;
+}
+
+/* Contribution slide */
+.ws-contrib-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin: 14px 0 4px;
+}
+.ws-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: var(--radius-2xl);
+  padding: 16px 22px;
+  min-width: 92px;
+}
+.ws-chip b { font-size: var(--text-4xl); font-weight: 800; line-height: 1; }
+.ws-chip span { font-size: var(--text-sm); opacity: .88; margin-top: 4px; }
+
+/* Personality slide */
+.ws-emoji { font-size: 76px; line-height: 1; margin: 6px 0; filter: drop-shadow(0 3px 10px rgba(0, 0, 0, .28)); }
+.ws-persona { font-size: var(--text-4xl); font-weight: 800; margin: 2px 0 8px; }
+.ws-blurb { font-size: var(--text-base); line-height: 1.55; opacity: .95; max-width: 34ch; }
+
+/* Final shareable card */
+.ws-final { padding: 0; }
+.ws-card {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: var(--radius-2xl);
+  padding: 26px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  backdrop-filter: blur(6px);
+}
+.ws-card-kicker { font-size: var(--text-sm); letter-spacing: 2px; text-transform: uppercase; font-weight: 700; opacity: .85; }
+.ws-card-name { font-size: var(--text-2xl); font-weight: 800; }
+.ws-card-persona { font-size: var(--text-lg); font-weight: 700; opacity: .95; margin-bottom: 10px; }
+.ws-card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  width: 100%;
+}
+.ws-card-grid > div {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-lg);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.ws-card-grid b { font-size: var(--text-3xl); font-weight: 800; line-height: 1; }
+.ws-card-grid span { font-size: var(--text-xs); opacity: .85; margin-top: 4px; }
+.ws-card-brand { margin-top: 14px; font-size: var(--text-sm); font-weight: 700; opacity: .8; }
+
+/* ── Tap zones ───────────────────────────────────────────── */
+.wrapped-tap {
+  position: absolute;
+  top: 40px;
+  bottom: 96px;
+  width: 30%;
+  border: 0;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  z-index: 2;
+}
+.wrapped-tap:disabled { opacity: 0; pointer-events: none; }
+.wrapped-tap-left { left: 0; justify-content: flex-start; padding-left: 8px; }
+.wrapped-tap-right { right: 0; justify-content: flex-end; padding-right: 8px; }
+.wrapped-tap:hover { color: #fff; }
+
+/* ── Bottom actions ──────────────────────────────────────── */
+.wrapped-actions {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  padding: 16px;
+  z-index: 3;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.35), transparent);
+}
+.wrapped-actions .btn { display: inline-flex; align-items: center; gap: 7px; }
+.wrapped-actions .btn.ghost { background: rgba(255, 255, 255, 0.16); color: #fff; border-color: rgba(255, 255, 255, 0.3); }
+
+/* ── Guard / loading / empty ─────────────────────────────── */
+.wrapped-guard {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 12px;
+  padding: 48px 28px;
+}
+.wrapped-guard h1 { font-size: var(--text-3xl); line-height: 1.15; }
+.wrapped-guard p { font-size: var(--text-base); opacity: .92; max-width: 34ch; margin: 0 auto; }
+.wrapped-guard-actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 10px; }
+.wrapped-guard-actions .btn { display: inline-flex; align-items: center; gap: 7px; }
+.wrapped-guard-actions .btn.ghost { background: rgba(255, 255, 255, 0.16); color: #fff; border-color: rgba(255, 255, 255, 0.3); }
+
+.wrapped-loading { align-items: center; justify-content: center; }
+.wrapped-spinner {
+  width: 36px; height: 36px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: ws-spin .8s linear infinite;
+}
+@keyframes ws-spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 520px) {
+  .wrapped-page { margin: 0; border-radius: 0; min-height: 100vh; min-height: 100dvh; }
+}

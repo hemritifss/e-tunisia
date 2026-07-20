@@ -74,7 +74,12 @@ icon-in-gradient-box feature cards · fake "online now" counters.
 
 ## Files
 
-- Markup: [web/src/react/pages/HeroPage.tsx](../../web/src/react/pages/HeroPage.tsx) (namespace `.ej-*`)
-- Styles: [web/src/styles/landing-editorial.css](../../web/src/styles/landing-editorial.css) (self-contained; linked in `web/index.html` after `landing.css`)
+> **Jul 13 2026 — the motion/narrative layer moved to the "Carnet Vivant" ultra edition:**
+> see [landing-ultra.md](landing-ultra.md). Markup now lives in
+> `web/src/react/pages/landing/` (HeroPage.tsx is a re-export); everything below about
+> identity, artifacts, bans and gotchas still applies.
+
+- Markup: [web/src/react/pages/landing/](../../web/src/react/pages/landing/) (namespace `.ej-*`; `HeroPage.tsx` re-exports `LandingPage`)
+- Styles: [web/src/styles/landing-editorial.css](../../web/src/styles/landing-editorial.css) (self-contained; linked in `web/index.html` after `landing.css`) + [web/src/styles/landing-ultra.css](../../web/src/styles/landing-ultra.css) (choreography/depth layer)
 - Tokens: paper/ink + `--font-editorial`/`--font-hand` in [web/src/styles/tokens.css](../../web/src/styles/tokens.css) (Fraunces + Caveat added to the Google Fonts import)
 - Legacy (Partner/About only): `web/src/styles/landing.css` + `pages.css` `.tn-*`

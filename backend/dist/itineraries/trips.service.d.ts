@@ -1,5 +1,6 @@
 import { Repository } from 'typeorm';
 import { TripPlan } from './trip-plan.entity';
+import { TripMember } from './trip-member.entity';
 import { Place } from '../places/place.entity';
 import { TourPackage } from '../places/tour-package.entity';
 import { InquiriesService } from '../places/inquiries.service';
@@ -31,6 +32,7 @@ interface UpsertInput {
 }
 export declare class TripsService {
     private trips;
+    private members;
     private places;
     private packages;
     private inquiries;
@@ -38,8 +40,9 @@ export declare class TripsService {
     private badges;
     private billing;
     private static UUID_RE;
-    constructor(trips: Repository<TripPlan>, places: Repository<Place>, packages: Repository<TourPackage>, inquiries: InquiriesService, users: UsersService, badges: BadgesService, billing: BillingService);
-    listByHandle(handle: string): Promise<TripPlan[]>;
+    constructor(trips: Repository<TripPlan>, members: Repository<TripMember>, places: Repository<Place>, packages: Repository<TourPackage>, inquiries: InquiriesService, users: UsersService, badges: BadgesService, billing: BillingService);
+    private sanitize;
+    listByHandle(handle: string): Promise<Omit<TripPlan, "inviteCode">[]>;
     batchInquire(slug: string, viewerUserId: string | null, input: BatchInquiryInput): Promise<{
         slug: string;
         sent: number;
@@ -56,8 +59,32 @@ export declare class TripsService {
     private generateSlug;
     private hydrateStops;
     create(userId: string | null, input: UpsertInput): Promise<TripPlan>;
+    private canEdit;
     update(slug: string, userId: string, input: UpsertInput): Promise<TripPlan>;
-    listMine(userId: string): Promise<TripPlan[]>;
+    listMine(userId: string): Promise<Omit<TripPlan, "inviteCode">[]>;
+    ensureInviteCode(slug: string, userId: string): Promise<{
+        code: string;
+    }>;
+    join(slug: string, userId: string, code: string): Promise<{
+        joined: boolean;
+        alreadyOwner: boolean;
+        title: string;
+    } | {
+        joined: boolean;
+        title: string;
+        alreadyOwner?: undefined;
+    }>;
+    listMembers(slug: string, viewerId?: string): Promise<{
+        members: {
+            id: any;
+            handle: any;
+            fullName: any;
+            avatar: any;
+            isOwner: boolean;
+        }[];
+        canEdit: boolean;
+        isOwner: boolean;
+    }>;
     discover(opts?: {
         page?: number;
         limit?: number;
@@ -85,7 +112,7 @@ export declare class TripsService {
             totalPages: number;
         };
     }>;
-    findBySlug(slug: string, viewerUserId: string | null): Promise<TripPlan>;
+    findBySlug(slug: string, viewerUserId: string | null): Promise<Omit<TripPlan, "inviteCode">>;
     remove(slug: string, userId: string): Promise<{
         deleted: boolean;
     }>;

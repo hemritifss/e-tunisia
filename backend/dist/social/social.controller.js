@@ -16,6 +16,7 @@ exports.SocialController = void 0;
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
+const optional_jwt_auth_guard_1 = require("../auth/guards/optional-jwt-auth.guard");
 const current_user_decorator_1 = require("../common/decorators/current-user.decorator");
 const social_service_1 = require("./social.service");
 let SocialController = class SocialController {
@@ -42,6 +43,9 @@ let SocialController = class SocialController {
     }
     isFollowing(followerId, followingId) {
         return this.socialService.isFollowing(followerId, followingId);
+    }
+    overview(viewerId, userId) {
+        return this.socialService.getProfileOverview(viewerId, userId);
     }
     getFeed(userId, page = 1, limit = 20) {
         return this.socialService.getActivityFeed(userId, page, limit);
@@ -119,6 +123,16 @@ __decorate([
     __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", void 0)
 ], SocialController.prototype, "isFollowing", null);
+__decorate([
+    (0, common_1.Get)('overview/:userId'),
+    (0, common_1.UseGuards)(optional_jwt_auth_guard_1.OptionalJwtAuthGuard),
+    (0, swagger_1.ApiOperation)({ summary: 'Compact profile summary for the hover card' }),
+    __param(0, (0, current_user_decorator_1.CurrentUser)('id')),
+    __param(1, (0, common_1.Param)('userId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:returntype", void 0)
+], SocialController.prototype, "overview", null);
 __decorate([
     (0, common_1.Get)('feed'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),

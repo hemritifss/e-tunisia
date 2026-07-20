@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import * as api from '../../api';
 import { MessageCircle, UserPlus, UserMinus, ExternalLink, Link2, Sparkles, Check } from 'lucide-react';
 import { goTo, absoluteUrl } from '../../router';
+import { currentUserId } from '../../shared/current-user';
 
 /**
  * Facebook-style context menu for any user avatar / byline.
@@ -74,9 +75,7 @@ function MenuPanel({ user, position, onClose }: { user: UserMenuPayload; positio
     const [followBusy, setFollowBusy] = useState(false);
     const [copied, setCopied] = useState(false);
     const ref = useRef<HTMLDivElement | null>(null);
-    const me = (() => {
-        try { return JSON.parse(localStorage.getItem('etunisia_user') || localStorage.getItem('auth_user') || 'null')?.id ?? null; } catch { return null; }
-    })();
+    const me = currentUserId();
     const isSelf = me === user.id;
     const authed = api.isLoggedIn();
     const pro = isPro(user.plan);

@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Itinerary } from './itinerary.entity';
 import { TripPlan } from './trip-plan.entity';
+import { TripMember } from './trip-member.entity';
 import { ItinerariesService } from './itineraries.service';
 import { ItinerariesController } from './itineraries.controller';
 import { TripsService } from './trips.service';
@@ -15,7 +16,7 @@ import { BillingModule } from '../billing/billing.module';
 
 @Module({
     imports: [
-        TypeOrmModule.forFeature([Itinerary, TripPlan, Place, TourPackage]),
+        TypeOrmModule.forFeature([Itinerary, TripPlan, TripMember, Place, TourPackage]),
         // Pulls in InquiriesService so a trip can fan-out one inquiry per stop.
         PlacesModule,
         UsersModule,

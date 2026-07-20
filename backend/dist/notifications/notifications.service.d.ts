@@ -3,12 +3,15 @@ import { Notification, NotificationType } from './notification.entity';
 import { EventsGateway } from '../websocket/websocket.gateway';
 import { QueuesService } from '../queues/queues.service';
 import { PushService } from '../push/push.service';
+import { SafetyService } from '../safety/safety.service';
 export declare class NotificationsService {
     private notifRepo;
     private queuesService;
+    private safety;
     private push?;
     private gateway?;
-    constructor(notifRepo: Repository<Notification>, queuesService: QueuesService, push?: PushService, gateway?: EventsGateway);
+    constructor(notifRepo: Repository<Notification>, queuesService: QueuesService, safety: SafetyService, push?: PushService, gateway?: EventsGateway);
+    private senderOf;
     private deepLink;
     findByUser(userId: string): Promise<Notification[]>;
     getUnreadCount(userId: string): Promise<{

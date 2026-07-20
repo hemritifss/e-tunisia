@@ -20,12 +20,18 @@ const notification_entity_1 = require("./notification.entity");
 const websocket_gateway_1 = require("../websocket/websocket.gateway");
 const queues_service_1 = require("../queues/queues.service");
 const push_service_1 = require("../push/push.service");
+const safety_service_1 = require("../safety/safety.service");
 let NotificationsService = class NotificationsService {
-    constructor(notifRepo, queuesService, push, gateway) {
+    constructor(notifRepo, queuesService, safety, push, gateway) {
         this.notifRepo = notifRepo;
         this.queuesService = queuesService;
+        this.safety = safety;
         this.push = push;
         this.gateway = gateway;
+    }
+    senderOf(n) {
+        const d = n.data || {};
+        return d.fromUserId || d.followerId || d.senderId || d.actorId || null;
     }
     deepLink(type, data) {
         switch (type) {
@@ -38,17 +44,34 @@ let NotificationsService = class NotificationsService {
         }
     }
     async findByUser(userId) {
-        return this.notifRepo.find({
+        const rows = await this.notifRepo.find({
             where: { userId },
             order: { createdAt: 'DESC' },
             take: 50,
         });
+        const hidden = await this.safety.getHiddenUserIds(userId);
+        if (hidden.size === 0)
+            return rows;
+        return rows.filter((n) => {
+            const sender = this.senderOf(n);
+            return !sender || !hidden.has(sender);
+        });
     }
     async getUnreadCount(userId) {
-        const count = await this.notifRepo.count({
+        const unread = await this.notifRepo.find({
             where: { userId, isRead: false },
+            select: ['id', 'data'],
         });
-        return { unreadCount: count };
+        if (unread.length === 0)
+            return { unreadCount: 0 };
+        const hidden = await this.safety.getHiddenUserIds(userId);
+        if (hidden.size === 0)
+            return { unreadCount: unread.length };
+        const visible = unread.filter((n) => {
+            const sender = this.senderOf(n);
+            return !sender || !hidden.has(sender);
+        });
+        return { unreadCount: visible.length };
     }
     async markRead(id, userId) {
         const notif = await this.notifRepo.findOne({ where: { id, userId } });
@@ -115,11 +138,12 @@ exports.NotificationsService = NotificationsService;
 exports.NotificationsService = NotificationsService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(notification_entity_1.Notification)),
-    __param(2, (0, common_1.Optional)()),
     __param(3, (0, common_1.Optional)()),
-    __param(3, (0, common_1.Inject)((0, common_1.forwardRef)(() => websocket_gateway_1.EventsGateway))),
+    __param(4, (0, common_1.Optional)()),
+    __param(4, (0, common_1.Inject)((0, common_1.forwardRef)(() => websocket_gateway_1.EventsGateway))),
     __metadata("design:paramtypes", [typeorm_2.Repository,
         queues_service_1.QueuesService,
+        safety_service_1.SafetyService,
         push_service_1.PushService,
         websocket_gateway_1.EventsGateway])
 ], NotificationsService);

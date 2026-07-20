@@ -7,7 +7,17 @@ import * as cart from './trip-cart';
 import * as api from './api';
 import { replaceIcons } from './icons';
 import { showToast } from './ui-utils';
-import { goTo, absoluteUrl } from './router';
+import { goTo, absoluteUrl, currentPath } from './router';
+import { t } from './i18n';
+
+/* Routes where the floating FAB gets out of the way: in the messenger it sat
+   directly on top of the composer's send button on mobile. */
+const FAB_HIDDEN_ROUTES = ['/messages'];
+
+function fabHiddenHere(): boolean {
+  const p = (currentPath() || '/').toLowerCase();
+  return FAB_HIDDEN_ROUTES.some((r) => p === r || p.startsWith(r + '/'));
+}
 
 let mounted = false;
 let cartUnsubscribe: (() => void) | null = null;
@@ -18,10 +28,10 @@ function createFab() {
   const fab = document.createElement('button');
   fab.id = 'trip-cart-fab';
   fab.className = 'trip-cart-fab';
-  fab.setAttribute('aria-label', 'Open trip cart');
+  fab.setAttribute('aria-label', t('trip.openCart'));
   fab.appendChild(iconEl('lucide-luggage'));
   const label = document.createElement('span');
-  label.textContent = 'My trip';
+  label.textContent = t('trip.myTrip');
   fab.appendChild(label);
   const count = document.createElement('span');
   count.className = 'trip-cart-count';
@@ -41,6 +51,13 @@ function createFab() {
   cartUnsubscribe = cart.onCartChange(refreshFab);
   fab.addEventListener('click', openDrawer);
   replaceIcons(fab);
+
+  // The FAB is created once (not per-render), so keep its label/aria in sync
+  // when the user switches language without a reload.
+  window.addEventListener('etunisia:locale-changed', () => {
+    fab.setAttribute('aria-label', t('trip.openCart'));
+    label.textContent = t('trip.myTrip');
+  });
 }
 
 function destroyFab() {
@@ -58,8 +75,13 @@ export function mountTripCart() {
 
 // Called by router on every navigate so the FAB appears/disappears with login state.
 export function syncTripCartAuth() {
-  if (api.isLoggedIn()) createFab();
-  else destroyFab();
+  if (api.isLoggedIn()) {
+    createFab();
+    const fab = document.getElementById('trip-cart-fab');
+    if (fab) fab.hidden = fabHiddenHere();
+  } else {
+    destroyFab();
+  }
 }
 
 function iconEl(name: string): HTMLElement {
@@ -86,7 +108,7 @@ function openDrawer() {
   const title = document.createElement('div');
   title.className = 'trip-cart-title';
   const h = document.createElement('h2');
-  h.textContent = 'My Tunisia trip';
+  h.textContent = t('trip.cartTitle');
   h.dataset.role = 'title';
   const sub = document.createElement('p');
   sub.className = 'trip-cart-sub';
@@ -107,15 +129,15 @@ function openDrawer() {
   const tripTitleInput = document.createElement('input');
   tripTitleInput.type = 'text';
   tripTitleInput.maxLength = 60;
-  tripTitleInput.placeholder = 'Trip name';
+  tripTitleInput.placeholder = t('trip.name');
   tripTitleInput.className = 'trip-cart-title-input';
   tripTitleInput.dataset.role = 'title-input';
   controls.appendChild(tripTitleInput);
 
   const stepperRow = document.createElement('div');
   stepperRow.className = 'trip-cart-stepper-row';
-  stepperRow.appendChild(buildStepper('Travelers', 'travelers', 1, 50));
-  stepperRow.appendChild(buildStepper('Days', 'days', 1, 30));
+  stepperRow.appendChild(buildStepper(t('trip.travelers'), 'travelers', 1, 50));
+  stepperRow.appendChild(buildStepper(t('trip.days'), 'days', 1, 30));
   controls.appendChild(stepperRow);
 
   drawer.appendChild(controls);
@@ -139,12 +161,26 @@ function openDrawer() {
   const clearBtn = document.createElement('button');
   clearBtn.className = 'btn btn-ghost btn-sm';
   clearBtn.type = 'button';
-  clearBtn.textContent = 'Clear';
+  clearBtn.textContent = t('trip.clear');
+  // Two-tap confirm in place of the native confirm() dialog.
+  let clearArmTimer: number | null = null;
+  const disarmClear = () => {
+    if (clearArmTimer) window.clearTimeout(clearArmTimer);
+    clearArmTimer = null;
+    clearBtn.textContent = t('trip.clear');
+    clearBtn.classList.remove('is-confirming');
+  };
   clearBtn.addEventListener('click', () => {
     if (cart.getCart().stops.length === 0) return;
-    if (!confirm('Empty your trip cart?')) return;
-    cart.clearCart();
-    refresh();
+    if (clearArmTimer) {
+      disarmClear();
+      cart.clearCart();
+      refresh();
+      return;
+    }
+    clearBtn.textContent = t('trip.clearAsk');
+    clearBtn.classList.add('is-confirming');
+    clearArmTimer = window.setTimeout(disarmClear, 3000);
   });
   actions.appendChild(clearBtn);
 
@@ -153,7 +189,7 @@ function openDrawer() {
   saveBtn.type = 'button';
   saveBtn.dataset.role = 'save';
   saveBtn.appendChild(iconEl('lucide-share-2'));
-  saveBtn.appendChild(document.createTextNode(' Save & share'));
+  saveBtn.appendChild(document.createTextNode(' ' + t('trip.saveShare')));
   saveBtn.addEventListener('click', onSave);
   actions.appendChild(saveBtn);
   foot.appendChild(actions);
@@ -226,16 +262,16 @@ function openDrawer() {
       const empty = document.createElement('div');
       empty.className = 'trip-cart-empty';
       empty.appendChild(iconEl('lucide-luggage'));
-      const t = document.createElement('h3');
-      t.textContent = 'Your trip is empty';
-      empty.appendChild(t);
+      const emptyTitle = document.createElement('h3');
+      emptyTitle.textContent = t('trip.empty');
+      empty.appendChild(emptyTitle);
       const p = document.createElement('p');
-      p.textContent = 'Tap "Add to trip" on any place or experience to start building your itinerary.';
+      p.textContent = t('trip.emptyHint');
       empty.appendChild(p);
       const go = document.createElement('a');
       go.className = 'btn btn-primary';
       go.href = '#/explore';
-      go.textContent = 'Browse places';
+      go.textContent = t('trip.browse');
       go.addEventListener('click', close);
       empty.appendChild(go);
       list.appendChild(empty);
@@ -254,7 +290,7 @@ function openDrawer() {
         dayWrap.className = 'trip-cart-day';
         const dayHead = document.createElement('div');
         dayHead.className = 'trip-cart-day-head';
-        dayHead.textContent = `Day ${dayIdx + 1}`;
+        dayHead.textContent = `${t('trip.day')} ${dayIdx + 1}`;
         dayWrap.appendChild(dayHead);
         for (const stop of byDay.get(dayIdx)!) dayWrap.appendChild(buildStopRow(stop));
         list.appendChild(dayWrap);

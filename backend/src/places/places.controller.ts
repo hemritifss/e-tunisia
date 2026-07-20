@@ -87,8 +87,10 @@ export class PlacesController {
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Create a new place' })
-    create(@Body() dto: CreatePlaceDto) {
-        return this.placesService.create(dto);
+    create(@Request() req, @Body() dto: CreatePlaceDto) {
+        // Attribute the creator (owner tools / partner flow). Community gems go
+        // through POST /gems/submit, which adds dedup + AI enrich + confirmations.
+        return this.placesService.create(dto, req.user?.id);
     }
 
     @Post('by-ids')

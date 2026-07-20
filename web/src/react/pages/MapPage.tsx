@@ -17,7 +17,7 @@ import { KontHouniButton } from '../components/KontHouniButton';
 
 interface MapPlace {
   id: string; name: string; lat: number; lng: number; category: string;
-  rating: number; reviewCount: number; image: string; description: string;
+  rating: number; reviewCount: number; image: string; description: string; city?: string;
 }
 
 function esc(s: unknown): string {
@@ -120,6 +120,7 @@ async function loadAllPlaces(): Promise<MapPlace[]> {
         reviewCount: Number(p.reviewCount ?? p.reviewsCount) || 0,
         image: api.getImageUrl(p.coverImage || p.images?.[0], 'place'),
         description: String(p.description || ''),
+        city: p.city || undefined,
       });
     }
     const totalPages = res?.meta?.totalPages;
@@ -350,8 +351,11 @@ export default function MapPage() {
         </div>
       )}
 
-      <div className={`map-info-panel ${selected ? 'open' : ''}`}>
-        <button className="map-info-close" onClick={() => setSelected(null)}><X size={18} /></button>
+      {/* aria-hidden + tabIndex guard: the panel stays mounted for its slide
+          animation, so without this its close button was focusable and
+          announced even while the panel sat off-screen. */}
+      <div className={`map-info-panel ${selected ? 'open' : ''}`} role="dialog" aria-label="Place details" aria-hidden={!selected}>
+        <button className="map-info-close" aria-label="Close details" tabIndex={selected ? undefined : -1} onClick={() => setSelected(null)}><X size={18} aria-hidden="true" /></button>
         {selected && (
           <div className="map-info-content">
             <div className="map-info-image" style={{ backgroundImage: `url('${selected.image}')` }}>
@@ -362,7 +366,7 @@ export default function MapPage() {
               <div className="map-info-rating">
                 <div className="map-popup-stars" dangerouslySetInnerHTML={{ __html: starsHtml(selected.rating) }} />
                 <span className="map-popup-rating-num">{selected.rating.toFixed(1)}</span>
-                {selected.reviewCount > 0 && <span className="map-info-review-count">({selected.reviewCount} reviews)</span>}
+                {selected.reviewCount > 0 && <span className="map-info-review-count">({selected.reviewCount} review{selected.reviewCount === 1 ? '' : 's'})</span>}
               </div>
             )}
             <p className="map-info-desc">{selected.description}</p>
@@ -381,7 +385,7 @@ export default function MapPage() {
                 <div className="map-info-comment"><div className="map-info-comment-text">No reviews yet — be the first.</div></div>
               )}
             </div>
-            <div className="map-info-visit"><KontHouniButton placeId={selected.id} compact /></div>
+            <div className="map-info-visit"><KontHouniButton placeId={selected.id} placeName={selected.name} city={selected.city} compact /></div>
             <a href={`#/place/${selected.id}`} className="map-info-btn" style={{ background: selColor }}><ArrowRight size={16} /> View place</a>
           </div>
         )}

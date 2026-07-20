@@ -6,6 +6,7 @@ import { NotificationsController } from './notifications.controller';
 import { WebSocketModule } from '../websocket/websocket.module';
 import { QueuesModule } from '../queues/queues.module';
 import { PushModule } from '../push/push.module';
+import { SafetyModule } from '../safety/safety.module';
 
 @Module({
     imports: [
@@ -13,6 +14,8 @@ import { PushModule } from '../push/push.module';
         forwardRef(() => WebSocketModule),
         QueuesModule,
         PushModule,
+        // Notifications from blocked users are filtered out on read.
+        SafetyModule,
     ],
     controllers: [NotificationsController],
     providers: [NotificationsService],

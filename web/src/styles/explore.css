@@ -24,55 +24,28 @@
     isolation: isolate;
     box-shadow: var(--shadow-xl);
 }
+/* Ink-dipped masthead section (carnet). Aurora mesh + blurred orbs retired. */
 .explore-hero-bg {
     position: absolute;
     inset: 0;
     z-index: -2;
-    background: var(--gradient-hero);
+    background: var(--paper-deep);
 }
+/* Faint hairline registration marks instead of glowing orbs */
 .explore-hero-bg::after {
     content: '';
     position: absolute;
     inset: 0;
-    background: var(--gradient-dark-mesh);
+    background-image: repeating-linear-gradient(
+        transparent 0 31px,
+        var(--rule-faint) 31px 32px
+    );
+    opacity: 0.4;
     pointer-events: none;
 }
-.explore-hero-orbs {
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    overflow: hidden;
-    pointer-events: none;
-}
-.explore-hero-orb {
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(70px);
-    opacity: 0.45;
-    animation: explore-orb 16s var(--ease-in-out) infinite;
-}
-.explore-hero-orb:nth-child(1) {
-    width: 360px;
-    height: 360px;
-    top: -100px;
-    left: -80px;
-    background: var(--terracotta);
-}
-.explore-hero-orb:nth-child(2) {
-    width: 320px;
-    height: 320px;
-    bottom: -120px;
-    right: -40px;
-    background: var(--mediterranean);
-    animation-delay: -8s;
-}
-@keyframes explore-orb {
-    0%, 100% { transform: translate(0, 0) scale(1); }
-    50%      { transform: translate(32px, -24px) scale(1.08); }
-}
-@media (prefers-reduced-motion: reduce) {
-    .explore-hero-orb { animation: none; }
-}
+/* Orbs neutralised — kept in DOM (aria-hidden) but no longer painted */
+.explore-hero-orbs,
+.explore-hero-orb { display: none; }
 
 .explore-hero-content {
     position: relative;
@@ -82,15 +55,11 @@
     display: inline-flex;
     align-items: center;
     gap: var(--space-2);
-    padding: 4px var(--space-3);
-    border-radius: var(--radius-full);
-    background: oklch(100% 0 0 / 0.12);
-    border: 1px solid oklch(100% 0 0 / 0.18);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    color: oklch(95% 0.02 80);
+    color: var(--ink-on-deep);
+    opacity: 0.7;
+    font-family: var(--font-mono);
     font-size: 11px;
-    font-weight: 600;
+    font-weight: 500;
     letter-spacing: var(--tracking-widest);
     text-transform: uppercase;
     margin-bottom: var(--space-4);
@@ -105,21 +74,11 @@
     margin: 0 0 var(--space-3);
     text-shadow: 0 2px 16px oklch(0% 0 0 / 0.25);
 }
+/* Gradient text retired — carnet emphasis is Fraunces italic in gold ink */
 .explore-hero-grad {
-    background: linear-gradient(120deg, var(--gold), var(--terracotta-light), var(--gold));
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    color: transparent;
-    animation: explore-grad 6s var(--ease-in-out) infinite;
-}
-@keyframes explore-grad {
-    0%, 100% { background-position: 0% 50%; }
-    50%      { background-position: 100% 50%; }
-}
-@media (prefers-reduced-motion: reduce) {
-    .explore-hero-grad { animation: none; }
+    font-style: italic;
+    font-weight: 600;
+    color: var(--gold);
 }
 .explore-hero p {
     color: oklch(90% 0.01 80);
@@ -135,21 +94,21 @@
     position: relative;
     display: flex;
     align-items: center;
-    background: oklch(100% 0 0 / 0.95);
-    border: 1px solid oklch(100% 0 0 / 0.6);
-    border-radius: var(--radius-full);
-    box-shadow: var(--shadow-lg);
+    background: var(--paper-print);
+    border: 1.5px solid var(--ink);
+    border-radius: var(--radius-sm);
+    box-shadow: 3px 3px 0 oklch(0% 0 0 / 0.35);
     padding: 6px 6px 6px var(--space-4);
     transition: box-shadow var(--duration-normal) var(--ease-out);
 }
-[data-theme="dark"] .explore-search-form {
-    background: oklch(20% 0.014 260 / 0.8);
-    border-color: oklch(100% 0 0 / 0.15);
-}
 .explore-search-form:focus-within {
-    box-shadow: var(--shadow-xl), 0 0 0 4px oklch(78% 0.17 80 / 0.25);
+    box-shadow: 4px 4px 0 var(--gold);
 }
 .explore-search-icon {
+    /* pages.css still absolutely-positions this at left:18px (its old layout
+       expected 46px input padding) — that stacked the icon on top of the
+       text here. Pin it back into the flex flow. */
+    position: static;
     color: var(--text-secondary);
     flex: 0 0 auto;
 }
@@ -168,6 +127,7 @@
     color: var(--text-tertiary);
 }
 .explore-search-clear {
+    position: static; /* pages.css pins it absolute right:14px — keep in flow */
     width: 32px;
     height: 32px;
     display: grid;
@@ -486,3 +446,12 @@
     background: var(--border);
 }
 .explore-loadmore { display: flex; flex-direction: column; gap: var(--space-4); }
+
+/* ── For-you strip: scroll affordance ──
+   Right-edge fade signals "there's more" (desktop has no visible scrollbar
+   until hover); thin bar keeps the row tidy while scrolling. */
+.explore-foryou .snap-x {
+    mask-image: linear-gradient(90deg, #000 0, #000 calc(100% - 56px), transparent);
+    -webkit-mask-image: linear-gradient(90deg, #000 0, #000 calc(100% - 56px), transparent);
+    scrollbar-width: thin;
+}

@@ -23,6 +23,7 @@ export declare class TripPlan {
     stops: TripStop[];
     days: number;
     startDate: string | null;
+    inviteCode: string | null;
     isPublic: boolean;
     viewCount: number;
     cloneCount: number;

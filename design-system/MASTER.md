@@ -23,24 +23,37 @@
 
 ## 2. Style direction
 
-Two style layers coexist and are selected per surface:
+> **Primary identity: the Carnet** — see `design-system/UNIQUENESS.md` (strategy, dialects,
+> phases) and `design-system/IDEAS.md` (creative backlog). Everything below is ordered by
+> what to reach for first.
 
-### 2a. Nature Distilled (primary, content surfaces)
-Warm, earthy, handmade-feeling — terracotta + sand + olive + cream. Used on feed, explore, profile, place cards, passport stamps. Confirmed by `--design-system` search as the correct match for cultural tourism / community products.
+### 2a. Carnet — "One Living Carnet" (PRIMARY, opt-in via `data-design="carnet"`)
+Editorial paper & ink system promoted from the landing to the whole app. Tokenized in
+`tokens.css` (`[data-design="carnet"]` remaps surface/text/border/shadow/display-font
+semantics onto `--paper*`/`--ink*`/`--rule*`); component kit in `web/src/styles/carnet.css`
+(`.cn-*`: letterpress buttons, underline inputs, paper toast/modal, pencil skeletons,
+blank-page empty states, kicker/folio/rule utilities, film grain). Two dialects:
+- **Journal** (expressive — tape, tilts, stamps, Caveat, grain): passport, badges,
+  check-in moments, onboarding, share cards, celebrations.
+- **Field Notes** (functional — paper surfaces, ink text, hairline rules, mono meta,
+  quiet letterpress): feed, explore, search, settings, dense lists. No tape/tilt in rows.
+New pages default to Field Notes; Journal artifacts must be declared in the page spec.
 
-### 2b. Cinematic / Aurora Mesh (hero, landing, premium, passport showcase)
-Dark mesh-gradient backgrounds, atmospheric glow, mediterranean blue + violet + gold accents. Used for hero, premium upsell, passport share screen, AI Travel Planner. Tokens: `--gradient-hero`, `--gradient-mesh`, `--gradient-dark-mesh`, `--neon-*`.
+### 2b. Sleek (opt-in via `data-design="sleek"`)
+Quiet, hairline-bordered, ~10% brand budget, for admin-class density (admin, inquiries,
+dashboards). Scheduled to merge into Field Notes (UNIQUENESS Phase 2); until then keep.
 
-### 2c. Glassmorphism (overlays & navigation)
-Frosted-glass surfaces with `--glass-bg`, `--glass-blur`, `--shadow-glass`. Used on nav, dropdowns, modals, sheet overlays. **Always verify 4.5:1 text contrast** against the live blurred backdrop — this is the #1 glass failure mode.
-
-### 2d. Sleek (opt-in via `data-design="sleek"`)
-Quiet, hairline-bordered, ~10% brand budget. Apply on pages where information density dominates (admin, settings, inquiries, dashboards). Already tokenized as `--sleek-*`.
+### 2c. LEGACY — frozen, do not extend
+**Cinematic / Aurora Mesh** (`--gradient-mesh`, `--gradient-hero`, `--neon-*`) and
+**Glassmorphism chrome** (`--glass-*`, `--shadow-glass`). These read as
+machine-generated and are being retired surface-by-surface. Grandfathered: Partner/About
+(`.tn-*`) and existing chrome not yet migrated. **Never introduce them on new or
+redesigned surfaces.** Nature Distilled's warmth is absorbed into the Carnet palette.
 
 ### What we do NOT mix
-- Don't use Aurora mesh on dense list pages (feed, explore, search) — it competes with content.
-- Don't apply glassmorphism on read-heavy text blocks — only on chrome (nav, sheets, modals, dropdowns).
-- Don't combine neon glow (`--neon-*`) with Sleek surfaces — they belong to different layers.
+- No Journal ephemera (tape, tilts, stamps) inside dense list rows — Field Notes there.
+- No legacy layers (mesh, neon, glass) on any new or carnet-opted surface.
+- Caveat (`--font-hand`) never carries essential information or labels controls.
 
 ---
 
@@ -71,9 +84,13 @@ Dark theme is **already defined** in `tokens.css` under `[data-theme="dark"]`. W
 
 | Role | Token | Family |
 |------|-------|--------|
-| Display (h1–h3, hero, landing) | `--font-display` | Outfit (fallback: Plus Jakarta Sans → Inter) |
+| Display (h1–h3, hero) | `--font-display` | Inter by default; **Fraunces on carnet pages** (`data-design="carnet"` remaps it). Outfit + Plus Jakarta retired — never re-add. |
 | Body / UI | `--font-sans` | Inter (fallback: Noto Kufi Arabic for RTL → system-ui) |
-| Mono (data, timers, prices) | `--font-mono` | JetBrains Mono → Fira Code |
+| Mono (data, timers, prices, kickers, folios) | `--font-mono` | JetBrains Mono (loaded since Phase 0) → Fira Code |
+| Editorial display | `--font-editorial` | Fraunces (optical sizing on; italic accents in terracotta) |
+| Hand (annotations only, never essential info) | `--font-hand` | Caveat |
+
+Fonts load **once** from `web/index.html` (single `<link>`); `tokens.css` has no `@import`.
 
 **Scale tokens:** `--text-xs` (11px) → `--text-7xl` (80px). Use `--text-base` (15px) for body. **Minimum body 15px** — never go below.
 
@@ -225,12 +242,16 @@ Use the defined `cubic-bezier` curves — never `linear` for UI motion, never `e
 From the skill audit + recurring issues in this codebase:
 - Generic stock photos for Tunisia content — use real partner / community photos.
 - Emoji as nav/settings icons.
-- Glass surfaces over images without verifying contrast.
-- Multi-stop neon glow on small UI (buttons, chips) — reserve for hero/showcase.
 - Custom shadows authored per component — always use a `--shadow-*` token.
 - Hardcoded hex/oklch in `.tsx`/`.ts` — always route through `tokens.css`.
 - Mixing filled and outline icon styles at the same hierarchy level.
 - Booking flows buried under decoration — keep complex flows simple, save flair for landing/passport.
+
+**Banned AI tells — app-wide** (promoted from the landing spec; legacy `.tn-*` pages
+grandfathered until migration): canvas particles · floating mesh orbs · gradient text ·
+pill announcement badges · animated count-up stats · stock avatar stacks · new
+glassmorphism chrome · neon glows on new surfaces · icon-in-gradient-box feature cards ·
+fake "online now" counters · gray shimmer skeletons on carnet pages (use `.cn-skeleton`).
 
 ---
 

@@ -1,0 +1,169 @@
+/* The Great Tunisia Mapping Weekend — live leaderboard (GROWTH §8). */
+
+.mw-page {
+  max-width: 940px;
+  margin: 0 auto;
+  padding: 24px 16px 72px;
+}
+
+/* ── Hero ────────────────────────────────────────────────── */
+.mw-hero {
+  text-align: center;
+  background: linear-gradient(135deg, var(--mediterranean, #1a6a8a), var(--accent, #d4623a));
+  color: #fff;
+  border-radius: var(--radius-3xl);
+  padding: 34px 24px 28px;
+  box-shadow: var(--shadow-xl);
+}
+/* Hero sits on a gradient — force the heading white (the global h1 rule
+   otherwise stamps it with the dark text token). */
+.mw-hero h1 { font-size: var(--text-4xl); line-height: 1.08; margin: 12px 0 6px; color: #fff; text-shadow: 0 2px 14px rgba(0,0,0,.25); }
+.mw-subtitle { font-size: var(--text-lg); opacity: .95; max-width: 46ch; margin: 0 auto; }
+
+.mw-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  background: rgba(255,255,255,0.2);
+  border: 1px solid rgba(255,255,255,0.35);
+}
+.mw-status-live { background: rgba(239, 68, 68, 0.9); border-color: transparent; animation: mw-pulse 2s ease-in-out infinite; }
+@keyframes mw-pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(239,68,68,.5); } 50% { box-shadow: 0 0 0 8px rgba(239,68,68,0); } }
+
+/* Countdown */
+.mw-countdown {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 10px;
+  margin: 20px auto 4px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.mw-cd-unit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(255,255,255,0.16);
+  border-radius: var(--radius-lg);
+  padding: 8px 12px;
+  min-width: 54px;
+}
+.mw-cd-val { font-size: var(--text-3xl); font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
+.mw-cd-label { font-size: var(--text-xs); opacity: .82; text-transform: uppercase; margin-top: 3px; }
+.mw-cd-caption { width: 100%; font-size: var(--text-sm); opacity: .85; margin-top: 6px; }
+
+.mw-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 20px; }
+.mw-actions .btn { display: inline-flex; align-items: center; gap: 7px; }
+.mw-actions .btn.ghost { background: rgba(255,255,255,0.18); color: #fff; border-color: rgba(255,255,255,0.35); }
+
+/* ── Totals strip ────────────────────────────────────────── */
+.mw-totals {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin: 18px 0;
+}
+.mw-totals > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  padding: 14px 8px;
+  color: var(--text-muted);
+}
+.mw-totals b { font-size: var(--text-2xl); color: var(--text-primary); line-height: 1.1; }
+.mw-totals span { font-size: var(--text-xs); }
+.mw-totals svg { color: var(--mediterranean); }
+
+/* ── Your standing ───────────────────────────────────────── */
+.mw-me {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--mediterranean-pale, #eaf3f7);
+  border: 1px solid var(--mediterranean, #1a6a8a);
+  border-radius: var(--radius-2xl);
+  padding: 14px 18px;
+  margin-bottom: 18px;
+}
+.mw-me-cta { background: var(--surface); border-color: var(--border); }
+.mw-me-rank { font-size: var(--text-4xl); font-weight: 800; color: var(--mediterranean); line-height: 1; }
+.mw-me-body { flex: 1; display: flex; flex-direction: column; }
+.mw-me-body strong { font-size: var(--text-base); }
+.mw-me-body span { font-size: var(--text-sm); color: var(--text-muted); }
+.mw-me .btn { display: inline-flex; align-items: center; white-space: nowrap; }
+
+/* ── Two-column leaderboards ─────────────────────────────── */
+.mw-grid {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  gap: 16px;
+}
+.mw-board {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-2xl);
+  padding: 18px;
+}
+.mw-board h2 { display: flex; align-items: center; gap: 8px; font-size: var(--text-lg); margin-bottom: 14px; }
+.mw-board h2 svg { color: var(--gold, #d4a017); }
+.mw-empty { color: var(--text-muted); font-size: var(--text-sm); }
+
+/* governorate rows */
+.mw-gov-list, .mw-people { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+.mw-gov { display: flex; gap: 12px; align-items: flex-start; }
+.mw-gov-rank { font-size: var(--text-xl); font-weight: 800; min-width: 30px; text-align: center; color: var(--text-muted); }
+.mw-gov.is-podium .mw-gov-rank { font-size: var(--text-2xl); }
+.mw-gov-main { flex: 1; }
+.mw-gov-top { display: flex; justify-content: space-between; align-items: baseline; }
+.mw-gov-name { font-weight: 700; font-size: var(--text-base); }
+.mw-gov-pts { font-weight: 800; color: var(--mediterranean); font-variant-numeric: tabular-nums; }
+.mw-gov-bar { height: 8px; background: var(--surface-active); border-radius: var(--radius-full); overflow: hidden; margin: 5px 0; }
+.mw-gov-bar > span { display: block; height: 100%; border-radius: var(--radius-full); background: linear-gradient(90deg, var(--mediterranean), var(--accent)); transition: width .6s cubic-bezier(.22,1,.36,1); }
+.mw-gov-meta { font-size: var(--text-xs); color: var(--text-muted); }
+
+/* contributor rows */
+.mw-person { display: flex; align-items: center; gap: 10px; }
+.mw-person-rank { min-width: 26px; text-align: center; font-weight: 800; color: var(--text-muted); }
+.mw-person-av { width: 34px; height: 34px; border-radius: var(--radius-full); object-fit: cover; flex-shrink: 0; }
+.mw-person-av-fb { display: flex; align-items: center; justify-content: center; background: var(--mediterranean); color: #fff; font-weight: 700; font-size: var(--text-sm); }
+.mw-person-body { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.mw-person-name { font-weight: 600; font-size: var(--text-sm); color: var(--text-primary); text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mw-person-name:hover { color: var(--mediterranean); }
+.mw-person-gov { font-size: var(--text-xs); color: var(--text-muted); }
+.mw-person-pts { font-weight: 800; color: var(--mediterranean); font-variant-numeric: tabular-nums; }
+
+/* ── Prizes + footer ─────────────────────────────────────── */
+.mw-prizes {
+  margin-top: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-2xl);
+  padding: 18px;
+}
+.mw-prizes h2 { font-size: var(--text-lg); margin-bottom: 6px; }
+.mw-prizes p { color: var(--text-secondary); font-size: var(--text-base); line-height: 1.55; }
+.mw-refresh-note { text-align: center; color: var(--text-muted); font-size: var(--text-xs); margin-top: 18px; }
+
+/* states */
+.mw-loading { display: flex; justify-content: center; padding: 80px 0; }
+.mw-spinner { width: 36px; height: 36px; border: 3px solid var(--border); border-top-color: var(--mediterranean); border-radius: 50%; animation: mw-spin .8s linear infinite; }
+@keyframes mw-spin { to { transform: rotate(360deg); } }
+.mw-guard { text-align: center; padding: 60px 20px; }
+.mw-guard h1 { font-size: var(--text-2xl); margin-bottom: 8px; }
+.mw-guard p { color: var(--text-muted); max-width: 42ch; margin: 0 auto 16px; }
+.mw-guard .btn { display: inline-flex; align-items: center; gap: 7px; }
+
+@media (max-width: 760px) {
+  .mw-grid { grid-template-columns: 1fr; }
+  .mw-totals { grid-template-columns: repeat(2, 1fr); }
+}

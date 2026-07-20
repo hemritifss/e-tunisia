@@ -1,5 +1,6 @@
 import { Repository } from 'typeorm';
 import { Place } from './place.entity';
+import { User } from '../users/user.entity';
 import { CreatePlaceDto } from './dto/create-place.dto';
 import { QueryPlacesDto } from './dto/query-places.dto';
 import { CreditsService } from '../credits/credits.service';
@@ -23,8 +24,10 @@ export declare const BOOST_TIERS: {
 export type BoostTier = keyof typeof BOOST_TIERS;
 export declare class PlacesService {
     private placesRepo;
+    private usersRepo;
     private credits;
-    constructor(placesRepo: Repository<Place>, credits: CreditsService);
+    constructor(placesRepo: Repository<Place>, usersRepo: Repository<User>, credits: CreditsService);
+    private attachDiscoveredBy;
     sweepExpiredBoosts(): Promise<void>;
     boostListing(placeId: string, ownerUserId: string, days: number): Promise<{
         placeId: string;
@@ -44,7 +47,7 @@ export declare class PlacesService {
     }>;
     findBySlug(slug: string): Promise<Place>;
     findById(id: string): Promise<Place>;
-    create(dto: CreatePlaceDto): Promise<Place>;
+    create(dto: CreatePlaceDto, submittedBy?: string): Promise<Place>;
     update(id: string, data: Partial<Place>): Promise<Place>;
     listMine(userId: string): Promise<Place[]>;
     getFeatured(): Promise<Place[]>;

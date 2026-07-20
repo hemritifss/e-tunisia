@@ -2,6 +2,7 @@ import '../../styles/place-detail.css';
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, useScroll, useTransform, useReducedMotion } from 'framer-motion';
+import { currentUser } from '../../shared/current-user';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   ArrowLeft, Heart, Share2, MapPin, Star, Send, Phone, MessageCircle, ExternalLink,
@@ -14,6 +15,7 @@ import { shareUrl, toggleSaved, isSaved, showToast } from '../../ui-utils';
 import * as tripCart from '../../trip-cart';
 import { Reveal } from '../components/Reveal';
 import { KontHouniButton } from '../components/KontHouniButton';
+import { GemConfirmBlock } from '../components/GemWidgets';
 import { currentPath, query as routeQuery, absoluteUrl, onRouteChange } from '../../router';
 import { addVisitedCity, isAnonymous } from '../../passport-draft';
 
@@ -223,10 +225,12 @@ function InquiryModal({ place, placeId, pkg, onClose }: { place: any; placeId: s
   const today = new Date().toISOString().slice(0, 10);
 
   let prefName = '', prefEmail = '', prefPhone = '';
-  try {
-    const cached = localStorage.getItem('etunisia_user');
-    if (cached) { const u = JSON.parse(cached); prefName = u?.fullName || u?.name || ''; prefEmail = u?.email || ''; prefPhone = u?.phone || ''; }
-  } catch { /* ignore */ }
+  const cachedUser = currentUser();
+  if (cachedUser) {
+    prefName = cachedUser.fullName || cachedUser.name || '';
+    prefEmail = cachedUser.email || '';
+    prefPhone = cachedUser.phone || '';
+  }
 
   useEffect(() => {
     document.body.style.overflow = 'hidden';
@@ -336,8 +340,11 @@ export default function PlaceDetailPage() {
         if (p) return p;
       } catch { /* fall through */ }
       // No mock fallback: an unloadable place shows an honest "not found" state,
-      // never fabricated place content.
-      return { name: 'Place Not Found', description: 'This place could not be loaded.', category: '', location: '', rating: 0, reviewCount: 0 };
+      // never fabricated place content. The `_notFound` flag lets the render
+      // path show a clean empty state instead of the full detail shell (which
+      // otherwise drew a rating, a check-in button, and a reviews section for
+      // a place that doesn't exist).
+      return { _notFound: true, name: 'Place Not Found', description: 'This place could not be loaded.', category: '', location: '', rating: 0, reviewCount: 0 };
     },
   });
   const place = placeQ.data;
@@ -397,8 +404,26 @@ export default function PlaceDetailPage() {
 
   if (placeQ.isLoading || !place) {
     return (
-      <div className="place-detail-page page-enter" id="place-detail-page" data-place-id={placeId}>
+      <div className="place-detail-page page-enter" id="place-detail-page" data-design="carnet" data-place-id={placeId}>
         <div className="place-detail-loading"><div className="spinner" /><p>Loading place details…</p></div>
+      </div>
+    );
+  }
+
+  // A place that couldn't load shows a clean empty state — not the full detail
+  // shell wrapped around a phantom rating, check-in button, and reviews list.
+  if ((place as any)._notFound) {
+    return (
+      <div className="place-detail-page page-enter" id="place-detail-page" data-design="carnet" data-place-id={placeId}>
+        <div className="place-detail-notfound">
+          <MapPin size={48} aria-hidden="true" />
+          <h1>Place not found</h1>
+          <p>We couldn't find this place. It may have been removed, or the link is broken.</p>
+          <div className="place-detail-notfound-actions">
+            <a href="#/explore" className="btn btn-primary"><Navigation size={16} /> Explore places</a>
+            <a href="#/" className="btn btn-outline">Back to feed</a>
+          </div>
+        </div>
       </div>
     );
   }
@@ -446,7 +471,7 @@ export default function PlaceDetailPage() {
   const reviewTotal = place.reviewCount || reviews.length;
 
   return (
-    <div className="place-detail-page page-enter" id="place-detail-page" data-place-id={placeId}>
+    <div className="place-detail-page page-enter" id="place-detail-page" data-design="carnet" data-place-id={placeId}>
       <div className="place-detail-hero" ref={heroRef}>
         <motion.img src={cover} alt={place.name} className="place-detail-hero-img" style={{ scale: heroScale }} onError={(e) => { (e.currentTarget as HTMLImageElement).style.background = 'linear-gradient(135deg, var(--terracotta-pale), var(--mediterranean-pale))'; }} />
         <div className="place-detail-hero-overlay" />
@@ -466,14 +491,23 @@ export default function PlaceDetailPage() {
             <h1 className="place-detail-name">{place.name}</h1>
             <div className="place-detail-location">
               <MapPin /> {place.location || place.city || ''}
-              <KontHouniButton placeId={placeId} />
+              <KontHouniButton placeId={placeId} placeName={place.name} city={place.city || place.location} />
             </div>
             <div className="place-detail-rating">
               <div className="place-detail-stars"><Stars rating={Math.round(ratingValue)} /></div>
               <span className="place-detail-rating-value">{ratingValue.toFixed(1)}</span>
-              <span className="place-detail-review-count">({reviewTotal} reviews)</span>
+              <span className="place-detail-review-count">({reviewTotal} review{reviewTotal === 1 ? '' : 's'})</span>
             </div>
+            {place.discoveredBy?.handle && (
+              <a className="discovered-by" href={`#/u/${place.discoveredBy.handle}`} style={{ marginBottom: 'var(--space-3)' }}>
+                {place.discoveredBy.avatar
+                  ? <img src={apiService.getImageUrl(place.discoveredBy.avatar)} alt="" />
+                  : <span className="gem-mark">💎</span>}
+                Discovered by @{place.discoveredBy.handle}
+              </a>
+            )}
             <p className="place-detail-description">{place.description || ''}</p>
+            <GemConfirmBlock placeId={placeId} />
           </div>
 
           {reviewFormOpen && (

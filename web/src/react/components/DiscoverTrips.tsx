@@ -75,7 +75,7 @@ export function DiscoverTrips() {
                   <div className="discover-trip-mini-meta">
                     <span><Calendar size={11} /> {t.days}d</span>
                     <span><Users size={11} /> {t.travelers}</span>
-                    <span>{t.stopCount} stops</span>
+                    <span>{t.stopCount} stop{t.stopCount === 1 ? '' : 's'}</span>
                   </div>
                 </div>
               </a>

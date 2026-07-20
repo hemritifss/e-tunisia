@@ -16,7 +16,9 @@ exports.TripsService = void 0;
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
+const crypto_1 = require("crypto");
 const trip_plan_entity_1 = require("./trip-plan.entity");
+const trip_member_entity_1 = require("./trip-member.entity");
 const place_entity_1 = require("../places/place.entity");
 const tour_package_entity_1 = require("../places/tour-package.entity");
 const inquiries_service_1 = require("../places/inquiries.service");
@@ -27,8 +29,9 @@ function cleanDate(v) {
     return typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v) ? v : null;
 }
 let TripsService = class TripsService {
-    constructor(trips, places, packages, inquiries, users, badges, billing) {
+    constructor(trips, members, places, packages, inquiries, users, badges, billing) {
         this.trips = trips;
+        this.members = members;
         this.places = places;
         this.packages = packages;
         this.inquiries = inquiries;
@@ -36,15 +39,20 @@ let TripsService = class TripsService {
         this.badges = badges;
         this.billing = billing;
     }
+    sanitize(trip) {
+        const { inviteCode: _secret, ...safe } = trip;
+        return safe;
+    }
     async listByHandle(handle) {
         const user = await this.users.findByHandle(handle);
         if (!user)
             return [];
-        return this.trips.find({
+        const rows = await this.trips.find({
             where: { userId: user.id, isPublic: true },
             order: { updatedAt: 'DESC' },
             take: 50,
         });
+        return rows.map((t) => this.sanitize(t));
     }
     async batchInquire(slug, viewerUserId, input) {
         const trip = await this.trips.findOne({ where: { slug } });
@@ -188,11 +196,17 @@ let TripsService = class TripsService {
             await this.badges.awardIfEligible(userId, 'trip.created', {});
         return saved;
     }
+    async canEdit(trip, userId) {
+        if (!trip.userId || trip.userId === userId)
+            return true;
+        const member = await this.members.findOne({ where: { tripId: trip.id, userId } });
+        return !!member;
+    }
     async update(slug, userId, input) {
         const trip = await this.trips.findOne({ where: { slug } });
         if (!trip)
             throw new common_1.NotFoundException('Trip not found');
-        if (trip.userId && trip.userId !== userId) {
+        if (!(await this.canEdit(trip, userId))) {
             throw new common_1.ForbiddenException('Not your trip');
         }
         if (Array.isArray(input.stops)) {
@@ -219,10 +233,63 @@ let TripsService = class TripsService {
         return this.trips.save(trip);
     }
     async listMine(userId) {
-        return this.trips.find({
-            where: { userId },
-            order: { updatedAt: 'DESC' },
-        });
+        const memberships = await this.members.find({ where: { userId }, select: { tripId: true } });
+        const memberIds = memberships.map((m) => m.tripId);
+        const [own, shared] = await Promise.all([
+            this.trips.find({ where: { userId }, order: { updatedAt: 'DESC' } }),
+            memberIds.length
+                ? this.trips.find({ where: memberIds.map((id) => ({ id })), order: { updatedAt: 'DESC' } })
+                : Promise.resolve([]),
+        ]);
+        const seen = new Set(own.map((t) => t.id));
+        return [...own, ...shared.filter((t) => !seen.has(t.id))].map((t) => this.sanitize(t));
+    }
+    async ensureInviteCode(slug, userId) {
+        const trip = await this.trips.findOne({ where: { slug } });
+        if (!trip)
+            throw new common_1.NotFoundException('Trip not found');
+        if (trip.userId !== userId)
+            throw new common_1.ForbiddenException('Only the owner can invite co-planners');
+        if (!trip.inviteCode) {
+            trip.inviteCode = (0, crypto_1.randomBytes)(9).toString('base64url');
+            await this.trips.save(trip);
+        }
+        return { code: trip.inviteCode };
+    }
+    async join(slug, userId, code) {
+        const trip = await this.trips.findOne({ where: { slug } });
+        if (!trip)
+            throw new common_1.NotFoundException('Trip not found');
+        if (!trip.inviteCode || !code || trip.inviteCode !== String(code).trim()) {
+            throw new common_1.ForbiddenException('Invalid or expired invite');
+        }
+        if (trip.userId === userId)
+            return { joined: true, alreadyOwner: true, title: trip.title };
+        try {
+            await this.members.insert({ tripId: trip.id, userId, invitedBy: trip.userId });
+        }
+        catch { }
+        return { joined: true, title: trip.title };
+    }
+    async listMembers(slug, viewerId) {
+        const trip = await this.trips.findOne({ where: { slug } });
+        if (!trip)
+            throw new common_1.NotFoundException('Trip not found');
+        const rows = await this.members.find({ where: { tripId: trip.id }, order: { createdAt: 'ASC' } });
+        const ids = [trip.userId, ...rows.map((r) => r.userId)].filter(Boolean);
+        const people = await Promise.all(ids.map(async (id) => {
+            const u = await this.users.findById(id).catch(() => null);
+            return u ? {
+                id: u.id, handle: u.handle || null, fullName: u.fullName,
+                avatar: u.avatar || null, isOwner: id === trip.userId,
+            } : null;
+        }));
+        const members = people.filter(Boolean);
+        return {
+            members,
+            canEdit: !!viewerId && (viewerId === trip.userId || rows.some((r) => r.userId === viewerId)),
+            isOwner: !!viewerId && viewerId === trip.userId,
+        };
     }
     async discover(opts = {}) {
         const page = Math.max(1, Number(opts.page) || 1);
@@ -263,13 +330,17 @@ let TripsService = class TripsService {
         if (!trip)
             throw new common_1.NotFoundException('Trip not found');
         if (!trip.isPublic && trip.userId !== viewerUserId) {
-            throw new common_1.ForbiddenException('This trip is private');
+            const isMember = viewerUserId
+                ? !!(await this.members.findOne({ where: { tripId: trip.id, userId: viewerUserId } }))
+                : false;
+            if (!isMember)
+                throw new common_1.ForbiddenException('This trip is private');
         }
         if (viewerUserId !== trip.userId) {
             trip.viewCount = (trip.viewCount || 0) + 1;
             await this.trips.save(trip).catch(() => { });
         }
-        return trip;
+        return this.sanitize(trip);
     }
     async remove(slug, userId) {
         const trip = await this.trips.findOne({ where: { slug } });
@@ -286,9 +357,11 @@ TripsService.UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f
 exports.TripsService = TripsService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(trip_plan_entity_1.TripPlan)),
-    __param(1, (0, typeorm_1.InjectRepository)(place_entity_1.Place)),
-    __param(2, (0, typeorm_1.InjectRepository)(tour_package_entity_1.TourPackage)),
+    __param(1, (0, typeorm_1.InjectRepository)(trip_member_entity_1.TripMember)),
+    __param(2, (0, typeorm_1.InjectRepository)(place_entity_1.Place)),
+    __param(3, (0, typeorm_1.InjectRepository)(tour_package_entity_1.TourPackage)),
     __metadata("design:paramtypes", [typeorm_2.Repository,
+        typeorm_2.Repository,
         typeorm_2.Repository,
         typeorm_2.Repository,
         inquiries_service_1.InquiriesService,

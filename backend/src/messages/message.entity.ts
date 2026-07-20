@@ -28,6 +28,17 @@ export class Message {
   @Column({ default: false })
   isRead: boolean;
 
+  /**
+   * Unsent by its sender. Kept as a tombstone (content cleared) rather than
+   * hard-deleted, so the thread can show "You removed a message" like the
+   * apps people expect, instead of silently losing history.
+   */
+  @Column({ default: false })
+  isDeleted: boolean;
+
+  @Column({ type: 'timestamp', nullable: true })
+  deletedAt: Date | null;
+
   @CreateDateColumn()
   createdAt: Date;
 }

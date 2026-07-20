@@ -45,6 +45,12 @@ const ItinerariesPage = React.lazy(() => import('./react/pages/ItinerariesPage')
 const DiscoverTripsPage = React.lazy(() => import('./react/pages/DiscoverTripsPage'));
 const TipsPage = React.lazy(() => import('./react/pages/TipsPage'));
 const SafetyPage = React.lazy(() => import('./react/pages/SafetyPage'));
+const SubmitGemPage = React.lazy(() => import('./react/pages/SubmitGemPage'));
+const LouagePage = React.lazy(() => import('./react/pages/LouagePage'));
+const JellyfishPage = React.lazy(() => import('./react/pages/JellyfishPage'));
+const CityQuizPage = React.lazy(() => import('./react/pages/CityQuizPage'));
+const WrappedPage = React.lazy(() => import('./react/pages/WrappedPage'));
+const MappingWeekendPage = React.lazy(() => import('./react/pages/MappingWeekendPage'));
 const SettingsPage = React.lazy(() => import('./react/pages/SettingsPage'));
 const CreditsPage = React.lazy(() => import('./react/pages/CreditsPage'));
 const InquiriesPage = React.lazy(() => import('./react/pages/InquiriesPage'));
@@ -63,6 +69,7 @@ const SearchPage = React.lazy(() => import('./react/pages/SearchPage'));
 const BadgesPage = React.lazy(() => import('./react/pages/BadgesPage'));
 const ProfileEditPage = React.lazy(() => import('./react/pages/ProfileEditPage'));
 const HeroPage = React.lazy(() => import('./react/pages/HeroPage'));
+const NotFoundPage = React.lazy(() => import('./react/pages/NotFoundPage'));
 const AboutPage = React.lazy(() => import('./react/pages/AboutPage'));
 const PartnerPage = React.lazy(() => import('./react/pages/PartnerPage'));
 const LegalPage = React.lazy(() => import('./react/pages/LegalPage'));
@@ -75,6 +82,7 @@ import { mountMessengerGlobals } from './react/lib/mount-messenger';
 import { initPopupTriggers, clearPopups } from './react/components/popups';
 import { connectRealtime, disconnectRealtime } from './realtime';
 import { replaceIcons } from './icons';
+import { initIconTooltips } from './icon-tooltips';
 import { posts, addUserPost, generateId, type Post } from './data';
 import * as apiService from './api';
 
@@ -194,6 +202,14 @@ function getRoute(route: string): Route {
     '/events': { render: () => '', init: () => {}, page: 'events', isReact: true },
     '/tips': { render: () => '', init: () => {}, page: 'tips', isReact: true },
     '/safety': { render: () => '', init: () => {}, page: 'safety', isReact: true },
+    '/submit-gem': { render: () => '', init: () => {}, page: 'submit-gem', isReact: true },
+    '/louage': { render: () => '', init: () => {}, page: 'louage', isReact: true },
+    '/jellyfish': { render: () => '', init: () => {}, page: 'jellyfish', isReact: true },
+    '/beaches': { render: () => '', init: () => {}, page: 'jellyfish', isReact: true },
+    '/city-quiz': { render: () => '', init: () => {}, page: 'city-quiz', isReact: true },
+    '/quiz': { render: () => '', init: () => {}, page: 'city-quiz', isReact: true },
+    '/wrapped': { render: () => '', init: () => {}, page: 'wrapped', isReact: true },
+    '/mapping-weekend': { render: () => '', init: () => {}, page: 'mapping-weekend', isReact: true },
     '/map': { render: () => '', init: () => {}, page: 'map', isReact: true },
     '/profile': { render: () => '', init: () => {}, page: 'profile', isReact: true },
     '/leaderboard': { render: () => '', init: () => {}, page: 'profile', isReact: true },
@@ -220,7 +236,8 @@ function getRoute(route: string): Route {
     '/terms':        { render: () => '', init: () => {}, page: 'hero', isReact: true },
   };
 
-  return routes[path] || routes['/'];
+  // Unknown address → the lost letter (404), not a silent dump on the feed.
+  return routes[path] || { render: () => '', init: () => {}, page: 'not-found', isReact: true };
 }
 
 function navigate() {
@@ -302,7 +319,10 @@ function navigate() {
       const onEnterEnd = (e: AnimationEvent) => { if (e.animationName === 'pageEnter') clearEnter(); };
       el.addEventListener('animationend', onEnterEnd as EventListener);
       const enterFallback = window.setTimeout(clearEnter, 1200);
-      const path = currentRoute();
+      // Match on pathname only — the mount chain uses exact `path === …` checks,
+      // so a query string (e.g. /city-quiz?r=<slug>) would fall through and mount
+      // nothing. Pages read their own params from location.search.
+      const path = currentRoute().split('?')[0];
       if (path === '/' || path === '') {
         currentUnmount = mountIsland(FeedPage, islandRoot);
       } else if (path === '/explore') {
@@ -343,6 +363,18 @@ function navigate() {
         currentUnmount = mountIsland(TipsPage, islandRoot);
       } else if (path === '/safety') {
         currentUnmount = mountIsland(SafetyPage, islandRoot);
+      } else if (path === '/submit-gem') {
+        currentUnmount = mountIsland(SubmitGemPage, islandRoot);
+      } else if (path === '/louage') {
+        currentUnmount = mountIsland(LouagePage, islandRoot);
+      } else if (path === '/jellyfish' || path === '/beaches') {
+        currentUnmount = mountIsland(JellyfishPage, islandRoot);
+      } else if (path === '/city-quiz' || path === '/quiz') {
+        currentUnmount = mountIsland(CityQuizPage, islandRoot);
+      } else if (/^\/wrapped(\/|$)/.test(path)) {
+        currentUnmount = mountIsland(WrappedPage, islandRoot);
+      } else if (path === '/mapping-weekend') {
+        currentUnmount = mountIsland(MappingWeekendPage, islandRoot);
       } else if (path === '/settings') {
         currentUnmount = mountIsland(SettingsPage, islandRoot);
       } else if (path === '/credits') {
@@ -387,6 +419,9 @@ function navigate() {
         currentUnmount = mountIsland(LegalPage, islandRoot, { kind: 'privacy' });
       } else if (path === '/terms') {
         currentUnmount = mountIsland(LegalPage, islandRoot, { kind: 'terms' });
+      } else {
+        // No island matched — the letter is undeliverable.
+        currentUnmount = mountIsland(NotFoundPage, islandRoot);
       }
     }
   } else {
@@ -535,16 +570,32 @@ window.addEventListener('etunisia:profile-updated', () => {
 });
 
 // ---- Theme ----
+/** Swap the toggle's sun/moon glyph. Rebuilds the <i> because replaceIcons()
+ *  turns it into a static SVG span — just setting className does nothing. */
+function setThemeIcon(theme: string) {
+  const holder = document.getElementById('theme-icon');
+  if (!holder) return;
+  const i = document.createElement('i');
+  i.id = 'theme-icon';
+  i.className = theme === 'dark' ? 'lucide-sun' : 'lucide-moon';
+  const parent = holder.parentElement;
+  holder.replaceWith(i);
+  if (parent) replaceIcons(parent);
+}
+
+/** Keep the browser-chrome color in step with the app theme. */
+function syncThemeColorMeta(theme: string) {
+  const tc = document.querySelector('meta[name="theme-color"]');
+  if (tc) tc.setAttribute('content', theme === 'dark' ? '#1c1917' : '#f7f4ec');
+}
+
 function initTheme() {
   const saved = localStorage.getItem('theme');
   const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
   const theme = saved || (prefersDark ? 'dark' : 'light');
   document.documentElement.dataset.theme = theme;
-
-  const icon = document.getElementById('theme-icon');
-  if (icon) {
-    icon.className = theme === 'dark' ? 'lucide-sun' : 'lucide-moon';
-  }
+  setThemeIcon(theme);
+  syncThemeColorMeta(theme);
 }
 
 function toggleTheme() {
@@ -552,11 +603,8 @@ function toggleTheme() {
   const next = current === 'dark' ? 'light' : 'dark';
   document.documentElement.dataset.theme = next;
   localStorage.setItem('theme', next);
-
-  const icon = document.getElementById('theme-icon');
-  if (icon) {
-    icon.className = next === 'dark' ? 'lucide-sun' : 'lucide-moon';
-  }
+  setThemeIcon(next);
+  syncThemeColorMeta(next);
 }
 
 // ---- Search overlay ----
@@ -769,12 +817,14 @@ function initNotifications() {
   function openNotifs() {
     panel?.classList.add('open');
     overlay?.classList.add('open');
+    toggle?.setAttribute('aria-expanded', 'true');
     loadNotifs();
   }
 
   function closeNotifs() {
     panel?.classList.remove('open');
     overlay?.classList.remove('open');
+    toggle?.setAttribute('aria-expanded', 'false');
   }
 
   toggle?.addEventListener('click', (e) => {
@@ -784,6 +834,14 @@ function initNotifications() {
   });
 
   overlay?.addEventListener('click', closeNotifs);
+
+  // Escape closes the panel and returns focus to the bell (was trap-free before).
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && panel?.classList.contains('open')) {
+      closeNotifs();
+      (toggle as HTMLElement | null)?.focus();
+    }
+  });
 
   document.getElementById('mobile-notif-trigger')?.addEventListener('click', () => {
     document.getElementById('mobile-menu-panel')?.classList.remove('open');
@@ -1305,11 +1363,51 @@ function initPostModal() {
   titleInput?.addEventListener('input', updateSubmitState);
   bodyInput?.addEventListener('input', updateSubmitState);
 
+  // ── Draft protection ─────────────────────────────────────
+  // Text autosaves as you type, so Esc/backdrop/Cancel can no longer destroy
+  // a post in progress. The draft survives reloads and is cleared only after
+  // a successful submit. (Category/photos are quick to re-pick; words aren't.)
+  const DRAFT_KEY = 'etunisia_post_draft';
+  let draftTimer: number | null = null;
+  function saveDraft() {
+    if (draftTimer) window.clearTimeout(draftTimer);
+    draftTimer = window.setTimeout(() => {
+      const title = titleInput?.value || '';
+      const body = bodyInput?.value || '';
+      try {
+        if (title.trim() || body.trim()) {
+          localStorage.setItem(DRAFT_KEY, JSON.stringify({ title, body, savedAt: Date.now() }));
+        } else {
+          localStorage.removeItem(DRAFT_KEY);
+        }
+      } catch { /* storage blocked — losing autosave beats crashing typing */ }
+    }, 400);
+  }
+  function restoreDraft() {
+    try {
+      const raw = localStorage.getItem(DRAFT_KEY);
+      if (!raw) return;
+      const d = JSON.parse(raw);
+      if (!d || (!d.title && !d.body)) return;
+      if (titleInput && !titleInput.value) titleInput.value = d.title || '';
+      if (bodyInput && !bodyInput.value) bodyInput.value = d.body || '';
+      updateSubmitState();
+      showToast('Draft restored — picked up where you left off');
+    } catch { /* corrupt draft — ignore */ }
+  }
+  function clearDraft() {
+    if (draftTimer) window.clearTimeout(draftTimer);
+    try { localStorage.removeItem(DRAFT_KEY); } catch {}
+  }
+  titleInput?.addEventListener('input', saveDraft);
+  bodyInput?.addEventListener('input', saveDraft);
+
   function openModal() {
     modal?.classList.add('open');
     overlay?.classList.add('open');
     document.body.style.overflow = 'hidden';
     replaceIcons(modal as HTMLElement);
+    restoreDraft();
     setTimeout(() => titleInput?.focus(), 200);
   }
 
@@ -1392,6 +1490,7 @@ function initPostModal() {
       addUserPost(newPost);
     }
 
+    clearDraft(); // posted for real — the safety net can let go
     closeModal();
 
     if (successToast) {
@@ -1491,6 +1590,7 @@ function init() {
   initHamburger();
   initPostModal();
   initLinkInterceptor();
+  initIconTooltips(); // aria-label → hover hint for every icon-only control
 
   document.getElementById('theme-toggle')?.addEventListener('click', toggleTheme);
 

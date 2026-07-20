@@ -40,9 +40,10 @@ async function bootstrap() {
         const escaped = pattern.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*');
         return new RegExp(`^${escaped}$`);
     });
+    const isLocalhostOrigin = (o) => /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(o);
     app.enableCors({
         origin: (origin, callback) => {
-            if (!origin || originRegexes.some(r => r.test(origin))) {
+            if (!origin || isLocalhostOrigin(origin) || originRegexes.some(r => r.test(origin))) {
                 callback(null, true);
             }
             else {

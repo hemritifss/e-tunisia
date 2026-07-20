@@ -26,6 +26,8 @@ export interface CartState {
   currency: string;
   days: number;
   startDate?: string | null; // "YYYY-MM-DD"
+  /** When set, the cart is editing this shared trip — "save" updates it in place. */
+  editingSlug?: string | null;
   stops: CartStop[];
 }
 
@@ -53,6 +55,7 @@ function readState(): CartState {
       currency: String(parsed.currency || 'TND'),
       days: Math.min(30, Math.max(1, Number(parsed.days) || 1)),
       startDate,
+      editingSlug: typeof parsed.editingSlug === 'string' && parsed.editingSlug ? parsed.editingSlug : null,
       stops: Array.isArray(parsed.stops) ? parsed.stops : [],
     };
   } catch {
@@ -98,6 +101,11 @@ export function setCurrency(currency: string) {
 export function setStartDate(date: string | null) {
   const s = readState();
   s.startDate = date && /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : null;
+  writeState(s);
+}
+export function setEditingSlug(slug: string | null) {
+  const s = readState();
+  s.editingSlug = slug || null;
   writeState(s);
 }
 export function setStopTime(placeId: string, packageId: string | null | undefined, timeSlot: string | null) {

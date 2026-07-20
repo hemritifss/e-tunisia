@@ -20,12 +20,14 @@ const admin_service_1 = require("./admin.service");
 const admin_controller_1 = require("./admin.controller");
 const audit_interceptor_1 = require("./audit.interceptor");
 const super_admin_guard_1 = require("./super-admin.guard");
+const gems_module_1 = require("../gems/gems.module");
 let AdminModule = class AdminModule {
 };
 exports.AdminModule = AdminModule;
 exports.AdminModule = AdminModule = __decorate([
     (0, common_1.Module)({
         imports: [
+            gems_module_1.GemsModule,
             typeorm_1.TypeOrmModule.forFeature([user_entity_1.User, place_entity_1.Place, review_entity_1.Review, subscription_entity_1.Subscription, event_entity_1.Event, tip_entity_1.Tip, audit_log_entity_1.AuditLog]),
         ],
         controllers: [admin_controller_1.AdminController],

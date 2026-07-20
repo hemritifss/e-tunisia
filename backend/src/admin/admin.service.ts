@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { GemsService } from '../gems/gems.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User, UserPlan, UserRole } from '../users/user.entity';
@@ -13,6 +14,7 @@ import { getPlan } from '../billing/plan-catalog';
 @Injectable()
 export class AdminService {
     constructor(
+        private readonly gems: GemsService,
         @InjectRepository(User) private usersRepo: Repository<User>,
         @InjectRepository(Place) private placesRepo: Repository<Place>,
         @InjectRepository(Review) private reviewsRepo: Repository<Review>,
@@ -134,8 +136,9 @@ export class AdminService {
     }
 
     async approvePlace(id: string) {
-        await this.placesRepo.update(id, { isApproved: true });
-        return { message: 'Place approved' };
+        // Delegates so community-gem submitters get their +200 XP / badge payout
+        // regardless of whether approval came from confirmations or an admin.
+        return this.gems.adminApprove(id);
     }
 
     async toggleFeature(id: string) {

@@ -10,14 +10,23 @@ exports.StoriesModule = void 0;
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const story_entity_1 = require("./story.entity");
+const story_reaction_entity_1 = require("./story-reaction.entity");
+const story_view_entity_1 = require("./story-view.entity");
+const user_entity_1 = require("../users/user.entity");
 const stories_service_1 = require("./stories.service");
 const stories_controller_1 = require("./stories.controller");
+const messages_module_1 = require("../messages/messages.module");
+const safety_module_1 = require("../safety/safety.module");
 let StoriesModule = class StoriesModule {
 };
 exports.StoriesModule = StoriesModule;
 exports.StoriesModule = StoriesModule = __decorate([
     (0, common_1.Module)({
-        imports: [typeorm_1.TypeOrmModule.forFeature([story_entity_1.Story])],
+        imports: [
+            typeorm_1.TypeOrmModule.forFeature([story_entity_1.Story, story_reaction_entity_1.StoryReaction, story_view_entity_1.StoryView, user_entity_1.User]),
+            (0, common_1.forwardRef)(() => messages_module_1.MessagesModule),
+            safety_module_1.SafetyModule,
+        ],
         providers: [stories_service_1.StoriesService],
         controllers: [stories_controller_1.StoriesController],
         exports: [stories_service_1.StoriesService],

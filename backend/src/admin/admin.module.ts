@@ -12,8 +12,11 @@ import { AdminController } from './admin.controller';
 import { AuditInterceptor } from './audit.interceptor';
 import { SuperAdminGuard } from './super-admin.guard';
 
+import { GemsModule } from '../gems/gems.module';
+
 @Module({
     imports: [
+        GemsModule,
         TypeOrmModule.forFeature([User, Place, Review, Subscription, Event, Tip, AuditLog]),
     ],
     controllers: [AdminController],

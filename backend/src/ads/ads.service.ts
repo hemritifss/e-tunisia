@@ -123,7 +123,7 @@ export class AdsService {
             {
                 title: 'Know a spot we are missing? Add it',
                 imageUrl: AdsService.houseBanner('#c98a2b', '#8a6a1f', AdsService.GLYPHS.contribute),
-                targetUrl: '/explore',
+                targetUrl: '/submit-gem',
                 advertiserName: HOUSE_ADVERTISER,
                 placement: AdPlacement.SEARCH,
                 description: 'Put your city on the map. Share a hidden gem — a photo, a pin, one line — earn XP and progress toward the Gem Hunter badge.',

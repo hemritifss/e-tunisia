@@ -1,14 +1,15 @@
 import '../../styles/leaderboard.css';
+import '../../styles/gems.css';
 import React, { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Trophy, Globe, Building2, Check, Sparkles, BadgeCheck } from 'lucide-react';
+import { Trophy, Globe, Building2, Check, Sparkles, BadgeCheck, Gem, Crown } from 'lucide-react';
 import * as api from '../../api';
 
 // Migrated from the vanilla pages/leaderboard.ts — same markup classes, same
 // data calls + mock fallback, same data-user-* attrs (drive the right-click
 // UserActionMenu) and reveal-on-scroll (pure-CSS scroll animation).
 
-type Mode = 'global' | 'city';
+type Mode = 'global' | 'city' | 'gems';
 
 function RankChip({ rank }: { rank: number }) {
   if (rank > 3) return <span className="leaderboard-rank-num">#{rank}</span>;
@@ -172,6 +173,68 @@ async function fetchCityRows(city: string): Promise<any[]> {
   return Array.isArray(res) ? res : res?.data ?? [];
 }
 
+/**
+ * City pride (GROWTH §4): the monthly Ambassador of each governorate + the
+ * all-time Gem Hunter list. Titles are contested monthly — put places on the
+ * map to take one.
+ */
+function AmbassadorsPanel() {
+  const { data, isLoading } = useQuery({
+    queryKey: ['gem-ambassadors'],
+    queryFn: () => api.getAmbassadors().catch(() => null),
+    staleTime: 5 * 60_000,
+  });
+  if (isLoading) return <Loading label="Loading ambassadors…" />;
+  if (!data || (!data.ambassadors.length && !data.topHunters.length)) {
+    return (
+      <div className="amb-empty">
+        <Empty message="No ambassadors yet this month — the titles are up for grabs." />
+        <a className="btn btn-primary" href="#/submit-gem"><Gem /> Put a place on the map</a>
+      </div>
+    );
+  }
+  const avatar = (u: any) =>
+    u?.avatar ? api.getImageUrl(u.avatar) : `https://api.dicebear.com/9.x/thumbs/svg?seed=${encodeURIComponent(u?.fullName || 'x')}`;
+  return (
+    <div className="amb-panel">
+      {data.ambassadors.length > 0 && (
+        <>
+          <h2 className="amb-title"><Crown size={17} /> Ambassadors of {data.month}</h2>
+          <p className="amb-sub">Top contributor per governorate — contested every month.</p>
+          <div className="amb-grid">
+            {data.ambassadors.map((a) => (
+              <a key={a.governorate} className="amb-card" href={a.user.handle ? `#/u/${a.user.handle}` : '#'}>
+                <img src={avatar(a.user)} alt="" loading="lazy" />
+                <div className="amb-card-meta">
+                  <span className="amb-card-gov"><Crown size={12} /> {a.governorate}</span>
+                  <strong>{a.user.fullName}</strong>
+                  <span className="amb-card-gems">{a.gems} place{a.gems === 1 ? '' : 's'} mapped</span>
+                </div>
+              </a>
+            ))}
+          </div>
+        </>
+      )}
+      {data.topHunters.length > 0 && (
+        <>
+          <h2 className="amb-title"><Gem size={17} /> All-time Gem Hunters</h2>
+          <ol className="amb-hunters">
+            {data.topHunters.map((h, i) => (
+              <li key={h.user.id}>
+                <span className="amb-rank">#{i + 1}</span>
+                <img src={avatar(h.user)} alt="" loading="lazy" />
+                <a href={h.user.handle ? `#/u/${h.user.handle}` : '#'}>{h.user.fullName}</a>
+                <span className="amb-hunter-gems">{h.gems} 💎</span>
+              </li>
+            ))}
+          </ol>
+        </>
+      )}
+      <a className="btn btn-outline amb-cta" href="#/submit-gem"><Gem size={15} /> Claim a title — add a hidden gem</a>
+    </div>
+  );
+}
+
 export default function LeaderboardPage() {
   const [mode, setMode] = useState<Mode>('global');
   const [city, setCity] = useState<string>('');
@@ -239,6 +302,16 @@ export default function LeaderboardPage() {
           <Building2 />
           <span>Top Reviewers by City</span>
         </button>
+        <button
+          type="button"
+          role="tab"
+          className={`leaderboard-tab ${mode === 'gems' ? 'active' : ''}`}
+          aria-selected={mode === 'gems'}
+          onClick={() => setMode('gems')}
+        >
+          <Gem />
+          <span>Ambassadors</span>
+        </button>
       </nav>
 
       <div className="leaderboard-city-row" hidden={mode !== 'city'}>
@@ -257,7 +330,9 @@ export default function LeaderboardPage() {
         </select>
       </div>
 
-      <div className="leaderboard-list" role="region" aria-live="polite">
+      {mode === 'gems' && <AmbassadorsPanel />}
+
+      <div className="leaderboard-list" role="region" aria-live="polite" hidden={mode === 'gems'}>
         {mode === 'global' ? (
           globalQ.isLoading ? (
             <Loading label="Loading explorers…" />

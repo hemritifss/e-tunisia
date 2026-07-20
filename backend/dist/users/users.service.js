@@ -315,9 +315,9 @@ let UsersService = class UsersService {
     async suggestedUsers(limit = 6) {
         const rows = await this.usersRepository
             .createQueryBuilder('u')
-            .where('u.isActive = :a', { a: true })
-            .andWhere('u.email NOT LIKE :p', { p: 'platform@%' })
-            .andWhere('u.email NOT LIKE :a', { a: 'admin@%' })
+            .where('u.isActive = :active', { active: true })
+            .andWhere('u.email NOT LIKE :platformPrefix', { platformPrefix: 'platform@%' })
+            .andWhere('u.email NOT LIKE :adminPrefix', { adminPrefix: 'admin@%' })
             .orderBy('u.points', 'DESC')
             .addOrderBy('u.createdAt', 'DESC')
             .take(limit)

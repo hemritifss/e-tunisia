@@ -264,3 +264,27 @@
 .settings-page .toggle input:focus-visible + .toggle-track {
     box-shadow: 0 0 0 3px color-mix(in oklch, var(--accent) 25%, transparent);
 }
+
+/* ── "Coming soon" stamp — honest placeholder for unshipped toggles ── */
+.settings-item.is-upcoming .settings-item-text { opacity: 0.6; }
+.settings-stamp {
+    flex: 0 0 auto;
+    padding: 3px 10px;
+    border: 1.5px solid var(--gold, #b98a2f);
+    border-radius: 4px;
+    color: var(--gold, #b98a2f);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    transform: rotate(-4deg);
+    opacity: 0.85;
+    user-select: none;
+}
+
+/* Two-tap state on the clear-data button. */
+.settings-danger-btn.is-confirming {
+    background: var(--error, #c0392b);
+    color: #fff;
+    border-color: var(--error, #c0392b);
+}
