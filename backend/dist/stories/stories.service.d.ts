@@ -4,13 +4,15 @@ import { StoryReaction } from './story-reaction.entity';
 import { StoryView } from './story-view.entity';
 import { User } from '../users/user.entity';
 import { MessagesService } from '../messages/messages.service';
+import { SafetyService } from '../safety/safety.service';
 export declare class StoriesService {
     private repo;
     private reactionsRepo;
     private viewsRepo;
     private usersRepo;
     private messages;
-    constructor(repo: Repository<Story>, reactionsRepo: Repository<StoryReaction>, viewsRepo: Repository<StoryView>, usersRepo: Repository<User>, messages: MessagesService);
+    private safety;
+    constructor(repo: Repository<Story>, reactionsRepo: Repository<StoryReaction>, viewsRepo: Repository<StoryView>, usersRepo: Repository<User>, messages: MessagesService, safety: SafetyService);
     create(authorId: string, data: {
         imageUrl: string;
         caption?: string;

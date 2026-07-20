@@ -1,7 +1,7 @@
 import '../../styles/auth.css';
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
-import { User, Mail, Globe2, Lock, Eye, EyeOff, AlertCircle, Check, ArrowRight, UserPlus, LogIn, MapPin, Sparkles } from 'lucide-react';
+import { User, Mail, Globe2, Lock, Eye, EyeOff, AlertCircle, ArrowRight, UserPlus, LogIn, MapPin, Sparkles } from 'lucide-react';
 import * as api from '../../api';
 import { goTo, currentRoute, replace } from '../../router';
 import { track } from '../../analytics';
@@ -229,7 +229,7 @@ export default function AuthPage() {
                     <label htmlFor={isRegister ? 'reg-email' : 'email'} className="auth-field-label">Email</label>
                     <div className="auth-input-wrap">
                       <span className="auth-input-icon" aria-hidden="true"><Mail /></span>
-                      <input type="email" id={isRegister ? 'reg-email' : 'email'} className="auth-input" placeholder="you@example.com" required autoComplete={isRegister ? 'email' : 'username'} value={email} onChange={(e) => setEmail(e.target.value)} />
+                      <input type="email" id={isRegister ? 'reg-email' : 'email'} className="auth-input" placeholder="you@example.com" required autoComplete={isRegister ? 'email' : 'username'} spellCheck={false} value={email} onChange={(e) => setEmail(e.target.value)} />
                     </div>
                   </div>
 
@@ -273,12 +273,9 @@ export default function AuthPage() {
 
                   {!isRegister && (
                     <div className="auth-row">
-                      <label className="auth-check">
-                        <input type="checkbox" />
-                        <span className="auth-check-box" aria-hidden="true"><Check /></span>
-                        <span>Remember me</span>
-                      </label>
-                      <a href="#/forgot-password" className="auth-link">Forgot password?</a>
+                      {/* "Remember me" was a checkbox wired to nothing — sessions
+                          already persist. A control that does nothing erodes trust. */}
+                      <a href="#/forgot-password" className="auth-link" style={{ marginLeft: 'auto' }}>Forgot password?</a>
                     </div>
                   )}
 

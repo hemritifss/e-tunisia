@@ -21,13 +21,15 @@ const story_reaction_entity_1 = require("./story-reaction.entity");
 const story_view_entity_1 = require("./story-view.entity");
 const user_entity_1 = require("../users/user.entity");
 const messages_service_1 = require("../messages/messages.service");
+const safety_service_1 = require("../safety/safety.service");
 let StoriesService = class StoriesService {
-    constructor(repo, reactionsRepo, viewsRepo, usersRepo, messages) {
+    constructor(repo, reactionsRepo, viewsRepo, usersRepo, messages, safety) {
         this.repo = repo;
         this.reactionsRepo = reactionsRepo;
         this.viewsRepo = viewsRepo;
         this.usersRepo = usersRepo;
         this.messages = messages;
+        this.safety = safety;
     }
     async create(authorId, data) {
         const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
@@ -35,11 +37,16 @@ let StoriesService = class StoriesService {
         return this.repo.save(story);
     }
     async listActiveGrouped(viewerId) {
-        const stories = await this.repo.find({
+        let stories = await this.repo.find({
             where: { isActive: true, expiresAt: (0, typeorm_2.MoreThan)(new Date()) },
             relations: ['author'],
             order: { createdAt: 'DESC' },
         });
+        if (viewerId) {
+            const hidden = await this.safety.getHiddenUserIds(viewerId);
+            if (hidden.size > 0)
+                stories = stories.filter((s) => !hidden.has(s.authorId));
+        }
         if (!stories.length)
             return [];
         const ids = stories.map((s) => s.id);
@@ -264,6 +271,7 @@ exports.StoriesService = StoriesService = __decorate([
         typeorm_2.Repository,
         typeorm_2.Repository,
         typeorm_2.Repository,
-        messages_service_1.MessagesService])
+        messages_service_1.MessagesService,
+        safety_service_1.SafetyService])
 ], StoriesService);
 //# sourceMappingURL=stories.service.js.map

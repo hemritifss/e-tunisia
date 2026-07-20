@@ -403,6 +403,12 @@ function isTextInputTarget(t: EventTarget | null): boolean {
     return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
 }
 
+/** "⌘K" on a Mac, "Ctrl K" everywhere else — a ⌘ badge on Windows reads as a bug. */
+function shortcutLabel(): string {
+    const isMac = /Mac|iPhone|iPad/.test(navigator.platform || (navigator as any).userAgentData?.platform || '');
+    return isMac ? '⌘K' : 'Ctrl K';
+}
+
 export function initCommandPalette() {
     document.addEventListener('keydown', (e) => {
         const meta = e.metaKey || e.ctrlKey;
@@ -421,8 +427,16 @@ export function initCommandPalette() {
     // Surface the shortcut on the existing topbar search input as a hint.
     const topbarSearch = document.querySelector<HTMLInputElement>('input[type="search"], #topbar-search-input, #global-search-input');
     if (topbarSearch) {
-        topbarSearch.placeholder = `${topbarSearch.placeholder || 'Search'}  (⌘K)`;
+        topbarSearch.placeholder = `${topbarSearch.placeholder || 'Search'}  (${shortcutLabel()})`;
     }
+    // The static markup ships "⌘K" — stamp the platform-correct label + aria.
+    const kbd = document.querySelector<HTMLElement>('.nav-search-trigger-kbd');
+    if (kbd) kbd.textContent = shortcutLabel();
+    // Mention both ways in: the shortcut chord and the "/" convention.
+    const trigger = document.querySelector<HTMLElement>('.nav-search-trigger');
+    if (trigger) trigger.setAttribute('aria-label', `Search anything (${shortcutLabel().replace(' ', '+')} or /)`);
+    const mobileSearch = document.querySelector<HTMLElement>('.nav-search-mobile');
+    if (mobileSearch) mobileSearch.setAttribute('aria-label', 'Search');
     // Expose for the keyboard-shy: clicking the topbar search bar opens the palette.
     const searchTriggers = document.querySelectorAll('[data-open-cmdk]');
     searchTriggers.forEach((t) => t.addEventListener('click', open));

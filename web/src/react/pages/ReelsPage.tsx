@@ -26,6 +26,7 @@ import { useAuthStore } from '../stores/auth-store';
 import { useUIStore } from '../stores/ui-store';
 import { ReelComposer } from '../components/ReelComposer';
 import { RollingNumber } from '../components/RollingNumber';
+import { isSaved, toggleSaved } from '../../ui-utils';
 
 interface ReelItem {
   id: string;
@@ -91,10 +92,20 @@ function ReelCard({
   const [muteFlash, setMuteFlash] = useState(0); // retriggers the center mute icon flash
   const [progress, setProgress] = useState(0);   // active video playback progress (0–100)
   const [likes, setLikes] = useState(reel.upvotes || 0);
+  const [saved, setSaved] = useState(() => isSaved('reel:' + reel.id));
+  const [videoError, setVideoError] = useState(false);
   const lastTap = useRef(0);
   const muteFlashTimer = useRef<number | null>(null);
   const showToast = useUIStore((s) => s.showToast);
   const reduceMotion = useReducedMotion();
+
+  // The save button used to be inert (no handler) — wire it to the app's
+  // shared local-save flag with feedback, same as Explore/Place cards.
+  const handleSave = () => {
+    const now = toggleSaved('reel:' + reel.id);
+    setSaved(now);
+    showToast(now ? 'Saved to your reels' : 'Removed from saved', now ? 'success' : undefined);
+  };
 
   useEffect(() => {
     const video = videoRef.current;
@@ -176,7 +187,20 @@ function ReelCard({
         playsInline
         muted={isMuted}
         onClick={handleVideoTap}
+        onError={() => setVideoError(true)}
+        onLoadedData={() => setVideoError(false)}
       />
+
+      {/* Graceful fallback — a broken video was a confusing pure-black void. */}
+      {videoError && (
+        <div className="absolute inset-0 grid place-items-center bg-gradient-to-br from-neutral-800 to-black text-center px-8 pointer-events-none">
+          <div className="text-white/80">
+            <Play size={40} className="mx-auto mb-3 opacity-60" aria-hidden="true" />
+            <p className="font-semibold">{reel.title || 'Reel'}</p>
+            <p className="text-sm text-white/60 mt-1">This video couldn’t be loaded.</p>
+          </div>
+        </div>
+      )}
 
       {/* Gradient overlay for text readability */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/60 pointer-events-none" />
@@ -245,12 +269,12 @@ function ReelCard({
 
       {/* Right action rail */}
       <div className="absolute right-3 bottom-24 flex flex-col items-center gap-5 z-10">
-        <button onClick={toggleMute} className="flex flex-col items-center gap-1">
+        <button onClick={toggleMute} aria-label={isMuted ? 'Unmute video' : 'Mute video'} aria-pressed={isMuted} className="flex flex-col items-center gap-1">
           <div className="p-2.5 rounded-full bg-black/20 backdrop-blur-sm text-white">
-            {isMuted ? <VolumeX size={22} /> : <Volume2 size={22} />}
+            {isMuted ? <VolumeX size={22} aria-hidden="true" /> : <Volume2 size={22} aria-hidden="true" />}
           </div>
         </button>
-        <motion.button onClick={handleLike} className="flex flex-col items-center gap-1" whileTap={reduceMotion ? undefined : { scale: 0.82 }}>
+        <motion.button onClick={handleLike} aria-label={isLiked ? 'Unlike' : 'Like'} aria-pressed={isLiked} className="flex flex-col items-center gap-1" whileTap={reduceMotion ? undefined : { scale: 0.82 }}>
           <div className={`p-2.5 rounded-full ${isLiked ? 'text-red-500' : 'text-white'}`}>
             <motion.span
               key={isLiked ? 'liked' : 'unliked'}
@@ -259,26 +283,26 @@ function ReelCard({
               transition={{ type: 'spring', stiffness: 520, damping: 14 }}
               style={{ display: 'inline-flex' }}
             >
-              <Heart size={28} className={isLiked ? 'fill-current' : ''} />
+              <Heart size={28} aria-hidden="true" className={isLiked ? 'fill-current' : ''} />
             </motion.span>
           </div>
           <RollingNumber value={likes} className="text-white text-xs font-medium" />
         </motion.button>
-        <button onClick={() => setShowComments(true)} className="flex flex-col items-center gap-1">
+        <button onClick={() => setShowComments(true)} aria-label="View comments" className="flex flex-col items-center gap-1">
           <div className="p-2.5 rounded-full text-white">
-            <MessageCircle size={28} />
+            <MessageCircle size={28} aria-hidden="true" />
           </div>
           <span className="text-white text-xs font-medium">{reel.commentCount || 0}</span>
         </button>
-        <button onClick={handleShare} className="flex flex-col items-center gap-1">
+        <button onClick={handleShare} aria-label="Share this reel" className="flex flex-col items-center gap-1">
           <div className="p-2.5 rounded-full text-white">
-            <Share2 size={28} />
+            <Share2 size={28} aria-hidden="true" />
           </div>
           <span className="text-white text-xs font-medium">Share</span>
         </button>
-        <button className="flex flex-col items-center gap-1">
-          <div className="p-2.5 rounded-full text-white">
-            <Bookmark size={28} />
+        <button onClick={handleSave} aria-label={saved ? 'Remove from saved' : 'Save reel'} aria-pressed={saved} className="flex flex-col items-center gap-1">
+          <div className={`p-2.5 rounded-full ${saved ? 'text-gold' : 'text-white'}`}>
+            <Bookmark size={28} aria-hidden="true" className={saved ? 'fill-current' : ''} />
           </div>
         </button>
       </div>
@@ -428,11 +452,11 @@ function ForYouFeed() {
 
       {/* Scroll hints (desktop) */}
       <div className="hidden md:flex absolute right-3 top-1/2 -translate-y-1/2 flex-col gap-2 z-20">
-        <button onClick={() => scrollTo(-1)} className="p-2 rounded-full bg-black/30 text-white hover:bg-black/50">
-          <ChevronUp size={20} />
+        <button onClick={() => scrollTo(-1)} aria-label="Previous reel" className="p-2 rounded-full bg-black/30 text-white hover:bg-black/50">
+          <ChevronUp size={20} aria-hidden="true" />
         </button>
-        <button onClick={() => scrollTo(1)} className="p-2 rounded-full bg-black/30 text-white hover:bg-black/50">
-          <ChevronDown size={20} />
+        <button onClick={() => scrollTo(1)} aria-label="Next reel" className="p-2 rounded-full bg-black/30 text-white hover:bg-black/50">
+          <ChevronDown size={20} aria-hidden="true" />
         </button>
       </div>
     </>
@@ -632,8 +656,10 @@ export default function ReelsPage() {
           <ArrowLeft size={20} />
         </button>
 
-        <div className="flex items-center gap-1 p-1 rounded-full bg-black/40 backdrop-blur-sm pointer-events-auto">
+        <div role="tablist" aria-label="Reels feed" className="flex items-center gap-1 p-1 rounded-full bg-black/40 backdrop-blur-sm pointer-events-auto">
           <button
+            role="tab"
+            aria-selected={tab === 'foryou'}
             onClick={() => setTab('foryou')}
             className={`px-3.5 py-1.5 rounded-full text-sm font-semibold transition ${
               tab === 'foryou' ? 'bg-white text-black' : 'text-white/70 hover:text-white'
@@ -642,6 +668,8 @@ export default function ReelsPage() {
             For You
           </button>
           <button
+            role="tab"
+            aria-selected={tab === 'mine'}
             onClick={() => setTab('mine')}
             className={`px-3.5 py-1.5 rounded-full text-sm font-semibold transition ${
               tab === 'mine' ? 'bg-white text-black' : 'text-white/70 hover:text-white'

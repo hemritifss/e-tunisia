@@ -158,7 +158,7 @@ function EntryRow({ entry }: { entry: Entry }) {
                     {t.slug ? <a href={`#/trip/${t.slug}`}>{t.title || 'a trip'}</a> : t.title || 'a trip'}
                     <span className="activity-meta">
                         {t.days ? `${t.days}d` : ''}
-                        {typeof t.stopCount === 'number' ? ` · ${t.stopCount} stops` : ''}
+                        {typeof t.stopCount === 'number' ? ` · ${t.stopCount} stop${t.stopCount === 1 ? '' : 's'}` : ''}
                     </span>
                 </>
             );

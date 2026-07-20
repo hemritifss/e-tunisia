@@ -11,6 +11,7 @@ import { openDonateModal } from '../../donate-modal';
 import { currentPath, goTo } from '../../router';
 import { isLoggedIn, requireAuth, showToast, linkifyHashtagsAndMentions } from '../../ui-utils';
 import { openSafetyMenu } from '../../safety-menu';
+import { getLocale } from '../../i18n';
 
 // Migrated from vanilla pages/user-profile.ts — public profile at /user/:id.
 
@@ -151,7 +152,7 @@ export default function UserProfilePage() {
   const isMe = !!me && me.id === user.id;
   const seed = encodeURIComponent(user.fullName || user.id);
   const avatar = user.avatar ? api.getImageUrl(user.avatar, 'avatar') : `https://api.dicebear.com/9.x/thumbs/svg?seed=${seed}`;
-  const joinedLabel = user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : '';
+  const joinedLabel = user.createdAt ? new Intl.DateTimeFormat(getLocale(), { month: 'long', year: 'numeric' }).format(new Date(user.createdAt)) : '';
   const posts: any[] = Array.isArray(data!.postsRes?.data) ? data!.postsRes.data : [];
   const postCount = Number(data!.postsRes?.meta?.total ?? posts.length);
   const isVerified = user.role === 'admin' || user.level >= 10;

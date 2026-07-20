@@ -70,6 +70,9 @@ export function KontHouniButton({ placeId, placeName, city, compact = false }: {
             aria-pressed={visited}
             onClick={onClick}
             disabled={m.isPending}
+            title={visited
+                ? 'Stamped in your passport — tap to remove'
+                : '“Kont houni” = I was here — stamp this place into your passport (+5 XP)'}
         >
             {visited ? <Check size={15} /> : <Stamp size={15} />}
             <span>{visited ? t('visit.visited') : t('visit.kontHouni')}</span>

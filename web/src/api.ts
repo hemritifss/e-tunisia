@@ -684,6 +684,11 @@ export async function markRoomRead(roomId: string) {
   return api<{ ok: boolean }>(`/messages/rooms/${roomId}/read`, { method: 'POST' });
 }
 
+/** Unsend your own message. Soft-delete — the thread keeps a tombstone. */
+export async function deleteMessage(messageId: string) {
+  return api<{ ok: true; id: string }>(`/messages/${messageId}`, { method: 'DELETE' });
+}
+
 export async function getUnreadMessagesCount() {
   return api<number | { count: number }>('/messages/unread-count');
 }

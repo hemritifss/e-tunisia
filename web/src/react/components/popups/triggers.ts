@@ -273,11 +273,30 @@ export async function runSessionPopups() {
     }
   }
 
-  // 4) Otherwise the daily nudge, once per day.
+  // 4) Otherwise the daily nudge, once per day — but never at t=0. Wait for
+  //    the first scroll (or 8s), so the user sees the feed before we ask for
+  //    anything. Big moments above (level-up, streak) still fire immediately.
   if (!dailySeenToday()) {
+    await afterFirstScrollOr(8000);
+    if (onQuietRoute() || !isLoggedIn() || dailySeenToday()) return;
     const added = enqueuePopup({ kind: 'daily', priority: 5, dedupeKey: 'daily' });
     if (added) markDailySeen();
   }
+}
+
+/** Resolves on the user's first scroll, or after `ms` — whichever comes first. */
+function afterFirstScrollOr(ms: number): Promise<void> {
+  return new Promise((resolve) => {
+    let done = false;
+    const finish = () => {
+      if (done) return;
+      done = true;
+      window.removeEventListener('scroll', finish);
+      resolve();
+    };
+    window.addEventListener('scroll', finish, { once: true, passive: true });
+    window.setTimeout(finish, ms);
+  });
 }
 
 export function initPopupTriggers() {

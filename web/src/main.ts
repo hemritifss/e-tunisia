@@ -82,6 +82,7 @@ import { mountMessengerGlobals } from './react/lib/mount-messenger';
 import { initPopupTriggers, clearPopups } from './react/components/popups';
 import { connectRealtime, disconnectRealtime } from './realtime';
 import { replaceIcons } from './icons';
+import { initIconTooltips } from './icon-tooltips';
 import { posts, addUserPost, generateId, type Post } from './data';
 import * as apiService from './api';
 
@@ -569,16 +570,32 @@ window.addEventListener('etunisia:profile-updated', () => {
 });
 
 // ---- Theme ----
+/** Swap the toggle's sun/moon glyph. Rebuilds the <i> because replaceIcons()
+ *  turns it into a static SVG span — just setting className does nothing. */
+function setThemeIcon(theme: string) {
+  const holder = document.getElementById('theme-icon');
+  if (!holder) return;
+  const i = document.createElement('i');
+  i.id = 'theme-icon';
+  i.className = theme === 'dark' ? 'lucide-sun' : 'lucide-moon';
+  const parent = holder.parentElement;
+  holder.replaceWith(i);
+  if (parent) replaceIcons(parent);
+}
+
+/** Keep the browser-chrome color in step with the app theme. */
+function syncThemeColorMeta(theme: string) {
+  const tc = document.querySelector('meta[name="theme-color"]');
+  if (tc) tc.setAttribute('content', theme === 'dark' ? '#1c1917' : '#f7f4ec');
+}
+
 function initTheme() {
   const saved = localStorage.getItem('theme');
   const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
   const theme = saved || (prefersDark ? 'dark' : 'light');
   document.documentElement.dataset.theme = theme;
-
-  const icon = document.getElementById('theme-icon');
-  if (icon) {
-    icon.className = theme === 'dark' ? 'lucide-sun' : 'lucide-moon';
-  }
+  setThemeIcon(theme);
+  syncThemeColorMeta(theme);
 }
 
 function toggleTheme() {
@@ -586,11 +603,8 @@ function toggleTheme() {
   const next = current === 'dark' ? 'light' : 'dark';
   document.documentElement.dataset.theme = next;
   localStorage.setItem('theme', next);
-
-  const icon = document.getElementById('theme-icon');
-  if (icon) {
-    icon.className = next === 'dark' ? 'lucide-sun' : 'lucide-moon';
-  }
+  setThemeIcon(next);
+  syncThemeColorMeta(next);
 }
 
 // ---- Search overlay ----
@@ -803,12 +817,14 @@ function initNotifications() {
   function openNotifs() {
     panel?.classList.add('open');
     overlay?.classList.add('open');
+    toggle?.setAttribute('aria-expanded', 'true');
     loadNotifs();
   }
 
   function closeNotifs() {
     panel?.classList.remove('open');
     overlay?.classList.remove('open');
+    toggle?.setAttribute('aria-expanded', 'false');
   }
 
   toggle?.addEventListener('click', (e) => {
@@ -818,6 +834,14 @@ function initNotifications() {
   });
 
   overlay?.addEventListener('click', closeNotifs);
+
+  // Escape closes the panel and returns focus to the bell (was trap-free before).
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && panel?.classList.contains('open')) {
+      closeNotifs();
+      (toggle as HTMLElement | null)?.focus();
+    }
+  });
 
   document.getElementById('mobile-notif-trigger')?.addEventListener('click', () => {
     document.getElementById('mobile-menu-panel')?.classList.remove('open');
@@ -1339,11 +1363,51 @@ function initPostModal() {
   titleInput?.addEventListener('input', updateSubmitState);
   bodyInput?.addEventListener('input', updateSubmitState);
 
+  // ── Draft protection ─────────────────────────────────────
+  // Text autosaves as you type, so Esc/backdrop/Cancel can no longer destroy
+  // a post in progress. The draft survives reloads and is cleared only after
+  // a successful submit. (Category/photos are quick to re-pick; words aren't.)
+  const DRAFT_KEY = 'etunisia_post_draft';
+  let draftTimer: number | null = null;
+  function saveDraft() {
+    if (draftTimer) window.clearTimeout(draftTimer);
+    draftTimer = window.setTimeout(() => {
+      const title = titleInput?.value || '';
+      const body = bodyInput?.value || '';
+      try {
+        if (title.trim() || body.trim()) {
+          localStorage.setItem(DRAFT_KEY, JSON.stringify({ title, body, savedAt: Date.now() }));
+        } else {
+          localStorage.removeItem(DRAFT_KEY);
+        }
+      } catch { /* storage blocked — losing autosave beats crashing typing */ }
+    }, 400);
+  }
+  function restoreDraft() {
+    try {
+      const raw = localStorage.getItem(DRAFT_KEY);
+      if (!raw) return;
+      const d = JSON.parse(raw);
+      if (!d || (!d.title && !d.body)) return;
+      if (titleInput && !titleInput.value) titleInput.value = d.title || '';
+      if (bodyInput && !bodyInput.value) bodyInput.value = d.body || '';
+      updateSubmitState();
+      showToast('Draft restored — picked up where you left off');
+    } catch { /* corrupt draft — ignore */ }
+  }
+  function clearDraft() {
+    if (draftTimer) window.clearTimeout(draftTimer);
+    try { localStorage.removeItem(DRAFT_KEY); } catch {}
+  }
+  titleInput?.addEventListener('input', saveDraft);
+  bodyInput?.addEventListener('input', saveDraft);
+
   function openModal() {
     modal?.classList.add('open');
     overlay?.classList.add('open');
     document.body.style.overflow = 'hidden';
     replaceIcons(modal as HTMLElement);
+    restoreDraft();
     setTimeout(() => titleInput?.focus(), 200);
   }
 
@@ -1426,6 +1490,7 @@ function initPostModal() {
       addUserPost(newPost);
     }
 
+    clearDraft(); // posted for real — the safety net can let go
     closeModal();
 
     if (successToast) {
@@ -1525,6 +1590,7 @@ function init() {
   initHamburger();
   initPostModal();
   initLinkInterceptor();
+  initIconTooltips(); // aria-label → hover hint for every icon-only control
 
   document.getElementById('theme-toggle')?.addEventListener('click', toggleTheme);
 

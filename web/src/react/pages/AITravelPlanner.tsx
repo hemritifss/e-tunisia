@@ -232,7 +232,7 @@ export default function AITravelPlanner() {
       const assistantMsg: Message = {
         id: `assistant-${Date.now()}`,
         role: 'assistant',
-        content: data.reply || data.data?.reply || 'I\'m thinking about that...',
+        content: data.reply || data.data?.reply || 'I\'m thinking about that…',
         suggestions: data.suggestions || data.data?.suggestions,
         places: data.places || data.data?.places,
         stream: true,
@@ -819,6 +819,8 @@ export default function AITravelPlanner() {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
             placeholder="Ask about Tunisia or plan your trip…"
+            aria-label="Ask Skander about Tunisia or plan your trip"
+            enterKeyHint="send"
             className="flex-1 px-4 py-2.5 rounded-xl border border-black/10 dark:border-white/10 bg-surface focus:outline-none focus:ring-2 focus:ring-brand/30 text-sm"
           />
           <Button
@@ -826,8 +828,9 @@ export default function AITravelPlanner() {
             size="icon"
             disabled={!input.trim() || chatMutation.isPending}
             onClick={handleSend}
+            aria-label={chatMutation.isPending ? 'Sending…' : 'Send message'}
           >
-            {chatMutation.isPending ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
+            {chatMutation.isPending ? <Loader2 size={18} className="animate-spin" aria-hidden="true" /> : <Send size={18} aria-hidden="true" />}
           </Button>
         </div>
       </div>

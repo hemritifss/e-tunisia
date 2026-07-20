@@ -340,8 +340,11 @@ export default function PlaceDetailPage() {
         if (p) return p;
       } catch { /* fall through */ }
       // No mock fallback: an unloadable place shows an honest "not found" state,
-      // never fabricated place content.
-      return { name: 'Place Not Found', description: 'This place could not be loaded.', category: '', location: '', rating: 0, reviewCount: 0 };
+      // never fabricated place content. The `_notFound` flag lets the render
+      // path show a clean empty state instead of the full detail shell (which
+      // otherwise drew a rating, a check-in button, and a reviews section for
+      // a place that doesn't exist).
+      return { _notFound: true, name: 'Place Not Found', description: 'This place could not be loaded.', category: '', location: '', rating: 0, reviewCount: 0 };
     },
   });
   const place = placeQ.data;
@@ -403,6 +406,24 @@ export default function PlaceDetailPage() {
     return (
       <div className="place-detail-page page-enter" id="place-detail-page" data-design="carnet" data-place-id={placeId}>
         <div className="place-detail-loading"><div className="spinner" /><p>Loading place details…</p></div>
+      </div>
+    );
+  }
+
+  // A place that couldn't load shows a clean empty state — not the full detail
+  // shell wrapped around a phantom rating, check-in button, and reviews list.
+  if ((place as any)._notFound) {
+    return (
+      <div className="place-detail-page page-enter" id="place-detail-page" data-design="carnet" data-place-id={placeId}>
+        <div className="place-detail-notfound">
+          <MapPin size={48} aria-hidden="true" />
+          <h1>Place not found</h1>
+          <p>We couldn't find this place. It may have been removed, or the link is broken.</p>
+          <div className="place-detail-notfound-actions">
+            <a href="#/explore" className="btn btn-primary"><Navigation size={16} /> Explore places</a>
+            <a href="#/" className="btn btn-outline">Back to feed</a>
+          </div>
+        </div>
       </div>
     );
   }
@@ -475,7 +496,7 @@ export default function PlaceDetailPage() {
             <div className="place-detail-rating">
               <div className="place-detail-stars"><Stars rating={Math.round(ratingValue)} /></div>
               <span className="place-detail-rating-value">{ratingValue.toFixed(1)}</span>
-              <span className="place-detail-review-count">({reviewTotal} reviews)</span>
+              <span className="place-detail-review-count">({reviewTotal} review{reviewTotal === 1 ? '' : 's'})</span>
             </div>
             {place.discoveredBy?.handle && (
               <a className="discovered-by" href={`#/u/${place.discoveredBy.handle}`} style={{ marginBottom: 'var(--space-3)' }}>

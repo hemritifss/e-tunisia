@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Delete,
   Body,
   Param,
   Query,
@@ -96,5 +97,12 @@ export class MessagesController {
   @ApiOperation({ summary: 'Open or create a direct chat room with a user' })
   openDirect(@CurrentUser('id') me: string, @Param('userId') other: string) {
     return this.messagesService.createRoom(me, [other], undefined, 'direct');
+  }
+
+  @Delete(':messageId')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Unsend one of your own messages' })
+  deleteMessage(@CurrentUser('id') userId: string, @Param('messageId') messageId: string) {
+    return this.messagesService.deleteMessage(messageId, userId);
   }
 }

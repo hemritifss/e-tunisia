@@ -1,5 +1,5 @@
 import '../../styles/jellyfish.css';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Waves, MapPin, Clock, X, Send, Loader2, RefreshCw } from 'lucide-react';
 import * as api from '../../api';
@@ -37,6 +37,16 @@ function ReportModal({ beach, onClose }: { beach: Beach; onClose: () => void }) 
   const [water, setWater] = useState<'' | 'clear' | 'seaweed' | 'murky'>('');
   const [crowd, setCrowd] = useState<'' | 'empty' | 'ok' | 'packed'>('');
   const [note, setNote] = useState('');
+
+  // Escape-to-close + body scroll lock — the modal was scrim/button-only,
+  // leaving keyboard users no quick dismiss.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.removeEventListener('keydown', onKey); document.body.style.overflow = prev; };
+  }, [onClose]);
   const m = useMutation({
     mutationFn: () => api.reportBeach(beach.placeId, { jellyfish, water: water || undefined, crowd: crowd || undefined, note: note.trim() || undefined }),
     onSuccess: (r: any) => {
@@ -49,8 +59,8 @@ function ReportModal({ beach, onClose }: { beach: Beach; onClose: () => void }) 
   });
   return (
     <div className="jelly-modal-scrim" onClick={onClose}>
-      <div className="jelly-modal" onClick={(e) => e.stopPropagation()}>
-        <button className="jelly-modal-close" onClick={onClose} aria-label="Close"><X size={18} /></button>
+      <div className="jelly-modal" role="dialog" aria-modal="true" aria-label={`Report conditions at ${beach.name}`} onClick={(e) => e.stopPropagation()}>
+        <button className="jelly-modal-close" onClick={onClose} aria-label="Close"><X size={18} aria-hidden="true" /></button>
         <h2>How's {beach.name} right now?</h2>
         <div className="jelly-field">
           <label>Jellyfish?</label>

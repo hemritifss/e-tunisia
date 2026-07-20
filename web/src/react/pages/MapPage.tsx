@@ -351,8 +351,11 @@ export default function MapPage() {
         </div>
       )}
 
-      <div className={`map-info-panel ${selected ? 'open' : ''}`}>
-        <button className="map-info-close" onClick={() => setSelected(null)}><X size={18} /></button>
+      {/* aria-hidden + tabIndex guard: the panel stays mounted for its slide
+          animation, so without this its close button was focusable and
+          announced even while the panel sat off-screen. */}
+      <div className={`map-info-panel ${selected ? 'open' : ''}`} role="dialog" aria-label="Place details" aria-hidden={!selected}>
+        <button className="map-info-close" aria-label="Close details" tabIndex={selected ? undefined : -1} onClick={() => setSelected(null)}><X size={18} aria-hidden="true" /></button>
         {selected && (
           <div className="map-info-content">
             <div className="map-info-image" style={{ backgroundImage: `url('${selected.image}')` }}>
@@ -363,7 +366,7 @@ export default function MapPage() {
               <div className="map-info-rating">
                 <div className="map-popup-stars" dangerouslySetInnerHTML={{ __html: starsHtml(selected.rating) }} />
                 <span className="map-popup-rating-num">{selected.rating.toFixed(1)}</span>
-                {selected.reviewCount > 0 && <span className="map-info-review-count">({selected.reviewCount} reviews)</span>}
+                {selected.reviewCount > 0 && <span className="map-info-review-count">({selected.reviewCount} review{selected.reviewCount === 1 ? '' : 's'})</span>}
               </div>
             )}
             <p className="map-info-desc">{selected.description}</p>

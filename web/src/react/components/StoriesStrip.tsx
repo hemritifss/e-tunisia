@@ -115,6 +115,25 @@ export function StoriesStrip() {
     );
   }
 
+  // No stories from anyone: a full-height band with one lonely ring reads
+  // broken. Collapse it into a compact invite that still opens the composer.
+  if (groups.length === 0) {
+    return (
+      <>
+        <button type="button" className="stories-v2-empty" onClick={openYourTile}>
+          <span className="stories-v2-empty-ring" aria-hidden="true"><Plus size={16} /></span>
+          <span className="stories-v2-empty-text">
+            <strong>No stories yet today</strong>
+            <span>Share a moment from your trip — it lives for 24 hours</span>
+          </span>
+        </button>
+        <AnimatePresence>
+          {composerOpen && <StoryComposer onClose={() => setComposerOpen(false)} />}
+        </AnimatePresence>
+      </>
+    );
+  }
+
   return (
     <>
       <div className="stories-v2-wrap">

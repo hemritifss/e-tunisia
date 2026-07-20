@@ -23,6 +23,30 @@
         gap: var(--space-8);
     }
 }
+
+/* Right column: Tunisia Now + quick conversations share one sticky rail.
+   Stickiness moves from .now-panel to this wrapper so both cards travel
+   together; the panel shrinks (min-height 0) instead of overflowing. */
+.compass-rail { display: none; min-width: 0; }
+@media (min-width: 1024px) {
+    .compass-rail {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-4);
+        position: sticky;
+        top: calc(var(--nav-height) + var(--space-4));
+        align-self: start;
+        max-height: calc(100vh - var(--nav-height) - var(--space-8));
+        min-height: 0;
+    }
+    .compass-rail .now-panel {
+        position: static;
+        max-height: none;
+        flex: 0 1 auto;
+        min-height: 0;
+    }
+    .compass-rail .active-conv-rail { flex: 0 0 auto; }
+}
 .compass-feed {
     gap: var(--space-5);
 }

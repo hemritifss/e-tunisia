@@ -7,7 +7,12 @@
 /* ── Top nav: clean app bar ─────────────────────
    Cleaner/app-like direction: opaque solid surface, hairline rule,
    no glass blur. Paper/ink tokens are global + theme-aware. */
-.nav {
+/* The dark selector must match components.css's `[data-theme="dark"] .nav`
+   specificity — its translucent 0.85 background was winning in dark mode with
+   the blur disabled, so feed content ghosted through the navbar. Opaque paper
+   everywhere, per the carnet chrome. */
+.nav,
+[data-theme="dark"] .nav {
     background: var(--paper);
     border-bottom: 1px solid var(--rule);
     backdrop-filter: none;
@@ -523,4 +528,21 @@
 .nav-city-item.is-active { color: var(--accent); font-weight: 600; background: color-mix(in oklab, var(--accent) 8%, transparent); }
 @media (max-width: 900px) {
     .nav-city-label { max-width: 64px; }
+}
+
+/* Phones: pills collapse to icon-only so search + hamburger stay reachable.
+   Before this, nav content was ~536px wide in a 384px viewport and pushed
+   both buttons off-screen — there was no way to open the menu at all. */
+@media (max-width: 640px) {
+    .nav-actions { gap: 2px; }
+    .nav-city {
+        width: 36px;
+        height: 36px;
+        padding: 0;
+        justify-content: center;
+        gap: 0;
+    }
+    .nav-city .nav-city-label,
+    .nav-city svg:last-child { display: none; }
+    .nav-actions .btn-icon { width: 36px; height: 36px; }
 }

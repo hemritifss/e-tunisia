@@ -6,6 +6,7 @@ import { StoryReaction, isValidStoryReaction } from './story-reaction.entity';
 import { StoryView } from './story-view.entity';
 import { User } from '../users/user.entity';
 import { MessagesService } from '../messages/messages.service';
+import { SafetyService } from '../safety/safety.service';
 
 @Injectable()
 export class StoriesService {
@@ -15,6 +16,7 @@ export class StoriesService {
         @InjectRepository(StoryView) private viewsRepo: Repository<StoryView>,
         @InjectRepository(User) private usersRepo: Repository<User>,
         private messages: MessagesService,
+        private safety: SafetyService,
     ) {}
 
     async create(authorId: string, data: { imageUrl: string; caption?: string }) {
@@ -31,11 +33,17 @@ export class StoriesService {
      * so the strip can dim already-watched rings without a request per story.
      */
     async listActiveGrouped(viewerId?: string | null) {
-        const stories = await this.repo.find({
+        let stories = await this.repo.find({
             where: { isActive: true, expiresAt: MoreThan(new Date()) },
             relations: ['author'],
             order: { createdAt: 'DESC' },
         });
+
+        // Blocks hide stories in both directions, same as the feed.
+        if (viewerId) {
+            const hidden = await this.safety.getHiddenUserIds(viewerId);
+            if (hidden.size > 0) stories = stories.filter((s) => !hidden.has(s.authorId));
+        }
         if (!stories.length) return [];
 
         const ids = stories.map((s) => s.id);

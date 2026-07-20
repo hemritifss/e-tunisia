@@ -99,6 +99,11 @@ export function connectRealtime() {
   socket.on('dm:read', (payload: any) => {
     window.dispatchEvent(new CustomEvent('etunisia:dm-read', { detail: payload }));
   });
+
+  // ── A message was unsent — both sides must drop it live ──
+  socket.on('dm:message-deleted', (payload: any) => {
+    window.dispatchEvent(new CustomEvent('etunisia:dm-message-deleted', { detail: payload }));
+  });
 }
 
 /** Snapshot of currently online user-ids (frontend cache, kept in sync via `presence:update`). */

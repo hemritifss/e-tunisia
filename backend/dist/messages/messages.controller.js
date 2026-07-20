@@ -47,6 +47,9 @@ let MessagesController = class MessagesController {
     openDirect(me, other) {
         return this.messagesService.createRoom(me, [other], undefined, 'direct');
     }
+    deleteMessage(userId, messageId) {
+        return this.messagesService.deleteMessage(messageId, userId);
+    }
 };
 exports.MessagesController = MessagesController;
 __decorate([
@@ -130,6 +133,16 @@ __decorate([
     __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", void 0)
 ], MessagesController.prototype, "openDirect", null);
+__decorate([
+    (0, common_1.Delete)(':messageId'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiOperation)({ summary: 'Unsend one of your own messages' }),
+    __param(0, (0, current_user_decorator_1.CurrentUser)('id')),
+    __param(1, (0, common_1.Param)('messageId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:returntype", void 0)
+], MessagesController.prototype, "deleteMessage", null);
 exports.MessagesController = MessagesController = __decorate([
     (0, swagger_1.ApiTags)('messages'),
     (0, swagger_1.ApiBearerAuth)(),

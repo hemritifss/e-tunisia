@@ -5,6 +5,7 @@ import { Notification, NotificationType } from './notification.entity';
 import { EventsGateway } from '../websocket/websocket.gateway';
 import { QueuesService } from '../queues/queues.service';
 import { PushService } from '../push/push.service';
+import { SafetyService } from '../safety/safety.service';
 
 @Injectable()
 export class NotificationsService {
@@ -12,11 +13,22 @@ export class NotificationsService {
         @InjectRepository(Notification)
         private notifRepo: Repository<Notification>,
         private queuesService: QueuesService,
+        private safety: SafetyService,
         @Optional() private push?: PushService,
         @Optional()
         @Inject(forwardRef(() => EventsGateway))
         private gateway?: EventsGateway,
     ) {}
+
+    /**
+     * The actor who caused a notification, if any. There is no first-class
+     * sender column — different writers stash it in `data` under different
+     * keys (social.service uses fromUserId, follows.service uses followerId).
+     */
+    private senderOf(n: Notification): string | null {
+        const d: any = n.data || {};
+        return d.fromUserId || d.followerId || d.senderId || d.actorId || null;
+    }
 
     /** Where a notification of this type should open in the app. */
     private deepLink(type: NotificationType, data?: any): string {
@@ -31,18 +43,34 @@ export class NotificationsService {
     }
 
     async findByUser(userId: string) {
-        return this.notifRepo.find({
+        const rows = await this.notifRepo.find({
             where: { userId },
             order: { createdAt: 'DESC' },
             take: 50,
         });
+        const hidden = await this.safety.getHiddenUserIds(userId);
+        if (hidden.size === 0) return rows;
+        return rows.filter((n) => {
+            const sender = this.senderOf(n);
+            return !sender || !hidden.has(sender);
+        });
     }
 
     async getUnreadCount(userId: string) {
-        const count = await this.notifRepo.count({
+        // Fetch-and-filter rather than SQL count: the badge must agree with the
+        // filtered list, or it reads "1 unread" over an empty tray.
+        const unread = await this.notifRepo.find({
             where: { userId, isRead: false },
+            select: ['id', 'data'],
         });
-        return { unreadCount: count };
+        if (unread.length === 0) return { unreadCount: 0 };
+        const hidden = await this.safety.getHiddenUserIds(userId);
+        if (hidden.size === 0) return { unreadCount: unread.length };
+        const visible = unread.filter((n) => {
+            const sender = this.senderOf(n as Notification);
+            return !sender || !hidden.has(sender);
+        });
+        return { unreadCount: visible.length };
     }
 
     async markRead(id: string, userId: string) {

@@ -14,7 +14,7 @@ const getDatabaseConfig = (configService) => {
                 password: configService.get('DB_PASSWORD') || 'etunisia_secret',
                 database: configService.get('DB_NAME') || 'etunisia',
                 entities: [__dirname + '/../**/*.entity{.ts,.js}'],
-                synchronize: isDev,
+                synchronize: isDev || configService.get('DB_SYNCHRONIZE') === 'true',
                 logging: isDev,
                 ssl: configService.get('DB_SSL') === 'true'
                     ? { rejectUnauthorized: false }

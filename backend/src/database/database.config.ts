@@ -17,7 +17,10 @@ export const getDatabaseConfig = (
         password: configService.get<string>('DB_PASSWORD') || 'etunisia_secret',
         database: configService.get<string>('DB_NAME') || 'etunisia',
         entities: [__dirname + '/../**/*.entity{.ts,.js}'],
-        synchronize: isDev, // Never auto-sync in production/staging
+        // Dev auto-syncs. In prod, opt-in with DB_SYNCHRONIZE=true — needed on a
+        // fresh managed DB (e.g. free Render/Neon Postgres) where no migrations exist
+        // yet, so TypeORM creates the schema from the entities on first boot.
+        synchronize: isDev || configService.get<string>('DB_SYNCHRONIZE') === 'true',
         logging: isDev,
         ssl:
           configService.get<string>('DB_SSL') === 'true'

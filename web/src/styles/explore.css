@@ -105,6 +105,10 @@
     box-shadow: 4px 4px 0 var(--gold);
 }
 .explore-search-icon {
+    /* pages.css still absolutely-positions this at left:18px (its old layout
+       expected 46px input padding) — that stacked the icon on top of the
+       text here. Pin it back into the flex flow. */
+    position: static;
     color: var(--text-secondary);
     flex: 0 0 auto;
 }
@@ -123,6 +127,7 @@
     color: var(--text-tertiary);
 }
 .explore-search-clear {
+    position: static; /* pages.css pins it absolute right:14px — keep in flow */
     width: 32px;
     height: 32px;
     display: grid;
@@ -441,3 +446,12 @@
     background: var(--border);
 }
 .explore-loadmore { display: flex; flex-direction: column; gap: var(--space-4); }
+
+/* ── For-you strip: scroll affordance ──
+   Right-edge fade signals "there's more" (desktop has no visible scrollbar
+   until hover); thin bar keeps the row tidy while scrolling. */
+.explore-foryou .snap-x {
+    mask-image: linear-gradient(90deg, #000 0, #000 calc(100% - 56px), transparent);
+    -webkit-mask-image: linear-gradient(90deg, #000 0, #000 calc(100% - 56px), transparent);
+    scrollbar-width: thin;
+}

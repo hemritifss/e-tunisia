@@ -272,6 +272,14 @@
     outline-offset: 2px;
 }
 
+/* Overflow (block / report) — icon only, never steals width from the two
+   primary actions. */
+.phc-btn-more {
+    flex: 0 0 auto;
+    width: 38px;
+    padding: 8px 0;
+}
+
 .phc-btn-primary {
     background: var(--text-primary);
     color: var(--surface-elevated);

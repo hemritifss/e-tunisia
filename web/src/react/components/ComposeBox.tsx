@@ -33,12 +33,10 @@ export function ComposeBox({ user }: Props) {
           <Avatar src={user?.avatar || undefined} fallback={user?.fullName} size="md" />
         </a>
         <button className="compose-v2-trigger" onClick={() => open()}>
+          {/* One <span>: separate spans get flex-gap spacing injected between
+              them, which rendered as "Bob ?" with a stray space. */}
           {firstName ? (
-            <>
-              <span>{t('compose.prompt')}, </span>
-              <strong>{firstName}</strong>
-              <span>?</span>
-            </>
+            <span>{t('compose.prompt')}, <strong>{firstName}</strong>?</span>
           ) : (
             <span>{t('compose.prompt')}?</span>
           )}

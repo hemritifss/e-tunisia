@@ -407,6 +407,28 @@
   }
 }
 
+/* ---- Daily nudge: ambient corner sheet, not a full-screen interrupt ----
+   Level-ups and streak milestones keep the big-moment modal; the everyday
+   check-in reminder shouldn't dim the whole app before you've seen the feed. */
+.popup-root:has(.popup-card-daily) {
+  align-items: flex-end;
+  justify-content: flex-end;
+  padding: 24px;
+}
+.popup-root:has(.popup-card-daily) .popup-scrim {
+  background: oklch(0% 0 0 / 0.12);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+.popup-card-daily {
+  max-width: 360px;
+  box-shadow: var(--shadow-xl);
+}
+@media (max-width: 640px) {
+  .popup-root:has(.popup-card-daily) { padding: 0; justify-content: center; }
+  .popup-card-daily { max-width: 100%; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .popup-celebrate-coin,
   .popup-badge-medal,

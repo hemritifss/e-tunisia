@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import * as api from '../../api';
 import { isUserOnline, emitDmTyping } from '../../realtime';
-import { X, Minus, Maximize2, Send, Sparkles } from 'lucide-react';
+import { X, Minus, Maximize2, Send, Sparkles, Trash2 } from 'lucide-react';
 import { goTo, currentPath, onRouteChange } from '../../router';
 import { currentUserId } from '../../shared/current-user';
 
@@ -38,6 +38,8 @@ interface ChatMessage {
     content: string;
     senderId: string;
     createdAt: string;
+    /** Unsent by its sender — rendered as a tombstone, not dropped. */
+    isDeleted?: boolean;
 }
 
 // ─────────── Persistence ───────────
@@ -99,6 +101,18 @@ function ChatWindow({
     const isPro = chat.plan === 'premium' || chat.plan === 'business' || chat.plan === 'admin';
     const online = isUserOnline(chat.userId);
 
+    // The parent passes fresh inline callbacks on every render. Reading them
+    // through a ref keeps them OUT of the effect deps below — depending on
+    // `onClear` there made markRoomRead() → onClear → re-render → refetch loop
+    // forever, hammering the API until it 429'd the whole app.
+    const onClearRef = useRef(onClear);
+    useEffect(() => { onClearRef.current = onClear; }, [onClear]);
+    const clearUnread = useCallback(() => { onClearRef.current(); }, []);
+
+    // Latest messages, readable from stable callbacks without re-creating them.
+    const messagesRef = useRef(messages);
+    useEffect(() => { messagesRef.current = messages; }, [messages]);
+
     const scrollToBottom = useCallback(() => {
         requestAnimationFrame(() => {
             if (listRef.current) listRef.current.scrollTop = listRef.current.scrollHeight;
@@ -116,9 +130,9 @@ function ChatWindow({
                 scrollToBottom();
             })
             .catch(() => {});
-        api.markRoomRead(chat.roomId).then(onClear).catch(() => {});
+        api.markRoomRead(chat.roomId).then(clearUnread).catch(() => {});
         return () => { cancelled = true; };
-    }, [chat.roomId, chat.minimized, scrollToBottom, onClear]);
+    }, [chat.roomId, chat.minimized, scrollToBottom, clearUnread]);
 
     useEffect(() => {
         function onNew(e: Event) {
@@ -132,20 +146,55 @@ function ChatWindow({
             };
             setMessages((prev) => [...prev, m]);
             scrollToBottom();
-            if (!chat.minimized) api.markRoomRead(chat.roomId).then(onClear).catch(() => {});
+            if (!chat.minimized) api.markRoomRead(chat.roomId).then(clearUnread).catch(() => {});
         }
         function onTyping(e: Event) {
             const detail: any = (e as CustomEvent).detail;
             if (!detail || detail.roomId !== chat.roomId || detail.userId === me) return;
             setTheirTyping(!!detail.isTyping);
         }
+        // The other side unsent something — tombstone it live.
+        function onDeleted(e: Event) {
+            const detail: any = (e as CustomEvent).detail;
+            if (!detail || detail.roomId !== chat.roomId) return;
+            setMessages((prev) => prev.map((x) =>
+                x.id === detail.messageId ? { ...x, isDeleted: true, content: '' } : x));
+        }
         window.addEventListener('etunisia:dm-new-message', onNew);
         window.addEventListener('etunisia:dm-typing', onTyping);
+        window.addEventListener('etunisia:dm-message-deleted', onDeleted);
         return () => {
             window.removeEventListener('etunisia:dm-new-message', onNew);
             window.removeEventListener('etunisia:dm-typing', onTyping);
+            window.removeEventListener('etunisia:dm-message-deleted', onDeleted);
         };
-    }, [chat.roomId, chat.minimized, me, scrollToBottom, onClear]);
+    }, [chat.roomId, chat.minimized, me, scrollToBottom, clearUnread]);
+
+    // Two-tap unsend: first tap arms a "Remove?" pill on the bubble, second
+    // commits. Auto-disarms after 3s — no native confirm() dialog.
+    const [confirmingId, setConfirmingId] = useState<string | null>(null);
+    const confirmTimer = useRef<number | null>(null);
+    useEffect(() => () => { if (confirmTimer.current) window.clearTimeout(confirmTimer.current); }, []);
+    const armUnsend = useCallback((messageId: string) => {
+        if (confirmTimer.current) window.clearTimeout(confirmTimer.current);
+        setConfirmingId(messageId);
+        confirmTimer.current = window.setTimeout(() => setConfirmingId(null), 3000);
+    }, []);
+
+    const unsend = useCallback(async (messageId: string) => {
+        // Snapshot the whole message: the optimistic update blanks `content`,
+        // so restoring only `isDeleted` would resurrect it empty.
+        const original = messagesRef.current.find((x) => x.id === messageId);
+        setMessages((prev) => prev.map((x) => (x.id === messageId ? { ...x, isDeleted: true, content: '' } : x)));
+        try {
+            await api.deleteMessage(messageId);
+        } catch {
+            if (original) {
+                setMessages((prev) => prev.map((x) => (x.id === messageId ? original : x)));
+            }
+            (window as any).showToast?.({ message: 'Could not remove that message', type: 'error' });
+        }
+    }, []);
 
     const send = useCallback(async () => {
         const text = draft.trim();
@@ -260,10 +309,35 @@ function ChatWindow({
                         const mine = m.senderId === me;
                         const prev = messages[i - 1];
                         const grouped = prev && prev.senderId === m.senderId;
+                        if (m.isDeleted) {
+                            return (
+                                <div key={m.id} className={`chat-pop-bubble ${mine ? 'mine' : 'theirs'} is-removed`}>
+                                    <span>{mine ? 'You removed a message' : 'Message removed'}</span>
+                                </div>
+                            );
+                        }
                         return (
                             <div key={m.id} className={`chat-pop-bubble ${mine ? 'mine' : 'theirs'} ${grouped ? 'grouped' : ''}`}>
                                 <span>{m.content}</span>
                                 {!grouped && <em>{timeAgoShort(m.createdAt)}</em>}
+                                {mine && !String(m.id).startsWith('tmp-') && (
+                                    <button
+                                        type="button"
+                                        className={`chat-pop-unsend${confirmingId === m.id ? ' is-confirming' : ''}`}
+                                        onClick={() => {
+                                            if (confirmingId === m.id) {
+                                                if (confirmTimer.current) window.clearTimeout(confirmTimer.current);
+                                                setConfirmingId(null);
+                                                void unsend(m.id);
+                                            } else {
+                                                armUnsend(m.id);
+                                            }
+                                        }}
+                                        aria-label={confirmingId === m.id ? 'Tap again to remove for everyone' : 'Remove this message'}
+                                    >
+                                        {confirmingId === m.id ? 'Remove?' : <Trash2 size={12} aria-hidden="true" />}
+                                    </button>
+                                )}
                             </div>
                         );
                     })
@@ -407,9 +481,13 @@ export function ChatPopupManager() {
                         prev.map((x) => x.roomId === c.roomId ? { ...x, minimized: !x.minimized, unread: x.minimized ? 0 : x.unread } : x)
                     )}
                     onExpand={() => { goTo(`/messages/${c.roomId}`); }}
-                    onClear={() => setOpenChats((prev) =>
-                        prev.map((x) => x.roomId === c.roomId ? { ...x, unread: 0 } : x)
-                    )}
+                    onClear={() => setOpenChats((prev) => {
+                        // Bail out when already cleared: prev.map() would allocate a
+                        // new array every time and re-render for nothing.
+                        const hit = prev.find((x) => x.roomId === c.roomId);
+                        if (!hit || hit.unread === 0) return prev;
+                        return prev.map((x) => (x.roomId === c.roomId ? { ...x, unread: 0 } : x));
+                    })}
                 />
             ))}
         </div>

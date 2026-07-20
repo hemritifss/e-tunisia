@@ -89,7 +89,7 @@ export default function FavoritesPage() {
         {isLoading ? (
           <div className="favorites-loading">
             <div className="spinner" />
-            <p>Loading saved places...</p>
+            <p>Loading saved places…</p>
           </div>
         ) : !saved || saved.length === 0 ? (
           <Empty />

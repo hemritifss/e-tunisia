@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import * as api from '../../api';
 import type { ProfileOverview } from '../../api';
-import { MessageCircle, UserPlus, UserCheck, MapPin, Sparkles } from 'lucide-react';
+import { MessageCircle, UserPlus, UserCheck, MapPin, Sparkles, MoreHorizontal } from 'lucide-react';
 import { goTo } from '../../router';
+import { openSafetyMenu } from '../../safety-menu';
 
 /**
  * Facebook-style profile preview that opens on hover over any element
@@ -222,7 +223,7 @@ function CardPanel({
                     <b>{data ? compact(data.following) : '—'}</b> following
                 </span>
                 {!!data?.placesVisited && (
-                    <span className="phc-stat"><b>{compact(data.placesVisited)}</b> places</span>
+                    <span className="phc-stat"><b>{compact(data.placesVisited)}</b> {plural(data.placesVisited, 'place')}</span>
                 )}
             </div>
 
@@ -254,6 +255,21 @@ function CardPanel({
                     </button>
                     <button type="button" className="phc-btn" onClick={sendMessage}>
                         <MessageCircle size={15} /> Message
+                    </button>
+                    {/* Block / report already exist app-wide (safety module) but were
+                        only reachable from UserProfilePage — reuse that menu here. */}
+                    <button
+                        type="button"
+                        className="phc-btn phc-btn-more"
+                        aria-label={`More options for ${name}`}
+                        onClick={(e) => {
+                            openSafetyMenu(e.currentTarget, {
+                                target: { type: 'user', id: seed.id, name },
+                                onAfterBlock: onClose,
+                            });
+                        }}
+                    >
+                        <MoreHorizontal size={15} />
                     </button>
                 </div>
             )}

@@ -43,6 +43,7 @@ import { MoodCompass } from '../components/MoodCompass';
 import { TierBadge } from '../components/TierBadge';
 import { PullToRefresh } from '../components/PullToRefresh';
 import { TunisiaNowPanel } from '../components/TunisiaNowPanel';
+import { ActiveConversationsRail } from '../components/ActiveConversations';
 import { PostImageCarousel } from '../components/PostImageCarousel';
 import { StarRating } from '../components/StarRating';
 import { DiscoveryCard } from '../components/DiscoveryCard';
@@ -64,7 +65,17 @@ const sortIcons: Record<SortType, React.ReactNode> = {
   mine:      <UserIcon size={14} />,
 };
 
-function PostCard({ post }: { post: Post }) {
+// Hover hints: one-word tab labels don't explain what each ranking means.
+const sortHints: Record<SortType, string> = {
+  foryou:    'Ranked for you — your interests, follows, and what’s rising',
+  hot:       'Gaining reactions right now',
+  new:       'Most recent first',
+  top:       'All-time community favorites',
+  following:'Only people you follow',
+  mine:      'Your own posts',
+};
+
+function PostCard({ post, priority = false }: { post: Post; priority?: boolean }) {
   const [isSavedLocal, setIsSavedLocal] = useState(() => {
     try {
       const map = JSON.parse(localStorage.getItem('etunisia_saved_items') || '{}');
@@ -326,7 +337,7 @@ function PostCard({ post }: { post: Post }) {
         </a>
       )}
       {images.length > 0 && !(post as any).videoUrl && (
-        <PostImageCarousel images={images} onOpen={() => goTo(detailHash)} />
+        <PostImageCarousel images={images} onOpen={() => goTo(detailHash)} priority={priority} />
       )}
 
       {post.location && (
@@ -348,13 +359,14 @@ function PostCard({ post }: { post: Post }) {
                   : (Number(post.upvotes) || 0)
               }
             />
+            {/* Zero counts are noise — show the number only once it exists. */}
             <button className="post-card-v2-action pc-act-comment" onClick={handleComment} aria-label="Comments">
               <MessageCircle size={15} />
-              <span>{formatNumber(post.commentCount)}</span>
+              {Number(post.commentCount) > 0 && <span>{formatNumber(post.commentCount)}</span>}
             </button>
             <button className={`post-card-v2-action pc-act-repost ${repostedLocal ? 'is-active' : ''}`} onClick={handleRepost} aria-label={repostedLocal ? 'Undo repost' : 'Repost'}>
               <Repeat size={15} />
-              <span>{formatNumber(repostCount)}</span>
+              {Number(repostCount) > 0 && <span>{formatNumber(repostCount)}</span>}
             </button>
           </>
         )}
@@ -391,7 +403,8 @@ function PostCard({ post }: { post: Post }) {
               toUserName: post.author!.fullName,
               toUserAvatar: post.author!.avatar || undefined,
             })}
-            aria-label="Tip"
+            aria-label="Tip the author"
+            title="Send a small thank-you (TND) to the author"
           >
             <Coins size={15} />
             <span>Tip</span>
@@ -459,6 +472,7 @@ function FeedSortBar({
             aria-selected={isActive}
             onClick={() => onSort(key)}
             className={`feed-sort-pill${isActive ? ' is-active' : ''}`}
+            title={sortHints[key]}
           >
             {sortIcons[key]}
             {t(`sort.${key}`)}
@@ -481,8 +495,29 @@ function FeedSortBar({
   );
 }
 
+const SORT_VALUES: SortType[] = ['foryou', 'hot', 'new', 'top', 'following', 'mine'];
+
+/** Sort tab lives in the URL (?sort=hot) so refresh and share keep context. */
+function sortFromUrl(): SortType {
+  try {
+    const v = new URLSearchParams(window.location.search).get('sort') as SortType | null;
+    return v && SORT_VALUES.includes(v) ? v : 'foryou';
+  } catch {
+    return 'foryou';
+  }
+}
+
 export default function FeedPage() {
-  const [sort, setSort] = useState<SortType>('foryou');
+  const [sort, setSortState] = useState<SortType>(sortFromUrl);
+  const setSort = (s: SortType) => {
+    setSortState(s);
+    try {
+      const url = new URL(window.location.href);
+      if (s === 'foryou') url.searchParams.delete('sort');
+      else url.searchParams.set('sort', s);
+      window.history.replaceState(window.history.state, '', url);
+    } catch { /* URL update is best-effort */ }
+  };
   const queryClient = useQueryClient();
   const showToast = useUIStore((s) => s.showToast);
   const observerRef = useRef<IntersectionObserver | null>(null);
@@ -575,6 +610,8 @@ export default function FeedPage() {
 
   return (
     <div className="compass-shell animate-fade-in" data-design="carnet">
+      {/* The page had no h1 at all — headings started at h3/h4. */}
+      <h1 className="visually-hidden">e-Tunisia community feed</h1>
       {/* Top band: welcome/hero spans full width */}
       <div className="compass-top">
         <WelcomeStrip />
@@ -652,12 +689,12 @@ export default function FeedPage() {
               )}
             </div>
           ) : (
-            allItems.map((item: any) =>
+            allItems.map((item: any, i: number) =>
               item.type === 'ad'
                 ? <AdCard key={item.id} ad={item} />
                 : item.type === 'discovery'
                   ? <DiscoveryCard key={item.id} item={item} />
-                  : <PostCard key={item.id} post={item} />
+                  : <PostCard key={item.id} post={item} priority={i === 0} />
             )
           )}
         </AnimatePresence>
@@ -689,8 +726,14 @@ export default function FeedPage() {
       </div>
         </div>{/* /compass-feed */}
 
-        {/* Right sticky panel — single tabbed widget instead of a stack of cards. */}
-        <TunisiaNowPanel />
+        {/* Right sticky column: the tabbed Tunisia Now panel + quick DMs.
+            The conversations rail card was a shipped messenger surface that
+            silently vanished from desktop when this column replaced the old
+            FeedRightRail stack — and it fills the empty space below the panel. */}
+        <aside className="compass-rail">
+          <TunisiaNowPanel />
+          <ActiveConversationsRail />
+        </aside>
       </div>{/* /compass-body */}
     </div>
   );

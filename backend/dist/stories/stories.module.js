@@ -16,6 +16,7 @@ const user_entity_1 = require("../users/user.entity");
 const stories_service_1 = require("./stories.service");
 const stories_controller_1 = require("./stories.controller");
 const messages_module_1 = require("../messages/messages.module");
+const safety_module_1 = require("../safety/safety.module");
 let StoriesModule = class StoriesModule {
 };
 exports.StoriesModule = StoriesModule;
@@ -24,6 +25,7 @@ exports.StoriesModule = StoriesModule = __decorate([
         imports: [
             typeorm_1.TypeOrmModule.forFeature([story_entity_1.Story, story_reaction_entity_1.StoryReaction, story_view_entity_1.StoryView, user_entity_1.User]),
             (0, common_1.forwardRef)(() => messages_module_1.MessagesModule),
+            safety_module_1.SafetyModule,
         ],
         providers: [stories_service_1.StoriesService],
         controllers: [stories_controller_1.StoriesController],

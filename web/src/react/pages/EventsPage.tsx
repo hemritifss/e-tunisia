@@ -191,11 +191,16 @@ export default function EventsPage() {
         ) : list.length === 0 ? (
           <div className="event2-empty">
             <div className="event2-empty-icon"><CalendarX /></div>
-            <h3>No {activeLabel.toLowerCase()} events on the calendar</h3>
+            {/* "all" already means every event — injecting the label here read
+                "No all events events on the calendar". */}
+            <h3>{filter === 'all' ? 'No events on the calendar' : `No ${activeLabel.toLowerCase()} events on the calendar`}</h3>
             <p>Check back soon — new ones land here as the community shares them.</p>
-            <button type="button" className="btn btn-outline" onClick={() => setFilter('all')}>
-              <RotateCcw /> Show all events
-            </button>
+            {/* Reset only makes sense when a category filter is narrowing the list. */}
+            {filter !== 'all' && (
+              <button type="button" className="btn btn-outline" onClick={() => setFilter('all')}>
+                <RotateCcw /> Show all events
+              </button>
+            )}
           </div>
         ) : (
           list.map((ev, i) => <EventCard key={ev.id} ev={ev} featured={i === 0 && list.length >= 3} />)

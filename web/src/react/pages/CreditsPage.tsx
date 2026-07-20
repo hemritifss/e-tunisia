@@ -10,6 +10,7 @@ import * as api from '../../api';
 import { ogShareUrl } from '../../shared/api';
 import { showToast } from '../../ui-utils';
 import { openDonateModal } from '../../donate-modal';
+import { formatShortDate } from '../../shared/dates';
 import { openTopupModal } from '../../topup-modal';
 import { absoluteUrl } from '../../router';
 
@@ -38,7 +39,7 @@ function TxRow({ tx }: { tx: any }) {
   const cls = amt > 0 ? 'credit-in' : 'credit-out';
   const label = TX_LABEL[tx.kind] || tx.kind;
   const Icon = TX_ICON[tx.kind] || Circle;
-  const when = new Date(tx.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  const when = formatShortDate(tx.createdAt);
   return (
     <li className={`credits-tx ${cls}`}>
       <div className="credits-tx-icon"><Icon /></div>
