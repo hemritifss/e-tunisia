@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { AdminGuard } from '../admin/admin.guard';
 import { InventoryService } from './inventory.service';
 
 @ApiTags('inventory')
@@ -42,23 +43,32 @@ export class InventoryController {
     return this.inventoryService.checkAvailability(id, checkIn, checkOut, guests);
   }
 
+  /*
+   * These were "host only" by comment but enforced nothing: with just
+   * JwtAuthGuard any logged-in user could create/edit/delete inventory for any
+   * place (the service takes an id only, no owner check). There is currently no
+   * host-ownership model to check against — Place has `submittedBy` but no
+   * owner/host column — and no frontend calls these endpoints, so they are
+   * admin-gated for now. When a real host-ownership model lands, swap AdminGuard
+   * for a place-owner check and let hosts manage their own inventory.
+   */
   @Post()
-  @UseGuards(JwtAuthGuard)
-  @ApiOperation({ summary: 'Create inventory item (host only)' })
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  @ApiOperation({ summary: 'Create inventory item (admin)' })
   create(@Body() dto: any) {
     return this.inventoryService.create(dto);
   }
 
   @Put(':id')
-  @UseGuards(JwtAuthGuard)
-  @ApiOperation({ summary: 'Update inventory item' })
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  @ApiOperation({ summary: 'Update inventory item (admin)' })
   update(@Param('id') id: string, @Body() dto: any) {
     return this.inventoryService.update(id, dto);
   }
 
   @Delete(':id')
-  @UseGuards(JwtAuthGuard)
-  @ApiOperation({ summary: 'Delete inventory item' })
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  @ApiOperation({ summary: 'Delete inventory item (admin)' })
   remove(@Param('id') id: string) {
     return this.inventoryService.remove(id);
   }

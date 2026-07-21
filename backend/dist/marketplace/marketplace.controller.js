@@ -16,9 +16,11 @@ exports.MarketplaceController = void 0;
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
+const admin_guard_1 = require("../admin/admin.guard");
 const current_user_decorator_1 = require("../common/decorators/current-user.decorator");
 const marketplace_service_1 = require("./marketplace.service");
 const product_entity_1 = require("./product.entity");
+const product_dto_1 = require("./dto/product.dto");
 let MarketplaceController = class MarketplaceController {
     constructor(marketplaceService) {
         this.marketplaceService = marketplaceService;
@@ -104,7 +106,7 @@ __decorate([
     __param(0, (0, current_user_decorator_1.CurrentUser)('id')),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:paramtypes", [String, product_dto_1.CreateProductDto]),
     __metadata("design:returntype", void 0)
 ], MarketplaceController.prototype, "createProduct", null);
 __decorate([
@@ -116,7 +118,7 @@ __decorate([
     __param(1, (0, common_1.Param)('id')),
     __param(2, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String, Object]),
+    __metadata("design:paramtypes", [String, String, product_dto_1.UpdateProductDto]),
     __metadata("design:returntype", void 0)
 ], MarketplaceController.prototype, "updateProduct", null);
 __decorate([
@@ -174,9 +176,9 @@ __decorate([
 ], MarketplaceController.prototype, "getOrder", null);
 __decorate([
     (0, common_1.Put)('orders/:id/status'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, admin_guard_1.AdminGuard),
     (0, swagger_1.ApiBearerAuth)(),
-    (0, swagger_1.ApiOperation)({ summary: 'Update order status' }),
+    (0, swagger_1.ApiOperation)({ summary: 'Update order status (admin)' }),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)('status')),
     __param(2, (0, common_1.Body)('metadata')),

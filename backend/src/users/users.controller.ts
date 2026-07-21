@@ -36,11 +36,32 @@ export class UsersController {
         private ogService: OgService,
     ) { }
 
+    /**
+     * The User entity marks password / passwordResetToken / passwordResetExpires
+     * / tokenVersion with `@Exclude()`, but those are INERT: no
+     * ClassSerializerInterceptor is registered (main.ts only wires
+     * TransformInterceptor + LoggingInterceptor), so `findById` returns the raw
+     * row. Any endpoint handing that straight back leaks the bcrypt hash and a
+     * live password-reset token. Strip them at the boundary.
+     *
+     * Not stripped inside `findById` itself on purpose — jwt.strategy.ts reads
+     * `user.tokenVersion` from it to validate every request.
+     */
+    private stripSecrets<T extends Record<string, any>>(user: T): T {
+        if (!user) return user;
+        const safe: any = { ...user };
+        delete safe.password;
+        delete safe.passwordResetToken;
+        delete safe.passwordResetExpires;
+        delete safe.tokenVersion;
+        return safe;
+    }
+
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()
     @Get('me')
-    getProfile(@Request() req) {
-        return this.usersService.findById(req.user.id);
+    async getProfile(@Request() req) {
+        return this.stripSecrets(await this.usersService.findById(req.user.id));
     }
 
     /** Pro: who viewed your passport (gated by the passportAnalytics cap). */
@@ -230,7 +251,7 @@ export class UsersController {
             if (!capsFor(effectivePlan(me) as any).customThemes) delete safe.passportTheme;
         }
 
-        return this.usersService.update(req.user.id, safe);
+        return this.stripSecrets(await this.usersService.update(req.user.id, safe));
     }
 
     @UseGuards(JwtAuthGuard)

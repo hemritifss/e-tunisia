@@ -16,6 +16,7 @@ const itineraries_service_1 = require("./itineraries.service");
 const itineraries_controller_1 = require("./itineraries.controller");
 const trips_service_1 = require("./trips.service");
 const trips_controller_1 = require("./trips.controller");
+const circuits_service_1 = require("./circuits.service");
 const place_entity_1 = require("../places/place.entity");
 const tour_package_entity_1 = require("../places/tour-package.entity");
 const places_module_1 = require("../places/places.module");
@@ -35,8 +36,8 @@ exports.ItinerariesModule = ItinerariesModule = __decorate([
             billing_module_1.BillingModule,
         ],
         controllers: [itineraries_controller_1.ItinerariesController, trips_controller_1.TripsController],
-        providers: [itineraries_service_1.ItinerariesService, trips_service_1.TripsService],
-        exports: [itineraries_service_1.ItinerariesService, trips_service_1.TripsService],
+        providers: [itineraries_service_1.ItinerariesService, trips_service_1.TripsService, circuits_service_1.CircuitsService],
+        exports: [itineraries_service_1.ItinerariesService, trips_service_1.TripsService, circuits_service_1.CircuitsService],
     })
 ], ItinerariesModule);
 //# sourceMappingURL=itineraries.module.js.map

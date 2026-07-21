@@ -17,6 +17,8 @@ const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const gamification_service_1 = require("./gamification.service");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
+const admin_guard_1 = require("../admin/admin.guard");
+const add_points_dto_1 = require("./dto/add-points.dto");
 let GamificationController = class GamificationController {
     constructor(gamificationService) {
         this.gamificationService = gamificationService;
@@ -36,8 +38,8 @@ let GamificationController = class GamificationController {
     getLeaderboard(limit) {
         return this.gamificationService.getLeaderboard(limit || 20);
     }
-    addPoints(req, body) {
-        return this.gamificationService.addPoints(req.user.id, body.points, body.reason);
+    addPoints(body) {
+        return this.gamificationService.addPoints(body.userId, body.points, body.reason);
     }
 };
 exports.GamificationController = GamificationController;
@@ -83,12 +85,11 @@ __decorate([
 ], GamificationController.prototype, "getLeaderboard", null);
 __decorate([
     (0, common_1.Post)('add-points'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, admin_guard_1.AdminGuard),
     (0, swagger_1.ApiBearerAuth)(),
-    __param(0, (0, common_1.Request)()),
-    __param(1, (0, common_1.Body)()),
+    __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:paramtypes", [add_points_dto_1.AddPointsDto]),
     __metadata("design:returntype", void 0)
 ], GamificationController.prototype, "addPoints", null);
 exports.GamificationController = GamificationController = __decorate([

@@ -41,8 +41,14 @@ let CollectionsService = class CollectionsService {
         const collection = this.collectionsRepo.create({ ...data, ownerId });
         return this.collectionsRepo.save(collection);
     }
-    async addPlace(id, placeId) {
+    assertOwner(collection, userId) {
+        if (collection.ownerId !== userId) {
+            throw new common_1.ForbiddenException('You can only edit your own collections');
+        }
+    }
+    async addPlace(id, placeId, userId) {
         const collection = await this.findById(id);
+        this.assertOwner(collection, userId);
         if (!collection.placeIds)
             collection.placeIds = [];
         if (!collection.placeIds.includes(placeId)) {
@@ -50,8 +56,9 @@ let CollectionsService = class CollectionsService {
         }
         return this.collectionsRepo.save(collection);
     }
-    async removePlace(id, placeId) {
+    async removePlace(id, placeId, userId) {
         const collection = await this.findById(id);
+        this.assertOwner(collection, userId);
         collection.placeIds = (collection.placeIds || []).filter(p => p !== placeId);
         return this.collectionsRepo.save(collection);
     }

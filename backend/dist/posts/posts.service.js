@@ -465,6 +465,8 @@ let PostsService = class PostsService {
             qb.andWhere('p.authorId = :u', { u: opts.authorId });
         if (opts.category)
             qb.andWhere('p.category = :c', { c: opts.category });
+        if (opts.hasVideo)
+            qb.andWhere("p.videoUrl IS NOT NULL AND p.videoUrl <> ''");
         if (opts.sort === 'top') {
             qb.orderBy('p.upvotes', 'DESC')
                 .addOrderBy('p.downvotes', 'ASC')

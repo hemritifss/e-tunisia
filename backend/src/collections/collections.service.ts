@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Collection } from './collection.entity';
@@ -32,8 +32,20 @@ export class CollectionsService {
         return this.collectionsRepo.save(collection);
     }
 
-    async addPlace(id: string, placeId: string) {
+    /**
+     * Only the collection's owner may change its contents. Without this check
+     * any authenticated user could add/remove places in anyone's collection
+     * (the controller passes ids only — `create` already scopes by owner).
+     */
+    private assertOwner(collection: Collection, userId: string) {
+        if (collection.ownerId !== userId) {
+            throw new ForbiddenException('You can only edit your own collections');
+        }
+    }
+
+    async addPlace(id: string, placeId: string, userId: string) {
         const collection = await this.findById(id);
+        this.assertOwner(collection, userId);
         if (!collection.placeIds) collection.placeIds = [];
         if (!collection.placeIds.includes(placeId)) {
             collection.placeIds.push(placeId);
@@ -41,8 +53,9 @@ export class CollectionsService {
         return this.collectionsRepo.save(collection);
     }
 
-    async removePlace(id: string, placeId: string) {
+    async removePlace(id: string, placeId: string, userId: string) {
         const collection = await this.findById(id);
+        this.assertOwner(collection, userId);
         collection.placeIds = (collection.placeIds || []).filter(p => p !== placeId);
         return this.collectionsRepo.save(collection);
     }

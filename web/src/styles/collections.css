@@ -1,7 +1,8 @@
 /* ============================================
    COLLECTIONS PAGE (#/collections)
    Loaded after pages.css. Token-driven.
-   Modal chrome is shared with itineraries.css.
+   Modal chrome lives at the bottom of this file (it used to be shared with
+   itineraries.css, which is now the carnet circuit book and has no modal).
    ============================================ */
 
 .collections-page {
@@ -167,4 +168,139 @@
     font-size: var(--text-sm);
     line-height: var(--leading-snug);
     margin: 0;
+}
+
+/* ============================================
+   MODAL CHROME
+   Moved here from itineraries.css when the itineraries page became the
+   circuit book (carnet dialect, no modal). Collections owns it now.
+   ============================================ */
+
+.collection-modal {
+    position: fixed; inset: 0;
+    z-index: var(--z-modal);
+    display: flex; align-items: center; justify-content: center;
+    padding: var(--space-4);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--duration-fast) var(--ease-out);
+}
+.collection-modal.open {
+    opacity: 1; pointer-events: auto;
+}
+.collection-modal-overlay {
+    position: absolute; inset: 0;
+    background: oklch(0% 0 0 / 0.55);
+    backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+}
+.collection-modal-card {
+    --diff-tint: var(--accent);
+    position: relative;
+    width: 100%; max-width: 560px;
+    max-height: calc(100dvh - var(--space-8));
+    overflow-y: auto;
+    background: var(--surface-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-2xl);
+    box-shadow: var(--shadow-2xl);
+    transform: translateY(12px) scale(0.96);
+    transition: transform var(--duration-normal) var(--ease-spring);
+}
+.collection-modal.open .collection-modal-card {
+    transform: translateY(0) scale(1);
+}
+@media (prefers-reduced-motion: reduce) {
+    .collection-modal-card { transition: none; }
+}
+.collection-modal-close {
+    position: absolute; top: var(--space-3); right: var(--space-3);
+    width: 36px; height: 36px;
+    display: grid; place-items: center;
+    background: oklch(100% 0 0 / 0.18);
+    border: 1px solid oklch(100% 0 0 / 0.28);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    border-radius: 50%;
+    color: oklch(98% 0 0);
+    cursor: pointer;
+    z-index: 2;
+    transition: background var(--duration-fast) var(--ease-out);
+}
+.collection-modal-close:hover {
+    background: oklch(100% 0 0 / 0.28);
+}
+.collection-modal-cover {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    background-size: cover; background-position: center;
+    background-color: var(--bg-tertiary);
+    color: oklch(98% 0 0);
+    padding: var(--space-4) var(--space-5);
+    display: flex; flex-direction: column; justify-content: space-between;
+    isolation: isolate;
+}
+.collection-modal-cover-overlay {
+    position: absolute; inset: 0; z-index: -1;
+    background: linear-gradient(180deg, oklch(0% 0 0 / 0.2) 0%, transparent 35%, oklch(0% 0 0 / 0.75) 100%);
+}
+.collection-modal-cover-tags {
+    display: inline-flex; gap: var(--space-2); flex-wrap: wrap;
+}
+.collection-modal-count-tag {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 4px 10px;
+    background: oklch(100% 0 0 / 0.18);
+    border: 1px solid oklch(100% 0 0 / 0.26);
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    border-radius: var(--radius-full);
+    color: oklch(98% 0 0);
+    font-size: 11px; font-weight: 700;
+    letter-spacing: var(--tracking-wide); text-transform: uppercase;
+}
+.collection-modal-cover h2 {
+    font-family: var(--font-display);
+    font-size: clamp(var(--text-xl), 3vw, var(--text-2xl));
+    font-weight: 800; color: oklch(98% 0 0);
+    line-height: 1.1; letter-spacing: var(--tracking-tight);
+    margin: 0;
+    text-shadow: 0 2px 12px oklch(0% 0 0 / 0.4);
+}
+.collection-modal-body {
+    padding: var(--space-5);
+    display: flex; flex-direction: column; gap: var(--space-4);
+}
+.collection-modal-desc {
+    color: var(--text-primary);
+    font-size: var(--text-base);
+    line-height: var(--leading-relaxed);
+    margin: 0;
+    max-width: 60ch;
+}
+.collection-modal-actions {
+    display: flex; gap: var(--space-2); flex-wrap: wrap;
+}
+.collection-modal-cta {
+    background: var(--gradient-cta) !important;
+    color: var(--text-inverse) !important;
+    box-shadow: var(--shadow-glow);
+    border: none !important;
+}
+
+/* Loading */
+.collections-loading {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: var(--space-12) var(--space-4);
+    color: var(--text-tertiary);
+    display: flex; flex-direction: column; align-items: center; gap: var(--space-3);
+}
+.collections-loading .spinner {
+    width: 32px; height: 32px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: collections-spin 0.9s linear infinite;
+}
+@keyframes collections-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+    .collections-loading .spinner { animation-duration: 2s; }
 }

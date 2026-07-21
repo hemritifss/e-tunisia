@@ -17,6 +17,7 @@ const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 const events_service_1 = require("./events.service");
+const create_event_dto_1 = require("./dto/create-event.dto");
 let EventsController = class EventsController {
     constructor(eventsService) {
         this.eventsService = eventsService;
@@ -31,7 +32,12 @@ let EventsController = class EventsController {
         return this.eventsService.findById(id);
     }
     create(req, body) {
-        return this.eventsService.create(req.user.id, body);
+        const { startDate, endDate, ...rest } = body;
+        return this.eventsService.create(req.user.id, {
+            ...rest,
+            startDate: new Date(startDate),
+            ...(endDate ? { endDate: new Date(endDate) } : {}),
+        });
     }
     attend(id) {
         return this.eventsService.attend(id);
@@ -70,11 +76,13 @@ __decorate([
     __param(0, (0, common_1.Request)()),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:paramtypes", [Object, create_event_dto_1.CreateEventDto]),
     __metadata("design:returntype", void 0)
 ], EventsController.prototype, "create", null);
 __decorate([
     (0, common_1.Post)(':id/attend'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
     (0, swagger_1.ApiOperation)({ summary: 'Attend an event' }),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
