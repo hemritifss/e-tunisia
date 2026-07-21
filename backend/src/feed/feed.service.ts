@@ -23,6 +23,8 @@ interface FeedOpts {
     category?: string;
     /** Filter posts whose body contains "#tag" — case-insensitive. */
     hashtag?: string;
+    /** Video posts only (the Reels surface). Reviews are excluded — they carry no clip. */
+    hasVideo?: boolean;
 }
 
 @Injectable()
@@ -47,7 +49,7 @@ export class FeedService {
 
         // If 'mine' filter is requested, only return that user's posts (no reviews mixed in).
         if (opts.mine && opts.userId) {
-            return this.posts.list({ page, limit, sort: 'new', authorId: opts.userId });
+            return this.posts.list({ page, limit, sort: 'new', authorId: opts.userId, hasVideo: opts.hasVideo });
         }
 
         // 'following' filter: posts authored by users the current user follows.
@@ -80,8 +82,11 @@ export class FeedService {
         const need = page * limit + limit; // headroom
         const fetchN = Math.max(need, 30);
         const [postsRes, reviewsRes] = await Promise.all([
-            this.posts.list({ page: 1, limit: fetchN, sort: baseSort, category: opts.category }),
-            this.reviews.findFeed({ page: 1, limit: fetchN, sort: baseSort }),
+            this.posts.list({ page: 1, limit: fetchN, sort: baseSort, category: opts.category, hasVideo: opts.hasVideo }),
+            // Reviews never carry a clip, so a video-only feed skips them entirely.
+            opts.hasVideo
+                ? Promise.resolve({ data: [] as any[], meta: { page: 1, limit: fetchN, total: 0, totalPages: 0 } })
+                : this.reviews.findFeed({ page: 1, limit: fetchN, sort: baseSort }),
         ]);
 
         const reviewsTagged = reviewsRes.data.map((r: any) => ({ ...r, type: 'review' as const }));
@@ -257,10 +262,12 @@ export class FeedService {
         // visited) roughly 1 in 7, offset so the two never collide on a slot.
         // Discovery is the ~15% exploration injection that drives the gem/contribution
         // flywheel; it's skipped on the pure-chronological 'new' ("Recent") view.
-        const feedAds = await this.ads.findActive('feed').catch(() => [] as any[]);
-        const homeAds = (feedAds && feedAds.length) ? feedAds : await this.ads.findActive('home').catch(() => [] as any[]);
+        // Neither ads nor discovery place cards carry a clip — injecting them into a
+        // video-only feed would put unplayable cards in the middle of the reel swipe.
+        const feedAds = opts.hasVideo ? [] : await this.ads.findActive('feed').catch(() => [] as any[]);
+        const homeAds = (feedAds && feedAds.length) ? feedAds : (opts.hasVideo ? [] : await this.ads.findActive('home').catch(() => [] as any[]));
         const adPool = (homeAds || []).filter((a: any) => a.isActive);
-        const discoveryPool = sort === 'new' ? [] : await this.buildDiscoveryPool(opts.userId);
+        const discoveryPool = (sort === 'new' || opts.hasVideo) ? [] : await this.buildDiscoveryPool(opts.userId);
 
         if (adPool.length > 0 || discoveryPool.length > 0) {
             const out: any[] = [];

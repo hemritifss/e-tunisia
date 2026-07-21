@@ -7,6 +7,7 @@ import { ItinerariesService } from './itineraries.service';
 import { ItinerariesController } from './itineraries.controller';
 import { TripsService } from './trips.service';
 import { TripsController } from './trips.controller';
+import { CircuitsService } from './circuits.service';
 import { Place } from '../places/place.entity';
 import { TourPackage } from '../places/tour-package.entity';
 import { PlacesModule } from '../places/places.module';
@@ -24,7 +25,7 @@ import { BillingModule } from '../billing/billing.module';
         BillingModule,
     ],
     controllers: [ItinerariesController, TripsController],
-    providers: [ItinerariesService, TripsService],
-    exports: [ItinerariesService, TripsService],
+    providers: [ItinerariesService, TripsService, CircuitsService],
+    exports: [ItinerariesService, TripsService, CircuitsService],
 })
 export class ItinerariesModule {}

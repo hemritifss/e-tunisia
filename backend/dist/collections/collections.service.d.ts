@@ -6,7 +6,8 @@ export declare class CollectionsService {
     findAll(): Promise<Collection[]>;
     findById(id: string): Promise<Collection>;
     create(ownerId: string, data: Partial<Collection>): Promise<Collection>;
-    addPlace(id: string, placeId: string): Promise<Collection>;
-    removePlace(id: string, placeId: string): Promise<Collection>;
+    private assertOwner;
+    addPlace(id: string, placeId: string, userId: string): Promise<Collection>;
+    removePlace(id: string, placeId: string, userId: string): Promise<Collection>;
     like(id: string): Promise<Collection>;
 }

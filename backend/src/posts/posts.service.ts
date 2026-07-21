@@ -24,6 +24,8 @@ interface ListOpts {
     sort?: 'new' | 'top' | 'hot';
     authorId?: string;
     category?: string;
+    /** Only posts that carry a clip — the Reels surface. */
+    hasVideo?: boolean;
 }
 
 @Injectable()
@@ -524,6 +526,10 @@ export class PostsService {
 
         if (opts.authorId) qb.andWhere('p.authorId = :u', { u: opts.authorId });
         if (opts.category) qb.andWhere('p.category = :c', { c: opts.category });
+        // Reels ask for clips only. Filtering here (instead of client-side after
+        // paging) is what makes the surface work at all: video posts are a tiny
+        // slice of the corpus, so a page of mixed feed almost never contains one.
+        if (opts.hasVideo) qb.andWhere("p.videoUrl IS NOT NULL AND p.videoUrl <> ''");
 
         if (opts.sort === 'top') {
             qb.orderBy('p.upvotes', 'DESC')

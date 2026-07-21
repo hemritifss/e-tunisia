@@ -66,8 +66,13 @@ export class BookingsController {
     return this.bookingsService.findOne(id);
   }
 
+  // IDOR fix: this only had the class-level JwtAuthGuard, so ANY logged-in user
+  // could mark ANY pending booking as paid (no ownership check in the service).
+  // It is webhook/internal by design — payment confirmation flows from the
+  // Stripe webhook — so restrict it to admin, matching settle-payout above.
   @Patch(':id/confirm')
-  @ApiOperation({ summary: 'Confirm booking payment (webhook/internal)' })
+  @UseGuards(AdminGuard)
+  @ApiOperation({ summary: 'Confirm booking payment (webhook/internal, admin)' })
   confirmPayment(
     @Param('id') id: string,
     @Body('paymentIntentId') paymentIntentId: string,
@@ -85,8 +90,11 @@ export class BookingsController {
     return this.bookingsService.cancel(id, userId, reason);
   }
 
+  // IDOR fix: completing a booking gates payout eligibility, but this had no
+  // ownership check — any logged-in user could complete anyone's booking.
   @Patch(':id/complete')
-  @ApiOperation({ summary: 'Mark booking as completed' })
+  @UseGuards(AdminGuard)
+  @ApiOperation({ summary: 'Mark booking as completed (admin)' })
   complete(@Param('id') id: string) {
     return this.bookingsService.complete(id);
   }

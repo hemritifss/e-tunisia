@@ -17,6 +17,7 @@ interface FeedOpts {
     userId?: string;
     category?: string;
     hashtag?: string;
+    hasVideo?: boolean;
 }
 export declare class FeedService {
     private posts;

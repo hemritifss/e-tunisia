@@ -18,6 +18,7 @@ interface ListOpts {
     sort?: 'new' | 'top' | 'hot';
     authorId?: string;
     category?: string;
+    hasVideo?: boolean;
 }
 export declare class PostsService {
     private postsRepo;

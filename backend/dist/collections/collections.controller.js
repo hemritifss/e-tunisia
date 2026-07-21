@@ -17,6 +17,7 @@ const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 const collections_service_1 = require("./collections.service");
+const create_collection_dto_1 = require("./dto/create-collection.dto");
 let CollectionsController = class CollectionsController {
     constructor(collectionsService) {
         this.collectionsService = collectionsService;
@@ -30,11 +31,11 @@ let CollectionsController = class CollectionsController {
     create(req, body) {
         return this.collectionsService.create(req.user.id, body);
     }
-    addPlace(id, placeId) {
-        return this.collectionsService.addPlace(id, placeId);
+    addPlace(req, id, placeId) {
+        return this.collectionsService.addPlace(id, placeId, req.user.id);
     }
-    removePlace(id, placeId) {
-        return this.collectionsService.removePlace(id, placeId);
+    removePlace(req, id, placeId) {
+        return this.collectionsService.removePlace(id, placeId, req.user.id);
     }
     like(id) {
         return this.collectionsService.like(id);
@@ -64,7 +65,7 @@ __decorate([
     __param(0, (0, common_1.Request)()),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:paramtypes", [Object, create_collection_dto_1.CreateCollectionDto]),
     __metadata("design:returntype", void 0)
 ], CollectionsController.prototype, "create", null);
 __decorate([
@@ -72,10 +73,11 @@ __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, swagger_1.ApiBearerAuth)(),
     (0, swagger_1.ApiOperation)({ summary: 'Add a place to collection' }),
-    __param(0, (0, common_1.Param)('id')),
-    __param(1, (0, common_1.Param)('placeId')),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)('id')),
+    __param(2, (0, common_1.Param)('placeId')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:paramtypes", [Object, String, String]),
     __metadata("design:returntype", void 0)
 ], CollectionsController.prototype, "addPlace", null);
 __decorate([
@@ -83,14 +85,17 @@ __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, swagger_1.ApiBearerAuth)(),
     (0, swagger_1.ApiOperation)({ summary: 'Remove a place from collection' }),
-    __param(0, (0, common_1.Param)('id')),
-    __param(1, (0, common_1.Param)('placeId')),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)('id')),
+    __param(2, (0, common_1.Param)('placeId')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:paramtypes", [Object, String, String]),
     __metadata("design:returntype", void 0)
 ], CollectionsController.prototype, "removePlace", null);
 __decorate([
     (0, common_1.Post)(':id/like'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
     (0, swagger_1.ApiOperation)({ summary: 'Like a collection' }),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),

@@ -1,5 +1,6 @@
 import { MarketplaceService } from './marketplace.service';
 import { ProductCategory } from './product.entity';
+import { CreateProductDto, UpdateProductDto } from './dto/product.dto';
 export declare class MarketplaceController {
     private readonly marketplaceService;
     constructor(marketplaceService: MarketplaceService);
@@ -22,8 +23,8 @@ export declare class MarketplaceController {
         };
     }>;
     findProduct(id: string): Promise<import("./product.entity").Product>;
-    createProduct(sellerId: string, data: any): Promise<import("./product.entity").Product>;
-    updateProduct(sellerId: string, id: string, data: any): Promise<import("./product.entity").Product>;
+    createProduct(sellerId: string, data: CreateProductDto): Promise<import("./product.entity").Product>;
+    updateProduct(sellerId: string, id: string, data: UpdateProductDto): Promise<import("./product.entity").Product>;
     deleteProduct(sellerId: string, id: string): Promise<void>;
     createOrder(buyerId: string, body: {
         items: Array<{

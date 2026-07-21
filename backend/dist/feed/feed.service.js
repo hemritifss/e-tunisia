@@ -42,7 +42,7 @@ let FeedService = class FeedService {
         const sort = opts.sort || 'hot';
         const baseSort = sort === 'foryou' ? 'hot' : sort;
         if (opts.mine && opts.userId) {
-            return this.posts.list({ page, limit, sort: 'new', authorId: opts.userId });
+            return this.posts.list({ page, limit, sort: 'new', authorId: opts.userId, hasVideo: opts.hasVideo });
         }
         if (opts.following && opts.userId) {
             const followed = await this.follows.find({
@@ -68,8 +68,10 @@ let FeedService = class FeedService {
         const need = page * limit + limit;
         const fetchN = Math.max(need, 30);
         const [postsRes, reviewsRes] = await Promise.all([
-            this.posts.list({ page: 1, limit: fetchN, sort: baseSort, category: opts.category }),
-            this.reviews.findFeed({ page: 1, limit: fetchN, sort: baseSort }),
+            this.posts.list({ page: 1, limit: fetchN, sort: baseSort, category: opts.category, hasVideo: opts.hasVideo }),
+            opts.hasVideo
+                ? Promise.resolve({ data: [], meta: { page: 1, limit: fetchN, total: 0, totalPages: 0 } })
+                : this.reviews.findFeed({ page: 1, limit: fetchN, sort: baseSort }),
         ]);
         const reviewsTagged = reviewsRes.data.map((r) => ({ ...r, type: 'review' }));
         let merged = [...postsRes.data, ...reviewsTagged];
@@ -223,10 +225,10 @@ let FeedService = class FeedService {
         }
         const offset = (page - 1) * limit;
         let pageItems = merged.slice(offset, offset + limit);
-        const feedAds = await this.ads.findActive('feed').catch(() => []);
-        const homeAds = (feedAds && feedAds.length) ? feedAds : await this.ads.findActive('home').catch(() => []);
+        const feedAds = opts.hasVideo ? [] : await this.ads.findActive('feed').catch(() => []);
+        const homeAds = (feedAds && feedAds.length) ? feedAds : (opts.hasVideo ? [] : await this.ads.findActive('home').catch(() => []));
         const adPool = (homeAds || []).filter((a) => a.isActive);
-        const discoveryPool = sort === 'new' ? [] : await this.buildDiscoveryPool(opts.userId);
+        const discoveryPool = (sort === 'new' || opts.hasVideo) ? [] : await this.buildDiscoveryPool(opts.userId);
         if (adPool.length > 0 || discoveryPool.length > 0) {
             const out = [];
             let dCursor = discoveryPool.length ? ((page - 1) * 2) % discoveryPool.length : 0;

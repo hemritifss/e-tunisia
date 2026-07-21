@@ -1,4 +1,5 @@
 import { GamificationService } from './gamification.service';
+import { AddPointsDto } from './dto/add-points.dto';
 export declare class GamificationController {
     private readonly gamificationService;
     constructor(gamificationService: GamificationService);
@@ -13,10 +14,7 @@ export declare class GamificationController {
         rank: number;
     }>;
     getLeaderboard(limit?: number): Promise<import("../users/user.entity").User[]>;
-    addPoints(req: any, body: {
-        points: number;
-        reason: string;
-    }): Promise<{
+    addPoints(body: AddPointsDto): Promise<{
         points: number;
         added: number;
         reason: string;

@@ -30,6 +30,7 @@ export class FeedController {
     @ApiQuery({ name: 'sort', required: false, enum: ['new', 'top', 'hot', 'foryou'] })
     @ApiQuery({ name: 'category', required: false })
     @ApiQuery({ name: 'hashtag', required: false })
+    @ApiQuery({ name: 'hasVideo', required: false, description: 'Video posts only (Reels)' })
     public(
         @Request() req,
         @Query('page') page?: string,
@@ -37,6 +38,7 @@ export class FeedController {
         @Query('sort') sort?: 'new' | 'top' | 'hot' | 'foryou',
         @Query('category') category?: string,
         @Query('hashtag') hashtag?: string,
+        @Query('hasVideo') hasVideo?: string,
     ) {
         return this.feed.unified({
             page: page ? Number(page) : undefined,
@@ -44,6 +46,7 @@ export class FeedController {
             sort,
             category,
             hashtag,
+            hasVideo: hasVideo === 'true' || hasVideo === '1',
             userId: this.tryGetUserId(req),
         });
     }
@@ -76,12 +79,14 @@ export class FeedController {
         @Query('page') page?: string,
         @Query('limit') limit?: string,
         @Query('sort') sort?: 'new' | 'top' | 'hot',
+        @Query('hasVideo') hasVideo?: string,
     ) {
         return this.feed.unified({
             page: page ? Number(page) : undefined,
             limit: limit ? Number(limit) : undefined,
             sort,
             mine: true,
+            hasVideo: hasVideo === 'true' || hasVideo === '1',
             userId: req.user.id,
         });
     }

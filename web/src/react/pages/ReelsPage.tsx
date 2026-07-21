@@ -14,6 +14,7 @@ import {
   ChevronUp,
   ChevronDown,
   Music,
+  Camera,
   ArrowLeft,
   Plus,
   Trash2,
@@ -32,7 +33,9 @@ interface ReelItem {
   id: string;
   title: string;
   body?: string;
-  videoUrl: string;
+  videoUrl?: string;
+  /** Still image shown for photo reels, and as the fallback when a video fails. */
+  posterUrl?: string;
   author?: { id: string; fullName: string; handle?: string | null; avatar?: string | null };
   location?: string;
   upvotes: number;
@@ -44,34 +47,38 @@ interface ReelItem {
 
 // Demo reels shown in "For You" only when there are no real video posts yet, so
 // the surface is never empty (mirrors the landing page's fallback content). Real
-// reels created via the composer always take precedence. Clips are reliable,
-// CORS-open public samples.
+// reels created via the composer always take precedence.
+//
+// These are photo reels, not clips: the previous hosted sample MP4s were generic
+// Google demo footage and Chrome blocks them outright (ERR_BLOCKED_BY_ORB), so the
+// surface showed "This video couldn't be loaded" on every card. The stills are the
+// same Wikimedia photos the place catalog already serves for these spots.
 const SAMPLE_REELS: ReelItem[] = [
   {
-    id: 'sample-sahara', title: 'Golden hour over the Sahara dunes 🐪',
-    body: 'Sunset in Douz — the gateway to the desert.',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4',
+    id: 'sample-sahara', title: 'Rooftops of Douz, gateway to the Sahara 🐪',
+    body: 'Where the tarmac ends and the dunes begin.',
+    posterUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/Tunisia_10-12_-_064_-_Douz_and_the_Festival_of_the_Sahara_%286609290791%29.jpg/1280px-Tunisia_10-12_-_064_-_Douz_and_the_Festival_of_the_Sahara_%286609290791%29.jpg',
     author: { id: 's1', fullName: 'Sahara Diaries', handle: 'sahara', avatar: 'https://api.dicebear.com/9.x/personas/svg?seed=sahara' },
     location: 'Douz', upvotes: 1240, commentCount: 86, viewCount: 18400, createdAt: new Date().toISOString(),
   },
   {
-    id: 'sample-sidibou', title: 'The blue doors of Sidi Bou Saïd 💙',
-    body: 'Every corner is a postcard.',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+    id: 'sample-sidibou', title: 'Mint tea above the bay, Sidi Bou Saïd 💙',
+    body: 'Blue benches at Café Sidi Chabaane, the whole gulf in front of you.',
+    posterUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Sidi_Chebaan.jpg/1280px-Sidi_Chebaan.jpg',
     author: { id: 's2', fullName: 'Leïla Travels', handle: 'leila', avatar: 'https://api.dicebear.com/9.x/personas/svg?seed=leila' },
     location: 'Sidi Bou Said', upvotes: 2310, commentCount: 142, viewCount: 30200, createdAt: new Date().toISOString(),
   },
   {
-    id: 'sample-medina', title: 'Street food in the Tunis Medina 🍲',
-    body: 'Brik, fricassé, and mint tea on a rooftop.',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4',
-    author: { id: 's3', fullName: 'Karim Eats', handle: 'karim', avatar: 'https://api.dicebear.com/9.x/personas/svg?seed=karimeats' },
+    id: 'sample-medina', title: 'The Zitouna courtyard, heart of the Medina 🕌',
+    body: 'Every souk in Tunis eventually leads here.',
+    posterUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Minaret_et_patio_de_la_mosqu%C3%A9e_Zitouna_au_centre_de_la_M%C3%A9dina_de_Tunis.jpg/1280px-Minaret_et_patio_de_la_mosqu%C3%A9e_Zitouna_au_centre_de_la_M%C3%A9dina_de_Tunis.jpg',
+    author: { id: 's3', fullName: 'Karim in Tunis', handle: 'karim', avatar: 'https://api.dicebear.com/9.x/personas/svg?seed=karimeats' },
     location: 'Tunis Medina', upvotes: 980, commentCount: 64, viewCount: 14700, createdAt: new Date().toISOString(),
   },
   {
-    id: 'sample-tabarka', title: 'Diving the coast of Tabarka 🤿',
-    body: 'Crystal-clear water and coral reefs up north.',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBunny.mp4',
+    id: 'sample-tabarka', title: "Tabarka's bay from the Genoese fort 🏰",
+    body: 'Coral coast, pine hills, and a storm rolling in off the sea.',
+    posterUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/Ile_de_tabarka_1.jpg/1280px-Ile_de_tabarka_1.jpg',
     author: { id: 's4', fullName: 'Blue Tunisia', handle: 'bluetn', avatar: 'https://api.dicebear.com/9.x/personas/svg?seed=bluetn' },
     location: 'Tabarka', upvotes: 1530, commentCount: 97, viewCount: 21100, createdAt: new Date().toISOString(),
   },
@@ -98,6 +105,12 @@ function ReelCard({
   const muteFlashTimer = useRef<number | null>(null);
   const showToast = useUIStore((s) => s.showToast);
   const reduceMotion = useReducedMotion();
+
+  // A reel is a photo reel when it carries no clip — or when its clip failed to
+  // load and it has a still to fall back to. Sound and playback progress only
+  // make sense for the video case.
+  const hasVideo = Boolean(reel.videoUrl) && !videoError;
+  const showPhoto = Boolean(reel.posterUrl) && !hasVideo;
 
   // The save button used to be inert (no handler) — wire it to the app's
   // shared local-save flag with feedback, same as Explore/Place cards.
@@ -162,7 +175,10 @@ function ReelCard({
     } else {
       lastTap.current = now;
       if (muteFlashTimer.current) window.clearTimeout(muteFlashTimer.current);
-      muteFlashTimer.current = window.setTimeout(() => { flashMute(); muteFlashTimer.current = null; }, 280);
+      // No sound to toggle on a photo reel — don't flash a mute icon at nothing.
+      if (hasVideo) {
+        muteFlashTimer.current = window.setTimeout(() => { flashMute(); muteFlashTimer.current = null; }, 280);
+      }
     }
   };
 
@@ -179,20 +195,37 @@ function ReelCard({
   return (
     <div className="relative w-full h-[100dvh] bg-black overflow-hidden snap-start">
       {/* Video */}
-      <video
-        ref={videoRef}
-        src={reel.videoUrl}
-        className="absolute inset-0 w-full h-full object-cover"
-        loop
-        playsInline
-        muted={isMuted}
-        onClick={handleVideoTap}
-        onError={() => setVideoError(true)}
-        onLoadedData={() => setVideoError(false)}
-      />
+      {hasVideo && (
+        <video
+          ref={videoRef}
+          src={reel.videoUrl}
+          poster={reel.posterUrl}
+          className="absolute inset-0 w-full h-full object-cover"
+          loop
+          playsInline
+          muted={isMuted}
+          onClick={handleVideoTap}
+          onError={() => setVideoError(true)}
+          onLoadedData={() => setVideoError(false)}
+        />
+      )}
 
-      {/* Graceful fallback — a broken video was a confusing pure-black void. */}
-      {videoError && (
+      {/* Photo reel — also the fallback when a video fails, so a dead clip still
+          shows its place instead of a black void. Slow pan keeps it alive. */}
+      {showPhoto && (
+        <motion.img
+          src={reel.posterUrl}
+          alt={reel.title || 'Reel'}
+          className="absolute inset-0 w-full h-full object-cover"
+          onClick={handleVideoTap}
+          initial={reduceMotion ? false : { scale: 1.12, x: 0 }}
+          animate={reduceMotion || !isActive ? { scale: 1.12 } : { scale: 1, x: [0, -14, 0] }}
+          transition={{ duration: 14, ease: 'linear', repeat: Infinity, repeatType: 'reverse' }}
+        />
+      )}
+
+      {/* Last resort: no video and no still to fall back to. */}
+      {videoError && !reel.posterUrl && (
         <div className="absolute inset-0 grid place-items-center bg-gradient-to-br from-neutral-800 to-black text-center px-8 pointer-events-none">
           <div className="text-white/80">
             <Play size={40} className="mx-auto mb-3 opacity-60" aria-hidden="true" />
@@ -206,12 +239,14 @@ function ReelCard({
       <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/60 pointer-events-none" />
 
       {/* Playback progress bar */}
-      <div className="absolute top-0 inset-x-0 z-40 h-[3px] bg-white/15 pointer-events-none">
-        <div
-          className="h-full bg-white/90"
-          style={{ width: `${progress}%`, transition: 'width 0.2s linear' }}
-        />
-      </div>
+      {hasVideo && (
+        <div className="absolute top-0 inset-x-0 z-40 h-[3px] bg-white/15 pointer-events-none">
+          <div
+            className="h-full bg-white/90"
+            style={{ width: `${progress}%`, transition: 'width 0.2s linear' }}
+          />
+        </div>
+      )}
 
       {/* Double-tap heart burst */}
       <AnimatePresence>
@@ -269,11 +304,13 @@ function ReelCard({
 
       {/* Right action rail */}
       <div className="absolute right-3 bottom-24 flex flex-col items-center gap-5 z-10">
-        <button onClick={toggleMute} aria-label={isMuted ? 'Unmute video' : 'Mute video'} aria-pressed={isMuted} className="flex flex-col items-center gap-1">
-          <div className="p-2.5 rounded-full bg-black/20 backdrop-blur-sm text-white">
-            {isMuted ? <VolumeX size={22} aria-hidden="true" /> : <Volume2 size={22} aria-hidden="true" />}
-          </div>
-        </button>
+        {hasVideo && (
+          <button onClick={toggleMute} aria-label={isMuted ? 'Unmute video' : 'Mute video'} aria-pressed={isMuted} className="flex flex-col items-center gap-1">
+            <div className="p-2.5 rounded-full bg-black/20 backdrop-blur-sm text-white">
+              {isMuted ? <VolumeX size={22} aria-hidden="true" /> : <Volume2 size={22} aria-hidden="true" />}
+            </div>
+          </button>
+        )}
         <motion.button onClick={handleLike} aria-label={isLiked ? 'Unlike' : 'Like'} aria-pressed={isLiked} className="flex flex-col items-center gap-1" whileTap={reduceMotion ? undefined : { scale: 0.82 }}>
           <div className={`p-2.5 rounded-full ${isLiked ? 'text-red-500' : 'text-white'}`}>
             <motion.span
@@ -327,8 +364,10 @@ function ReelCard({
           </div>
         )}
         <div className="flex items-center gap-2 text-white/60 text-xs">
-          <Music size={12} />
-          <span>Original sound · {reel.author?.fullName || 'Traveler'}</span>
+          {hasVideo ? <Music size={12} /> : <Camera size={12} />}
+          <span>
+            {hasVideo ? 'Original sound' : 'Photo'} · {reel.author?.fullName || 'Traveler'}
+          </span>
         </div>
       </div>
 
@@ -366,12 +405,24 @@ function ForYouFeed() {
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isFetchNextPageError, isLoading } = useInfiniteQuery({
     queryKey: ['reels', 'foryou'],
     queryFn: async ({ pageParam = 1 }) => {
+      // hasVideo filters server-side. It used to fetch the mixed feed and filter
+      // for clips here, which meant a page of 10 posts usually yielded zero reels
+      // (video posts are a sliver of the corpus) — the surface looked frozen on the
+      // demo reels no matter how many real ones existed. 'foryou' also gets reels
+      // the personalized ranking (interests, visited cities, followed authors)
+      // instead of generic hotness.
       const res = (await api.getFeed({
         page: String(pageParam),
         limit: '10',
-        sort: 'hot',
+        sort: 'foryou',
+        hasVideo: 'true',
       })) as { data: any[]; meta: { page: number; totalPages: number } };
-      const videos = (res.data || []).filter((item: any) => item.videoUrl);
+      // Carry the post's first image through as the poster, so a real reel shows
+      // its own frame while the clip buffers — and something other than black if
+      // the clip never loads.
+      const videos = (res.data || [])
+        .filter((item: any) => item.videoUrl)
+        .map((item: any) => ({ ...item, posterUrl: item.posterUrl || item.images?.[0] }));
       return { data: videos, meta: res.meta };
     },
     getNextPageParam: (lastPage) => {
@@ -549,9 +600,12 @@ function MyReelsGrid({ onCreate }: { onCreate: () => void }) {
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useInfiniteQuery({
     queryKey: ['reels', 'mine'],
     queryFn: async ({ pageParam = 1 }) => {
+      // Same server-side filter as For You — otherwise your own text posts push
+      // your reels off the first pages of this grid.
       const res = (await api.getMyFeed({
         page: String(pageParam),
         limit: '18',
+        hasVideo: 'true',
       })) as { data: any[]; meta: { page: number; totalPages: number } };
       const videos = (res.data || []).filter((item: any) => item.videoUrl);
       return { data: videos, meta: res.meta };

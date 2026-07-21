@@ -11,6 +11,7 @@ export declare class UsersController {
     private activityService;
     private ogService;
     constructor(usersService: UsersService, followsService: FollowsService, endorsementsService: EndorsementsService, activityService: ActivityService, ogService: OgService);
+    private stripSecrets;
     getProfile(req: any): Promise<import("./user.entity").User>;
     passportAnalytics(req: any): Promise<{
         totalViews: number;

@@ -28,7 +28,12 @@ export class TipsController {
         return this.tipsService.create(req.user.id, body);
     }
 
+    // Guarded: this increments a public counter with no per-user record, so
+    // leaving it anonymous let anyone inflate any tip's like count with curl.
+    // (A true idempotent toggle still needs a per-user likes table.)
     @Post(':id/like')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
     @ApiOperation({ summary: 'Like a tip' })
     like(@Param('id') id: string) {
         return this.tipsService.like(id);

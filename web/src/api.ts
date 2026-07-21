@@ -363,6 +363,73 @@ export async function getItineraries() {
   return api<any[]>('/itineraries');
 }
 
+// ── CIRCUITS ─────────────────────────────────
+// Curated routes hydrated from the live place catalog: every stop below is a
+// real place id you can open, map and drop into the trip cart.
+
+export type CircuitKind =
+  | 'sight' | 'ruins' | 'medina' | 'museum' | 'nature' | 'beach'
+  | 'desert' | 'food' | 'viewpoint' | 'craft';
+
+export interface CircuitStop {
+  placeId: string;
+  slug: string;
+  name: string;
+  city: string;
+  governorate: string;
+  latitude: number;
+  longitude: number;
+  cover: string | null;
+  rating: number;
+  reviewCount: number;
+  tags: string[];
+  entryPrice: number | null;
+  openingHours: string | null;
+  kind: CircuitKind;
+  why: string;
+  priority: 1 | 2 | 3;
+  minutes: number;
+  slot: 'morning' | 'midday' | 'afternoon' | 'evening';
+  hopKm: number;
+}
+
+export interface CircuitSummary {
+  slug: string;
+  title: string;
+  tagline: string;
+  summary: string;
+  theme: 'heritage' | 'desert' | 'coast' | 'culture' | 'nature' | 'food' | 'city';
+  region: 'north' | 'centre' | 'south' | 'nationwide';
+  difficulty: 'easy' | 'moderate' | 'challenging';
+  defaultDays: number;
+  dayRange: [number, number];
+  bestMonths: number[];
+  avoidMonths?: { months: number[]; reason: string };
+  carFree: boolean;
+  stayBandTnd: number;
+  distanceKm: number;
+  stopCount: number;
+  cities: string[];
+  stopIds: string[];
+  covers: string[];
+  entryCostTnd: number;
+  onSiteMinutes: number;
+}
+
+export interface CircuitDetail extends CircuitSummary {
+  knowHow: string[];
+  packing: string[];
+  stops: CircuitStop[];
+}
+
+export async function getCircuits() {
+  return api<CircuitSummary[]>('/itineraries/circuits');
+}
+
+export async function getCircuit(slug: string) {
+  return api<CircuitDetail>(`/itineraries/circuits/${encodeURIComponent(slug)}`);
+}
+
 // ── COLLECTIONS ──────────────────────────────
 export async function getCollections() {
   return api<any[]>('/collections');

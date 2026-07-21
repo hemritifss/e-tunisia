@@ -64,6 +64,8 @@ __decorate([
 ], TipsController.prototype, "create", null);
 __decorate([
     (0, common_1.Post)(':id/like'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
     (0, swagger_1.ApiOperation)({ summary: 'Like a tip' }),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),

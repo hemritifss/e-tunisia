@@ -137,6 +137,11 @@ function getRoute(route: string): Route {
     return { render: () => '', init: () => {}, page: 'itineraries', isReact: true };
   }
 
+  // Circuit detail — /itineraries/<slug>; the island reads the slug from the path
+  if (/^\/itineraries\/[a-z0-9-]{2,64}\/?$/i.test(path)) {
+    return { render: () => '', init: () => {}, page: 'itineraries', isReact: true };
+  }
+
   // Password reset with token (React island reads the token from the path)
   if (/^\/reset-password\/[a-zA-Z0-9]+/.test(path)) {
     return { render: () => '', init: () => {}, page: '', isReact: true };
@@ -355,7 +360,7 @@ function navigate() {
         currentUnmount = mountIsland(CollectionsPage, islandRoot);
       } else if (/^\/tag\//.test(path)) {
         currentUnmount = mountIsland(TagPage, islandRoot);
-      } else if (path === '/itineraries') {
+      } else if (path === '/itineraries' || /^\/itineraries\//i.test(path)) {
         currentUnmount = mountIsland(ItinerariesPage, islandRoot);
       } else if (path === '/discover-trips') {
         currentUnmount = mountIsland(DiscoverTripsPage, islandRoot);

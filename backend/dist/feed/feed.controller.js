@@ -38,13 +38,14 @@ let FeedController = class FeedController {
             return undefined;
         }
     }
-    public(req, page, limit, sort, category, hashtag) {
+    public(req, page, limit, sort, category, hashtag, hasVideo) {
         return this.feed.unified({
             page: page ? Number(page) : undefined,
             limit: limit ? Number(limit) : undefined,
             sort,
             category,
             hashtag,
+            hasVideo: hasVideo === 'true' || hasVideo === '1',
             userId: this.tryGetUserId(req),
         });
     }
@@ -57,12 +58,13 @@ let FeedController = class FeedController {
             userId: req.user.id,
         });
     }
-    mine(req, page, limit, sort) {
+    mine(req, page, limit, sort, hasVideo) {
         return this.feed.unified({
             page: page ? Number(page) : undefined,
             limit: limit ? Number(limit) : undefined,
             sort,
             mine: true,
+            hasVideo: hasVideo === 'true' || hasVideo === '1',
             userId: req.user.id,
         });
     }
@@ -82,14 +84,16 @@ __decorate([
     (0, swagger_1.ApiQuery)({ name: 'sort', required: false, enum: ['new', 'top', 'hot', 'foryou'] }),
     (0, swagger_1.ApiQuery)({ name: 'category', required: false }),
     (0, swagger_1.ApiQuery)({ name: 'hashtag', required: false }),
+    (0, swagger_1.ApiQuery)({ name: 'hasVideo', required: false, description: 'Video posts only (Reels)' }),
     __param(0, (0, common_1.Request)()),
     __param(1, (0, common_1.Query)('page')),
     __param(2, (0, common_1.Query)('limit')),
     __param(3, (0, common_1.Query)('sort')),
     __param(4, (0, common_1.Query)('category')),
     __param(5, (0, common_1.Query)('hashtag')),
+    __param(6, (0, common_1.Query)('hasVideo')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, String, String, String, String, String]),
+    __metadata("design:paramtypes", [Object, String, String, String, String, String, String]),
     __metadata("design:returntype", void 0)
 ], FeedController.prototype, "public", null);
 __decorate([
@@ -114,8 +118,9 @@ __decorate([
     __param(1, (0, common_1.Query)('page')),
     __param(2, (0, common_1.Query)('limit')),
     __param(3, (0, common_1.Query)('sort')),
+    __param(4, (0, common_1.Query)('hasVideo')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, String, String, String]),
+    __metadata("design:paramtypes", [Object, String, String, String, String]),
     __metadata("design:returntype", void 0)
 ], FeedController.prototype, "mine", null);
 __decorate([
