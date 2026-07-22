@@ -44,6 +44,43 @@ export default function AuthPage() {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
 
+  // Per-field validation: the offending field turns red and shakes in place,
+  // instead of a top banner resizing the whole card for a fixable typo.
+  type FieldKey = 'fullname' | 'email' | 'password';
+  const [fieldErrors, setFieldErrors] = useState<Partial<Record<FieldKey, string>>>({});
+  const [shakeTick, setShakeTick] = useState(0);
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  const validate = (): boolean => {
+    const errs: Partial<Record<FieldKey, string>> = {};
+    if (isRegister && !fullname.trim()) errs.fullname = 'Required';
+    if (!email.trim()) errs.email = 'Required';
+    else if (!/^\S+@\S+\.\S+$/.test(email.trim())) errs.email = 'Enter a valid email';
+    if (!password) errs.password = 'Required';
+    else if (isRegister && password.length < 6) errs.password = 'At least 6 characters';
+    setFieldErrors(errs);
+    if (Object.keys(errs).length > 0) {
+      setShakeTick((t) => t + 1);
+      return false;
+    }
+    return true;
+  };
+
+  // Restart the shake on every failed submit, even when the same field is
+  // still invalid: CSS animations only replay after a class remove + reflow.
+  useEffect(() => {
+    if (!shakeTick || reduce) return;
+    const fields = cardRef.current?.querySelectorAll<HTMLElement>('.auth-field.is-invalid');
+    fields?.forEach((el) => {
+      el.classList.remove('auth-shake');
+      void el.offsetWidth;
+      el.classList.add('auth-shake');
+    });
+  }, [shakeTick, reduce]);
+
+  const clearFieldError = (k: FieldKey) =>
+    setFieldErrors((prev) => (prev[k] ? { ...prev, [k]: undefined } : prev));
+
   // Sign in and Sign up forms differ in height (~190px: name + country + strength
   // bar). Measure the live form and drive an explicit height on the viewport so
   // the card tweens between the two instead of snapping.
@@ -63,6 +100,7 @@ export default function AuthPage() {
   const switchMode = (next: Mode) => {
     if (next === mode) return;
     setError('');
+    setFieldErrors({});
     setMode(next);
     replace(next === 'register' ? '/register' : '/login');
   };
@@ -108,7 +146,9 @@ export default function AuthPage() {
 
   const onLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(''); setBusy(true);
+    setError('');
+    if (!validate()) return;
+    setBusy(true);
     try {
       const res: any = await api.login(email.trim(), password);
       if (res.accessToken) {
@@ -125,7 +165,7 @@ export default function AuthPage() {
   const onRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    if (password.length < 6) { setError('Password must be at least 6 characters.'); return; }
+    if (!validate()) return;
     setBusy(true);
     const refQs = currentRoute().includes('?') ? currentRoute().split('?')[1] : '';
     // Prefer the ref in the URL; fall back to one stashed from an earlier referral
@@ -198,7 +238,7 @@ export default function AuthPage() {
 
           {/* Form panel */}
           <motion.div className="auth-formside" layout="position" transition={layoutTransition}>
-            <div className="auth-card">
+            <div className="auth-card" ref={cardRef}>
               <header className="auth-head">
                 <span className="auth-eyebrow">{isRegister ? <UserPlus /> : <LogIn />} {cfg.eyebrow}</span>
                 <h1>{cfg.title}</h1>
@@ -240,21 +280,23 @@ export default function AuthPage() {
                       transition={{ duration: 0.26, ease: [0.22, 1, 0.36, 1] }}
                     >
                   {isRegister && (
-                    <div className="auth-field">
+                    <div className={`auth-field ${fieldErrors.fullname ? 'is-invalid' : ''}`}>
                       <label htmlFor="fullname" className="auth-field-label">Full name</label>
                       <div className="auth-input-wrap">
                         <span className="auth-input-icon" aria-hidden="true"><User /></span>
-                        <input type="text" id="fullname" className="auth-input" placeholder="Your name" required autoComplete="name" value={fullname} onChange={(e) => setFullname(e.target.value)} />
+                        <input type="text" id="fullname" className="auth-input" placeholder="Your name" required autoComplete="name" aria-invalid={!!fieldErrors.fullname} value={fullname} onChange={(e) => { setFullname(e.target.value); clearFieldError('fullname'); }} />
                       </div>
+                      {fieldErrors.fullname && <span className="auth-field-error" role="alert">{fieldErrors.fullname}</span>}
                     </div>
                   )}
 
-                  <div className="auth-field">
+                  <div className={`auth-field ${fieldErrors.email ? 'is-invalid' : ''}`}>
                     <label htmlFor={isRegister ? 'reg-email' : 'email'} className="auth-field-label">Email</label>
                     <div className="auth-input-wrap">
                       <span className="auth-input-icon" aria-hidden="true"><Mail /></span>
-                      <input type="email" id={isRegister ? 'reg-email' : 'email'} className="auth-input" placeholder="you@example.com" required autoComplete={isRegister ? 'email' : 'username'} spellCheck={false} value={email} onChange={(e) => setEmail(e.target.value)} />
+                      <input type="email" id={isRegister ? 'reg-email' : 'email'} className="auth-input" placeholder="you@example.com" required autoComplete={isRegister ? 'email' : 'username'} spellCheck={false} aria-invalid={!!fieldErrors.email} value={email} onChange={(e) => { setEmail(e.target.value); clearFieldError('email'); }} />
                     </div>
+                    {fieldErrors.email && <span className="auth-field-error" role="alert">{fieldErrors.email}</span>}
                   </div>
 
                   {isRegister && (
@@ -267,7 +309,7 @@ export default function AuthPage() {
                     </div>
                   )}
 
-                  <div className="auth-field">
+                  <div className={`auth-field ${fieldErrors.password ? 'is-invalid' : ''}`}>
                     <label htmlFor={isRegister ? 'reg-password' : 'password'} className="auth-field-label">Password</label>
                     <div className="auth-input-wrap">
                       <span className="auth-input-icon" aria-hidden="true"><Lock /></span>
@@ -278,14 +320,17 @@ export default function AuthPage() {
                         placeholder={isRegister ? 'Create a password' : 'Your password'}
                         required
                         autoComplete={isRegister ? 'new-password' : 'current-password'}
+                        aria-invalid={!!fieldErrors.password}
                         value={password}
-                        onChange={(e) => setPassword(e.target.value)}
+                        onChange={(e) => { setPassword(e.target.value); clearFieldError('password'); }}
                       />
                       <button type="button" className="auth-input-toggle" aria-label={showPw ? 'Hide password' : 'Show password'} aria-pressed={showPw} onClick={() => setShowPw((s) => !s)}>
                         {showPw ? <EyeOff /> : <Eye />}
                       </button>
                     </div>
-                    {isRegister && <span className="auth-input-helper">At least 6 characters.</span>}
+                    {fieldErrors.password
+                      ? <span className="auth-field-error" role="alert">{fieldErrors.password}</span>
+                      : isRegister && <span className="auth-input-helper">At least 6 characters.</span>}
                   </div>
 
                   {isRegister && (
