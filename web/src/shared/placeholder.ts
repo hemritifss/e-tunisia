@@ -12,6 +12,14 @@ function hashInt(seed: string): number {
   return h >>> 0;
 }
 
+// encodeURIComponent leaves the apostrophe unescaped, which terminates a CSS
+// url('...') wrapper early and makes the whole background-image invalid (the
+// itinerary covers hit exactly this). Percent-encode it so the data URI is safe
+// in both an <img src> and a CSS background-image url().
+function svgDataUri(svg: string): string {
+  return `data:image/svg+xml,${encodeURIComponent(svg).replace(/'/g, '%27')}`;
+}
+
 export function coverPlaceholder(seed = '', label = ''): string {
   const key = seed || label || 'e-tunisia';
   const hue = hashInt(key) % 360;
@@ -27,7 +35,7 @@ export function coverPlaceholder(seed = '', label = ''): string {
     `<text x='200' y='162' font-family='system-ui,-apple-system,sans-serif' font-size='150' font-weight='700' ` +
     `fill='rgba(255,255,255,0.16)' text-anchor='middle'>${initial}</text>` +
     `</svg>`;
-  return `data:image/svg+xml,${encodeURIComponent(svg)}`;
+  return svgDataUri(svg);
 }
 
 // ── Context placeholders ─────────────────────────────────────────────────────
@@ -64,16 +72,16 @@ function landscapePlaceholder(glyph: string, label: string): string {
     `<text x='300' y='400' text-anchor='middle' font-family='Georgia, serif' ` +
     `font-size='22' fill='#8a6a4a' letter-spacing='1.5'>e-Tunisia</text>` +
     `</svg>`;
-  return `data:image/svg+xml,${encodeURIComponent(svg)}`;
+  return svgDataUri(svg);
 }
 
-const AVATAR_PLACEHOLDER = `data:image/svg+xml,${encodeURIComponent(
+const AVATAR_PLACEHOLDER = svgDataUri(
   `<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200' role='img' aria-label='Traveler'>` +
   `<rect width='200' height='200' fill='#e7d6b6'/>` +
   `<circle cx='100' cy='80' r='34' fill='#b45c3f' opacity='0.55'/>` +
   `<path d='M40 176c0-33 27-52 60-52s60 19 60 52z' fill='#b45c3f' opacity='0.55'/>` +
   `</svg>`,
-)}`;
+);
 
 const CONTEXT_PLACEHOLDER: Record<PlaceholderContext, string> = {
   place: landscapePlaceholder(GLYPH.place, 'Place image coming soon'),

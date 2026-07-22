@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Bookmark, BookmarkX, Heart, MessageCircle, Tag, MapPin, AlertCircle, Rss } from 'lucide-react';
 import * as api from '../../api';
 import { showToast } from '../../ui-utils';
+import TunisiaLoader from '../components/TunisiaLoader';
 
 // Migrated from vanilla pages/saved.ts — same classes/inline styles, same
 // api.listSavedPosts / unsavePost calls.
@@ -123,8 +124,7 @@ export default function SavedPage() {
       <div>
         {isLoading ? (
           <div className="favorites-loading">
-            <div className="spinner" />
-            <p>Loading your saved posts…</p>
+            <TunisiaLoader size={52} label="Loading your saved posts…" />
           </div>
         ) : isError ? (
           <div className="empty-state">

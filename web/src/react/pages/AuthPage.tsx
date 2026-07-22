@@ -1,11 +1,12 @@
 import '../../styles/auth.css';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { User, Mail, Globe2, Lock, Eye, EyeOff, AlertCircle, ArrowRight, UserPlus, LogIn, MapPin, Sparkles } from 'lucide-react';
 import * as api from '../../api';
 import { goTo, currentRoute, replace } from '../../router';
 import { track } from '../../analytics';
 import { getStoredRef, clearStoredRef } from '../../referral';
+import { MARKETING_STATS } from '../data/marketingStats';
 
 // Split-screen auth: imagery/welcome panel + form, with an animated side-switch
 // between Sign in and Sign up (in-place, no full reload). Migrated from auth.ts.
@@ -43,10 +44,63 @@ export default function AuthPage() {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
 
+  // Per-field validation: the offending field turns red and shakes in place,
+  // instead of a top banner resizing the whole card for a fixable typo.
+  type FieldKey = 'fullname' | 'email' | 'password';
+  const [fieldErrors, setFieldErrors] = useState<Partial<Record<FieldKey, string>>>({});
+  const [shakeTick, setShakeTick] = useState(0);
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  const validate = (): boolean => {
+    const errs: Partial<Record<FieldKey, string>> = {};
+    if (isRegister && !fullname.trim()) errs.fullname = 'Required';
+    if (!email.trim()) errs.email = 'Required';
+    else if (!/^\S+@\S+\.\S+$/.test(email.trim())) errs.email = 'Enter a valid email';
+    if (!password) errs.password = 'Required';
+    else if (isRegister && password.length < 6) errs.password = 'At least 6 characters';
+    setFieldErrors(errs);
+    if (Object.keys(errs).length > 0) {
+      setShakeTick((t) => t + 1);
+      return false;
+    }
+    return true;
+  };
+
+  // Restart the shake on every failed submit, even when the same field is
+  // still invalid: CSS animations only replay after a class remove + reflow.
+  useEffect(() => {
+    if (!shakeTick || reduce) return;
+    const fields = cardRef.current?.querySelectorAll<HTMLElement>('.auth-field.is-invalid');
+    fields?.forEach((el) => {
+      el.classList.remove('auth-shake');
+      void el.offsetWidth;
+      el.classList.add('auth-shake');
+    });
+  }, [shakeTick, reduce]);
+
+  const clearFieldError = (k: FieldKey) =>
+    setFieldErrors((prev) => (prev[k] ? { ...prev, [k]: undefined } : prev));
+
+  // Sign in and Sign up forms differ in height (~190px: name + country + strength
+  // bar). Measure the live form and drive an explicit height on the viewport so
+  // the card tweens between the two instead of snapping.
+  const formMeasureRef = useRef<HTMLDivElement>(null);
+  const [formHeight, setFormHeight] = useState<number | 'auto'>('auto');
+  useEffect(() => {
+    const el = formMeasureRef.current;
+    if (!el || typeof ResizeObserver === 'undefined') return;
+    const measure = () => setFormHeight(el.offsetHeight);
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
   // Switch mode in place + keep the URL in sync for deep-linking (no full reload).
   const switchMode = (next: Mode) => {
     if (next === mode) return;
     setError('');
+    setFieldErrors({});
     setMode(next);
     replace(next === 'register' ? '/register' : '/login');
   };
@@ -92,7 +146,9 @@ export default function AuthPage() {
 
   const onLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(''); setBusy(true);
+    setError('');
+    if (!validate()) return;
+    setBusy(true);
     try {
       const res: any = await api.login(email.trim(), password);
       if (res.accessToken) {
@@ -109,7 +165,7 @@ export default function AuthPage() {
   const onRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    if (password.length < 6) { setError('Password must be at least 6 characters.'); return; }
+    if (!validate()) return;
     setBusy(true);
     const refQs = currentRoute().includes('?') ? currentRoute().split('?')[1] : '';
     // Prefer the ref in the URL; fall back to one stashed from an earlier referral
@@ -135,6 +191,7 @@ export default function AuthPage() {
     : { title: 'Ahlan wa sahlan', subtitle: 'Welcome back. Your Tunisia adventure continues.', cta: 'Sign in', busyLabel: 'Signing in…', altText: "Don't have an account?", altLabel: 'Create one', altMode: 'register' as Mode, eyebrow: 'Sign in' };
 
   const layoutTransition = reduce ? { duration: 0 } : { type: 'spring' as const, stiffness: 260, damping: 30 };
+  const heightTransition = reduce ? { duration: 0 } : { type: 'tween' as const, duration: 0.34, ease: [0.22, 1, 0.36, 1] as const };
 
   return (
     <div className="auth-page page-enter" data-mode={mode}>
@@ -151,8 +208,8 @@ export default function AuthPage() {
         </a>
 
         <section className="auth-split" data-mode={mode}>
-          {/* Imagery / welcome panel — slides to the opposite side on toggle */}
-          <motion.aside className="auth-visual" layout transition={layoutTransition}>
+          {/* Imagery / welcome panel - slides to the opposite side on toggle */}
+          <motion.aside className="auth-visual" layout="position" transition={layoutTransition}>
             <div className="auth-visual-media" aria-hidden="true">
               <img src={isRegister ? '/img/hero3.png' : '/img/hero1.png'} alt="" />
               <div className="auth-visual-scrim" />
@@ -168,20 +225,20 @@ export default function AuthPage() {
                 >
                   <span className="auth-visual-eyebrow"><Sparkles /> {isRegister ? 'Start exploring' : 'Welcome back'}</span>
                   <h2 className="auth-visual-title">{isRegister ? 'Your Tunisia, unlocked.' : 'The real Tunisia is waiting.'}</h2>
-                  <p className="auth-visual-text">{isRegister ? 'Join 12,400+ travelers and locals sharing the places guidebooks miss.' : 'Pick up right where you left off — your saved places, trips, and people.'}</p>
+                  <p className="auth-visual-text">{isRegister ? `Join ${MARKETING_STATS.travelers.display} travelers and locals sharing the places guidebooks miss.` : 'Pick up right where you left off - your saved places, trips, and people.'}</p>
                 </motion.div>
               </AnimatePresence>
               <div className="auth-visual-switch">
                 <span>{cfg.altText}</span>
                 <button type="button" className="auth-visual-switch-btn" onClick={() => switchMode(cfg.altMode)}>{cfg.altLabel}</button>
               </div>
-              <div className="auth-visual-meta"><MapPin /> 24 governorates · 2,500+ hidden places</div>
+              <div className="auth-visual-meta"><MapPin /> {MARKETING_STATS.governorates.display} governorates · {MARKETING_STATS.placesCharted.display} hidden places</div>
             </div>
           </motion.aside>
 
           {/* Form panel */}
-          <motion.div className="auth-formside" layout transition={layoutTransition}>
-            <div className="auth-card">
+          <motion.div className="auth-formside" layout="position" transition={layoutTransition}>
+            <div className="auth-card" ref={cardRef}>
               <header className="auth-head">
                 <span className="auth-eyebrow">{isRegister ? <UserPlus /> : <LogIn />} {cfg.eyebrow}</span>
                 <h1>{cfg.title}</h1>
@@ -204,33 +261,42 @@ export default function AuthPage() {
                 </>
               )}
 
-              <AnimatePresence mode="wait" initial={false}>
-                <motion.form
-                  key={mode}
-                  className="auth-form"
-                  onSubmit={isRegister ? onRegister : onLogin}
-                  noValidate
-                  initial={reduce ? false : { opacity: 0, x: isRegister ? 24 : -24 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={reduce ? { opacity: 0 } : { opacity: 0, x: isRegister ? -24 : 24 }}
-                  transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-                >
+              <motion.div
+                className="auth-form-viewport"
+                style={{ overflow: 'hidden' }}
+                animate={{ height: formHeight }}
+                transition={heightTransition}
+              >
+                <div ref={formMeasureRef}>
+                  <AnimatePresence mode="wait" initial={false}>
+                    <motion.form
+                      key={mode}
+                      className="auth-form"
+                      onSubmit={isRegister ? onRegister : onLogin}
+                      noValidate
+                      initial={reduce ? false : { opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={reduce ? { opacity: 0 } : { opacity: 0, y: -8 }}
+                      transition={{ duration: 0.26, ease: [0.22, 1, 0.36, 1] }}
+                    >
                   {isRegister && (
-                    <div className="auth-field">
+                    <div className={`auth-field ${fieldErrors.fullname ? 'is-invalid' : ''}`}>
                       <label htmlFor="fullname" className="auth-field-label">Full name</label>
                       <div className="auth-input-wrap">
                         <span className="auth-input-icon" aria-hidden="true"><User /></span>
-                        <input type="text" id="fullname" className="auth-input" placeholder="Your name" required autoComplete="name" value={fullname} onChange={(e) => setFullname(e.target.value)} />
+                        <input type="text" id="fullname" className="auth-input" placeholder="Your name" required autoComplete="name" aria-invalid={!!fieldErrors.fullname} value={fullname} onChange={(e) => { setFullname(e.target.value); clearFieldError('fullname'); }} />
                       </div>
+                      {fieldErrors.fullname && <span className="auth-field-error" role="alert">{fieldErrors.fullname}</span>}
                     </div>
                   )}
 
-                  <div className="auth-field">
+                  <div className={`auth-field ${fieldErrors.email ? 'is-invalid' : ''}`}>
                     <label htmlFor={isRegister ? 'reg-email' : 'email'} className="auth-field-label">Email</label>
                     <div className="auth-input-wrap">
                       <span className="auth-input-icon" aria-hidden="true"><Mail /></span>
-                      <input type="email" id={isRegister ? 'reg-email' : 'email'} className="auth-input" placeholder="you@example.com" required autoComplete={isRegister ? 'email' : 'username'} spellCheck={false} value={email} onChange={(e) => setEmail(e.target.value)} />
+                      <input type="email" id={isRegister ? 'reg-email' : 'email'} className="auth-input" placeholder="you@example.com" required autoComplete={isRegister ? 'email' : 'username'} spellCheck={false} aria-invalid={!!fieldErrors.email} value={email} onChange={(e) => { setEmail(e.target.value); clearFieldError('email'); }} />
                     </div>
+                    {fieldErrors.email && <span className="auth-field-error" role="alert">{fieldErrors.email}</span>}
                   </div>
 
                   {isRegister && (
@@ -243,7 +309,7 @@ export default function AuthPage() {
                     </div>
                   )}
 
-                  <div className="auth-field">
+                  <div className={`auth-field ${fieldErrors.password ? 'is-invalid' : ''}`}>
                     <label htmlFor={isRegister ? 'reg-password' : 'password'} className="auth-field-label">Password</label>
                     <div className="auth-input-wrap">
                       <span className="auth-input-icon" aria-hidden="true"><Lock /></span>
@@ -254,14 +320,17 @@ export default function AuthPage() {
                         placeholder={isRegister ? 'Create a password' : 'Your password'}
                         required
                         autoComplete={isRegister ? 'new-password' : 'current-password'}
+                        aria-invalid={!!fieldErrors.password}
                         value={password}
-                        onChange={(e) => setPassword(e.target.value)}
+                        onChange={(e) => { setPassword(e.target.value); clearFieldError('password'); }}
                       />
                       <button type="button" className="auth-input-toggle" aria-label={showPw ? 'Hide password' : 'Show password'} aria-pressed={showPw} onClick={() => setShowPw((s) => !s)}>
                         {showPw ? <EyeOff /> : <Eye />}
                       </button>
                     </div>
-                    {isRegister && <span className="auth-input-helper">At least 6 characters.</span>}
+                    {fieldErrors.password
+                      ? <span className="auth-field-error" role="alert">{fieldErrors.password}</span>
+                      : isRegister && <span className="auth-input-helper">At least 6 characters.</span>}
                   </div>
 
                   {isRegister && (
@@ -283,8 +352,10 @@ export default function AuthPage() {
                     <span className="auth-submit-label">{busy ? cfg.busyLabel : cfg.cta}</span>
                     <ArrowRight className="auth-submit-icon" />
                   </button>
-                </motion.form>
-              </AnimatePresence>
+                    </motion.form>
+                  </AnimatePresence>
+                </div>
+              </motion.div>
 
               <div className="auth-alt">
                 {cfg.altText} <button type="button" className="auth-link-bold" onClick={() => switchMode(cfg.altMode)}>{cfg.altLabel}</button>

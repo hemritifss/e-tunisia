@@ -7612,7 +7612,7 @@ section[class^="hero-"] {
 
 .tn-why-card p {
   font-size: 0.875rem;
-  color: var(--text-secondary);
+  color: var(--text-primary);
   line-height: 1.75;
 }
 

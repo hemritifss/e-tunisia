@@ -1,6 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as api from '../../api';
 import { showToast } from '../../ui-utils';
+import { MARKETING_STATS } from '../data/marketingStats';
+import PublicMasthead from '../components/public/PublicMasthead';
+import PublicFooter from '../components/public/PublicFooter';
 // partner-v3 / tn-landing styles live in landing.css (de-linked from index.html
 // when the editorial landing shipped). Import it here so this page stays styled.
 import '../../styles/landing.css';
@@ -53,7 +56,7 @@ const BUSINESS_TYPES = [
 ];
 
 const BENEFITS = [
-  { title: 'Massive Visibility', desc: 'Get discovered by 12,400+ active travelers searching for authentic Tunisian experiences — no SEO needed.', icon: <><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></> },
+  { title: 'Massive Visibility', desc: `Get discovered by ${MARKETING_STATS.travelers.display} active travelers searching for authentic Tunisian experiences - no SEO needed.`, icon: <><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></> },
   { title: 'Direct Bookings', desc: 'Travelers book straight through the platform. You keep more — our commission is lower than any competitor.', icon: <><rect x="1" y="4" width="22" height="16" rx="2" ry="2" /><line x1="1" y1="10" x2="23" y2="10" /></> },
   { title: 'Real Analytics', desc: 'Track views, bookings, revenue and customer demographics in real time. Make data-driven decisions.', icon: <><line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" /></> },
   { title: 'Community Trust', desc: 'Our verification badge signals quality. Verified partners get 3× more bookings than unverified listings.', icon: <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /> },
@@ -121,6 +124,7 @@ export default function PartnerPage() {
 
   return (
     <div className="tn-landing partner-v3" ref={rootRef}>
+      {!api.isLoggedIn() && <PublicMasthead />}
       {/* ── Hero ── */}
       <section className="partner-v3-hero">
         <div className="partner-v3-hero-bg"><img src="/img/hero2.png" alt="Tunisia" /></div>
@@ -129,7 +133,7 @@ export default function PartnerPage() {
           <span className="partner-v3-badge"><span className="pv3-dot" />For Businesses</span>
           <h1>Grow your business with <span className="tn-grad">e-Tunisia</span></h1>
           <p className="partner-v3-hero-arabic">وصّل للسياح اللي يستاهلوك</p>
-          <p className="partner-v3-hero-sub">Join 890+ local hosts, restaurants and experience providers reaching 12,400+ active travelers every month — the ones who want the real Tunisia.</p>
+          <p className="partner-v3-hero-sub">Join {MARKETING_STATS.localHosts.display} local hosts, restaurants and experience providers reaching {MARKETING_STATS.travelers.display} active travelers every month - the ones who want the real Tunisia.</p>
           <div className="partner-v3-hero-actions">
             <a href="#partner-apply" className="tn-btn-primary">Apply Now — Free<Arrow /></a>
             <a href="#partner-tiers" className="tn-btn-secondary">View Pricing</a>
@@ -141,20 +145,20 @@ export default function PartnerPage() {
               <img src="https://api.dicebear.com/9.x/personas/svg?seed=karim" alt="" loading="lazy" />
               <img src="https://api.dicebear.com/9.x/personas/svg?seed=leila" alt="" loading="lazy" />
             </span>
-            <span>Join <strong>890+</strong> Tunisian businesses already growing</span>
+            <span>Join <strong>{MARKETING_STATS.localHosts.display}</strong> Tunisian businesses already growing</span>
           </div>
         </div>
       </section>
 
       {/* ── Stats ── */}
       <div className="tn-stats">
-        <Stat target={890} suffix="+" label="Active Partners" />
+        <Stat target={MARKETING_STATS.localHosts.value} suffix={MARKETING_STATS.localHosts.suffix} label="Active Partners" />
         <div className="tn-stat-divider" />
-        <Stat target={12400} suffix="+" label="Monthly Travelers" />
+        <Stat target={MARKETING_STATS.travelers.value} suffix={MARKETING_STATS.travelers.suffix} label="Monthly Travelers" />
         <div className="tn-stat-divider" />
-        <Stat target={45} suffix="K" label="Monthly Bookings" />
+        <Stat target={MARKETING_STATS.monthlyBookings.value} suffix={MARKETING_STATS.monthlyBookings.suffix} label="Monthly Bookings" />
         <div className="tn-stat-divider" />
-        <Stat target={98} suffix="%" label="Partner Satisfaction" />
+        <Stat target={MARKETING_STATS.partnerSatisfaction.value} suffix={MARKETING_STATS.partnerSatisfaction.suffix} label="Partner Satisfaction" />
       </div>
 
       {/* ── Why partner ── */}
@@ -326,11 +330,12 @@ export default function PartnerPage() {
         <div className="tn-cta-bg" />
         <div className="tn-cta-content">
           <h2>Your <span className="tn-grad">best customers</span> are already here.</h2>
-          <p>12,400+ travelers are looking for authentic Tunisian places, food and experiences this month. Be the one they find.</p>
+          <p>{MARKETING_STATS.travelers.display} travelers are looking for authentic Tunisian places, food and experiences this month. Be the one they find.</p>
           <a href="#partner-apply" className="tn-btn-primary tn-btn-large">Apply Now — Free<Arrow size={20} /></a>
           <p className="tn-cta-small">Ahlan wa Sahlan. Welcome aboard.</p>
         </div>
       </section>
+      {!api.isLoggedIn() && <PublicFooter />}
     </div>
   );
 }

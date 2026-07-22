@@ -1098,7 +1098,7 @@ function initPostModal() {
   let selectedCatClass = '';
   let selectedLocation = '';
   let taggedUsers: string[] = [];
-  let selectedFiles: string[] = [];
+  let selectedFiles: { dataUrl: string; isVideo: boolean; file: File }[] = [];
 
   const tunisianLocations = [
     'Sidi Bou Said', 'Carthage', 'Djerba', 'Douz', 'Tunis Medina',

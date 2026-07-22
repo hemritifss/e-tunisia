@@ -626,3 +626,32 @@
   height: 1px;
   background: oklch(100% 0 0 / 0.15);
 }
+
+/* ── Per-field validation: the offending field turns red and shakes in place ── */
+.auth-field.is-invalid .auth-input-wrap {
+    border-color: var(--error);
+    background: color-mix(in oklch, var(--error) 6%, var(--bg-secondary));
+}
+.auth-field.is-invalid .auth-input-wrap:focus-within {
+    border-color: var(--error);
+    box-shadow: 0 0 0 3px color-mix(in oklch, var(--error) 22%, transparent);
+}
+.auth-field.is-invalid .auth-field-label,
+.auth-field.is-invalid .auth-input-icon { color: var(--error); }
+.auth-field-error {
+    font-size: var(--text-xs);
+    font-weight: 600;
+    color: var(--error);
+}
+.auth-field.auth-shake .auth-input-wrap {
+    animation: auth-field-shake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+}
+@keyframes auth-field-shake {
+    10%, 90%       { transform: translateX(-1px); }
+    20%, 80%       { transform: translateX(2px); }
+    30%, 50%, 70%  { transform: translateX(-5px); }
+    40%, 60%       { transform: translateX(5px); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .auth-field.auth-shake .auth-input-wrap { animation: none; }
+}

@@ -1003,7 +1003,7 @@
 }
 .about-v3-story-text h2:not(:first-child) { margin-top: var(--space-6); }
 .about-v3-story-text p {
-    color: var(--text-secondary); line-height: var(--leading-relaxed);
+    color: var(--text-primary); line-height: var(--leading-relaxed);
     margin-bottom: var(--space-3);
 }
 
@@ -1027,6 +1027,13 @@
     object-fit: cover; background: var(--surface);
     box-shadow: 0 0 0 1px var(--border), var(--shadow-md);
 }
+/* Self-contained placeholder until real headshots ship: initials on the same
+   88px avatar disc, so no external avatar service is needed. */
+.about-v3-team-avatar--initials {
+    display: flex; align-items: center; justify-content: center;
+    font-size: var(--text-2xl); font-weight: 800; color: var(--coral);
+    letter-spacing: 0.02em; text-transform: uppercase; user-select: none;
+}
 .about-v3-team-logo {
     width: 104px; height: 104px; border-radius: var(--radius-lg); margin: 0 auto var(--space-4);
     object-fit: contain; padding: var(--space-4);
@@ -1038,7 +1045,7 @@
     font-size: var(--text-sm); font-weight: 700; color: var(--coral);
     text-transform: uppercase; letter-spacing: 0.06em;
 }
-.about-v3-team-card p { font-size: var(--text-sm); color: var(--text-secondary); line-height: var(--leading-relaxed); }
+.about-v3-team-card p { font-size: var(--text-sm); color: var(--text-primary); line-height: var(--leading-relaxed); }
 
 /* ── Hero content entrance cascade (partner + about cinematic heroes) ── */
 .partner-v3-hero-content > * {

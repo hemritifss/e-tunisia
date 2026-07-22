@@ -1,0 +1,40 @@
+/* Tunisia-map loading mark. The silhouette (mapsicon, MIT) draws its own
+   border on a loop. Used by the route loader and page loading states. */
+.tn-loader {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.7em;
+  color: var(--coral);
+}
+.tn-loader-svg { display: block; overflow: visible; }
+.tn-loader-shape {
+  fill: color-mix(in oklab, var(--coral) 15%, transparent);
+  stroke: var(--coral);
+  stroke-width: 550; /* path units; the 0.1 transform scales this to ~55 viewBox units */
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: tn-draw 2.6s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+@keyframes tn-draw {
+  0%   { stroke-dashoffset: 1; }
+  55%  { stroke-dashoffset: 0; }
+  100% { stroke-dashoffset: -1; }
+}
+.tn-loader-label {
+  font-size: 0.82rem;
+  letter-spacing: 0.02em;
+  color: var(--text-muted);
+}
+.tn-loader--full {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  background: var(--paper);
+}
+@media (prefers-reduced-motion: reduce) {
+  .tn-loader-shape { animation: none; stroke-dashoffset: 0; }
+}

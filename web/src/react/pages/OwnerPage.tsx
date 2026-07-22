@@ -9,6 +9,7 @@ import {
 import * as api from '../../api';
 import { showToast } from '../../ui-utils';
 import { useMoney } from '../lib/useCurrency';
+import TunisiaLoader from '../components/TunisiaLoader';
 
 // Migrated from vanilla pages/owner.ts — business dashboard: stats, inquiry
 // pipeline, lead-source breakdown, listings, + boost/package CRUD modals.
@@ -122,7 +123,7 @@ function Inbox_() {
     queryKey: ['received-inquiries'],
     queryFn: async () => { const res = await api.listReceivedInquiries(1, 20); return Array.isArray(res?.data) ? res.data : []; },
   });
-  if (isLoading) return <div className="favorites-loading"><div className="spinner" /></div>;
+  if (isLoading) return <div className="favorites-loading"><TunisiaLoader size={52} /></div>;
   if (isError) return <p className="text-muted" style={{ padding: 'var(--space-3)' }}>Could not load inquiries.</p>;
   if (!data || data.length === 0) return <Empty icon={<Inbox />} title="No inquiries yet" body="Once travelers send a quote request, they'll appear here with one-tap contact + status tracking." />;
   return <>{data.map((r: any) => <InquiryCard key={r.id} inq={r} />)}</>;
@@ -131,7 +132,7 @@ function Inbox_() {
 // ── Lead-source breakdown ──
 function Breakdown() {
   const { data, isLoading } = useQuery({ queryKey: ['inquiry-breakdown'], queryFn: () => api.getInquiryBreakdown().catch(() => null) });
-  if (isLoading) return <div className="favorites-loading"><div className="spinner" /></div>;
+  if (isLoading) return <div className="favorites-loading"><TunisiaLoader size={52} /></div>;
   const hasSources = (data?.sources?.length || 0) > 0;
   const hasPackages = (data?.packages?.length || 0) > 0;
   if (!data || (!hasSources && !hasPackages)) return <Empty icon={<BarChart3 />} title="No data yet" body="Once travelers submit inquiries, you'll see which sources convert best here." />;
@@ -235,7 +236,7 @@ function PackageManagerModal({ place, onClose }: { place: any; onClose: () => vo
         </header>
         <div className="pkg-mgr-body">
           <div className="pkg-mgr-list">
-            {isLoading ? <div className="favorites-loading"><div className="spinner" /></div>
+            {isLoading ? <div className="favorites-loading"><TunisiaLoader size={52} /></div>
               : !pkgs || pkgs.length === 0 ? <Empty icon={<Package />} title="No packages yet" body="Add your first bookable experience to convert inquiries into bookings." />
                 : pkgs.map((pkg: any) => (
                   <div className="pkg-mgr-row" key={pkg.id}>
@@ -338,7 +339,7 @@ function PlaceCard({ p, onBoost, onPackages }: { p: any; onBoost: () => void; on
 
 function Listings({ onBoost, onPackages }: { onBoost: (p: any) => void; onPackages: (p: any) => void }) {
   const { data: places, isLoading, isError } = useQuery({ queryKey: ['my-places'], queryFn: () => api.listMyPlaces().catch(() => [] as any[]) });
-  if (isLoading) return <div className="favorites-loading"><div className="spinner" /></div>;
+  if (isLoading) return <div className="favorites-loading"><TunisiaLoader size={52} /></div>;
   if (isError) return <p className="text-muted" style={{ padding: 'var(--space-3)' }}>Could not load listings.</p>;
   if (!places || places.length === 0) return <Empty icon={<MapPin />} title="You don't host any listings yet" body="List your hotel, tour, or experience and start receiving direct inquiries." />;
   return <>{places.map((p: any) => <PlaceCard key={p.id} p={p} onBoost={() => onBoost(p)} onPackages={() => onPackages(p)} />)}</>;

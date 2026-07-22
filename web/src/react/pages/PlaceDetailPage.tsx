@@ -14,6 +14,7 @@ import { useMoney } from '../lib/useCurrency';
 import { shareUrl, toggleSaved, isSaved, showToast } from '../../ui-utils';
 import * as tripCart from '../../trip-cart';
 import { Reveal } from '../components/Reveal';
+import TunisiaLoader from '../components/TunisiaLoader';
 import { KontHouniButton } from '../components/KontHouniButton';
 import { GemConfirmBlock } from '../components/GemWidgets';
 import { currentPath, query as routeQuery, absoluteUrl, onRouteChange } from '../../router';
@@ -405,7 +406,7 @@ export default function PlaceDetailPage() {
   if (placeQ.isLoading || !place) {
     return (
       <div className="place-detail-page page-enter" id="place-detail-page" data-design="carnet" data-place-id={placeId}>
-        <div className="place-detail-loading"><div className="spinner" /><p>Loading place details…</p></div>
+        <div className="place-detail-loading"><TunisiaLoader size={56} label="Loading place details…" /></div>
       </div>
     );
   }

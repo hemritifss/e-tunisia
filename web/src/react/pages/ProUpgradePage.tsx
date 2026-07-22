@@ -7,6 +7,9 @@ import {
 } from 'lucide-react';
 import { useUserPlan } from '../hooks/useUserPlan';
 import { api } from '../../shared/api';
+import { isLoggedIn } from '../../api';
+import PublicMasthead from '../components/public/PublicMasthead';
+import PublicFooter from '../components/public/PublicFooter';
 import { goTo, currentRoute } from '../../router';
 import { openTopupModal } from '../../topup-modal';
 import { Tier, Cycle, fmtPrice, usePlanCatalog, planFeatureCount, CatalogPlan } from '../lib/plan-catalog';
@@ -55,7 +58,9 @@ interface PlanCardProps {
 
 function PlanCard({ p, currentPlan, cycle, method, busy, isAnon, currency, onActivate, onCancel, onManage }: PlanCardProps) {
     const [open, setOpen] = useState(false);
-    const isCurrent = currentPlan === p.id;
+    // Anon visitors resolve to the 'free' fallback plan; without this guard the
+    // Free card shows a disabled "Current plan" to someone with no account.
+    const isCurrent = !isAnon && currentPlan === p.id;
     const amount = cycle === 'yearly' ? p.yearly : p.monthly;
     const total = planFeatureCount(p);
     const priceLabel = p.id === 'free' ? 'Free' : fmtPrice(amount, currency);
@@ -76,7 +81,11 @@ function PlanCard({ p, currentPlan, cycle, method, busy, isAnon, currency, onAct
             </div>
         )
     ) : p.id === 'free' ? (
-        <button className="btn ghost block" disabled>Default plan</button>
+        isAnon ? (
+            <a className="btn primary block" href="#/register">Get started free →</a>
+        ) : (
+            <button className="btn ghost block" disabled>Default plan</button>
+        )
     ) : isAnon ? (
         <a className="btn primary block" href="#/register">Sign in to upgrade →</a>
     ) : (
@@ -309,6 +318,7 @@ export default function ProUpgradePage() {
 
     return (
         <main className="pro-page">
+            {!isLoggedIn() && <PublicMasthead active="pricing" />}
             {offline && (
                 <div className="pro-offline-banner">
                     <strong>Billing service offline</strong>
@@ -407,6 +417,7 @@ export default function ProUpgradePage() {
                     end of the period.
                 </p>
             </section>
+            {!isLoggedIn() && <PublicFooter />}
         </main>
     );
 }
