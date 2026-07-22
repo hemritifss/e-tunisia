@@ -7,6 +7,7 @@ import { User } from '../users/user.entity';
 import { RedisService } from '../redis/redis.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { NotificationType } from '../notifications/notification.entity';
+import { SafetyService } from '../safety/safety.service';
 
 @Injectable()
 export class SocialService {
@@ -19,6 +20,7 @@ export class SocialService {
     private userRepo: Repository<User>,
     private redisService: RedisService,
     private notifications: NotificationsService,
+    private safety: SafetyService,
   ) {}
 
   // ---- Follow System ----
@@ -138,26 +140,40 @@ export class SocialService {
     const isSelf = !!viewerId && viewerId === targetId;
     const relational = !!viewerId && !isSelf;
 
+    const [isBlockedByMe, hasBlockedMe] = relational
+      ? await Promise.all([
+          this.safety.isBlocked(viewerId, targetId).then((r) => r.isBlocked),
+          this.safety.isBlocked(targetId, viewerId).then((r) => r.isBlocked),
+        ])
+      : [false, false];
+    const blocked = isBlockedByMe || hasBlockedMe;
+
+    // A block (either direction) hides everything but the identity needed to
+    // render an "unavailable" card — no stats, no relationship, nothing to
+    // scrape from a hover. `isFollowing`/`mutuals` on a stale follow row would
+    // otherwise still leak through the block.
+    const shareRelational = relational && !blocked;
+
     const [counts, isFollowing, followsYou, mutuals] = await Promise.all([
-      this.getFollowCounts(targetId),
-      relational ? this.isFollowing(viewerId, targetId) : Promise.resolve(false),
-      relational ? this.isFollowing(targetId, viewerId) : Promise.resolve(false),
-      relational ? this.getMutuals(viewerId, targetId) : Promise.resolve({ count: 0, sample: [] }),
+      blocked ? Promise.resolve({ followers: 0, following: 0 }) : this.getFollowCounts(targetId),
+      shareRelational ? this.isFollowing(viewerId, targetId) : Promise.resolve(false),
+      shareRelational ? this.isFollowing(targetId, viewerId) : Promise.resolve(false),
+      shareRelational ? this.getMutuals(viewerId, targetId) : Promise.resolve({ count: 0, sample: [] }),
     ]);
 
     return {
       id: user.id,
       fullName: user.fullName,
       handle: user.handle || null,
-      avatar: user.avatar || null,
-      bio: user.bio || null,
-      country: user.country || null,
-      plan: user.plan,
+      avatar: blocked ? null : (user.avatar || null),
+      bio: blocked ? null : (user.bio || null),
+      country: blocked ? null : (user.country || null),
+      plan: blocked ? null : user.plan,
       role: user.role,
-      points: user.points || 0,
-      badgeCount: Array.isArray(user.badges) ? user.badges.length : 0,
-      placesVisited: Array.isArray(user.visitedPlaceIds) ? user.visitedPlaceIds.length : 0,
-      founderNumber: user.founderNumber ?? null,
+      points: blocked ? 0 : (user.points || 0),
+      badgeCount: blocked ? 0 : (Array.isArray(user.badges) ? user.badges.length : 0),
+      placesVisited: blocked ? 0 : (Array.isArray(user.visitedPlaceIds) ? user.visitedPlaceIds.length : 0),
+      founderNumber: blocked ? null : (user.founderNumber ?? null),
       createdAt: user.createdAt,
       followers: counts.followers,
       following: counts.following,
@@ -165,6 +181,8 @@ export class SocialService {
       isFollowing,
       followsYou,
       mutuals,
+      isBlockedByMe,
+      hasBlockedMe,
     };
   }
 

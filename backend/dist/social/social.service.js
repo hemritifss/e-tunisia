@@ -22,13 +22,15 @@ const user_entity_1 = require("../users/user.entity");
 const redis_service_1 = require("../redis/redis.service");
 const notifications_service_1 = require("../notifications/notifications.service");
 const notification_entity_1 = require("../notifications/notification.entity");
+const safety_service_1 = require("../safety/safety.service");
 let SocialService = class SocialService {
-    constructor(followRepo, activityRepo, userRepo, redisService, notifications) {
+    constructor(followRepo, activityRepo, userRepo, redisService, notifications, safety) {
         this.followRepo = followRepo;
         this.activityRepo = activityRepo;
         this.userRepo = userRepo;
         this.redisService = redisService;
         this.notifications = notifications;
+        this.safety = safety;
     }
     async follow(followerId, followingId) {
         if (followerId === followingId) {
@@ -108,25 +110,33 @@ let SocialService = class SocialService {
             throw new common_1.NotFoundException('User not found');
         const isSelf = !!viewerId && viewerId === targetId;
         const relational = !!viewerId && !isSelf;
+        const [isBlockedByMe, hasBlockedMe] = relational
+            ? await Promise.all([
+                this.safety.isBlocked(viewerId, targetId).then((r) => r.isBlocked),
+                this.safety.isBlocked(targetId, viewerId).then((r) => r.isBlocked),
+            ])
+            : [false, false];
+        const blocked = isBlockedByMe || hasBlockedMe;
+        const shareRelational = relational && !blocked;
         const [counts, isFollowing, followsYou, mutuals] = await Promise.all([
-            this.getFollowCounts(targetId),
-            relational ? this.isFollowing(viewerId, targetId) : Promise.resolve(false),
-            relational ? this.isFollowing(targetId, viewerId) : Promise.resolve(false),
-            relational ? this.getMutuals(viewerId, targetId) : Promise.resolve({ count: 0, sample: [] }),
+            blocked ? Promise.resolve({ followers: 0, following: 0 }) : this.getFollowCounts(targetId),
+            shareRelational ? this.isFollowing(viewerId, targetId) : Promise.resolve(false),
+            shareRelational ? this.isFollowing(targetId, viewerId) : Promise.resolve(false),
+            shareRelational ? this.getMutuals(viewerId, targetId) : Promise.resolve({ count: 0, sample: [] }),
         ]);
         return {
             id: user.id,
             fullName: user.fullName,
             handle: user.handle || null,
-            avatar: user.avatar || null,
-            bio: user.bio || null,
-            country: user.country || null,
-            plan: user.plan,
+            avatar: blocked ? null : (user.avatar || null),
+            bio: blocked ? null : (user.bio || null),
+            country: blocked ? null : (user.country || null),
+            plan: blocked ? null : user.plan,
             role: user.role,
-            points: user.points || 0,
-            badgeCount: Array.isArray(user.badges) ? user.badges.length : 0,
-            placesVisited: Array.isArray(user.visitedPlaceIds) ? user.visitedPlaceIds.length : 0,
-            founderNumber: user.founderNumber ?? null,
+            points: blocked ? 0 : (user.points || 0),
+            badgeCount: blocked ? 0 : (Array.isArray(user.badges) ? user.badges.length : 0),
+            placesVisited: blocked ? 0 : (Array.isArray(user.visitedPlaceIds) ? user.visitedPlaceIds.length : 0),
+            founderNumber: blocked ? null : (user.founderNumber ?? null),
             createdAt: user.createdAt,
             followers: counts.followers,
             following: counts.following,
@@ -134,6 +144,8 @@ let SocialService = class SocialService {
             isFollowing,
             followsYou,
             mutuals,
+            isBlockedByMe,
+            hasBlockedMe,
         };
     }
     async getMutuals(viewerId, targetId, sampleSize = 3) {
@@ -230,6 +242,7 @@ exports.SocialService = SocialService = __decorate([
         typeorm_2.Repository,
         typeorm_2.Repository,
         redis_service_1.RedisService,
-        notifications_service_1.NotificationsService])
+        notifications_service_1.NotificationsService,
+        safety_service_1.SafetyService])
 ], SocialService);
 //# sourceMappingURL=social.service.js.map

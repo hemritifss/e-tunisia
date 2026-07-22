@@ -60,6 +60,8 @@ export default function CircuitDetail({ slug }: { slug: string }) {
 
     const { data: visited } = useQuery({
         queryKey: ['visited-ids'],
+        // Auth-only endpoint — a 401 here would bounce the whole app to /hero.
+        enabled: api.isLoggedIn(),
         queryFn: async () => {
             try {
                 const res = await api.getVisitedIds();

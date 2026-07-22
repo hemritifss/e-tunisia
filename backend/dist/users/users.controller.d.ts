@@ -30,7 +30,7 @@ export declare class UsersController {
             count: number;
         }[];
     }>;
-    searchUsers(q: string, limit?: string): Promise<{
+    searchUsers(req: any, q: string, limit?: string): Promise<{
         id: any;
         handle: any;
         fullName: any;

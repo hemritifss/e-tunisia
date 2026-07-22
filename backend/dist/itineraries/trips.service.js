@@ -337,8 +337,8 @@ let TripsService = class TripsService {
                 throw new common_1.ForbiddenException('This trip is private');
         }
         if (viewerUserId !== trip.userId) {
+            await this.trips.increment({ id: trip.id }, 'viewCount', 1).catch(() => { });
             trip.viewCount = (trip.viewCount || 0) + 1;
-            await this.trips.save(trip).catch(() => { });
         }
         return this.sanitize(trip);
     }

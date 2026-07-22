@@ -834,6 +834,9 @@ export interface ProfileOverview {
     count: number;
     sample: { id: string; fullName: string; avatar: string | null; handle: string | null }[];
   };
+  /** True in either direction => the server already stripped stats/bio/avatar. */
+  isBlockedByMe: boolean;
+  hasBlockedMe: boolean;
 }
 
 /** Compact profile summary powering the hover card — one request per user. */

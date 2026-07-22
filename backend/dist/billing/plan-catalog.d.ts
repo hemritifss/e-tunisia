@@ -4,6 +4,7 @@ export type BillingCycle = 'monthly' | 'yearly';
 export interface FeatureCaps {
     maxTrips: number;
     maxSaves: number;
+    maxCollections: number;
     suggestionWeight: number;
     customThemes: boolean;
     passportAnalytics: boolean;
@@ -23,6 +24,16 @@ export declare function effectivePlanFor(u: {
 export declare function displayCurrency(): string;
 export declare function chargeCurrency(): string;
 export declare function toStripeMinorUnits(amountMajor: number, currency: string): number;
+export interface FeatureGroup {
+    label: string;
+    icon: string;
+    items: string[];
+}
+export interface AdvancedControl {
+    title: string;
+    desc: string;
+    icon: string;
+}
 export interface PlanCatalogEntry {
     id: PlanId;
     userPlan: UserPlan;
@@ -36,10 +47,13 @@ export interface PlanCatalogEntry {
         yearly: string;
     } | null;
     features: string[];
+    featureGroups: FeatureGroup[];
+    advancedControls?: AdvancedControl[];
     ctaLabel: string;
     featured?: boolean;
     caps: FeatureCaps;
 }
+export declare function featureCount(entry: PlanCatalogEntry): number;
 export declare const PLAN_CATALOG: PlanCatalogEntry[];
 export declare function getPlan(id: string): PlanCatalogEntry | undefined;
 export declare function amountFor(id: string, cycle: BillingCycle): number;
@@ -54,11 +68,15 @@ export declare function toPublicCatalog(): {
         monthly: number;
         yearly: number;
         features: string[];
+        featureGroups: FeatureGroup[];
+        featureCount: number;
+        advancedControls: AdvancedControl[];
         ctaLabel: string;
         featured: boolean;
         caps: {
             maxTrips: number;
             maxSaves: number;
+            maxCollections: number;
             aiMessagesPerDay: number;
             customThemes: boolean;
             passportAnalytics: boolean;

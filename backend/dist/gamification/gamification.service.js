@@ -59,7 +59,7 @@ let GamificationService = class GamificationService {
         return this.usersRepo.find({
             select: ['id', 'fullName', 'avatar', 'points'],
             order: { points: 'DESC' },
-            take: limit,
+            take: Math.min(100, Math.max(1, limit)),
         });
     }
     async getUserRank(userId) {

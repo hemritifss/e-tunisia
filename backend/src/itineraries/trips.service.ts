@@ -389,10 +389,12 @@ export class TripsService {
                 : false;
             if (!isMember) throw new ForbiddenException('This trip is private');
         }
-        // Best-effort view counter (skip own views)
+        // Best-effort view counter (skip own views). Atomic increment rather
+        // than read-modify-write save(trip): save() here would also re-persist
+        // the whole trip row (including invite code) on a public read path.
         if (viewerUserId !== trip.userId) {
+            await this.trips.increment({ id: trip.id }, 'viewCount', 1).catch(() => {});
             trip.viewCount = (trip.viewCount || 0) + 1;
-            await this.trips.save(trip).catch(() => {});
         }
         // NEVER leak the invite code on the public read — it grants edit access.
         // Owners fetch it explicitly via POST /trips/:slug/invite.

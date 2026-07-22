@@ -209,7 +209,13 @@ function filterPages(q: string): CommandItem[] {
 async function fetchPeople(q: string): Promise<CommandItem[]> {
     if (!q || q.length < 2) return [];
     try {
-        const r = await fetch(`/api/v1/users/search?q=${encodeURIComponent(q)}&limit=6`).then((r) => r.json());
+        // Send the token when present so the backend knows the viewer and can
+        // filter out anyone blocked in either direction — an anonymous request
+        // gets unfiltered results (there's no one to filter for).
+        const token = localStorage.getItem('etunisia_token');
+        const r = await fetch(`/api/v1/users/search?q=${encodeURIComponent(q)}&limit=6`, {
+            headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        }).then((r) => r.json());
         const arr: any[] = Array.isArray(r) ? r : (r?.data ?? []);
         return arr.map((u: any) => ({
             id: `u-${u.id}`,

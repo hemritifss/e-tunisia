@@ -25,8 +25,9 @@ export class ItinerariesService {
         });
         if (!itinerary) throw new NotFoundException('Itinerary not found');
 
+        // Atomic increment (avoids the read-modify-write lost-update race).
+        await this.itinerariesRepo.increment({ id: itinerary.id }, 'viewCount', 1);
         itinerary.viewCount += 1;
-        await this.itinerariesRepo.save(itinerary);
 
         return itinerary;
     }
@@ -38,7 +39,8 @@ export class ItinerariesService {
 
     async like(id: string) {
         const itinerary = await this.findById(id);
+        await this.itinerariesRepo.increment({ id: itinerary.id }, 'likeCount', 1);
         itinerary.likeCount += 1;
-        return this.itinerariesRepo.save(itinerary);
+        return itinerary;
     }
 }

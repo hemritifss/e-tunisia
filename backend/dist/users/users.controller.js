@@ -53,8 +53,9 @@ let UsersController = class UsersController {
         }
         return this.usersService.getPassportAnalytics(req.user.id);
     }
-    searchUsers(q, limit) {
-        return this.usersService.searchUsers(q || '', limit ? Number(limit) : 12);
+    searchUsers(req, q, limit) {
+        const lim = limit ? Number(limit) : 12;
+        return this.usersService.searchUsers(q || '', lim, req?.user?.id || null);
     }
     async handleAvailable(h) {
         const { isHandleFormatValid, isHandleReserved } = await Promise.resolve().then(() => require('./reserved-handles'));
@@ -223,10 +224,12 @@ __decorate([
 ], UsersController.prototype, "passportAnalytics", null);
 __decorate([
     (0, common_1.Get)('search'),
-    __param(0, (0, common_1.Query)('q')),
-    __param(1, (0, common_1.Query)('limit')),
+    (0, common_1.UseGuards)(optional_jwt_auth_guard_1.OptionalJwtAuthGuard),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Query)('q')),
+    __param(2, (0, common_1.Query)('limit')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:paramtypes", [Object, String, String]),
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "searchUsers", null);
 __decorate([

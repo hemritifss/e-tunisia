@@ -1,41 +1,72 @@
 # Collections page (`#/collections`)
 
-> Page-level overrides to `design-system/MASTER.md` for editor-curated themed place sets. Inherits everything not listed here.
+> Page-level overrides to `design-system/MASTER.md`. Rebuilt July 2026 from a
+> read-only editor wall into the **carnet de collections** — the theme-grouping
+> sibling of Itineraries, now in the same carnet dialect. Opts in with
+> `data-design="carnet"` and reuses the `.cn-*` kit from `carnet.css`.
 
-## Relationship to `itineraries.md`
+## What a collection *is* (the meaning it was missing)
 
-Collections is the **theme-grouping sibling** of Itineraries. Both surfaces are editor-curated, both use the cinematic mesh hero + Nature-Distilled grid pattern, both share modal chrome (defined in `itineraries.css`, reused in `collections.css`).
+Two shelves in one book:
 
-What's different:
-- Itineraries are **plans** (multi-day with difficulty + duration).
-- Collections are **sets** (themed grouping of places, no plan, no difficulty).
-- Itineraries' modal has 2 CTAs (Unlock/Start + Save); Collections' modal has 2 CTAs (Explore places + View on map).
-- Itineraries' hero orbs are gold + terracotta; Collections' are violet + gold (signaling editorial curation, not adventure).
+- **Editor's picks** (`kind: 'curated'`) — the public collections from
+  `GET /collections` (mock fallback in `CollectionsDirectory`). Inspiration you
+  can **love**, **save to a shelf**, **send to a trip**, **share** and **copy into
+  your own carnets**. Editorial, not user-owned.
+- **My carnets** (`kind: 'carnet'`) — boards the traveller builds themselves,
+  stored **localStorage-first** (`collections/store.ts`, same rationale as the
+  circuits store — no account, no backend needed). A carnet has a title, theme
+  stamp, cover-or-collage, places pulled from the live catalog, per-place hand-
+  written notes, a privacy flag and (Pro) collaborators.
 
-## Card
+The two are flattened into one `CollectionView` (`collections/bits.tsx`) so the
+grid and the detail sheet never branch on source except for actions.
 
-The collection card is a **full-bleed image with overlay title** — different from the itinerary card's split layout. Reason: collections are pure visual curation; the image *is* the content. The description sits below the image as a separate paragraph rather than overlaid.
+## Design language
 
-- 4:3 image with hover scale `1.05`.
-- Bottom-anchored title + place count (with `MapPin` icon) over a dark gradient.
-- Optional description paragraph below the image — quieter typography, `--text-secondary`.
+Editorial carnet, **not** the old mesh/orb/gradient hero (deleted). Rules:
 
-The whole card is a real `<button>` (not `<a>`) because the click opens a modal, not a navigation. Use `aria-label` for the SR-only label.
+- Cards are **pasted photo prints**: paper shadow, tiny rotate + lift on hover,
+  a mono count chip, a dashed **theme stamp** tag, an editorial-serif title.
+- No cover? Stitch a **2×2 collage** from member photos; still nothing? a
+  ruled **blank plate** with the theme emoji pressed in (`CoverCollage`).
+- Buttons are letterpress (`.cn-btn`), chips are ink toggles, the detail/editor
+  are **paper leaves** on an ink-wash scrim (`.cn-scrim` + `.collections-sheet`).
+- Themes are the taxonomy: beach / heritage / food / desert / architecture /
+  nature / city / gem — each a stamp (emoji + label). Editor picks are auto-
+  tagged by keyword (`inferTheme`).
 
-## Modal
+## Feature surface (what shipped)
 
-Identical chrome to itineraries (shared CSS). Differences:
-- Tag shows place count, not duration.
-- No difficulty chip in the body.
-- CTAs: Explore places (primary, terracotta gradient) + View on map (outline).
+Directory: dual tabs + counts, stats masthead, weekly **featured** spotlight,
+search, theme filter chips, sort (loved/newest/places/A–Z), love, save-to-shelf,
+new-carnet tile with the free-cap meter, per-card visited **stamp progress**,
+`?c=<id>` deep-link auto-open.
+Detail sheet: hydrated place list (`getPlacesByIds`) linking to `/place/:id`,
+visited progress, read-only notes, **add-all-to-trip**, map, share (native +
+clipboard), love/save, **make-it-mine** remix, **export/print** (Pro), collaborate
+(Pro). Editor: live place picker (`getPlaces?search=`), reorder, per-place notes,
+theme, privacy (Pro), create/edit/delete.
+
+## Plan gating
+
+`maxCollections` lives in `plan-catalog.ts` (Free = 3, Pro/Business = ∞), mirrored
+by `FREE_MAX_CARNETS` in the store. Pro perks: unlimited carnets, private boards,
+collaborators, export. Business: **branded collections** (a marketing surface —
+see the "Growth & marketing" group). Gating is client-side (`usePlan()`); there is
+no server collections-count endpoint.
 
 ## Anti-patterns
 
-- Don't show place thumbnails inside the modal. A collection is a *promise* of a curated experience; teasing all the places defeats the editorial framing. Let the Explore page handle the place-level browse.
-- Don't add a save/follow action on collections. They're editorial, not user-owned.
-- Don't show difficulty on collections — that's an itinerary primitive.
+- Don't bring back the mesh/orb/gradient hero or glass eyebrow — that was the
+  rejected "AI-look".
+- Don't make "My carnets" require auth to *build* — localStorage-first is the point.
+- Keep the price/caps single-sourced: never hard-code the free cap; read
+  `FREE_MAX_CARNETS` (which tracks `plan-catalog.ts`).
 
 ## Files
 
-- Page: [web/src/pages/collections.ts](../../web/src/pages/collections.ts)
-- Styles: [web/src/styles/collections.css](../../web/src/styles/collections.css) (modal chrome inherits from `itineraries.css`)
+- Wrapper: [web/src/react/pages/CollectionsPage.tsx](../../web/src/react/pages/CollectionsPage.tsx)
+- Directory / Detail / Editor / bits / store: [web/src/react/pages/collections/](../../web/src/react/pages/collections/)
+- Styles: [web/src/styles/collections.css](../../web/src/styles/collections.css) (kit: `carnet.css`)
+- Plans: [backend/src/billing/plan-catalog.ts](../../backend/src/billing/plan-catalog.ts)

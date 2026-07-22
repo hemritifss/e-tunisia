@@ -76,10 +76,12 @@ export class UsersController {
         return this.usersService.getPassportAnalytics(req.user.id);
     }
 
-    /** Public: search users by handle prefix or fullName substring. */
+    /** Public: search users by handle prefix or fullName substring. Hides blocked users when signed in. */
     @Get('search')
-    searchUsers(@Query('q') q: string, @Query('limit') limit?: string) {
-        return this.usersService.searchUsers(q || '', limit ? Number(limit) : 12);
+    @UseGuards(OptionalJwtAuthGuard)
+    searchUsers(@Request() req, @Query('q') q: string, @Query('limit') limit?: string) {
+        const lim = limit ? Number(limit) : 12;
+        return this.usersService.searchUsers(q || '', lim, req?.user?.id || null);
     }
 
     /** Public: live availability check used by the signup form. */

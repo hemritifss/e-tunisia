@@ -12,6 +12,7 @@ import { PassportDto } from './dto/passport.dto';
 import { BadgesService } from '../badges/badges.service';
 import { GamificationService } from '../gamification/gamification.service';
 import { EndorsementsService } from './endorsements.service';
+import { SafetyService } from '../safety/safety.service';
 export declare class UsersService {
     private usersRepository;
     private reviewsRepo;
@@ -24,8 +25,9 @@ export declare class UsersService {
     private badges;
     private notifications;
     private gamification;
+    private safety;
     private endorsements;
-    constructor(usersRepository: Repository<User>, reviewsRepo: Repository<Review>, placesRepo: Repository<Place>, tripsRepo: Repository<TripPlan>, savesRepo: Repository<SavedPost>, passportViewsRepo: Repository<PassportView>, placeVisitsRepo: Repository<PlaceVisit>, cache: Cache, badges: BadgesService, notifications: NotificationsService, gamification: GamificationService, endorsements: EndorsementsService);
+    constructor(usersRepository: Repository<User>, reviewsRepo: Repository<Review>, placesRepo: Repository<Place>, tripsRepo: Repository<TripPlan>, savesRepo: Repository<SavedPost>, passportViewsRepo: Repository<PassportView>, placeVisitsRepo: Repository<PlaceVisit>, cache: Cache, badges: BadgesService, notifications: NotificationsService, gamification: GamificationService, safety: SafetyService, endorsements: EndorsementsService);
     findByEmail(email: string): Promise<User | null>;
     assignFounderNumber(userId: string): Promise<number | null>;
     findByHandle(handle: string): Promise<User | null>;
@@ -83,7 +85,7 @@ export declare class UsersService {
         plan: "free" | "premium" | "business";
     }[]>;
     assemblePassport(handle: string): Promise<PassportDto>;
-    searchUsers(query: string, limit?: number): Promise<{
+    searchUsers(query: string, limit?: number, viewerId?: string | null): Promise<{
         id: any;
         handle: any;
         fullName: any;

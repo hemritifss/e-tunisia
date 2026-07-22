@@ -38,7 +38,7 @@ Rendered from `GET /billing/plans` (source: `plan-catalog.ts`):
 
 | ID | Name | Monthly | Yearly | Tint | Featured |
 |----|------|---------|--------|------|----------|
-| free | Free | 0 TND | — | `--text-secondary` | no (renders as `is-current`) |
+| free | Explorer | 0 TND | — | `--text-secondary` | no (renders as `is-current`) |
 | premium | Pro Traveler | 14.90 TND | 149 TND | `--gold` | **yes** |
 | business | Verified Business | 74.90 TND | 749 TND | `--violet` | no |
 
@@ -46,6 +46,23 @@ Each card carries `--plan-accent` inline (from the catalog `tint`). The accent d
 name color, feature-check icon color, and CTA button gradient.
 
 **Don't hard-code prices anywhere.** Edit `backend/src/billing/plan-catalog.ts` only.
+
+### Grouped features + "See all N features"
+
+Each plan now carries a full **`featureGroups`** set (titled buckets of feature lines) on top of
+the flat `features` marquee — Pro ships **20** features across 4 groups, Business **50** across 6.
+The card shows the ~7 marquee highlights + a **"See all N features"** disclosure (`.pro-more-toggle`)
+that expands the grouped list (`.pro-plan-groups` → `.pro-fgroup`) inline. `N` comes from the
+server-computed `featureCount` (fallback: `planFeatureCount()` counts groups locally). The catalog
+stores group/control icons as **lucide *names*** (serializable); `GLYPHS`/`<Glyph>` on the page map
+name → component. Group counts are asserted in the catalog comments — keep them accurate if you edit.
+
+### Business power controls (2 advanced controls)
+
+Business carries **`advancedControls`** (exactly 2: *Team & Roles control center*, *Business API &
+Automations*). They surface twice: compact teaser chips on the card (`.pro-plan-controls`) and a full
+showcase section below the grid (`.pro-controls-section` → `.pro-control-card`, violet-themed,
+"Business only" tag). This replaced the old "How we earn" revenue section on the live React page.
 
 ## Featured card
 
@@ -59,14 +76,11 @@ The Premium card gets the **gold gradient border** treatment (same primitive as 
 
 18px circles next to each feature line, tinted with the plan's `--plan-tint` at 18% alpha. Inside: 10px `Check` icon at stroke-width 3 (visible at the tiny size).
 
-## Revenue section ("How we earn")
+## Revenue section ("How we earn") — retired on the React page
 
-A self-contained card grid with 4 revenue items:
-- Each item has a 40px tinted icon chip + title + description.
-- Each carries `--rev-tint` for the icon background (gold/mediterranean/coral/olive).
-- Hover lifts `-2px` and tints the border to the item's revenue tint.
-
-The eyebrow is "TRANSPARENT" in `--accent-light` chip — signals the page is explicit about monetization.
+The old vanilla page had a 4-item "How we earn" grid. The live React page replaced it with the
+**Business power-controls showcase** (see above). If you reintroduce a revenue/transparency section,
+use the same `.pro-control-card` primitive rather than a new one.
 
 ## Checkout flow (no modal)
 

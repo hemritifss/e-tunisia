@@ -65,8 +65,9 @@ let EventsService = class EventsService {
     }
     async attend(id) {
         const event = await this.findById(id);
+        await this.eventsRepo.increment({ id: event.id }, 'attendeeCount', 1);
         event.attendeeCount += 1;
-        return this.eventsRepo.save(event);
+        return event;
     }
     async findAllAdmin() {
         return this.eventsRepo.find({ order: { createdAt: 'DESC' }, relations: ['place', 'organizer'] });

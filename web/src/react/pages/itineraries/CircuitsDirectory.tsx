@@ -24,8 +24,12 @@ function roughCostTnd(c: api.CircuitSummary): number {
 }
 
 function useVisitedIds() {
+    // Guests have no "visited" list, and the call is auth-only — hitting it
+    // anonymously returns 401, which the API wrapper turns into a hard redirect
+    // to /hero. So only run it when signed in.
     return useQuery({
         queryKey: ['visited-ids'],
+        enabled: api.isLoggedIn(),
         queryFn: async () => {
             try {
                 const res = await api.getVisitedIds();

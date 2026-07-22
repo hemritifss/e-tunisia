@@ -4,13 +4,15 @@ import { Activity, ActivityType } from './activity.entity';
 import { User } from '../users/user.entity';
 import { RedisService } from '../redis/redis.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { SafetyService } from '../safety/safety.service';
 export declare class SocialService {
     private followRepo;
     private activityRepo;
     private userRepo;
     private redisService;
     private notifications;
-    constructor(followRepo: Repository<Follow>, activityRepo: Repository<Activity>, userRepo: Repository<User>, redisService: RedisService, notifications: NotificationsService);
+    private safety;
+    constructor(followRepo: Repository<Follow>, activityRepo: Repository<Activity>, userRepo: Repository<User>, redisService: RedisService, notifications: NotificationsService, safety: SafetyService);
     follow(followerId: string, followingId: string): Promise<Follow>;
     unfollow(followerId: string, followingId: string): Promise<void>;
     getFollowers(userId: string): Promise<User[]>;
@@ -43,6 +45,8 @@ export declare class SocialService {
             count: number;
             sample: any[];
         };
+        isBlockedByMe: boolean;
+        hasBlockedMe: boolean;
     }>;
     private getMutuals;
     createActivity(userId: string, type: ActivityType, data: any): Promise<Activity>;

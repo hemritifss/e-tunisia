@@ -29,8 +29,9 @@ export class TipsService {
 
     async like(id: string) {
         const tip = await this.findById(id);
+        await this.tipsRepo.increment({ id: tip.id }, 'likes', 1);
         tip.likes += 1;
-        return this.tipsRepo.save(tip);
+        return tip;
     }
 
     async findAllAdmin() {

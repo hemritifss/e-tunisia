@@ -38,6 +38,8 @@ export declare class SocialController {
             count: number;
             sample: any[];
         };
+        isBlockedByMe: boolean;
+        hasBlockedMe: boolean;
     }>;
     getFeed(userId: string, page?: number, limit?: number): Promise<{
         data: import("./activity.entity").Activity[];

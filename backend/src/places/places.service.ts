@@ -178,9 +178,11 @@ export class PlacesService {
         });
         if (!place) throw new NotFoundException('Place not found');
 
-        // Increment view count
-        place.viewCount += 1;
-        await this.placesRepo.save(place);
+        // Atomic increment — `place.viewCount += 1; save(place)` is a
+        // read-modify-write race (concurrent views lose counts) and re-persists
+        // the whole row with possibly-stale sibling columns.
+        await this.placesRepo.increment({ id: place.id }, 'viewCount', 1);
+        place.viewCount += 1; // reflect it in the response without a re-read
 
         return this.attachDiscoveredBy(place);
     }

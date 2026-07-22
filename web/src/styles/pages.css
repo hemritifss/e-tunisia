@@ -14188,39 +14188,50 @@ section[class^="hero-"] {
     box-shadow: var(--shadow-glow-gold);
 }
 .pro-plan-card header {
-    display: flex; align-items: center; gap: 10px;
+    display: flex; align-items: flex-start; gap: 12px;
 }
 .pro-plan-icon {
-    width: 36px; height: 36px;
+    width: 40px; height: 40px;
     display: inline-flex; align-items: center; justify-content: center;
-    border-radius: 50%;
+    border-radius: 12px;
     background: color-mix(in oklch, var(--plan-accent) 14%, transparent);
     color: var(--plan-accent);
     flex-shrink: 0;
 }
 .pro-plan-card header strong {
+    display: block;
     font-family: var(--font-display);
     font-weight: 700;
     font-size: var(--text-xl);
     color: var(--text-primary);
     letter-spacing: var(--tracking-tight);
 }
-.pro-plan-tagline { margin: 0; color: var(--text-secondary); font-size: var(--text-sm); line-height: var(--leading-snug); }
+.pro-plan-tagline { margin: 2px 0 0; color: var(--text-secondary); font-size: var(--text-sm); line-height: var(--leading-snug); }
 .pro-plan-price {
-    display: flex; flex-direction: column; gap: 4px;
-    padding: 8px 0;
+    display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px;
+    padding: 4px 0 2px;
 }
-.pro-plan-price span {
+.pro-plan-amount {
     font-family: var(--font-display);
     font-weight: 800;
     font-size: var(--text-3xl);
     color: var(--plan-accent);
     letter-spacing: var(--tracking-tight);
+    line-height: 1;
 }
 .pro-plan-price em { font-style: normal; font-size: var(--text-xs); color: var(--text-tertiary); }
+
+/* Round check chips — small tinted circle + white tick (used in highlights and grouped lists). */
+.pro-check {
+    width: 18px; height: 18px; flex-shrink: 0; margin-top: 1px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    background: color-mix(in oklch, var(--plan-accent) 16%, transparent);
+    color: var(--plan-accent);
+}
 .pro-plan-features {
     list-style: none; margin: 0; padding: 0;
-    display: flex; flex-direction: column; gap: 8px;
+    display: flex; flex-direction: column; gap: 9px;
 }
 .pro-plan-features li {
     display: flex; align-items: flex-start; gap: 8px;
@@ -14228,9 +14239,9 @@ section[class^="hero-"] {
     color: var(--text-secondary);
     line-height: var(--leading-snug);
 }
-.pro-plan-features li svg { color: var(--plan-accent); flex-shrink: 0; margin-top: 2px; }
-.pro-plan-card footer { margin-top: auto; }
-.pro-plan-card footer .btn.primary {
+
+/* CTA lives mid-card now (right under the price) so buttons align across all three tiers. */
+.pro-plan-card .btn.primary {
     background: linear-gradient(135deg, var(--plan-accent), color-mix(in oklch, var(--plan-accent) 70%, oklch(0% 0 0)));
     color: #fff;
     border: none;
@@ -14238,9 +14249,133 @@ section[class^="hero-"] {
     font-family: var(--font-display);
     font-weight: 600;
 }
-.pro-plan-card footer .btn.primary:hover { transform: translateY(-1px); }
-.pro-plan-card footer .btn.ghost { background: transparent; color: var(--text-secondary); border-color: var(--border); }
+.pro-plan-card .btn.primary:hover { transform: translateY(-1px); }
+.pro-plan-card .btn.ghost { background: transparent; color: var(--text-secondary); border-color: var(--border); }
 .pro-plan-current-actions { display: flex; flex-direction: column; gap: 8px; }
+
+/* Featured (Pro) — gold gradient border treatment, matching the app's Pro flair primitive. */
+.pro-plan-card.is-featured {
+    border-color: transparent;
+    background:
+        linear-gradient(var(--surface), var(--surface)) padding-box,
+        var(--gradient-gold, linear-gradient(135deg, var(--gold), var(--amber))) border-box;
+    box-shadow: 0 8px 32px color-mix(in oklch, var(--gold) 22%, transparent);
+}
+
+/* Advanced-control teaser chips on the Business card. */
+.pro-plan-controls { display: flex; flex-wrap: wrap; gap: 6px; }
+.pro-control-chip {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 4px 10px;
+    border-radius: var(--radius-full);
+    background: color-mix(in oklch, var(--plan-accent) 12%, transparent);
+    border: 1px solid color-mix(in oklch, var(--plan-accent) 30%, transparent);
+    color: var(--plan-accent);
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: var(--text-xs);
+}
+
+/* "See all N features" expander + grouped list. */
+.pro-plan-more { border-top: 1px solid var(--border); padding-top: 12px; }
+.pro-more-toggle {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: transparent; border: none; padding: 0;
+    color: var(--plan-accent);
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: var(--text-sm);
+    cursor: pointer;
+}
+.pro-more-toggle svg { transition: transform var(--duration-fast) var(--ease-out); }
+.pro-more-toggle.is-open svg { transform: rotate(180deg); }
+.pro-more-toggle:hover { text-decoration: underline; }
+.pro-plan-groups { display: flex; flex-direction: column; gap: 16px; margin-top: 14px; }
+.pro-fgroup h4 {
+    display: flex; align-items: center; gap: 7px;
+    margin: 0 0 8px;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-widest);
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+}
+.pro-fgroup-icon { color: var(--plan-accent); display: inline-flex; }
+.pro-fgroup ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 7px; }
+.pro-fgroup li {
+    display: flex; align-items: flex-start; gap: 8px;
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    line-height: var(--leading-snug);
+}
+
+/* ─── Business power-controls showcase (below the grid) ─────────────────────── */
+.pro-controls-section { margin-top: 48px; }
+.pro-controls-head { text-align: center; max-width: 620px; margin: 0 auto 24px; }
+.pro-kicker-dark {
+    color: var(--violet);
+    background: color-mix(in oklch, var(--violet) 12%, transparent);
+    border-color: color-mix(in oklch, var(--violet) 26%, transparent);
+    backdrop-filter: none;
+}
+.pro-controls-head h2 {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(24px, 3.6vw, 34px);
+    letter-spacing: var(--tracking-tight);
+    margin: 12px 0 8px;
+    color: var(--text-primary);
+    text-wrap: balance;
+}
+.pro-controls-head p { margin: 0; color: var(--text-secondary); font-size: var(--text-base); }
+.pro-controls-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 18px;
+}
+.pro-control-card {
+    --plan-accent: var(--violet);
+    position: relative;
+    padding: 26px 24px;
+    background: linear-gradient(165deg, var(--surface) 0%, color-mix(in oklch, var(--violet) 6%, var(--surface)) 100%);
+    border: 1px solid color-mix(in oklch, var(--violet) 22%, var(--border));
+    border-radius: var(--radius-2xl);
+    box-shadow: var(--shadow-md);
+    transition: transform var(--duration-normal) var(--ease-spring), box-shadow var(--duration-normal) var(--ease-spring), border-color var(--duration-normal) var(--ease-spring);
+}
+.pro-control-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-xl);
+    border-color: var(--violet);
+}
+.pro-control-icon {
+    width: 48px; height: 48px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 14px;
+    background: color-mix(in oklch, var(--violet) 16%, transparent);
+    color: var(--violet);
+    margin-bottom: 14px;
+}
+.pro-control-card h3 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: var(--text-lg);
+    color: var(--text-primary);
+    margin: 0 0 8px;
+    letter-spacing: var(--tracking-tight);
+}
+.pro-control-card p { margin: 0 0 16px; color: var(--text-secondary); font-size: var(--text-sm); line-height: var(--leading-normal); }
+.pro-control-tag {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 10px;
+    border-radius: var(--radius-full);
+    background: color-mix(in oklch, var(--violet) 12%, transparent);
+    color: var(--violet);
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: var(--text-xs);
+}
 /* Payment-method + cycle pills carry inline icons — keep label + glyph aligned. */
 .pro-page-cycle button { display: inline-flex; align-items: center; gap: 6px; }
 
@@ -14258,7 +14393,17 @@ section[class^="hero-"] {
     .pro-plan-card { background: oklch(20% 0.012 260); border-color: oklch(28% 0.012 260); }
     .pro-plan-premium { background: linear-gradient(165deg, oklch(20% 0.012 260) 0%, oklch(22% 0.04 80) 100%); }
     .pro-plan-business { background: linear-gradient(165deg, oklch(20% 0.012 260) 0%, oklch(22% 0.04 240) 100%); }
+    .pro-plan-card.is-featured {
+        background:
+            linear-gradient(oklch(20% 0.012 260), oklch(20% 0.012 260)) padding-box,
+            var(--gradient-gold, linear-gradient(135deg, var(--gold), var(--amber))) border-box;
+    }
     .pro-plan-card header strong { color: oklch(96% 0 0); }
+    .pro-control-card {
+        background: linear-gradient(165deg, oklch(20% 0.012 260) 0%, oklch(22% 0.04 300) 100%);
+        border-color: oklch(30% 0.03 300);
+    }
+    .pro-control-card h3 { color: oklch(96% 0 0); }
 }
 
 /* ============================================

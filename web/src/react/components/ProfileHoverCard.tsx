@@ -1,9 +1,10 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import * as api from '../../api';
 import type { ProfileOverview } from '../../api';
-import { MessageCircle, UserPlus, UserCheck, MapPin, Sparkles, MoreHorizontal } from 'lucide-react';
+import { MessageCircle, UserPlus, UserCheck, MapPin, Sparkles, MoreHorizontal, ShieldOff } from 'lucide-react';
 import { goTo } from '../../router';
 import { openSafetyMenu } from '../../safety-menu';
+import { plural } from '../../shared/plural';
 
 /**
  * Facebook-style profile preview that opens on hover over any element
@@ -121,6 +122,7 @@ function CardPanel({
         () => overviewCache.get(seed.id)?.isFollowing ?? null,
     );
     const [followBusy, setFollowBusy] = useState(false);
+    const [unblockBusy, setUnblockBusy] = useState(false);
     const authed = api.isLoggedIn();
 
     // Hydrate stats behind the seed we already rendered from.
@@ -179,6 +181,60 @@ function CardPanel({
         onClose();
         goTo(href);
     };
+
+    const unblock = useCallback(async () => {
+        if (unblockBusy) return;
+        setUnblockBusy(true);
+        try {
+            await api.unblockUser(seed.id);
+            invalidateOverview(seed.id);
+            onClose();
+        } catch {
+            setUnblockBusy(false);
+        }
+    }, [unblockBusy, seed.id, onClose]);
+
+    // Either direction of a block: no stats/bio ever reach this component (the
+    // server already stripped them), so just render an unavailable state
+    // instead of a card that looks broken with everything blank.
+    if (data && (data.isBlockedByMe || data.hasBlockedMe)) {
+        return (
+            <div
+                className="phc phc-blocked"
+                style={{ top: position.y, left: position.x }}
+                onPointerEnter={onEnter}
+                onPointerLeave={onLeave}
+                role="dialog"
+                aria-label={`Profile unavailable: ${name}`}
+            >
+                <div className="phc-head">
+                    <span className="phc-avatar">
+                        <span className="phc-avatar-fallback">{name.slice(0, 1).toUpperCase()}</span>
+                    </span>
+                    <span className="phc-identity">
+                        <strong className="phc-name">{name}</strong>
+                        {handle && <small className="phc-handle">@{handle}</small>}
+                    </span>
+                </div>
+                <p className="phc-blocked-note">
+                    <ShieldOff size={13} aria-hidden="true" />
+                    {data.hasBlockedMe ? "This profile isn't available to you." : "You've blocked this person."}
+                </p>
+                {data.isBlockedByMe && (
+                    <div className="phc-actions">
+                        <button
+                            type="button"
+                            className="phc-btn phc-btn-primary"
+                            onClick={unblock}
+                            disabled={unblockBusy}
+                        >
+                            {unblockBusy ? '…' : 'Unblock'}
+                        </button>
+                    </div>
+                )}
+            </div>
+        );
+    }
 
     return (
         <div

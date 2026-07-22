@@ -64,8 +64,9 @@ let CollectionsService = class CollectionsService {
     }
     async like(id) {
         const collection = await this.findById(id);
+        await this.collectionsRepo.increment({ id: collection.id }, 'likeCount', 1);
         collection.likeCount += 1;
-        return this.collectionsRepo.save(collection);
+        return collection;
     }
 };
 exports.CollectionsService = CollectionsService;

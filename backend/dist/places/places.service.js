@@ -132,8 +132,8 @@ let PlacesService = class PlacesService {
         });
         if (!place)
             throw new common_1.NotFoundException('Place not found');
+        await this.placesRepo.increment({ id: place.id }, 'viewCount', 1);
         place.viewCount += 1;
-        await this.placesRepo.save(place);
         return this.attachDiscoveredBy(place);
     }
     async findById(id) {
