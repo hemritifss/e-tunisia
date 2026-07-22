@@ -2,10 +2,12 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Itinerary } from './itinerary.entity';
 import { TripPlan } from './trip-plan.entity';
+import { TripMember } from './trip-member.entity';
 import { ItinerariesService } from './itineraries.service';
 import { ItinerariesController } from './itineraries.controller';
 import { TripsService } from './trips.service';
 import { TripsController } from './trips.controller';
+import { CircuitsService } from './circuits.service';
 import { Place } from '../places/place.entity';
 import { TourPackage } from '../places/tour-package.entity';
 import { PlacesModule } from '../places/places.module';
@@ -15,7 +17,7 @@ import { BillingModule } from '../billing/billing.module';
 
 @Module({
     imports: [
-        TypeOrmModule.forFeature([Itinerary, TripPlan, Place, TourPackage]),
+        TypeOrmModule.forFeature([Itinerary, TripPlan, TripMember, Place, TourPackage]),
         // Pulls in InquiriesService so a trip can fan-out one inquiry per stop.
         PlacesModule,
         UsersModule,
@@ -23,7 +25,7 @@ import { BillingModule } from '../billing/billing.module';
         BillingModule,
     ],
     controllers: [ItinerariesController, TripsController],
-    providers: [ItinerariesService, TripsService],
-    exports: [ItinerariesService, TripsService],
+    providers: [ItinerariesService, TripsService, CircuitsService],
+    exports: [ItinerariesService, TripsService, CircuitsService],
 })
 export class ItinerariesModule {}

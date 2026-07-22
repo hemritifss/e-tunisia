@@ -15,11 +15,14 @@ const REQUIREMENTS: EnvRequirement[] = [
   { key: 'DB_PASSWORD', required: true, validator: (v) => v.length >= 8 },
   { key: 'DB_NAME', required: true },
   { key: 'REDIS_HOST', required: true },
-  { key: 'S3_ENDPOINT', required: true },
-  { key: 'S3_ACCESS_KEY', required: true },
-  { key: 'S3_SECRET_KEY', required: true },
+  // S3 / Google are optional integrations: without them file uploads fall back to
+  // local disk and Google sign-in is hidden. Warn, don't hard-fail, so a bare
+  // free-tier deploy (no object storage / OAuth yet) still boots.
+  { key: 'S3_ENDPOINT', required: false, warning: 'No object storage — uploads fall back to local disk (ephemeral on free hosting)' },
+  { key: 'S3_ACCESS_KEY', required: false },
+  { key: 'S3_SECRET_KEY', required: false },
   { key: 'S3_BUCKET', required: false },
-  { key: 'GOOGLE_CLIENT_ID', required: true, validator: (v) => v.includes('.apps.googleusercontent.com') },
+  { key: 'GOOGLE_CLIENT_ID', required: false, validator: (v) => v.includes('.apps.googleusercontent.com'), warning: 'Google sign-in disabled until GOOGLE_CLIENT_ID is set' },
   { key: 'VAPID_PUBLIC_KEY', required: true },
   { key: 'VAPID_PRIVATE_KEY', required: true },
   { key: 'MEILISEARCH_HOST', required: false, warning: 'Search will fall back to database queries' },

@@ -416,3 +416,30 @@
 @media (prefers-reduced-motion: reduce) {
     .badges-loading .spinner { animation-duration: 2s; }
 }
+
+/* Empty state — shown when the badge catalog is empty (was blank space). */
+.badges-empty {
+    max-width: 460px;
+    margin: 0 auto;
+    padding: var(--space-12, 48px) var(--space-4, 16px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: var(--space-3, 12px);
+    color: var(--text-secondary);
+}
+.badges-empty-icon {
+    display: grid;
+    place-items: center;
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: var(--surface-elevated, var(--bg-secondary));
+    border: 1px solid var(--border-light, var(--border));
+    color: var(--gold, #b98a2f);
+}
+.badges-empty-icon svg { width: 32px; height: 32px; }
+.badges-empty h2 { margin: var(--space-2, 8px) 0 0; color: var(--text-primary); }
+.badges-empty p { margin: 0; max-width: 42ch; }
+.badges-empty .btn { margin-top: var(--space-3, 12px); }

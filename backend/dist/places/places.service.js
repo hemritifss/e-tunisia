@@ -17,6 +17,7 @@ const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const place_entity_1 = require("./place.entity");
+const user_entity_1 = require("../users/user.entity");
 const slugify_1 = require("slugify");
 const credits_service_1 = require("../credits/credits.service");
 exports.BOOST_TIERS = {
@@ -25,9 +26,24 @@ exports.BOOST_TIERS = {
     30: { days: 30, credits: 1000, label: '30 days' },
 };
 let PlacesService = class PlacesService {
-    constructor(placesRepo, credits) {
+    constructor(placesRepo, usersRepo, credits) {
         this.placesRepo = placesRepo;
+        this.usersRepo = usersRepo;
         this.credits = credits;
+    }
+    async attachDiscoveredBy(place) {
+        if (!place?.submittedBy)
+            return place;
+        const u = await this.usersRepo.findOne({
+            where: { id: place.submittedBy },
+            select: ['id', 'handle', 'fullName', 'avatar'],
+        }).catch(() => null);
+        if (u) {
+            place.discoveredBy = {
+                id: u.id, handle: u.handle, fullName: u.fullName, avatar: u.avatar || null,
+            };
+        }
+        return place;
     }
     async sweepExpiredBoosts() {
         const now = new Date();
@@ -70,7 +86,8 @@ let PlacesService = class PlacesService {
         const qb = this.placesRepo
             .createQueryBuilder('place')
             .leftJoinAndSelect('place.category', 'category')
-            .where('place.isActive = :active', { active: true });
+            .where('place.isActive = :active', { active: true })
+            .andWhere('place.isApproved = :approved', { approved: true });
         if (search) {
             qb.andWhere('(place.name ILIKE :search OR place.description ILIKE :search OR place.city ILIKE :search OR place.tags ILIKE :search)', { search: `%${search}%` });
         }
@@ -115,9 +132,9 @@ let PlacesService = class PlacesService {
         });
         if (!place)
             throw new common_1.NotFoundException('Place not found');
+        await this.placesRepo.increment({ id: place.id }, 'viewCount', 1);
         place.viewCount += 1;
-        await this.placesRepo.save(place);
-        return place;
+        return this.attachDiscoveredBy(place);
     }
     async findById(id) {
         const place = await this.placesRepo.findOne({
@@ -126,11 +143,11 @@ let PlacesService = class PlacesService {
         });
         if (!place)
             throw new common_1.NotFoundException('Place not found');
-        return place;
+        return this.attachDiscoveredBy(place);
     }
-    async create(dto) {
+    async create(dto, submittedBy) {
         const slug = (0, slugify_1.default)(dto.name, { lower: true, strict: true });
-        const place = this.placesRepo.create({ ...dto, slug });
+        const place = this.placesRepo.create({ ...dto, slug, ...(submittedBy ? { submittedBy } : {}) });
         return this.placesRepo.save(place);
     }
     async update(id, data) {
@@ -157,7 +174,7 @@ let PlacesService = class PlacesService {
     }
     async getPopular() {
         return this.placesRepo.find({
-            where: { isActive: true },
+            where: { isActive: true, isApproved: true },
             relations: ['category'],
             order: { viewCount: 'DESC' },
             take: 10,
@@ -168,6 +185,7 @@ let PlacesService = class PlacesService {
             .createQueryBuilder('place')
             .leftJoinAndSelect('place.category', 'category')
             .where('place.isActive = :active', { active: true })
+            .andWhere('place.isApproved = :approved', { approved: true })
             .addSelect(`(6371 * acos(cos(radians(:lat)) * cos(radians(place.latitude)) * cos(radians(place.longitude) - radians(:lng)) + sin(radians(:lat)) * sin(radians(place.latitude))))`, 'distance')
             .having('distance < :radius', { radius: radiusKm })
             .setParameters({ lat, lng })
@@ -212,7 +230,9 @@ exports.PlacesService = PlacesService;
 exports.PlacesService = PlacesService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(place_entity_1.Place)),
+    __param(1, (0, typeorm_1.InjectRepository)(user_entity_1.User)),
     __metadata("design:paramtypes", [typeorm_2.Repository,
+        typeorm_2.Repository,
         credits_service_1.CreditsService])
 ], PlacesService);
 //# sourceMappingURL=places.service.js.map

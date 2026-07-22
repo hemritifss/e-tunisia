@@ -56,7 +56,9 @@ export class GamificationService {
         return this.usersRepo.find({
             select: ['id', 'fullName', 'avatar', 'points'],
             order: { points: 'DESC' },
-            take: limit,
+            // Clamp: the controller passes `Number(query.limit)` straight through,
+            // so an uncapped `take` let a client request the entire users table.
+            take: Math.min(100, Math.max(1, limit)),
         });
     }
 

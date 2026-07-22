@@ -1,0 +1,152 @@
+/* Parchment fog-of-exploration map (UNIQUENESS IDEAS A1).
+   Unvisited governorates = hatched parchment "fog"; a check-in inks the
+   region terracotta. Carnet Journal dialect; tokens only; both themes. */
+
+.fog-map { display: flex; flex-direction: column; gap: var(--space-3); }
+
+.fog-map-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-3);
+}
+.fog-map-kicker {
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+}
+.fog-map-count {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+}
+.fog-map-count strong {
+    font-size: 1.05rem;
+    color: var(--terracotta);
+    font-variant-numeric: tabular-nums;
+}
+
+.fog-map-frame {
+    position: relative;
+    align-self: center;
+    width: min(100%, 360px);
+    padding: var(--space-4);
+    background: var(--paper-warm);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    box-shadow: var(--paper-shadow);
+}
+.fog-map-svg { display: block; width: 100%; height: auto; overflow: visible; }
+
+/* ── fog (unvisited) ── */
+.fog-hatch-line { stroke: var(--ink-faint); stroke-width: 0.35; opacity: 0.5; }
+.fog-region-fog {
+    fill: url(#fog-hatch);
+    stroke: none;
+    transition: opacity 700ms var(--ease-out);
+}
+.fog-region-edge {
+    fill: none;
+    stroke: var(--rule-strong);
+    stroke-width: 0.4;
+    stroke-linejoin: round;
+    opacity: 0.7;
+}
+/* ── ink (visited) — sits under fog, revealed by fading the fog + rising ink ── */
+.fog-region-ink {
+    fill: var(--terracotta);
+    fill-opacity: 0;
+    stroke: none;
+    transition: fill-opacity 700ms var(--ease-out);
+}
+.fog-region.is-inked .fog-region-ink { fill-opacity: 0.82; }
+.fog-region.is-inked .fog-region-fog { opacity: 0; }
+.fog-region.is-inked .fog-region-edge { stroke: var(--stamp-ink); opacity: 0.9; }
+
+.fog-region { cursor: default; }
+.fog-region.is-hover .fog-region-edge { stroke: var(--ink); opacity: 1; stroke-width: 0.6; }
+.fog-region:not(.is-inked).is-hover .fog-region-fog { opacity: 0.55; }
+
+/* ── labels ── */
+.fog-label-name {
+    font-family: var(--font-mono);
+    font-size: 2.15px;
+    letter-spacing: 0.02em;
+    fill: var(--ink-faint);
+    opacity: 0.75;
+}
+.fog-label.is-inked .fog-label-name {
+    fill: var(--paper-print);
+    opacity: 1;
+    font-weight: 600;
+}
+.fog-label-no {
+    font-family: var(--font-mono);
+    font-size: 1.7px;
+    fill: color-mix(in oklab, var(--paper-print) 82%, transparent);
+    letter-spacing: 0.04em;
+}
+
+/* ── hover tooltip ── */
+.fog-map-tip {
+    position: absolute;
+    top: var(--space-3);
+    left: var(--space-3);
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    padding: 6px 10px;
+    background: var(--paper-print);
+    border: 1px solid var(--rule-strong);
+    border-radius: 2px;
+    box-shadow: var(--paper-shadow);
+    pointer-events: none;
+}
+.fog-map-tip strong { font-family: var(--font-editorial); font-optical-sizing: auto; font-size: 0.95rem; color: var(--ink); }
+.fog-map-tip span { font-family: 'Noto Kufi Arabic', var(--font-sans); font-size: 0.72rem; color: var(--ink-soft); }
+.fog-map-tip em {
+    font-family: var(--font-mono);
+    font-style: normal;
+    font-size: 0.56rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-top: 2px;
+}
+
+/* ── progress + empty ── */
+.fog-map-bar {
+    height: 6px;
+    align-self: center;
+    width: min(100%, 360px);
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    overflow: hidden;
+}
+.fog-map-bar span {
+    display: block;
+    height: 100%;
+    background: var(--terracotta);
+    transition: width 800ms var(--ease-out);
+}
+.fog-map-empty {
+    align-self: center;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    text-decoration: none;
+    color: var(--ink-soft);
+    font-size: var(--text-sm);
+}
+.fog-map-empty strong { color: var(--terracotta); font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; }
+
+@media (prefers-reduced-motion: reduce) {
+    .fog-region-fog, .fog-region-ink, .fog-map-bar span { transition: none; }
+}

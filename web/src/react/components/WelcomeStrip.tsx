@@ -3,6 +3,7 @@ import { api, getImageUrl } from '../../shared/api';
 import { useAuthStore } from '../stores/auth-store';
 import { Compass, MapPin, Sparkles, ArrowRight, Stamp, Route, PenLine } from 'lucide-react';
 import { useT } from '../../i18n/useT';
+import { plural } from '../../shared/plural';
 
 interface MiniProfile {
     handle: string | null;
@@ -19,6 +20,20 @@ function greeting(): string {
     if (h < 12) return 'Sbah el khir';
     if (h < 18) return 'Ahla w sahla';
     return 'Good evening';
+}
+
+/**
+ * The AI line renders directly under "<greeting>, <name>" — if the model
+ * prepends its own salutation ("Good evening, traveler — Tunisia is calling")
+ * the strip greets twice in a row. Drop the salutation, keep the substance.
+ */
+function stripSalutation(text: string): string {
+    const stripped = text.replace(
+        /^(good\s+(morning|afternoon|evening|night)|sbah el khir|ahla w sahla|hello|hey|hi|salut|bonjour|marhba|aslema)[\s,!.]*(traveler|voyageur|there|friend)?[\s,—–\-:!.]*/i,
+        '',
+    );
+    if (stripped.trim().length < 8) return text; // nothing meaningful left — keep as-is
+    return stripped.charAt(0).toUpperCase() + stripped.slice(1);
 }
 
 /**
@@ -45,7 +60,7 @@ export function WelcomeStrip() {
         (async () => {
             try {
                 const r: any = await api.aiGreeting();
-                if (!cancelled && r?.text) setAiGreeting(r.text);
+                if (!cancelled && r?.text) setAiGreeting(stripSalutation(r.text));
             } catch { /* keep the static sub */ }
         })();
         return () => { cancelled = true; };
@@ -123,10 +138,10 @@ export function WelcomeStrip() {
                 (stats.citiesVisited || stats.tripsPlanned || stats.reviewsCount || profile?.badges?.length)
                     ? (
                         <div className="welcome-strip-stats">
-                            <a href={ownHref} className="welcome-stat"><strong>{stats.citiesVisited}</strong><span>Cities</span></a>
-                            <a href={ownHref} className="welcome-stat"><strong>{stats.tripsPlanned}</strong><span>Trips</span></a>
-                            <a href={ownHref} className="welcome-stat"><strong>{stats.reviewsCount}</strong><span>Reviews</span></a>
-                            <a href={ownHref} className="welcome-stat welcome-stat-badges"><strong>{profile?.badges?.length || 0}</strong><span>Badges</span></a>
+                            <a href={ownHref} className="welcome-stat"><strong>{stats.citiesVisited}</strong><span>{plural(stats.citiesVisited, 'City', 'Cities')}</span></a>
+                            <a href={ownHref} className="welcome-stat"><strong>{stats.tripsPlanned}</strong><span>{plural(stats.tripsPlanned, 'Trip')}</span></a>
+                            <a href={ownHref} className="welcome-stat"><strong>{stats.reviewsCount}</strong><span>{plural(stats.reviewsCount, 'Review')}</span></a>
+                            <a href={ownHref} className="welcome-stat welcome-stat-badges"><strong>{profile?.badges?.length || 0}</strong><span>{plural(profile?.badges?.length || 0, 'Badge')}</span></a>
                             <a href={ownHref} className="welcome-stat-link">
                                 Your travel profile <ArrowRight size={14} />
                             </a>

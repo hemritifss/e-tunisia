@@ -209,6 +209,74 @@ export async function getVisitedIds() {
   return api<string[]>('/users/visited');
 }
 
+// ── COLLABORATIVE TRIPS (invite co-planners) ─
+export async function inviteTrip(slug: string) {
+  return api<{ code: string }>(`/trips/${encodeURIComponent(slug)}/invite`, { method: 'POST' });
+}
+export async function joinTrip(slug: string, code: string) {
+  return api<{ joined: boolean; title?: string; alreadyOwner?: boolean }>(
+    `/trips/${encodeURIComponent(slug)}/join`, { method: 'POST', body: JSON.stringify({ code }) },
+  );
+}
+export async function getTripMembers(slug: string) {
+  return api<{
+    members: Array<{ id: string; handle: string | null; fullName: string; avatar: string | null; isOwner: boolean }>;
+    canEdit: boolean; isOwner: boolean;
+  }>(`/trips/${encodeURIComponent(slug)}/members`);
+}
+
+// ── GEMS (community contribution engine) ─────
+export interface GemSubmitResult {
+  duplicate: boolean;
+  place: { id: string; name: string; slug: string; city?: string; governorate?: string };
+  needsConfirmations?: number;
+}
+export async function submitGem(payload: {
+  name: string; description: string; latitude: number; longitude: number;
+  images?: string[]; city?: string; governorate?: string; categoryId?: string;
+}) {
+  return api<GemSubmitResult>('/gems/submit', { method: 'POST', body: JSON.stringify(payload) });
+}
+export async function confirmGem(placeId: string) {
+  return api<{ confirmations: number; wentLive: boolean; approved: boolean }>(
+    `/gems/${encodeURIComponent(placeId)}/confirm`, { method: 'POST' },
+  );
+}
+export async function getGemStatus(placeId: string) {
+  return api<{ confirmations: number; confirmedByMe: boolean; pending: boolean; needed: number; isMine: boolean }>(
+    `/gems/${encodeURIComponent(placeId)}/status`,
+  );
+}
+export async function getCompleteness() {
+  return api<Array<{ governorate: string; count: number; target: number; pct: number; missing: number }>>(
+    '/gems/completeness',
+  );
+}
+export interface GemUser { id: string; handle: string | null; fullName: string; avatar: string | null }
+export async function getAmbassadors() {
+  return api<{
+    month: string;
+    ambassadors: Array<{ governorate: string; gems: number; user: GemUser }>;
+    topHunters: Array<{ gems: number; user: GemUser }>;
+  }>('/gems/ambassadors');
+}
+
+// ── BEACHES (jellyfish report — famma 9nadel?) ─
+export async function getBeaches(governorate?: string) {
+  const qs = governorate ? `?governorate=${encodeURIComponent(governorate)}` : '';
+  return api<any[]>(`/beaches${qs}`);
+}
+export async function getBeach(placeId: string) {
+  return api<any>(`/beaches/${encodeURIComponent(placeId)}`);
+}
+export async function reportBeach(placeId: string, payload: {
+  jellyfish: 'none' | 'few' | 'lots'; water?: string; crowd?: string; note?: string;
+}) {
+  return api<{ id: string; awarded: boolean }>(
+    `/beaches/${encodeURIComponent(placeId)}/report`, { method: 'POST', body: JSON.stringify(payload) },
+  );
+}
+
 // ── ROUTING (real roads via OSRM/Mapbox) ─────
 export async function getRoute(coords: [number, number][]) {
   const path = coords.map((c) => c.join(',')).join(';');
@@ -293,6 +361,73 @@ export async function attendEvent(eventId: string) {
 // ── ITINERARIES ──────────────────────────────
 export async function getItineraries() {
   return api<any[]>('/itineraries');
+}
+
+// ── CIRCUITS ─────────────────────────────────
+// Curated routes hydrated from the live place catalog: every stop below is a
+// real place id you can open, map and drop into the trip cart.
+
+export type CircuitKind =
+  | 'sight' | 'ruins' | 'medina' | 'museum' | 'nature' | 'beach'
+  | 'desert' | 'food' | 'viewpoint' | 'craft';
+
+export interface CircuitStop {
+  placeId: string;
+  slug: string;
+  name: string;
+  city: string;
+  governorate: string;
+  latitude: number;
+  longitude: number;
+  cover: string | null;
+  rating: number;
+  reviewCount: number;
+  tags: string[];
+  entryPrice: number | null;
+  openingHours: string | null;
+  kind: CircuitKind;
+  why: string;
+  priority: 1 | 2 | 3;
+  minutes: number;
+  slot: 'morning' | 'midday' | 'afternoon' | 'evening';
+  hopKm: number;
+}
+
+export interface CircuitSummary {
+  slug: string;
+  title: string;
+  tagline: string;
+  summary: string;
+  theme: 'heritage' | 'desert' | 'coast' | 'culture' | 'nature' | 'food' | 'city';
+  region: 'north' | 'centre' | 'south' | 'nationwide';
+  difficulty: 'easy' | 'moderate' | 'challenging';
+  defaultDays: number;
+  dayRange: [number, number];
+  bestMonths: number[];
+  avoidMonths?: { months: number[]; reason: string };
+  carFree: boolean;
+  stayBandTnd: number;
+  distanceKm: number;
+  stopCount: number;
+  cities: string[];
+  stopIds: string[];
+  covers: string[];
+  entryCostTnd: number;
+  onSiteMinutes: number;
+}
+
+export interface CircuitDetail extends CircuitSummary {
+  knowHow: string[];
+  packing: string[];
+  stops: CircuitStop[];
+}
+
+export async function getCircuits() {
+  return api<CircuitSummary[]>('/itineraries/circuits');
+}
+
+export async function getCircuit(slug: string) {
+  return api<CircuitDetail>(`/itineraries/circuits/${encodeURIComponent(slug)}`);
 }
 
 // ── COLLECTIONS ──────────────────────────────
@@ -616,6 +751,11 @@ export async function markRoomRead(roomId: string) {
   return api<{ ok: boolean }>(`/messages/rooms/${roomId}/read`, { method: 'POST' });
 }
 
+/** Unsend your own message. Soft-delete — the thread keeps a tombstone. */
+export async function deleteMessage(messageId: string) {
+  return api<{ ok: true; id: string }>(`/messages/${messageId}`, { method: 'DELETE' });
+}
+
 export async function getUnreadMessagesCount() {
   return api<number | { count: number }>('/messages/unread-count');
 }
@@ -669,6 +809,39 @@ export async function getFollowCounts(userId: string) {
 
 export async function isFollowing(userId: string) {
   return api<{ isFollowing: boolean } | boolean>(`/social/is-following/${userId}`);
+}
+
+export interface ProfileOverview {
+  id: string;
+  fullName: string;
+  handle: string | null;
+  avatar: string | null;
+  bio: string | null;
+  country: string | null;
+  plan: string | null;
+  role: string | null;
+  points: number;
+  badgeCount: number;
+  placesVisited: number;
+  founderNumber: number | null;
+  createdAt: string;
+  followers: number;
+  following: number;
+  isSelf: boolean;
+  isFollowing: boolean;
+  followsYou: boolean;
+  mutuals: {
+    count: number;
+    sample: { id: string; fullName: string; avatar: string | null; handle: string | null }[];
+  };
+  /** True in either direction => the server already stripped stats/bio/avatar. */
+  isBlockedByMe: boolean;
+  hasBlockedMe: boolean;
+}
+
+/** Compact profile summary powering the hover card — one request per user. */
+export async function getProfileOverview(userId: string) {
+  return api<ProfileOverview>(`/social/overview/${userId}`);
 }
 
 export async function getUserPosts(userId: string, limit = 12) {

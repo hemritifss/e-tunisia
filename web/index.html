@@ -13,6 +13,9 @@
   <meta property="og:image" content="/icon.png" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:image" content="/icon.png" />
+  <!-- Browser chrome color — kept in sync with the theme by the script below
+       and by toggleTheme() at runtime. -->
+  <meta name="theme-color" content="#f7f4ec" />
   <!-- Apply the saved theme BEFORE first paint: prevents the light-mode flash for
        dark-theme users and stale light-theme paints on composited layers (fixed nav). -->
   <script>
@@ -20,18 +23,26 @@
       var t = localStorage.getItem('theme')
         || (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
       document.documentElement.dataset.theme = t;
+      var tc = document.querySelector('meta[name="theme-color"]');
+      if (tc) tc.setAttribute('content', t === 'dark' ? '#1c1917' : '#f7f4ec');
     } catch (e) {}
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Kufi+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <!-- Single consolidated font request (carnet identity: Fraunces display · Inter body ·
+       JetBrains Mono data · Caveat hand · Noto Kufi Arabic). Outfit + Plus Jakarta retired. -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Kufi+Arabic:wght@300;400;500;600;700&family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Caveat:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
   <!-- Icons rendered as inline SVGs via src/icons.ts -->
   <link rel="stylesheet" href="/src/styles/tokens.css" />
   <link rel="stylesheet" href="/src/styles/base.css" />
   <link rel="stylesheet" href="/src/styles/components.css" />
+  <link rel="stylesheet" href="/src/styles/carnet.css" />
   <link rel="stylesheet" href="/src/styles/pages.css" />
   <link rel="stylesheet" href="/src/styles/animations.css" />
   <link rel="stylesheet" href="/src/styles/messenger.css" />
+  <link rel="stylesheet" href="/src/styles/profile-hover-card.css" />
+  <link rel="stylesheet" href="/src/styles/stories-viewer.css" />
+  <link rel="stylesheet" href="/src/styles/story-composer.css" />
   <link rel="stylesheet" href="/src/styles/feed.css" />
   <link rel="stylesheet" href="/src/styles/mood.css" />
   <link rel="stylesheet" href="/src/styles/explore.css" />
@@ -48,23 +59,21 @@
   <link rel="stylesheet" href="/src/styles/tailwind.css" />
 </head>
 <body>
+  <a class="skip-link" href="#page-content">Skip to content</a>
   <div id="app">
     <nav id="main-nav" class="nav">
       <div class="nav-inner">
         <a href="#/" class="nav-logo">
           <img src="/icon.png" alt="e-Tunisia" class="logo-mark-img" />
           <span class="logo-text">e-Tunisia</span>
+          <span class="logo-text-ar" lang="ar" aria-hidden="true">تونس</span>
         </a>
         <div class="nav-links" id="nav-links">
           <a href="#/" class="nav-link active" data-page="feed" data-i18n="nav.feed">Feed</a>
           <a href="#/explore" class="nav-link" data-page="explore" data-i18n="nav.explore">Explore</a>
+          <a href="#/map" class="nav-link" data-page="map" data-i18n="nav.map">Map</a>
           <a href="#/ai-planner" class="nav-link" data-page="ai-planner" data-i18n="nav.aiPlanner">AI Planner</a>
           <a href="#/reels" class="nav-link" data-page="reels" data-i18n="nav.reels">Reels</a>
-          <a href="#/events" class="nav-link" data-page="events" data-i18n="nav.events">Events</a>
-          <a href="#/tips" class="nav-link" data-page="tips" data-i18n="nav.tips">Tips</a>
-          <a href="#/map" class="nav-link" data-page="map" data-i18n="nav.map">Map</a>
-          <a href="#/itineraries" class="nav-link" data-page="itineraries" data-i18n="nav.itineraries">Itineraries</a>
-          <a href="#/collections" class="nav-link" data-page="collections" data-i18n="nav.collections">Collections</a>
         </div>
         <div class="nav-actions">
           <button class="nav-search-trigger" data-open-cmdk aria-label="Search anything (Ctrl+K)">
@@ -75,15 +84,17 @@
           <button class="btn-icon nav-search-mobile" id="search-toggle" aria-label="Search">
             <i class="lucide-search"></i>
           </button>
-          <button class="btn-icon" id="notif-toggle" aria-label="Notifications">
+          <button class="btn-icon" id="notif-toggle" aria-label="Notifications" aria-haspopup="dialog" aria-controls="notif-panel" aria-expanded="false">
             <i class="lucide-bell"></i>
-            <span class="notif-badge" id="notif-badge">3</span>
+            <!-- Starts hidden — shipping a hardcoded count meant every visitor
+                 saw a fake "3" until the real fetch resolved. -->
+            <span class="notif-badge" id="notif-badge" style="display:none"></span>
           </button>
           <button class="btn-icon" id="theme-toggle" aria-label="Toggle theme">
             <i class="lucide-moon" id="theme-icon"></i>
           </button>
           <div class="avatar-menu" id="avatar-menu">
-            <button class="avatar-btn" id="avatar-btn">
+            <button class="avatar-btn" id="avatar-btn" aria-label="Account menu" aria-haspopup="menu">
               <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=Tunisia" alt="User" class="avatar-img" data-user-avatar />
             </button>
             <div class="dropdown" id="user-dropdown">
@@ -226,7 +237,7 @@
 
     <!-- Notifications panel -->
     <div class="notif-panel-overlay" id="notif-panel-overlay"></div>
-    <div class="notif-panel" id="notif-panel">
+    <div class="notif-panel" id="notif-panel" role="dialog" aria-label="Notifications" aria-modal="false">
       <div class="notif-panel-header">
         <h3>Notifications</h3>
         <button class="btn btn-ghost btn-sm" id="notif-mark-read">Mark all read</button>
@@ -295,8 +306,8 @@
           </div>
         </div>
 
-        <input type="text" class="post-modal-input" id="post-modal-title" placeholder="Give your post a title..." maxlength="200" />
-        <textarea class="post-modal-textarea" id="post-modal-body-input" placeholder="What's on your mind about Tunisia? Share an experience, tip, or question..."></textarea>
+        <input type="text" class="post-modal-input" id="post-modal-title" aria-label="Post title" placeholder="Give your post a title…" maxlength="200" />
+        <textarea class="post-modal-textarea" id="post-modal-body-input" aria-label="Post text" placeholder="What's on your mind about Tunisia? Share an experience, tip, or question…"></textarea>
 
         <!-- AI compose assist (Phase 3) -->
         <div class="post-modal-ai" id="post-modal-ai">
@@ -327,7 +338,7 @@
           <div class="post-modal-location-wrapper">
             <div class="post-modal-location-input-wrap">
               <i class="lucide-map-pin"></i>
-              <input type="text" class="post-modal-location-input" id="post-modal-location-input" placeholder="Search Tunisian locations..." autocomplete="off" />
+              <input type="text" class="post-modal-location-input" id="post-modal-location-input" aria-label="Search Tunisian locations" placeholder="Search Tunisian locations…" autocomplete="off" />
               <button class="post-modal-location-clear" id="post-modal-location-clear" style="display:none" aria-label="Clear location">
                 <i class="lucide-x"></i>
               </button>
@@ -404,8 +415,8 @@
     <div class="search-overlay" id="search-overlay">
       <div class="search-bar-wrapper">
         <i class="lucide-search search-bar-icon"></i>
-        <input type="text" class="search-input" id="search-input" placeholder="Search places, events, tips..." autocomplete="off" />
-        <button class="btn-icon" id="search-close"><i class="lucide-x"></i></button>
+        <input type="text" class="search-input" id="search-input" aria-label="Search places, events, tips" placeholder="Search places, events, tips…" autocomplete="off" enterkeyhint="search" />
+        <button class="btn-icon" id="search-close" aria-label="Close search"><i class="lucide-x"></i></button>
       </div>
       <div class="search-results" id="search-results">
         <div class="search-trending">

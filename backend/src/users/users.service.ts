@@ -18,6 +18,7 @@ import { BadgesService } from '../badges/badges.service';
 import { GamificationService } from '../gamification/gamification.service';
 import { EndorsementsService } from './endorsements.service';
 import { effectivePlan } from './effective-plan';
+import { SafetyService } from '../safety/safety.service';
 
 @Injectable()
 export class UsersService {
@@ -33,6 +34,7 @@ export class UsersService {
         private badges: BadgesService,
         private notifications: NotificationsService,
         private gamification: GamificationService,
+        private safety: SafetyService,
         @Inject(forwardRef(() => EndorsementsService)) private endorsements: EndorsementsService,
     ) { }
 
@@ -289,6 +291,9 @@ export class UsersService {
 
     /** Active travelers on the map — recent place visits with coordinates. */
     async activeTravelers(limit = 50) {
+        // Clamp: controller passes `Number(query.limit)` uncapped, and this is a
+        // heavy join over place-visits — don't let a client pull the whole table.
+        limit = Math.min(200, Math.max(1, limit));
         const rows = await this.placeVisitsRepo.createQueryBuilder('v')
             .select([
                 'v.userId as userId',
@@ -344,11 +349,12 @@ export class UsersService {
 
     /** Cold-start suggestions: real users excluding the platform / inactive accounts. */
     async suggestedUsers(limit = 6) {
+        limit = Math.min(50, Math.max(1, limit)); // defence in depth (controller already clamps to 20)
         const rows = await this.usersRepository
             .createQueryBuilder('u')
-            .where('u.isActive = :a', { a: true })
-            .andWhere('u.email NOT LIKE :p', { p: 'platform@%' })
-            .andWhere('u.email NOT LIKE :a', { a: 'admin@%' })
+            .where('u.isActive = :active', { active: true })
+            .andWhere('u.email NOT LIKE :platformPrefix', { platformPrefix: 'platform@%' })
+            .andWhere('u.email NOT LIKE :adminPrefix', { adminPrefix: 'admin@%' })
             .orderBy('u.points', 'DESC')
             .addOrderBy('u.createdAt', 'DESC')
             .take(limit)
@@ -434,7 +440,7 @@ export class UsersService {
      * Search users by handle prefix or fullName substring. Public-safe shape.
      * Returns up to `limit` matches sorted by points DESC then fullName ASC.
      */
-    async searchUsers(query: string, limit = 12) {
+    async searchUsers(query: string, limit = 12, viewerId: string | null = null) {
         const q = (query || '').trim();
         if (q.length < 1) return [];
         const safe = q.replace(/[%_]/g, (m) => `\\${m}`);
@@ -442,13 +448,18 @@ export class UsersService {
         const nameNeedle = `%${safe}%`;
         const lim = Math.min(50, Math.max(1, limit));
 
+        // Blocked users must not merely be trimmed off a full page — overfetch
+        // and backfill so a block never quietly shrinks search results.
+        const hidden = viewerId ? await this.safety.getHiddenUserIds(viewerId) : new Set<string>();
+        const fetchLim = hidden.size > 0 ? Math.min(200, lim + hidden.size) : lim;
+
         const rows = await this.usersRepository
             .createQueryBuilder('u')
             .where('LOWER(u.handle) LIKE :hp', { hp: handlePrefix })
             .orWhere('u.fullName ILIKE :nn', { nn: nameNeedle })
             .orderBy('u.points', 'DESC')
             .addOrderBy('u.fullName', 'ASC')
-            .limit(lim)
+            .limit(fetchLim)
             .getMany()
             .catch(async () => {
                 // SQLite / MySQL fallback (no ILIKE): use LOWER + LIKE.
@@ -458,11 +469,13 @@ export class UsersService {
                     .orWhere('LOWER(u.fullName) LIKE :nn', { nn: nameNeedle.toLowerCase() })
                     .orderBy('u.points', 'DESC')
                     .addOrderBy('u.fullName', 'ASC')
-                    .limit(lim)
+                    .limit(fetchLim)
                     .getMany();
             });
 
-        return rows.map((u: any) => ({
+        const visible = hidden.size > 0 ? rows.filter((u) => !hidden.has(u.id)) : rows;
+
+        return visible.slice(0, lim).map((u: any) => ({
             id: u.id,
             handle: u.handle ?? null,
             fullName: u.fullName,

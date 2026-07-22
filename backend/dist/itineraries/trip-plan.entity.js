@@ -53,6 +53,10 @@ __decorate([
     __metadata("design:type", String)
 ], TripPlan.prototype, "startDate", void 0);
 __decorate([
+    (0, typeorm_1.Column)({ length: 24, nullable: true }),
+    __metadata("design:type", String)
+], TripPlan.prototype, "inviteCode", void 0);
+__decorate([
     (0, typeorm_1.Column)({ default: true }),
     __metadata("design:type", Boolean)
 ], TripPlan.prototype, "isPublic", void 0);

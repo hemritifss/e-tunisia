@@ -15,6 +15,32 @@ export declare class SocialController {
         following: number;
     }>;
     isFollowing(followerId: string, followingId: string): Promise<boolean>;
+    overview(viewerId: string | null, userId: string): Promise<{
+        id: string;
+        fullName: string;
+        handle: string;
+        avatar: string;
+        bio: string;
+        country: string;
+        plan: import("../users/user.entity").UserPlan;
+        role: import("../users/user.entity").UserRole;
+        points: number;
+        badgeCount: number;
+        placesVisited: number;
+        founderNumber: number;
+        createdAt: Date;
+        followers: number;
+        following: number;
+        isSelf: boolean;
+        isFollowing: boolean;
+        followsYou: boolean;
+        mutuals: {
+            count: number;
+            sample: any[];
+        };
+        isBlockedByMe: boolean;
+        hasBlockedMe: boolean;
+    }>;
     getFeed(userId: string, page?: number, limit?: number): Promise<{
         data: import("./activity.entity").Activity[];
         hasMore: boolean;

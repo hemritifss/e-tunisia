@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Sparkles, Share2, Loader2 } from 'lucide-react';
 import { api } from '../../shared/api';
 import { useUIStore } from '../stores/ui-store';
+import { useT } from '../../i18n/useT';
 
 interface Personality {
   type: string;
@@ -16,6 +17,7 @@ interface Personality {
  * calls the AI when the user taps Reveal, so it costs nothing on profile load.
  */
 export function TravelPersonalityCard() {
+  const t = useT();
   const [p, setP] = useState<Personality | null>(null);
   const [loading, setLoading] = useState(false);
   const showToast = useUIStore((s) => s.showToast);
@@ -27,7 +29,7 @@ export function TravelPersonalityCard() {
       const r: any = await api.aiPersonality();
       if (r?.type) setP(r);
     } catch {
-      showToast("Couldn't reveal your personality right now — try again!", 'error');
+      showToast(t('personality.revealFailed'), 'error');
     } finally {
       setLoading(false);
     }
@@ -35,14 +37,14 @@ export function TravelPersonalityCard() {
 
   const share = async () => {
     if (!p) return;
-    const text = `My e-Tunisia travel personality: ${p.emoji} ${p.type} — ${p.description}`;
+    const text = `${t('personality.shareText')}: ${p.emoji} ${p.type} — ${p.description}`;
     try {
       if (navigator.share) {
-        await navigator.share({ title: 'My Travel Personality', text });
+        await navigator.share({ title: t('personality.shareTitle'), text });
         return;
       }
       await navigator.clipboard.writeText(text);
-      showToast('Copied — go share it! 🎉', 'success');
+      showToast(t('personality.copied'), 'success');
     } catch {
       /* user dismissed the share sheet */
     }
@@ -52,7 +54,7 @@ export function TravelPersonalityCard() {
     <section className="mx-4 my-4 rounded-2xl border border-black/5 dark:border-white/10 bg-surface-elevated p-4">
       <div className="flex items-center gap-2 mb-3">
         <Sparkles size={16} className="text-brand" />
-        <h2 className="font-semibold text-sm">Travel Personality</h2>
+        <h2 className="font-semibold text-sm">{t('personality.title')}</h2>
       </div>
 
       {!p ? (
@@ -62,9 +64,9 @@ export function TravelPersonalityCard() {
           className="w-full py-2.5 rounded-xl text-sm font-medium bg-brand/10 text-brand hover:bg-brand/15 transition-colors inline-flex items-center justify-center gap-2 disabled:opacity-60"
         >
           {loading ? (
-            <><Loader2 size={15} className="animate-spin" /> Reading your vibe…</>
+            <><Loader2 size={15} className="animate-spin" /> {t('personality.reading')}</>
           ) : (
-            <>✨ Reveal my travel personality</>
+            <>{t('personality.reveal')}</>
           )}
         </button>
       ) : (
@@ -84,14 +86,14 @@ export function TravelPersonalityCard() {
               onClick={share}
               className="inline-flex items-center gap-1 px-4 py-2 text-sm rounded-xl bg-gradient-to-br from-brand to-mediterranean text-white font-medium hover:opacity-90 transition-opacity"
             >
-              <Share2 size={14} /> Share
+              <Share2 size={14} /> {t('personality.share')}
             </button>
             <button
               onClick={reveal}
               disabled={loading}
               className="px-4 py-2 text-sm rounded-xl border border-black/10 dark:border-white/10 hover:bg-black/5 dark:hover:bg-white/5 transition-colors disabled:opacity-60"
             >
-              Try again
+              {t('personality.tryAgain')}
             </button>
           </div>
         </div>

@@ -279,6 +279,7 @@ html body.guest-mode .main-content {
     text-align: center;
 }
 .chat-pop-bubble {
+    position: relative;
     max-width: 78%;
     padding: var(--space-2) var(--space-3);
     border-radius: var(--radius-lg);
@@ -288,6 +289,49 @@ html body.guest-mode .main-content {
     display: flex;
     flex-direction: column;
     gap: 2px;
+}
+
+/* Unsend — revealed on hover/focus of your own bubble, sits outside it. */
+.chat-pop-unsend {
+    position: absolute;
+    top: 50%;
+    left: -30px;
+    transform: translateY(-50%);
+    display: grid;
+    place-items: center;
+    min-width: 24px;
+    height: 24px;
+    padding: 0;
+    border: none;
+    border-radius: var(--radius-full, 999px);
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.12s ease, color 0.12s ease, background-color 0.12s ease;
+}
+.chat-pop-bubble:hover .chat-pop-unsend,
+.chat-pop-unsend:focus-visible { opacity: 1; }
+.chat-pop-unsend:hover { color: var(--error, #c0392b); }
+/* Armed state: the icon morphs into a "Remove?" pill — the confirm IS the button. */
+.chat-pop-unsend.is-confirming {
+    opacity: 1;
+    left: auto;
+    right: calc(100% + 6px);
+    padding: 0 8px;
+    background: var(--error, #c0392b);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+/* Tombstone for an unsent message — history keeps its shape. */
+.chat-pop-bubble.is-removed {
+    background: transparent;
+    border: 1px dashed var(--border);
+    color: var(--text-secondary);
+    font-style: italic;
 }
 .chat-pop-bubble.theirs {
     background: var(--surface-elevated);

@@ -71,6 +71,12 @@ export function TunisiaPulse() {
 
     const current = entries[idx];
 
+    // Even "latest from the community" has a shelf life: headlining a
+    // month-old test post makes the whole feed feel abandoned. Past 30 days
+    // the strip earns nothing — drop it entirely.
+    const newestMs = allEntries.length ? new Date(allEntries[0].createdAt).getTime() : 0;
+    if (!allEntries.length || Date.now() - newestMs > 30 * 24 * 60 * 60 * 1000) return null;
+
     return (
         <section className={`tunisia-pulse${live ? '' : ' is-quiet'}`}>
             <div className="tunisia-pulse-dot">

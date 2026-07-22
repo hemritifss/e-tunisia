@@ -59,8 +59,8 @@ let PlacesController = class PlacesController {
     findOne(id) {
         return this.placesService.findById(id);
     }
-    create(dto) {
-        return this.placesService.create(dto);
+    create(req, dto) {
+        return this.placesService.create(dto, req.user?.id);
     }
     getByIds(body) {
         return this.placesService.getByIds(body.ids);
@@ -149,9 +149,10 @@ __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, swagger_1.ApiBearerAuth)(),
     (0, swagger_1.ApiOperation)({ summary: 'Create a new place' }),
-    __param(0, (0, common_1.Body)()),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [create_place_dto_1.CreatePlaceDto]),
+    __metadata("design:paramtypes", [Object, create_place_dto_1.CreatePlaceDto]),
     __metadata("design:returntype", void 0)
 ], PlacesController.prototype, "create", null);
 __decorate([

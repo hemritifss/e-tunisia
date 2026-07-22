@@ -1,0 +1,388 @@
+/* GROWTH §7 — louage lookup magnet page.
+   Carnet Journal dialect (UNIQUENESS §6.7): transport options render as
+   real louage tickets — stub + perforation + fare + barcode. Page opts in
+   via data-design="carnet" (tokens remapped in tokens.css) + .cn-grain. */
+
+.louage-page {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: var(--space-6) var(--space-4) var(--space-10);
+    color: var(--ink);
+}
+
+/* ── Header — field-notes masthead ── */
+.louage-header { margin-bottom: var(--space-6); }
+.louage-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--terracotta);
+}
+.louage-header h1 {
+    font-family: var(--font-editorial);
+    font-optical-sizing: auto;
+    font-size: clamp(1.6rem, 4.6vw, 2.2rem);
+    font-weight: 580;
+    letter-spacing: -0.015em;
+    line-height: 1.12;
+    color: var(--ink);
+    margin: var(--space-2) 0 var(--space-2);
+    text-wrap: balance;
+}
+.louage-header h1 em {
+    font-style: italic;
+    font-weight: 480;
+    color: var(--terracotta);
+}
+.louage-header p { color: var(--ink-soft); margin: 0; }
+
+/* ── Controls — underline selects, letterpress swap ── */
+.louage-controls {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    margin-bottom: var(--space-6);
+    padding-bottom: var(--space-5);
+    border-bottom: 1px solid var(--rule);
+}
+.louage-select {
+    flex: 1 1 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 2px;
+    border-bottom: 1.5px solid var(--rule-strong);
+    transition: border-color var(--duration-fast) var(--ease-out);
+}
+.louage-select:focus-within { border-bottom-color: var(--terracotta); }
+.louage-select svg { color: var(--terracotta); flex: 0 0 auto; }
+.louage-select select {
+    width: 100%;
+    border: none;
+    background: transparent;
+    outline: none;
+    color: var(--ink);
+    font-weight: 600;
+    font-size: var(--text-base);
+    cursor: pointer;
+}
+.louage-swap {
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    border: 1.5px solid var(--ink);
+    border-radius: var(--radius-sm);
+    background: var(--paper-print);
+    color: var(--ink);
+    box-shadow: 2px 2px 0 var(--ink);
+    cursor: pointer;
+    transition: transform var(--duration-fast) var(--ease-out),
+                box-shadow var(--duration-fast) var(--ease-out);
+}
+.louage-swap:hover { transform: translate(-1px, -1px); box-shadow: 3px 3px 0 var(--ink); }
+.louage-swap:active { transform: translate(1px, 1px); box-shadow: 1px 1px 0 var(--ink); }
+.louage-hint {
+    font-family: var(--font-hand);
+    font-size: 1.3rem;
+    color: var(--ink-faint);
+    rotate: -0.8deg;
+}
+
+/* ── The ticket rack ── */
+.lt-rack-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: var(--space-3);
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: var(--space-4);
+}
+.lt-rack-km { color: var(--ink-faint); }
+.lt-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+/* A louage ticket: fare stub | perforation | body | barcode */
+.lt-ticket {
+    position: relative;
+    display: grid;
+    grid-template-columns: 112px 1fr 22px;
+    background: var(--paper-print);
+    border: 1px solid var(--rule-strong);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--paper-shadow);
+    overflow: hidden;
+    rotate: var(--tilt, 0deg);
+    transition: rotate var(--duration-normal) var(--ease-spring),
+                translate var(--duration-normal) var(--ease-out),
+                box-shadow var(--duration-normal) var(--ease-out);
+}
+.lt-ticket:nth-child(2n) { --tilt: 0.5deg; }
+.lt-ticket:nth-child(2n+1) { --tilt: -0.45deg; }
+.lt-ticket:hover { rotate: 0deg; translate: 0 -4px; box-shadow: var(--paper-shadow-lift); }
+
+/* mode accent along the ticket's left edge — the real louage stripes */
+.lt-ticket::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: var(--mode-stripe, var(--rule-strong));
+    opacity: 0.85;
+}
+.lt-ticket--louage { --mode-stripe: oklch(55% 0.19 25); }   /* red stripe = intercity */
+.lt-ticket--bus    { --mode-stripe: oklch(52% 0.14 250); }
+.lt-ticket--train  { --mode-stripe: var(--olive); }
+.lt-ticket--drive  { --mode-stripe: var(--gold); }
+.lt-ticket--walk   { --mode-stripe: var(--rule-strong); }
+
+.lt-stub {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    padding: var(--space-4) var(--space-2);
+    background: var(--paper-warm);
+    border-right: 1.5px dashed var(--rule-strong);
+}
+/* punched holes on the perforation */
+.lt-stub::before,
+.lt-stub::after {
+    content: '';
+    position: absolute;
+    right: -8px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    z-index: 1;
+}
+.lt-stub::before { top: -8px; }
+.lt-stub::after { bottom: -8px; }
+.lt-fare {
+    font-family: var(--font-mono);
+    font-size: 1.02rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--terracotta);
+    line-height: 1.1;
+    text-align: center;
+}
+.lt-fare em { font-style: normal; font-size: 0.72em; font-weight: 600; color: var(--ink-soft); }
+.lt-fare-label {
+    font-family: var(--font-mono);
+    font-size: 0.56rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+}
+.lt-stub-route {
+    margin-top: 4px;
+    font-family: var(--font-mono);
+    font-size: 0.52rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    text-align: center;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.lt-body {
+    padding: var(--space-4) var(--space-4) var(--space-4) var(--space-5);
+    min-width: 0;
+}
+.lt-mode {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 6px;
+    margin-bottom: 6px;
+}
+.lt-mode svg { color: var(--ink-soft); flex: 0 0 auto; }
+.lt-mode h3 {
+    font-family: var(--font-editorial);
+    font-optical-sizing: auto;
+    font-size: 1.08rem;
+    font-weight: 580;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    margin: 0;
+}
+.lt-dur {
+    margin-left: auto;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink);
+    border: 1px solid var(--rule-strong);
+    border-radius: 2px;
+    padding: 1px 7px;
+    rotate: -2deg;
+}
+.lt-note {
+    font-size: var(--text-sm);
+    line-height: var(--leading-normal);
+    color: var(--ink-soft);
+    margin: 0;
+}
+.lt-barcode {
+    background: repeating-linear-gradient(
+        180deg,
+        var(--ink) 0 2px,
+        transparent 2px 5px,
+        var(--ink) 5px 6px,
+        transparent 6px 10px
+    );
+    opacity: 0.6;
+    margin: var(--space-3) 7px;
+    width: 7px;
+    justify-self: center;
+}
+
+/* ── Popular routes — small perforated chips ── */
+.louage-popular { margin-top: var(--space-8); }
+.louage-popular h2 {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin: 0 0 var(--space-3);
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-3);
+}
+.louage-popular h2::after { content: ''; flex: 1; align-self: center; border-top: 1px solid var(--rule); }
+.louage-popular-row { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.louage-chip {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    padding: 6px 12px;
+    border: 1px dashed var(--rule-strong);
+    border-radius: 2px;
+    background: var(--paper-print);
+    color: var(--ink-soft);
+    cursor: pointer;
+    rotate: var(--tilt, 0deg);
+    transition: color var(--duration-fast) var(--ease-out),
+                border-color var(--duration-fast) var(--ease-out),
+                rotate var(--duration-fast) var(--ease-out);
+}
+.louage-chip:nth-child(2n) { --tilt: 0.7deg; }
+.louage-chip:nth-child(3n) { --tilt: -0.7deg; }
+.louage-chip:hover, .louage-chip.is-active {
+    color: var(--terracotta);
+    border-color: var(--terracotta);
+    border-style: solid;
+    rotate: 0deg;
+}
+
+/* ── Explainer — a field note ── */
+.louage-explainer { margin-top: var(--space-8); }
+.louage-explainer h2 {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin: 0 0 var(--space-3);
+    padding-bottom: var(--space-2);
+    border-bottom: 1.5px solid var(--rule-strong);
+}
+.louage-explainer h2 svg { color: var(--terracotta); }
+.louage-explainer ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+.louage-explainer li {
+    position: relative;
+    padding-left: var(--space-5);
+    color: var(--ink-soft);
+    line-height: 1.65;
+    font-size: var(--text-sm);
+}
+.louage-explainer li::before {
+    content: '—';
+    position: absolute;
+    left: 0;
+    color: var(--terracotta);
+}
+.louage-explainer li strong { color: var(--ink); font-weight: 650; }
+
+/* louage stripe swatches — white vans, colored stripes */
+.lt-swatch {
+    display: inline-block;
+    width: 20px;
+    height: 11px;
+    margin: 0 5px -1px 2px;
+    background: var(--paper-print);
+    border: 1px solid var(--rule-strong);
+    border-radius: 2px;
+    position: relative;
+}
+.lt-swatch::after {
+    content: '';
+    position: absolute;
+    left: 1px;
+    right: 1px;
+    top: 4px;
+    height: 2.5px;
+    background: var(--stripe, var(--terracotta));
+}
+
+.louage-cta {
+    margin-top: var(--space-5);
+    font-family: var(--font-hand);
+    font-size: 1.3rem;
+    color: var(--ink-soft);
+    rotate: -0.6deg;
+}
+.louage-cta a { color: var(--terracotta); text-decoration: underline; text-underline-offset: 4px; }
+
+/* ── Responsive + reduced motion ── */
+@media (max-width: 480px) {
+    .lt-ticket { grid-template-columns: 96px 1fr 18px; }
+    .lt-fare { font-size: 0.92rem; }
+    .lt-stub-route { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .lt-ticket, .louage-chip, .louage-swap { transition: none; }
+    .lt-ticket:hover { rotate: var(--tilt, 0deg); translate: none; }
+}

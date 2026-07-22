@@ -4,6 +4,7 @@ import * as api from '../../api';
 import { getOnlineUsers, isUserOnline } from '../../realtime';
 import { MessageCircle, Search, X, Sparkles } from 'lucide-react';
 import { goTo, currentPath, onRouteChange } from '../../router';
+import { currentUserId } from '../../shared/current-user';
 
 /**
  * Active conversations & online friends.
@@ -32,13 +33,9 @@ interface OtherUser {
     plan: string | null;
 }
 
-function myId(): string | null {
-    try {
-        const raw = localStorage.getItem('etunisia_user') || localStorage.getItem('auth_user');
-        if (!raw) return null;
-        return JSON.parse(raw)?.id ?? null;
-    } catch { return null; }
-}
+// A null id makes otherOf() fall back to participants[0] — i.e. shows you your
+// own name in your own conversation list. Read the canonical auth store.
+const myId = currentUserId;
 
 function otherOf(room: Room, me: string | null): OtherUser {
     const p = (room.participants || []).find((x) => x.id !== me) || room.participants?.[0];

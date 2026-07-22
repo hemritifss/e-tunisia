@@ -1,0 +1,103 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Render Blueprint — one-click deploy of the e-Tunisia backend (NestJS) for FREE.
+#
+# This provisions three things wired together automatically:
+#   1. etunisia-api    → the NestJS web service (built from backend/Dockerfile)
+#   2. etunisia-db     → a free PostgreSQL database
+#   3. etunisia-redis  → a free Key Value (Redis) store for queues + cache
+#
+# HOW TO USE (you must do the account part — see DEPLOY.md):
+#   Render dashboard → New + → Blueprint → pick the hemritifss/e-tunisia repo →
+#   Render reads this file and creates all 3 services. Click Apply.
+#
+# NOTE: Vercel CANNOT host this backend (it needs a always-on process, WebSockets,
+#       Redis queues and a persistent DB — all things serverless can't do). Render
+#       is the free host that can. The frontend stays on Vercel.
+# ─────────────────────────────────────────────────────────────────────────────
+
+databases:
+  - name: etunisia-db
+    databaseName: etunisia
+    user: etunisia
+    plan: free            # ⚠ free Postgres expires ~30 days after creation (Render emails you)
+    region: frankfurt     # closest Render region to Tunisia
+
+services:
+  # ── Redis / Key Value (queues + cache) ───────────────────────────────────────
+  - type: keyvalue        # if your Render account is older this key may be `redis`
+    name: etunisia-redis
+    plan: free
+    region: frankfurt
+    ipAllowList: []       # empty = reachable only from your Render services (internal)
+    maxmemoryPolicy: noeviction   # required by BullMQ — do not change
+
+  # ── The API ──────────────────────────────────────────────────────────────────
+  - type: web
+    name: etunisia-api
+    runtime: docker
+    plan: free            # 512 MB RAM. Big app — if it OOMs, bump to Starter.
+    region: frankfurt
+    branch: main          # ← the branch Render deploys. Change if you deploy another.
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    autoDeploy: true      # redeploy on every push to the branch above
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "3000"
+
+      # ── Database (auto-filled from etunisia-db) ──
+      - key: DB_TYPE
+        value: postgres
+      - key: DB_SYNCHRONIZE
+        value: "true"     # first boot creates the schema from entities (no migrations exist yet)
+      - key: DB_HOST
+        fromDatabase: { name: etunisia-db, property: host }
+      - key: DB_PORT
+        fromDatabase: { name: etunisia-db, property: port }
+      - key: DB_USERNAME
+        fromDatabase: { name: etunisia-db, property: user }
+      - key: DB_PASSWORD
+        fromDatabase: { name: etunisia-db, property: password }
+      - key: DB_NAME
+        fromDatabase: { name: etunisia-db, property: database }
+
+      # ── Redis (auto-filled from etunisia-redis; internal = no password needed) ──
+      - key: REDIS_HOST
+        fromService: { name: etunisia-redis, type: keyvalue, property: host }
+      - key: REDIS_PORT
+        fromService: { name: etunisia-redis, type: keyvalue, property: port }
+
+      # ── Auth ──
+      - key: JWT_SECRET
+        generateValue: true      # Render generates a strong secret for you
+      - key: JWT_EXPIRES_IN
+        value: 7d
+
+      # ── Web push (real keys, generated for this deploy) ──
+      - key: VAPID_PUBLIC_KEY
+        value: BEh9DlIse0yXUcS7tHbFg-zw_LfNOajQJxyA96mW7n-8w6LD-T2O_pS1fIzyAJ93WsjkIqubpw5j0YYnfJftf28
+      - key: VAPID_PRIVATE_KEY
+        value: Z8S9CT4yGCY2UUuOje57EGPI9Uvp6UhpORoR693wI-Q
+      - key: VAPID_SUBJECT
+        value: mailto:support@etunisia.tn
+
+      # ── Public base URL of this API (matches the default onrender.com hostname) ──
+      - key: PUBLIC_API_URL
+        value: https://etunisia-api.onrender.com
+
+      # ── CORS: allow your Vercel frontend. Add your custom domain here too. ──
+      - key: ALLOWED_ORIGINS
+        value: https://*.vercel.app
+
+      # ── Swagger docs reachable at /api/docs ──
+      - key: SWAGGER_ENABLED
+        value: "true"
+
+      # ── OPTIONAL — add later in the Render dashboard (all have safe fallbacks):
+      #   LLM_BASE_URL / LLM_API_KEY / LLM_MODEL   → free AI (Groq). Without = mock AI.
+      #   GOOGLE_CLIENT_ID                          → Google sign-in button.
+      #   S3_ENDPOINT / S3_ACCESS_KEY / S3_SECRET_KEY / S3_BUCKET → real file storage.
+      #   STRIPE_SECRET_KEY / STRIPE_WEBHOOK_SECRET → real payments (else mock).
+      #   RESEND_API_KEY / EMAIL_FROM               → real emails (else console log).

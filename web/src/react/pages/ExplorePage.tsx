@@ -36,6 +36,7 @@ import { formatNumber } from '../lib/utils';
 import { useAuthStore } from '../stores/auth-store';
 import { useUIStore } from '../stores/ui-store';
 import { PullToRefresh } from '../components/PullToRefresh';
+import { CityCompleteness } from '../components/GemWidgets';
 import { useCity } from '../lib/useCity';
 
 type ViewMode = 'grid' | 'list';
@@ -173,14 +174,17 @@ function PlaceCard({
             <div className="flex justify-between items-start mb-1">
               <h3 className="font-semibold text-lg">{place.name}</h3>
               <button
+                type="button"
                 onClick={handleLike}
+                aria-pressed={isLiked}
+                aria-label={isLiked ? `Remove ${place.name} from saved` : `Save ${place.name}`}
                 className={`p-2 rounded-full transition-all ${
                   isLiked
                     ? 'text-red-500 bg-red-500/10'
                     : 'text-gray-400 hover:text-red-500 hover:bg-red-500/10'
                 }`}
               >
-                <Heart size={18} className={isLiked ? 'fill-current' : ''} />
+                <Heart size={18} aria-hidden="true" className={isLiked ? 'fill-current' : ''} />
               </button>
             </div>
             <div className="flex items-center gap-1 text-sm text-muted-foreground mb-2">
@@ -234,14 +238,17 @@ function PlaceCard({
             label={place.name}
           />
           <button
+            type="button"
             onClick={handleLike}
+            aria-pressed={isLiked}
+            aria-label={isLiked ? `Remove ${place.name} from saved` : `Save ${place.name}`}
             className={`absolute top-3 right-3 p-2 rounded-full backdrop-blur-md transition-all ${
               isLiked
                 ? 'text-red-500 bg-white/90'
                 : 'text-white bg-black/30 hover:bg-white/90 hover:text-red-500'
             }`}
           >
-            <Heart size={18} className={isLiked ? 'fill-current' : ''} />
+            <Heart size={18} aria-hidden="true" className={isLiked ? 'fill-current' : ''} />
           </button>
           {place.isFeatured && (
             <span className="absolute top-3 left-3 px-2.5 py-1 text-xs font-semibold rounded-full bg-brand text-white shadow-sm">
@@ -277,6 +284,28 @@ function PlaceCard({
  * (GET /ai/suggestions). Rendered only on the unfiltered Explore view; hidden
  * for guests and when there are no suggestions.
  */
+/**
+ * The AI fallback labels every pick "Top-rated by travelers" — the same
+ * sentence six cards in a row reads as filler and stops meaning anything.
+ * Keep the first occurrence; swap repeats for concrete facts we already have.
+ */
+function varyReasons(items: any[]): any[] {
+  const seen = new Map<string, number>();
+  return items.map((it: any) => {
+    const r = String(it.reason || '').trim();
+    if (!r) return it;
+    const n = (seen.get(r) || 0) + 1;
+    seen.set(r, n);
+    if (n === 1) return it;
+    const p = it.place || {};
+    const reviews = Number(p.reviewsCount) || 0;
+    const alt = reviews > 0
+      ? `${reviews} traveler ${reviews === 1 ? 'review' : 'reviews'}`
+      : (p.city ? `A ${p.city} favorite` : '');
+    return { ...it, reason: alt };
+  });
+}
+
 function ForYouStrip() {
   const user = useAuthStore((s) => s.user);
   const { data } = useQuery({
@@ -285,7 +314,7 @@ function ForYouStrip() {
     enabled: !!user,
     staleTime: 5 * 60 * 1000,
   });
-  const items = Array.isArray(data) ? data : [];
+  const items = varyReasons(Array.isArray(data) ? data : []);
   if (!user || items.length === 0) return null;
 
   return (
@@ -319,8 +348,26 @@ function ForYouStrip() {
   );
 }
 
+/** Active category lives in the URL (?cat=beaches) so refresh/share keep the filter. */
+function categoryFromUrl(): string {
+  try {
+    return new URLSearchParams(window.location.search).get('cat') || 'all';
+  } catch {
+    return 'all';
+  }
+}
+
 export default function ExplorePage() {
-  const [activeCategory, setActiveCategory] = useState('all');
+  const [activeCategory, setActiveCategoryState] = useState(categoryFromUrl);
+  const setActiveCategory = (c: string) => {
+    setActiveCategoryState(c);
+    try {
+      const url = new URL(window.location.href);
+      if (c === 'all') url.searchParams.delete('cat');
+      else url.searchParams.set('cat', c);
+      window.history.replaceState(window.history.state, '', url);
+    } catch { /* best-effort */ }
+  };
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
@@ -444,7 +491,7 @@ export default function ExplorePage() {
   const hasFilter = activeCategory !== 'all' || searchQuery.trim() !== '' || minRating > 0 || verifiedOnly;
 
   return (
-    <div className="explore-page animate-fade-in" style={{ '--cat-tint': activeCat.tint } as React.CSSProperties}>
+    <div className="explore-page animate-fade-in" data-design="carnet" style={{ '--cat-tint': activeCat.tint } as React.CSSProperties}>
       {!isLoggedIn() && <PublicMasthead active="explore" />}
       {/* Hero — atmospheric mesh, search baked in */}
       <header className="explore-hero">
@@ -472,6 +519,7 @@ export default function ExplorePage() {
               onChange={(e) => setSearchQuery(e.target.value)}
               className="explore-search-input"
               aria-label="Search places"
+              enterKeyHint="search"
             />
             {searchQuery && (
               <button
@@ -595,6 +643,9 @@ export default function ExplorePage() {
 
       {/* AI "For you" — only on the unfiltered discovery view */}
       {activeCategory === 'all' && !searchQuery.trim() && minRating === 0 && !verifiedOnly && <ForYouStrip />}
+
+      {/* The completeness game — "Kairouan is 34% mapped" → contribute */}
+      {activeCategory === 'all' && !searchQuery.trim() && <CityCompleteness />}
 
       {/* Results */}
       <PullToRefresh onRefresh={async () => {

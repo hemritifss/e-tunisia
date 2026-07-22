@@ -116,7 +116,7 @@ let AdsService = AdsService_1 = class AdsService {
             {
                 title: 'Know a spot we are missing? Add it',
                 imageUrl: AdsService_1.houseBanner('#c98a2b', '#8a6a1f', AdsService_1.GLYPHS.contribute),
-                targetUrl: '/explore',
+                targetUrl: '/submit-gem',
                 advertiserName: exports.HOUSE_ADVERTISER,
                 placement: ad_entity_1.AdPlacement.SEARCH,
                 description: 'Put your city on the map. Share a hidden gem — a photo, a pin, one line — earn XP and progress toward the Gem Hunter badge.',

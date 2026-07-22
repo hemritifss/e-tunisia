@@ -35,8 +35,8 @@ let ItinerariesService = class ItinerariesService {
         });
         if (!itinerary)
             throw new common_1.NotFoundException('Itinerary not found');
+        await this.itinerariesRepo.increment({ id: itinerary.id }, 'viewCount', 1);
         itinerary.viewCount += 1;
-        await this.itinerariesRepo.save(itinerary);
         return itinerary;
     }
     async create(authorId, data) {
@@ -45,8 +45,9 @@ let ItinerariesService = class ItinerariesService {
     }
     async like(id) {
         const itinerary = await this.findById(id);
+        await this.itinerariesRepo.increment({ id: itinerary.id }, 'likeCount', 1);
         itinerary.likeCount += 1;
-        return this.itinerariesRepo.save(itinerary);
+        return itinerary;
     }
 };
 exports.ItinerariesService = ItinerariesService;

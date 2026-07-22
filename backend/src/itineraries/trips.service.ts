@@ -1,7 +1,9 @@
 import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { randomBytes } from 'crypto';
 import { TripPlan, TripStop } from './trip-plan.entity';
+import { TripMember } from './trip-member.entity';
 import { Place } from '../places/place.entity';
 import { TourPackage } from '../places/tour-package.entity';
 import { InquiriesService } from '../places/inquiries.service';
@@ -45,6 +47,7 @@ export class TripsService {
 
     constructor(
         @InjectRepository(TripPlan) private trips: Repository<TripPlan>,
+        @InjectRepository(TripMember) private members: Repository<TripMember>,
         @InjectRepository(Place) private places: Repository<Place>,
         @InjectRepository(TourPackage) private packages: Repository<TourPackage>,
         private inquiries: InquiriesService,
@@ -53,15 +56,22 @@ export class TripsService {
         private billing: BillingService,
     ) {}
 
+    /** Strip fields that must never leave the server (the invite code grants edit access). */
+    private sanitize<T extends TripPlan>(trip: T): Omit<T, 'inviteCode'> {
+        const { inviteCode: _secret, ...safe } = trip as any;
+        return safe;
+    }
+
     /** Public list of trips authored by a given handle. Empty array on unknown handle. */
     async listByHandle(handle: string) {
         const user = await this.users.findByHandle(handle);
         if (!user) return [];
-        return this.trips.find({
+        const rows = await this.trips.find({
             where: { userId: user.id, isPublic: true },
             order: { updatedAt: 'DESC' },
             take: 50,
         });
+        return rows.map((t) => this.sanitize(t));
     }
 
     /**
@@ -228,10 +238,17 @@ export class TripsService {
         return saved;
     }
 
+    /** Owner or invited co-planner — collaborative trips share edit rights. */
+    private async canEdit(trip: TripPlan, userId: string): Promise<boolean> {
+        if (!trip.userId || trip.userId === userId) return true;
+        const member = await this.members.findOne({ where: { tripId: trip.id, userId } });
+        return !!member;
+    }
+
     async update(slug: string, userId: string, input: UpsertInput) {
         const trip = await this.trips.findOne({ where: { slug } });
         if (!trip) throw new NotFoundException('Trip not found');
-        if (trip.userId && trip.userId !== userId) {
+        if (!(await this.canEdit(trip, userId))) {
             throw new ForbiddenException('Not your trip');
         }
         if (Array.isArray(input.stops)) {
@@ -250,10 +267,66 @@ export class TripsService {
     }
 
     async listMine(userId: string) {
-        return this.trips.find({
-            where: { userId },
-            order: { updatedAt: 'DESC' },
-        });
+        // Own trips + trips I was invited to co-plan.
+        const memberships = await this.members.find({ where: { userId }, select: { tripId: true } });
+        const memberIds = memberships.map((m) => m.tripId);
+        const [own, shared] = await Promise.all([
+            this.trips.find({ where: { userId }, order: { updatedAt: 'DESC' } }),
+            memberIds.length
+                ? this.trips.find({ where: memberIds.map((id) => ({ id })), order: { updatedAt: 'DESC' } })
+                : Promise.resolve([] as TripPlan[]),
+        ]);
+        const seen = new Set(own.map((t) => t.id));
+        return [...own, ...shared.filter((t) => !seen.has(t.id))].map((t) => this.sanitize(t));
+    }
+
+    // ── Collaborative planning (invite → join → co-edit) ─────────────────────
+
+    /** Owner-only: get (or mint) the trip's secret invite code. */
+    async ensureInviteCode(slug: string, userId: string) {
+        const trip = await this.trips.findOne({ where: { slug } });
+        if (!trip) throw new NotFoundException('Trip not found');
+        if (trip.userId !== userId) throw new ForbiddenException('Only the owner can invite co-planners');
+        if (!trip.inviteCode) {
+            trip.inviteCode = randomBytes(9).toString('base64url'); // 12 chars, URL-safe
+            await this.trips.save(trip);
+        }
+        return { code: trip.inviteCode };
+    }
+
+    /** Join a trip as co-planner via its invite code. Idempotent. */
+    async join(slug: string, userId: string, code: string) {
+        const trip = await this.trips.findOne({ where: { slug } });
+        if (!trip) throw new NotFoundException('Trip not found');
+        if (!trip.inviteCode || !code || trip.inviteCode !== String(code).trim()) {
+            throw new ForbiddenException('Invalid or expired invite');
+        }
+        if (trip.userId === userId) return { joined: true, alreadyOwner: true, title: trip.title };
+        try {
+            await this.members.insert({ tripId: trip.id, userId, invitedBy: trip.userId });
+        } catch { /* unique(tripId,userId) — already a member; joining twice is fine */ }
+        return { joined: true, title: trip.title };
+    }
+
+    /** Who's planning this trip — owner first, then co-planners. */
+    async listMembers(slug: string, viewerId?: string) {
+        const trip = await this.trips.findOne({ where: { slug } });
+        if (!trip) throw new NotFoundException('Trip not found');
+        const rows = await this.members.find({ where: { tripId: trip.id }, order: { createdAt: 'ASC' } });
+        const ids = [trip.userId, ...rows.map((r) => r.userId)].filter(Boolean) as string[];
+        const people = await Promise.all(ids.map(async (id) => {
+            const u = await this.users.findById(id).catch(() => null);
+            return u ? {
+                id: u.id, handle: (u as any).handle || null, fullName: u.fullName,
+                avatar: (u as any).avatar || null, isOwner: id === trip.userId,
+            } : null;
+        }));
+        const members = people.filter(Boolean);
+        return {
+            members,
+            canEdit: !!viewerId && (viewerId === trip.userId || rows.some((r) => r.userId === viewerId)),
+            isOwner: !!viewerId && viewerId === trip.userId,
+        };
     }
 
     /**
@@ -310,14 +383,22 @@ export class TripsService {
         const trip = await this.trips.findOne({ where: { slug } });
         if (!trip) throw new NotFoundException('Trip not found');
         if (!trip.isPublic && trip.userId !== viewerUserId) {
-            throw new ForbiddenException('This trip is private');
+            // Co-planners can open a private trip too.
+            const isMember = viewerUserId
+                ? !!(await this.members.findOne({ where: { tripId: trip.id, userId: viewerUserId } }))
+                : false;
+            if (!isMember) throw new ForbiddenException('This trip is private');
         }
-        // Best-effort view counter (skip own views)
+        // Best-effort view counter (skip own views). Atomic increment rather
+        // than read-modify-write save(trip): save() here would also re-persist
+        // the whole trip row (including invite code) on a public read path.
         if (viewerUserId !== trip.userId) {
+            await this.trips.increment({ id: trip.id }, 'viewCount', 1).catch(() => {});
             trip.viewCount = (trip.viewCount || 0) + 1;
-            await this.trips.save(trip).catch(() => {});
         }
-        return trip;
+        // NEVER leak the invite code on the public read — it grants edit access.
+        // Owners fetch it explicitly via POST /trips/:slug/invite.
+        return this.sanitize(trip);
     }
 
     async remove(slug: string, userId: string) {

@@ -22,20 +22,22 @@ const user_entity_1 = require("../users/user.entity");
 const redis_service_1 = require("../redis/redis.service");
 const notifications_service_1 = require("../notifications/notifications.service");
 const notification_entity_1 = require("../notifications/notification.entity");
+const safety_service_1 = require("../safety/safety.service");
 let SocialService = class SocialService {
-    constructor(followRepo, activityRepo, userRepo, redisService, notifications) {
+    constructor(followRepo, activityRepo, userRepo, redisService, notifications, safety) {
         this.followRepo = followRepo;
         this.activityRepo = activityRepo;
         this.userRepo = userRepo;
         this.redisService = redisService;
         this.notifications = notifications;
+        this.safety = safety;
     }
     async follow(followerId, followingId) {
         if (followerId === followingId) {
             throw new common_1.ConflictException('Cannot follow yourself');
         }
         const exists = await this.followRepo.findOne({
-            where: { followerId, followingId },
+            where: { followerId, followedId: followingId },
         });
         if (exists) {
             throw new common_1.ConflictException('Already following this user');
@@ -57,7 +59,7 @@ let SocialService = class SocialService {
     }
     async unfollow(followerId, followingId) {
         const follow = await this.followRepo.findOne({
-            where: { followerId, followingId },
+            where: { followerId, followedId: followingId },
         });
         if (!follow)
             throw new common_1.NotFoundException('Not following this user');
@@ -67,7 +69,7 @@ let SocialService = class SocialService {
     }
     async getFollowers(userId) {
         const follows = await this.followRepo.find({
-            where: { followingId: userId },
+            where: { followedId: userId },
         });
         const followerIds = follows.map((f) => f.followerId);
         if (followerIds.length === 0)
@@ -81,7 +83,7 @@ let SocialService = class SocialService {
         const follows = await this.followRepo.find({
             where: { followerId: userId },
         });
-        const followingIds = follows.map((f) => f.followingId);
+        const followingIds = follows.map((f) => f.followedId).filter(Boolean);
         if (followingIds.length === 0)
             return [];
         return this.userRepo.find({
@@ -91,16 +93,85 @@ let SocialService = class SocialService {
     }
     async isFollowing(followerId, followingId) {
         const follow = await this.followRepo.findOne({
-            where: { followerId, followingId },
+            where: { followerId, followedId: followingId },
         });
         return !!follow;
     }
     async getFollowCounts(userId) {
         const [followers, following] = await Promise.all([
-            this.followRepo.count({ where: { followingId: userId } }),
+            this.followRepo.count({ where: { followedId: userId } }),
             this.followRepo.count({ where: { followerId: userId } }),
         ]);
         return { followers, following };
+    }
+    async getProfileOverview(viewerId, targetId) {
+        const user = await this.userRepo.findOne({ where: { id: targetId } });
+        if (!user)
+            throw new common_1.NotFoundException('User not found');
+        const isSelf = !!viewerId && viewerId === targetId;
+        const relational = !!viewerId && !isSelf;
+        const [isBlockedByMe, hasBlockedMe] = relational
+            ? await Promise.all([
+                this.safety.isBlocked(viewerId, targetId).then((r) => r.isBlocked),
+                this.safety.isBlocked(targetId, viewerId).then((r) => r.isBlocked),
+            ])
+            : [false, false];
+        const blocked = isBlockedByMe || hasBlockedMe;
+        const shareRelational = relational && !blocked;
+        const [counts, isFollowing, followsYou, mutuals] = await Promise.all([
+            blocked ? Promise.resolve({ followers: 0, following: 0 }) : this.getFollowCounts(targetId),
+            shareRelational ? this.isFollowing(viewerId, targetId) : Promise.resolve(false),
+            shareRelational ? this.isFollowing(targetId, viewerId) : Promise.resolve(false),
+            shareRelational ? this.getMutuals(viewerId, targetId) : Promise.resolve({ count: 0, sample: [] }),
+        ]);
+        return {
+            id: user.id,
+            fullName: user.fullName,
+            handle: user.handle || null,
+            avatar: blocked ? null : (user.avatar || null),
+            bio: blocked ? null : (user.bio || null),
+            country: blocked ? null : (user.country || null),
+            plan: blocked ? null : user.plan,
+            role: user.role,
+            points: blocked ? 0 : (user.points || 0),
+            badgeCount: blocked ? 0 : (Array.isArray(user.badges) ? user.badges.length : 0),
+            placesVisited: blocked ? 0 : (Array.isArray(user.visitedPlaceIds) ? user.visitedPlaceIds.length : 0),
+            founderNumber: blocked ? null : (user.founderNumber ?? null),
+            createdAt: user.createdAt,
+            followers: counts.followers,
+            following: counts.following,
+            isSelf,
+            isFollowing,
+            followsYou,
+            mutuals,
+            isBlockedByMe,
+            hasBlockedMe,
+        };
+    }
+    async getMutuals(viewerId, targetId, sampleSize = 3) {
+        const [viewerFollows, targetFollowers] = await Promise.all([
+            this.followRepo.find({ where: { followerId: viewerId }, select: ['followedId'] }),
+            this.followRepo.find({ where: { followedId: targetId }, select: ['followerId'] }),
+        ]);
+        const viewerFollowing = new Set(viewerFollows.map((f) => f.followedId).filter((id) => !!id));
+        const mutualIds = targetFollowers
+            .map((f) => f.followerId)
+            .filter((id) => !!id && viewerFollowing.has(id));
+        if (!mutualIds.length)
+            return { count: 0, sample: [] };
+        const sample = await this.userRepo.find({
+            where: { id: (0, typeorm_2.In)(mutualIds.slice(0, sampleSize)) },
+            select: ['id', 'fullName', 'avatar', 'handle'],
+        });
+        return {
+            count: mutualIds.length,
+            sample: sample.map((u) => ({
+                id: u.id,
+                fullName: u.fullName,
+                avatar: u.avatar || null,
+                handle: u.handle || null,
+            })),
+        };
     }
     async createActivity(userId, type, data) {
         const activity = this.activityRepo.create({
@@ -171,6 +242,7 @@ exports.SocialService = SocialService = __decorate([
         typeorm_2.Repository,
         typeorm_2.Repository,
         redis_service_1.RedisService,
-        notifications_service_1.NotificationsService])
+        notifications_service_1.NotificationsService,
+        safety_service_1.SafetyService])
 ], SocialService);
 //# sourceMappingURL=social.service.js.map

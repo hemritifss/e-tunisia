@@ -1,5 +1,5 @@
 import '../../styles/settings.css';
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Palette, Languages, Bell, Shield, User, Pencil, Trash2, UserCheck, Crown } from 'lucide-react';
 import * as api from '../../api';
@@ -12,6 +12,9 @@ import TunisiaLoader from '../components/TunisiaLoader';
 // Migrated from vanilla pages/settings.ts — appearance/language/notifications
 // (mostly cosmetic), blocked-users list (fetch + unblock), delete account.
 
+// Flip these on when the actual delivery infra ships (roadmap 1.2 / 1.3).
+const NOTIF_FLAGS = { push: false, emailDigest: false };
+
 function avatarUrl(u: any): string {
   const seed = encodeURIComponent(u.fullName || u.id);
   return u.avatar && (String(u.avatar).startsWith('http') || String(u.avatar).startsWith('data:'))
@@ -20,6 +23,7 @@ function avatarUrl(u: any): string {
 }
 
 function BlockedList() {
+  const t = useT();
   const queryClient = useQueryClient();
   const [busy, setBusy] = useState<string | null>(null);
   const loggedIn = isLoggedIn();
@@ -31,18 +35,18 @@ function BlockedList() {
   });
 
   if (!loggedIn) {
-    return <div className="settings-blocked-empty">Sign in to manage blocked accounts.</div>;
+    return <div className="settings-blocked-empty">{t('settings.blockedSignIn')}</div>;
   }
   if (isLoading) {
     return (
       <div className="settings-blocked-loading">
         <TunisiaLoader size={52} />
-        <span>Loading…</span>
+        <span>{t('settings.loading')}</span>
       </div>
     );
   }
   if (!rows || rows.length === 0) {
-    return <div className="settings-blocked-empty">You haven't blocked anyone.</div>;
+    return <div className="settings-blocked-empty">{t('settings.blockedEmpty')}</div>;
   }
 
   const unblock = async (id: string) => {
@@ -84,7 +88,7 @@ function BlockedList() {
               disabled={busy === u.id}
               onClick={() => unblock(u.id)}
             >
-              <UserCheck /> Unblock
+              <UserCheck /> {t('settings.unblock')}
             </button>
           </div>
         );
@@ -96,6 +100,7 @@ function BlockedList() {
 // Current subscription (from /subscriptions/my) + a manual (bank/cash) upgrade
 // request path via /subscriptions/upgrade. Card checkout still lives on /pro.
 function SubscriptionCard() {
+  const t = useT();
   const loggedIn = isLoggedIn();
   const queryClient = useQueryClient();
   const [busy, setBusy] = useState(false);
@@ -109,10 +114,10 @@ function SubscriptionCard() {
     return (
       <div className="settings-item">
         <div className="settings-item-text">
-          <strong>Not signed in</strong>
-          <span>Sign in to see your plan.</span>
+          <strong>{t('settings.notSignedIn')}</strong>
+          <span>{t('settings.signInToSeePlan')}</span>
         </div>
-        <button className="btn btn-outline btn-sm" onClick={() => goTo('/login')}>Sign in</button>
+        <button className="btn btn-outline btn-sm" onClick={() => goTo('/login')}>{t('settings.signIn')}</button>
       </div>
     );
   }
@@ -139,26 +144,26 @@ function SubscriptionCard() {
       <div className="settings-item">
         <div className="settings-item-text">
           <strong style={{ textTransform: 'capitalize' }}>
-            {plan} plan{isPaid && status ? ` · ${status}` : ''}
+            {isPaid ? `${plan} plan${status ? ` · ${status}` : ''}` : t('settings.freePlanName')}
           </strong>
           <span>
             {isPaid
-              ? (expires ? `Renews / expires ${expires}` : 'Active subscription')
-              : 'You are on the free plan.'}
+              ? (expires ? `${t('settings.planRenews')} ${expires}` : t('settings.planActive'))
+              : t('settings.freePlanNote')}
           </span>
         </div>
         <button className="btn btn-primary btn-sm" onClick={() => goTo('/pro')}>
-          {isPaid ? 'Manage plan' : 'Upgrade'}
+          {isPaid ? t('settings.managePlan') : t('settings.upgrade')}
         </button>
       </div>
       {!isPaid && (
         <div className="settings-item">
           <div className="settings-item-text">
-            <strong>Prefer bank transfer?</strong>
-            <span>Request a manual upgrade — our team confirms your payment offline.</span>
+            <strong>{t('settings.bankTitle')}</strong>
+            <span>{t('settings.bankHint')}</span>
           </div>
           <button className="btn btn-outline btn-sm" disabled={busy} onClick={requestBankUpgrade}>
-            {busy ? 'Sending…' : 'Request upgrade'}
+            {busy ? t('settings.bankSending') : t('settings.bankRequest')}
           </button>
         </div>
       )}
@@ -183,9 +188,19 @@ export default function SettingsPage() {
     if (icon) icon.className = theme === 'dark' ? 'lucide-sun' : 'lucide-moon';
   };
 
-  const deleteAccount = () => {
-    const ok = window.confirm('Delete your account permanently? This action cannot be undone.');
-    if (!ok) return;
+  // This was labeled "Delete account" but no deletion endpoint exists anywhere
+  // — it only cleared localStorage. Renamed to what it actually does, with the
+  // app's two-tap confirm instead of window.confirm().
+  const [clearArmed, setClearArmed] = useState(false);
+  const clearTimer = useRef<number | null>(null);
+  useEffect(() => () => { if (clearTimer.current) window.clearTimeout(clearTimer.current); }, []);
+  const clearLocalData = () => {
+    if (!clearArmed) {
+      setClearArmed(true);
+      clearTimer.current = window.setTimeout(() => setClearArmed(false), 4000);
+      return;
+    }
+    if (clearTimer.current) window.clearTimeout(clearTimer.current);
     try {
       localStorage.clear();
     } catch {
@@ -196,12 +211,15 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="settings-page page-enter">
+    // Field Notes via the token layer only — surfaces/text/borders remap to
+    // paper/ink/rules. The tinted group chips stay: settings.md documents them
+    // as a deliberate scanning aid (the only page in the app that keeps them).
+    <div className="settings-page page-enter" data-design="carnet">
       <header className="settings-head">
-        <a href="#/profile" className="settings-back" aria-label="Back to profile"><ArrowLeft /></a>
+        <a href="#/profile" className="settings-back" aria-label={t('settings.back')}><ArrowLeft /></a>
         <div className="settings-head-text">
-          <h1>Settings</h1>
-          <p>Manage your account, appearance, and notifications.</p>
+          <h1>{t('settings.title')}</h1>
+          <p>{t('settings.subtitle')}</p>
         </div>
       </header>
 
@@ -209,8 +227,8 @@ export default function SettingsPage() {
         <header className="settings-group-head">
           <span className="settings-group-icon" data-tint="gold"><Crown /></span>
           <div>
-            <h2>Subscription</h2>
-            <p>Your plan and how it renews.</p>
+            <h2>{t('settings.subscription')}</h2>
+            <p>{t('settings.subscriptionHint')}</p>
           </div>
         </header>
         <SubscriptionCard />
@@ -220,14 +238,14 @@ export default function SettingsPage() {
         <header className="settings-group-head">
           <span className="settings-group-icon" data-tint="violet"><Palette /></span>
           <div>
-            <h2>Appearance</h2>
-            <p>How e-Tunisia looks on your device.</p>
+            <h2>{t('settings.appearance')}</h2>
+            <p>{t('settings.appearanceHint')}</p>
           </div>
         </header>
         <div className="settings-item">
           <div className="settings-item-text">
-            <strong>Dark mode</strong>
-            <span>Switch between light and dark themes.</span>
+            <strong>{t('settings.darkMode')}</strong>
+            <span>{t('settings.darkModeHint')}</span>
           </div>
           <label className="toggle">
             <input type="checkbox" id="settings-dark-mode" checked={dark} onChange={onToggleDark} />
@@ -270,31 +288,42 @@ export default function SettingsPage() {
         <header className="settings-group-head">
           <span className="settings-group-icon" data-tint="gold"><Bell /></span>
           <div>
-            <h2>Notifications</h2>
-            <p>When and how we reach you.</p>
+            <h2>{t('settings.notifications')}</h2>
+            <p>{t('settings.notificationsHint')}</p>
           </div>
         </header>
-        <div className="settings-item">
+        {/* These were decorative toggles for infra that doesn't exist yet
+            (roadmap 1.2 push / 1.3 email). A control that does nothing erodes
+            trust — show an honest stamp until the flags flip on. */}
+        <div className={`settings-item${NOTIF_FLAGS.push ? '' : ' is-upcoming'}`}>
           <div className="settings-item-text">
-            <strong>Push notifications</strong>
-            <span>Alerts for new events, tips, and DMs.</span>
+            <strong>{t('settings.push')}</strong>
+            <span>{t('settings.pushHint')}</span>
           </div>
-          <label className="toggle">
-            <input type="checkbox" defaultChecked />
-            <span className="toggle-track" />
-            <span className="toggle-thumb" />
-          </label>
+          {NOTIF_FLAGS.push ? (
+            <label className="toggle">
+              <input type="checkbox" defaultChecked />
+              <span className="toggle-track" />
+              <span className="toggle-thumb" />
+            </label>
+          ) : (
+            <span className="settings-stamp">{t('settings.comingSoon')}</span>
+          )}
         </div>
-        <div className="settings-item">
+        <div className={`settings-item${NOTIF_FLAGS.emailDigest ? '' : ' is-upcoming'}`}>
           <div className="settings-item-text">
-            <strong>Email digest</strong>
-            <span>Weekly summary of popular posts.</span>
+            <strong>{t('settings.emailDigest')}</strong>
+            <span>{t('settings.emailDigestHint')}</span>
           </div>
-          <label className="toggle">
-            <input type="checkbox" />
-            <span className="toggle-track" />
-            <span className="toggle-thumb" />
-          </label>
+          {NOTIF_FLAGS.emailDigest ? (
+            <label className="toggle">
+              <input type="checkbox" />
+              <span className="toggle-track" />
+              <span className="toggle-thumb" />
+            </label>
+          ) : (
+            <span className="settings-stamp">{t('settings.comingSoon')}</span>
+          )}
         </div>
       </section>
 
@@ -302,8 +331,8 @@ export default function SettingsPage() {
         <header className="settings-group-head">
           <span className="settings-group-icon" data-tint="mediterranean"><Shield /></span>
           <div>
-            <h2>Safety</h2>
-            <p>People you've blocked. They can't see your posts or DM you.</p>
+            <h2>{t('settings.safety')}</h2>
+            <p>{t('settings.safetyHint')}</p>
           </div>
         </header>
         <div className="settings-blocked-list" id="settings-blocked-list">
@@ -315,24 +344,24 @@ export default function SettingsPage() {
         <header className="settings-group-head">
           <span className="settings-group-icon" data-tint="accent"><User /></span>
           <div>
-            <h2>Account</h2>
-            <p>Profile and account-level controls.</p>
+            <h2>{t('settings.account')}</h2>
+            <p>{t('settings.accountHint')}</p>
           </div>
         </header>
         <div className="settings-item">
           <div className="settings-item-text">
-            <strong>Edit profile</strong>
-            <span>Update your name, photo, and bio.</span>
+            <strong>{t('settings.editProfile')}</strong>
+            <span>{t('settings.editProfileHint')}</span>
           </div>
-          <a className="btn btn-outline btn-sm" href="#/profile-edit"><Pencil /> Edit</a>
+          <a className="btn btn-outline btn-sm" href="#/profile-edit"><Pencil /> {t('settings.edit')}</a>
         </div>
         <div className="settings-item settings-item-danger">
           <div className="settings-item-text">
-            <strong>Delete account</strong>
-            <span>Permanently delete your account and data. This cannot be undone.</span>
+            <strong>{t('settings.clearData')}</strong>
+            <span>{t('settings.clearDataHint')}</span>
           </div>
-          <button type="button" className="settings-danger-btn" onClick={deleteAccount}>
-            <Trash2 /> Delete
+          <button type="button" className={`settings-danger-btn${clearArmed ? ' is-confirming' : ''}`} onClick={clearLocalData}>
+            <Trash2 /> {clearArmed ? t('settings.clearDataConfirm') : t('settings.clearDataBtn')}
           </button>
         </div>
       </section>

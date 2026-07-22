@@ -20,4 +20,8 @@ export declare class MessagesController {
         ok: boolean;
     }>;
     openDirect(me: string, other: string): Promise<import("./chat-room.entity").ChatRoom>;
+    deleteMessage(userId: string, messageId: string): Promise<{
+        ok: true;
+        id: string;
+    }>;
 }

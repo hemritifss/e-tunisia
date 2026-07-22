@@ -50,7 +50,7 @@
   font-size: var(--text-sm);
   font-weight: 500;
   color: var(--text-muted);
-  transition: all var(--duration-fast) var(--ease-out);
+  transition: color var(--duration-fast) var(--ease-out), background-color var(--duration-fast) var(--ease-out), border-color var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out), transform var(--duration-fast) var(--ease-out), opacity var(--duration-fast) var(--ease-out), filter var(--duration-fast) var(--ease-out);
   cursor: pointer;
   border: none;
   background: none;
@@ -939,7 +939,7 @@
   cursor: pointer;
   white-space: nowrap;
   box-shadow: var(--shadow-sm);
-  transition: all var(--duration-fast) var(--ease-out);
+  transition: color var(--duration-fast) var(--ease-out), background-color var(--duration-fast) var(--ease-out), border-color var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out), transform var(--duration-fast) var(--ease-out), opacity var(--duration-fast) var(--ease-out), filter var(--duration-fast) var(--ease-out);
 }
 
 .map-chip:hover {
@@ -5296,7 +5296,7 @@ section[class^="hero-"] {
   font-size: 0.875rem;
   font-weight: 600;
   text-decoration: none;
-  transition: all 0.2s;
+  transition: color 0.2s, background-color 0.2s, border-color 0.2s, box-shadow 0.2s, transform 0.2s, opacity 0.2s, filter 0.2s;
   border: none;
   cursor: pointer;
 }
@@ -5426,7 +5426,7 @@ section[class^="hero-"] {
   font-weight: 600;
   border-radius: var(--radius-md);
   text-decoration: none;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), filter 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   border: none;
   cursor: pointer;
   box-shadow: 0 4px 20px rgba(198, 93, 59, 0.3);
@@ -5462,7 +5462,7 @@ section[class^="hero-"] {
   font-weight: 500;
   border-radius: var(--radius-md);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: color 0.2s, background-color 0.2s, border-color 0.2s, box-shadow 0.2s, transform 0.2s, opacity 0.2s, filter 0.2s;
 }
 
 .hero2-btn-video:hover {
@@ -5478,7 +5478,7 @@ section[class^="hero-"] {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s;
+  transition: color 0.2s, background-color 0.2s, border-color 0.2s, box-shadow 0.2s, transform 0.2s, opacity 0.2s, filter 0.2s;
 }
 
 .hero2-btn-video:hover .hero2-play-icon {
@@ -5706,7 +5706,7 @@ section[class^="hero-"] {
   background: var(--surface);
   border: 1px solid rgba(255,255,255,0.05);
   border-radius: var(--radius-xl);
-  transition: all 0.3s;
+  transition: color 0.3s, background-color 0.3s, border-color 0.3s, box-shadow 0.3s, transform 0.3s, opacity 0.3s, filter 0.3s;
   opacity: 0;
   transform: translateY(24px);
 }
@@ -5714,7 +5714,7 @@ section[class^="hero-"] {
 .hero2-proof-card.hero2-revealed {
   opacity: 1;
   transform: translateY(0);
-  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: color 0.6s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.6s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.6s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.6s cubic-bezier(0.4, 0, 0.2, 1), transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), filter 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .hero2-proof-card:hover {
@@ -5797,7 +5797,7 @@ section[class^="hero-"] {
 .hero2-step.hero2-revealed {
   opacity: 1;
   transform: translateY(0);
-  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: color 0.6s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.6s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.6s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.6s cubic-bezier(0.4, 0, 0.2, 1), transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), filter 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .hero2-step-num {
@@ -5861,7 +5861,7 @@ section[class^="hero-"] {
   border: 1px solid rgba(255,255,255,0.05);
   border-radius: var(--radius-xl);
   overflow: hidden;
-  transition: all 0.3s;
+  transition: color 0.3s, background-color 0.3s, border-color 0.3s, box-shadow 0.3s, transform 0.3s, opacity 0.3s, filter 0.3s;
   opacity: 0;
   transform: translateY(24px);
 }
@@ -5869,7 +5869,7 @@ section[class^="hero-"] {
 .hero2-bento-card.hero2-revealed {
   opacity: 1;
   transform: translateY(0);
-  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: color 0.6s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.6s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.6s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.6s cubic-bezier(0.4, 0, 0.2, 1), transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), filter 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .hero2-bento-card:hover {
@@ -5971,7 +5971,7 @@ section[class^="hero-"] {
   border: 1px solid rgba(255,255,255,0.05);
   border-radius: var(--radius-xl);
   text-align: center;
-  transition: all 0.3s;
+  transition: color 0.3s, background-color 0.3s, border-color 0.3s, box-shadow 0.3s, transform 0.3s, opacity 0.3s, filter 0.3s;
   position: relative;
   opacity: 0;
   transform: translateY(24px);
@@ -5980,7 +5980,7 @@ section[class^="hero-"] {
 .hero2-pricing-card.hero2-revealed {
   opacity: 1;
   transform: translateY(0);
-  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: color 0.6s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.6s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.6s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.6s cubic-bezier(0.4, 0, 0.2, 1), transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), filter 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .hero2-pricing-card:hover {
@@ -6075,7 +6075,7 @@ section[class^="hero-"] {
   font-weight: 600;
   text-decoration: none;
   text-align: center;
-  transition: all 0.2s;
+  transition: color 0.2s, background-color 0.2s, border-color 0.2s, box-shadow 0.2s, transform 0.2s, opacity 0.2s, filter 0.2s;
   border: none;
   cursor: pointer;
 }
@@ -6462,7 +6462,7 @@ section[class^="hero-"] {
   font-size: 0.8125rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: color 0.2s, background-color 0.2s, border-color 0.2s, box-shadow 0.2s, transform 0.2s, opacity 0.2s, filter 0.2s;
 }
 
 .tips2-tag:hover {
@@ -6490,7 +6490,7 @@ section[class^="hero-"] {
   background: var(--surface);
   border: 1px solid rgba(255,255,255,0.05);
   border-radius: var(--radius-xl);
-  transition: all 0.3s;
+  transition: color 0.3s, background-color 0.3s, border-color 0.3s, box-shadow 0.3s, transform 0.3s, opacity 0.3s, filter 0.3s;
   display: flex;
   flex-direction: column;
 }
@@ -6587,7 +6587,7 @@ section[class^="hero-"] {
   font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: color 0.2s, background-color 0.2s, border-color 0.2s, box-shadow 0.2s, transform 0.2s, opacity 0.2s, filter 0.2s;
 }
 
 .tip2-like-btn:hover {
@@ -6603,7 +6603,7 @@ section[class^="hero-"] {
 }
 
 .tip2-like-btn svg {
-  transition: all 0.2s;
+  transition: color 0.2s, background-color 0.2s, border-color 0.2s, box-shadow 0.2s, transform 0.2s, opacity 0.2s, filter 0.2s;
 }
 
 .tip2-like-btn.liked svg {
@@ -6701,7 +6701,7 @@ section[class^="hero-"] {
   border-radius: var(--radius-md);
   color: var(--text-secondary);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: color 0.2s, background-color 0.2s, border-color 0.2s, box-shadow 0.2s, transform 0.2s, opacity 0.2s, filter 0.2s;
 }
 
 .tips2-modal-close:hover {
@@ -6729,7 +6729,7 @@ section[class^="hero-"] {
   border-radius: var(--radius-md);
   color: var(--text-primary);
   font-size: 0.875rem;
-  transition: all 0.2s;
+  transition: color 0.2s, background-color 0.2s, border-color 0.2s, box-shadow 0.2s, transform 0.2s, opacity 0.2s, filter 0.2s;
 }
 
 .tips2-modal-form .input:focus {
@@ -6826,7 +6826,7 @@ section[class^="hero-"] {
   font-size: 0.8125rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: color 0.2s, background-color 0.2s, border-color 0.2s, box-shadow 0.2s, transform 0.2s, opacity 0.2s, filter 0.2s;
 }
 
 .event2-filter:hover {
@@ -6854,7 +6854,7 @@ section[class^="hero-"] {
   border: 1px solid rgba(255,255,255,0.05);
   border-radius: var(--radius-xl);
   overflow: hidden;
-  transition: all 0.3s;
+  transition: color 0.3s, background-color 0.3s, border-color 0.3s, box-shadow 0.3s, transform 0.3s, opacity 0.3s, filter 0.3s;
 }
 
 .event2-card:hover {
@@ -6979,7 +6979,7 @@ section[class^="hero-"] {
   font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: color 0.2s, background-color 0.2s, border-color 0.2s, box-shadow 0.2s, transform 0.2s, opacity 0.2s, filter 0.2s;
 }
 
 .event2-attend-btn:hover {
@@ -7274,7 +7274,7 @@ section[class^="hero-"] {
   font-weight: 600;
   border-radius: var(--radius-md);
   text-decoration: none;
-  transition: all 0.3s;
+  transition: color 0.3s, background-color 0.3s, border-color 0.3s, box-shadow 0.3s, transform 0.3s, opacity 0.3s, filter 0.3s;
   border: none;
   cursor: pointer;
   box-shadow: 0 4px 20px rgba(198, 93, 59, 0.3);
@@ -7304,7 +7304,7 @@ section[class^="hero-"] {
   font-weight: 600;
   border-radius: var(--radius-md);
   text-decoration: none;
-  transition: all 0.2s;
+  transition: color 0.2s, background-color 0.2s, border-color 0.2s, box-shadow 0.2s, transform 0.2s, opacity 0.2s, filter 0.2s;
 }
 
 .tn-btn-secondary:hover {
@@ -7323,7 +7323,7 @@ section[class^="hero-"] {
   font-weight: 600;
   border-radius: var(--radius-md);
   text-decoration: none;
-  transition: all 0.2s;
+  transition: color 0.2s, background-color 0.2s, border-color 0.2s, box-shadow 0.2s, transform 0.2s, opacity 0.2s, filter 0.2s;
 }
 
 .tn-btn-outline:hover {
@@ -7467,7 +7467,7 @@ section[class^="hero-"] {
   border-radius: var(--radius-xl);
   overflow: hidden;
   text-decoration: none;
-  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: color 0.35s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.35s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.35s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.35s cubic-bezier(0.4, 0, 0.2, 1), transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1), filter 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   opacity: 0;
   transform: translateY(20px);
 }
@@ -7575,7 +7575,7 @@ section[class^="hero-"] {
   background: var(--tn-surface);
   border: 1px solid var(--tn-border);
   border-radius: var(--radius-xl);
-  transition: all 0.3s;
+  transition: color 0.3s, background-color 0.3s, border-color 0.3s, box-shadow 0.3s, transform 0.3s, opacity 0.3s, filter 0.3s;
   opacity: 0;
   transform: translateY(24px);
 }
@@ -7583,7 +7583,7 @@ section[class^="hero-"] {
 .tn-why-card.tn-revealed {
   opacity: 1;
   transform: translateY(0);
-  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: color 0.6s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.6s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.6s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.6s cubic-bezier(0.4, 0, 0.2, 1), transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), filter 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .tn-why-card:hover {
@@ -7665,7 +7665,7 @@ section[class^="hero-"] {
   font-weight: 600;
   color: var(--tn-terracotta);
   text-decoration: none;
-  transition: all 0.25s ease;
+  transition: color 0.25s ease, background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease, opacity 0.25s ease, filter 0.25s ease;
   position: relative;
 }
 
@@ -7708,7 +7708,7 @@ section[class^="hero-"] {
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid var(--tn-border);
   border-radius: var(--radius-xl);
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: color 0.4s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1), filter 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
   opacity: 0;
   transform: translateY(16px);
@@ -7750,7 +7750,7 @@ section[class^="hero-"] {
   object-fit: contain;
   opacity: 0.45;
   filter: grayscale(1) brightness(2);
-  transition: all 0.4s ease;
+  transition: color 0.4s ease, background-color 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease, transform 0.4s ease, opacity 0.4s ease, filter 0.4s ease;
   position: relative;
   z-index: 1;
 }
@@ -8145,7 +8145,7 @@ section[class^="hero-"] {
   border-radius: var(--radius-md);
   color: white;
   font-size: 0.875rem;
-  transition: all 0.2s;
+  transition: color 0.2s, background-color 0.2s, border-color 0.2s, box-shadow 0.2s, transform 0.2s, opacity 0.2s, filter 0.2s;
   /* Always-dark form: tell the OS to render the native <select> popup in dark mode too. */
   color-scheme: dark;
 }
@@ -8223,7 +8223,7 @@ section[class^="hero-"] {
   font-size: 0.9375rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: color 0.3s, background-color 0.3s, border-color 0.3s, box-shadow 0.3s, transform 0.3s, opacity 0.3s, filter 0.3s;
   margin-top: 0.5rem;
   box-shadow: 0 4px 15px rgba(198, 93, 59, 0.25);
 }
@@ -8299,7 +8299,7 @@ section[class^="hero-"] {
   border: 1px solid var(--tn-border);
   border-radius: var(--radius-xl);
   text-decoration: none;
-  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: color 0.35s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.35s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.35s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.35s cubic-bezier(0.4, 0, 0.2, 1), transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1), filter 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   opacity: 0;
   transform: translateY(20px);
 }
@@ -8580,7 +8580,7 @@ section[class^="hero-"] {
   border: 1px solid var(--tn-border);
   border-radius: var(--radius-xl);
   text-align: center;
-  transition: all 0.3s;
+  transition: color 0.3s, background-color 0.3s, border-color 0.3s, box-shadow 0.3s, transform 0.3s, opacity 0.3s, filter 0.3s;
   position: relative;
 }
 
@@ -10522,7 +10522,7 @@ section[class^="hero-"] {
   font-size: var(--text-xs);
   font-weight: 600;
   cursor: pointer;
-  transition: all var(--duration-fast) var(--ease-out);
+  transition: color var(--duration-fast) var(--ease-out), background-color var(--duration-fast) var(--ease-out), border-color var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out), transform var(--duration-fast) var(--ease-out), opacity var(--duration-fast) var(--ease-out), filter var(--duration-fast) var(--ease-out);
 }
 .suggested-follow-btn:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
 .suggested-follow-btn.is-followed,
@@ -11225,7 +11225,7 @@ section[class^="hero-"] {
   border-radius: 50%;
   background: var(--surface);
   border: 2px solid var(--border);
-  transition: all var(--duration-fast) var(--ease-out);
+  transition: color var(--duration-fast) var(--ease-out), background-color var(--duration-fast) var(--ease-out), border-color var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out), transform var(--duration-fast) var(--ease-out), opacity var(--duration-fast) var(--ease-out), filter var(--duration-fast) var(--ease-out);
 }
 .onb-progress li .label {
   font-size: var(--text-xs);
@@ -11391,7 +11391,7 @@ section[class^="hero-"] {
   border-radius: var(--radius-lg);
   cursor: pointer;
   text-align: center;
-  transition: all var(--duration-fast) var(--ease-out);
+  transition: color var(--duration-fast) var(--ease-out), background-color var(--duration-fast) var(--ease-out), border-color var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out), transform var(--duration-fast) var(--ease-out), opacity var(--duration-fast) var(--ease-out), filter var(--duration-fast) var(--ease-out);
   overflow: hidden;
 }
 .onb-interest:hover { border-color: var(--accent); transform: translateY(-2px); }
@@ -12159,8 +12159,17 @@ section[class^="hero-"] {
   color: #fff; font-size: 0.74rem; font-weight: 800;
 }
 @media (max-width: 480px) {
-  .trip-cart-fab { right: 12px; bottom: 76px; padding: 9px 13px; font-size: 0.8rem; }
+  /* Icon-only on phones — the labeled pill covered content and composers. */
+  .trip-cart-fab { right: 12px; bottom: 76px; padding: 12px; font-size: 0.8rem; border-radius: 50%; }
+  .trip-cart-fab > span:not(.trip-cart-count) { display: none; }
+  .trip-cart-fab .trip-cart-count {
+    position: absolute; top: -4px; right: -4px;
+    border: 2px solid var(--bg-primary, #fff);
+  }
 }
+
+/* Two-tap "Empty trip?" state on the drawer's Clear button. */
+.trip-cart-actions .btn.is-confirming { color: var(--error, #c0392b); font-weight: 700; }
 
 .trip-cart-backdrop {
   position: fixed; inset: 0; z-index: 500;
@@ -12914,25 +12923,12 @@ section[class^="hero-"] {
 }
 #search-page-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px oklch(from var(--accent) l c h / 0.15); }
 .search-section-title { font-size: var(--text-lg); font-weight: 700; margin: 0 0 var(--space-3); }
-.search-place-grid {
-  display: grid; gap: var(--space-3);
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-}
-.search-place-card {
-  display: flex; gap: var(--space-3);
-  align-items: center;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: var(--space-3);
-  text-decoration: none;
-  color: inherit;
-  transition: border-color var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out);
-}
-.search-place-card:hover { border-color: var(--accent); box-shadow: var(--shadow-sm); }
-.search-place-card img { width: 56px; height: 56px; border-radius: var(--radius-md); object-fit: cover; flex-shrink: 0; }
-.search-place-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.search-place-info strong { font-size: var(--text-sm); }
+/* NOTE: `.search-place-grid/-card/-info` are defined in messages-search.css
+   (the vertical-card design the current SearchPage markup uses, with a
+   `.search-place-img` wrapper). The old flex-row rules that lived here targeted
+   a legacy markup where <img> was a direct child of the card; against the
+   current markup they collided — a 132px image squeezed the name column to
+   ~50px, truncating "La Marsa Promenade" to "L…". Removed so one design wins. */
 
 /* ============================================
    Credits page
@@ -13082,7 +13078,7 @@ section[class^="hero-"] {
   background: var(--surface);
   font-weight: 600;
   cursor: pointer;
-  transition: all var(--duration-fast) var(--ease-out);
+  transition: color var(--duration-fast) var(--ease-out), background-color var(--duration-fast) var(--ease-out), border-color var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out), transform var(--duration-fast) var(--ease-out), opacity var(--duration-fast) var(--ease-out), filter var(--duration-fast) var(--ease-out);
   color: var(--text-primary);
 }
 .donate-preset:hover { border-color: var(--accent); }
@@ -13098,7 +13094,7 @@ section[class^="hero-"] {
   min-width: 60px; padding: var(--space-2);
   border: 1px solid var(--border); border-radius: var(--radius-md);
   background: var(--surface); cursor: pointer;
-  transition: all var(--duration-fast) var(--ease-out);
+  transition: color var(--duration-fast) var(--ease-out), background-color var(--duration-fast) var(--ease-out), border-color var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out), transform var(--duration-fast) var(--ease-out), opacity var(--duration-fast) var(--ease-out), filter var(--duration-fast) var(--ease-out);
 }
 .donate-gift:hover:not(:disabled) { border-color: var(--accent); transform: translateY(-1px); }
 .donate-gift:disabled { opacity: 0.55; cursor: default; }
@@ -13520,7 +13516,7 @@ section[class^="hero-"] {
     color: var(--text-muted, #5a6371);
     cursor: pointer;
     font-size: 13px;
-    transition: all 120ms ease;
+    transition: color 120ms ease, background-color 120ms ease, border-color 120ms ease, box-shadow 120ms ease, transform 120ms ease, opacity 120ms ease, filter 120ms ease;
 }
 .nav-search-trigger:hover {
     background: rgba(0,0,0,0.06);
@@ -13775,7 +13771,7 @@ section[class^="hero-"] {
     border: 1px solid var(--border);
     border-radius: var(--radius-xl);
     box-shadow: var(--shadow-sm);
-    transition: all var(--duration-normal) var(--ease-spring);
+    transition: color var(--duration-normal) var(--ease-spring), background-color var(--duration-normal) var(--ease-spring), border-color var(--duration-normal) var(--ease-spring), box-shadow var(--duration-normal) var(--ease-spring), transform var(--duration-normal) var(--ease-spring), opacity var(--duration-normal) var(--ease-spring), filter var(--duration-normal) var(--ease-spring);
 }
 .admin-stat:hover {
     transform: translateY(-2px);
@@ -13831,7 +13827,7 @@ section[class^="hero-"] {
     border-radius: var(--radius-lg);
     text-decoration: none;
     color: inherit;
-    transition: all var(--duration-fast) var(--ease-out);
+    transition: color var(--duration-fast) var(--ease-out), background-color var(--duration-fast) var(--ease-out), border-color var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out), transform var(--duration-fast) var(--ease-out), opacity var(--duration-fast) var(--ease-out), filter var(--duration-fast) var(--ease-out);
 }
 .admin-queue:hover {
     transform: translateY(-2px);
@@ -13892,7 +13888,7 @@ section[class^="hero-"] {
     border: 1px solid var(--border); background: var(--surface);
     color: var(--text-secondary); text-decoration: none;
     font-size: var(--text-sm); font-weight: 600;
-    transition: all var(--duration-fast) var(--ease-out);
+    transition: color var(--duration-fast) var(--ease-out), background-color var(--duration-fast) var(--ease-out), border-color var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out), transform var(--duration-fast) var(--ease-out), opacity var(--duration-fast) var(--ease-out), filter var(--duration-fast) var(--ease-out);
 }
 .admin-subnav a:hover { color: var(--text-primary); border-color: color-mix(in oklch, var(--violet) 35%, var(--border)); }
 .admin-subnav a.active { background: linear-gradient(135deg, var(--violet), var(--mediterranean)); color: #fff; border-color: transparent; }
@@ -13939,7 +13935,7 @@ section[class^="hero-"] {
     padding: 5px 10px; margin-left: 6px; border-radius: var(--radius-md);
     border: 1px solid var(--border); background: var(--surface);
     color: var(--text-secondary); font-size: var(--text-xs); font-weight: 600; cursor: pointer;
-    transition: all var(--duration-fast) var(--ease-out);
+    transition: color var(--duration-fast) var(--ease-out), background-color var(--duration-fast) var(--ease-out), border-color var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out), transform var(--duration-fast) var(--ease-out), opacity var(--duration-fast) var(--ease-out), filter var(--duration-fast) var(--ease-out);
 }
 .admin-act:hover:not(:disabled) { color: var(--text-primary); border-color: var(--text-tertiary); }
 .admin-act:disabled { opacity: .6; cursor: default; }
@@ -14130,7 +14126,7 @@ section[class^="hero-"] {
     font-weight: 600;
     font-size: var(--text-sm);
     cursor: pointer;
-    transition: all var(--duration-fast) var(--ease-out);
+    transition: color var(--duration-fast) var(--ease-out), background-color var(--duration-fast) var(--ease-out), border-color var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out), transform var(--duration-fast) var(--ease-out), opacity var(--duration-fast) var(--ease-out), filter var(--duration-fast) var(--ease-out);
 }
 .pro-page-cycle button:hover { color: #fff; }
 .pro-page-cycle button.active {
@@ -14164,7 +14160,7 @@ section[class^="hero-"] {
     border: 1px solid var(--border);
     border-radius: var(--radius-2xl);
     box-shadow: var(--shadow-md);
-    transition: all var(--duration-normal) var(--ease-spring);
+    transition: color var(--duration-normal) var(--ease-spring), background-color var(--duration-normal) var(--ease-spring), border-color var(--duration-normal) var(--ease-spring), box-shadow var(--duration-normal) var(--ease-spring), transform var(--duration-normal) var(--ease-spring), opacity var(--duration-normal) var(--ease-spring), filter var(--duration-normal) var(--ease-spring);
 }
 .pro-plan-card:hover {
     transform: translateY(-4px);
@@ -14192,39 +14188,50 @@ section[class^="hero-"] {
     box-shadow: var(--shadow-glow-gold);
 }
 .pro-plan-card header {
-    display: flex; align-items: center; gap: 10px;
+    display: flex; align-items: flex-start; gap: 12px;
 }
 .pro-plan-icon {
-    width: 36px; height: 36px;
+    width: 40px; height: 40px;
     display: inline-flex; align-items: center; justify-content: center;
-    border-radius: 50%;
+    border-radius: 12px;
     background: color-mix(in oklch, var(--plan-accent) 14%, transparent);
     color: var(--plan-accent);
     flex-shrink: 0;
 }
 .pro-plan-card header strong {
+    display: block;
     font-family: var(--font-display);
     font-weight: 700;
     font-size: var(--text-xl);
     color: var(--text-primary);
     letter-spacing: var(--tracking-tight);
 }
-.pro-plan-tagline { margin: 0; color: var(--text-secondary); font-size: var(--text-sm); line-height: var(--leading-snug); }
+.pro-plan-tagline { margin: 2px 0 0; color: var(--text-secondary); font-size: var(--text-sm); line-height: var(--leading-snug); }
 .pro-plan-price {
-    display: flex; flex-direction: column; gap: 4px;
-    padding: 8px 0;
+    display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px;
+    padding: 4px 0 2px;
 }
-.pro-plan-price span {
+.pro-plan-amount {
     font-family: var(--font-display);
     font-weight: 800;
     font-size: var(--text-3xl);
     color: var(--plan-accent);
     letter-spacing: var(--tracking-tight);
+    line-height: 1;
 }
 .pro-plan-price em { font-style: normal; font-size: var(--text-xs); color: var(--text-tertiary); }
+
+/* Round check chips — small tinted circle + white tick (used in highlights and grouped lists). */
+.pro-check {
+    width: 18px; height: 18px; flex-shrink: 0; margin-top: 1px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    background: color-mix(in oklch, var(--plan-accent) 16%, transparent);
+    color: var(--plan-accent);
+}
 .pro-plan-features {
     list-style: none; margin: 0; padding: 0;
-    display: flex; flex-direction: column; gap: 8px;
+    display: flex; flex-direction: column; gap: 9px;
 }
 .pro-plan-features li {
     display: flex; align-items: flex-start; gap: 8px;
@@ -14232,9 +14239,9 @@ section[class^="hero-"] {
     color: var(--text-secondary);
     line-height: var(--leading-snug);
 }
-.pro-plan-features li svg { color: var(--plan-accent); flex-shrink: 0; margin-top: 2px; }
-.pro-plan-card footer { margin-top: auto; }
-.pro-plan-card footer .btn.primary {
+
+/* CTA lives mid-card now (right under the price) so buttons align across all three tiers. */
+.pro-plan-card .btn.primary {
     background: linear-gradient(135deg, var(--plan-accent), color-mix(in oklch, var(--plan-accent) 70%, oklch(0% 0 0)));
     color: #fff;
     border: none;
@@ -14242,9 +14249,133 @@ section[class^="hero-"] {
     font-family: var(--font-display);
     font-weight: 600;
 }
-.pro-plan-card footer .btn.primary:hover { transform: translateY(-1px); }
-.pro-plan-card footer .btn.ghost { background: transparent; color: var(--text-secondary); border-color: var(--border); }
+.pro-plan-card .btn.primary:hover { transform: translateY(-1px); }
+.pro-plan-card .btn.ghost { background: transparent; color: var(--text-secondary); border-color: var(--border); }
 .pro-plan-current-actions { display: flex; flex-direction: column; gap: 8px; }
+
+/* Featured (Pro) — gold gradient border treatment, matching the app's Pro flair primitive. */
+.pro-plan-card.is-featured {
+    border-color: transparent;
+    background:
+        linear-gradient(var(--surface), var(--surface)) padding-box,
+        var(--gradient-gold, linear-gradient(135deg, var(--gold), var(--amber))) border-box;
+    box-shadow: 0 8px 32px color-mix(in oklch, var(--gold) 22%, transparent);
+}
+
+/* Advanced-control teaser chips on the Business card. */
+.pro-plan-controls { display: flex; flex-wrap: wrap; gap: 6px; }
+.pro-control-chip {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 4px 10px;
+    border-radius: var(--radius-full);
+    background: color-mix(in oklch, var(--plan-accent) 12%, transparent);
+    border: 1px solid color-mix(in oklch, var(--plan-accent) 30%, transparent);
+    color: var(--plan-accent);
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: var(--text-xs);
+}
+
+/* "See all N features" expander + grouped list. */
+.pro-plan-more { border-top: 1px solid var(--border); padding-top: 12px; }
+.pro-more-toggle {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: transparent; border: none; padding: 0;
+    color: var(--plan-accent);
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: var(--text-sm);
+    cursor: pointer;
+}
+.pro-more-toggle svg { transition: transform var(--duration-fast) var(--ease-out); }
+.pro-more-toggle.is-open svg { transform: rotate(180deg); }
+.pro-more-toggle:hover { text-decoration: underline; }
+.pro-plan-groups { display: flex; flex-direction: column; gap: 16px; margin-top: 14px; }
+.pro-fgroup h4 {
+    display: flex; align-items: center; gap: 7px;
+    margin: 0 0 8px;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-widest);
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+}
+.pro-fgroup-icon { color: var(--plan-accent); display: inline-flex; }
+.pro-fgroup ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 7px; }
+.pro-fgroup li {
+    display: flex; align-items: flex-start; gap: 8px;
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    line-height: var(--leading-snug);
+}
+
+/* ─── Business power-controls showcase (below the grid) ─────────────────────── */
+.pro-controls-section { margin-top: 48px; }
+.pro-controls-head { text-align: center; max-width: 620px; margin: 0 auto 24px; }
+.pro-kicker-dark {
+    color: var(--violet);
+    background: color-mix(in oklch, var(--violet) 12%, transparent);
+    border-color: color-mix(in oklch, var(--violet) 26%, transparent);
+    backdrop-filter: none;
+}
+.pro-controls-head h2 {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(24px, 3.6vw, 34px);
+    letter-spacing: var(--tracking-tight);
+    margin: 12px 0 8px;
+    color: var(--text-primary);
+    text-wrap: balance;
+}
+.pro-controls-head p { margin: 0; color: var(--text-secondary); font-size: var(--text-base); }
+.pro-controls-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 18px;
+}
+.pro-control-card {
+    --plan-accent: var(--violet);
+    position: relative;
+    padding: 26px 24px;
+    background: linear-gradient(165deg, var(--surface) 0%, color-mix(in oklch, var(--violet) 6%, var(--surface)) 100%);
+    border: 1px solid color-mix(in oklch, var(--violet) 22%, var(--border));
+    border-radius: var(--radius-2xl);
+    box-shadow: var(--shadow-md);
+    transition: transform var(--duration-normal) var(--ease-spring), box-shadow var(--duration-normal) var(--ease-spring), border-color var(--duration-normal) var(--ease-spring);
+}
+.pro-control-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-xl);
+    border-color: var(--violet);
+}
+.pro-control-icon {
+    width: 48px; height: 48px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 14px;
+    background: color-mix(in oklch, var(--violet) 16%, transparent);
+    color: var(--violet);
+    margin-bottom: 14px;
+}
+.pro-control-card h3 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: var(--text-lg);
+    color: var(--text-primary);
+    margin: 0 0 8px;
+    letter-spacing: var(--tracking-tight);
+}
+.pro-control-card p { margin: 0 0 16px; color: var(--text-secondary); font-size: var(--text-sm); line-height: var(--leading-normal); }
+.pro-control-tag {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 10px;
+    border-radius: var(--radius-full);
+    background: color-mix(in oklch, var(--violet) 12%, transparent);
+    color: var(--violet);
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: var(--text-xs);
+}
 /* Payment-method + cycle pills carry inline icons — keep label + glyph aligned. */
 .pro-page-cycle button { display: inline-flex; align-items: center; gap: 6px; }
 
@@ -14262,7 +14393,17 @@ section[class^="hero-"] {
     .pro-plan-card { background: oklch(20% 0.012 260); border-color: oklch(28% 0.012 260); }
     .pro-plan-premium { background: linear-gradient(165deg, oklch(20% 0.012 260) 0%, oklch(22% 0.04 80) 100%); }
     .pro-plan-business { background: linear-gradient(165deg, oklch(20% 0.012 260) 0%, oklch(22% 0.04 240) 100%); }
+    .pro-plan-card.is-featured {
+        background:
+            linear-gradient(oklch(20% 0.012 260), oklch(20% 0.012 260)) padding-box,
+            var(--gradient-gold, linear-gradient(135deg, var(--gold), var(--amber))) border-box;
+    }
     .pro-plan-card header strong { color: oklch(96% 0 0); }
+    .pro-control-card {
+        background: linear-gradient(165deg, oklch(20% 0.012 260) 0%, oklch(22% 0.04 300) 100%);
+        border-color: oklch(30% 0.03 300);
+    }
+    .pro-control-card h3 { color: oklch(96% 0 0); }
 }
 
 /* ============================================
@@ -14319,7 +14460,7 @@ section[class^="hero-"] {
     border-radius: var(--radius-xl);
     text-decoration: none;
     color: inherit;
-    transition: all var(--duration-normal) var(--ease-spring);
+    transition: color var(--duration-normal) var(--ease-spring), background-color var(--duration-normal) var(--ease-spring), border-color var(--duration-normal) var(--ease-spring), box-shadow var(--duration-normal) var(--ease-spring), transform var(--duration-normal) var(--ease-spring), opacity var(--duration-normal) var(--ease-spring), filter var(--duration-normal) var(--ease-spring);
     box-shadow: var(--shadow-sm);
 }
 .pro-gate-card:hover {
@@ -14369,7 +14510,7 @@ section[class^="hero-"] {
     padding: 8px 14px;
     background: color-mix(in oklch, var(--gold) 14%, transparent);
     border-radius: var(--radius-full);
-    transition: all var(--duration-fast) var(--ease-out);
+    transition: color var(--duration-fast) var(--ease-out), background-color var(--duration-fast) var(--ease-out), border-color var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out), transform var(--duration-fast) var(--ease-out), opacity var(--duration-fast) var(--ease-out), filter var(--duration-fast) var(--ease-out);
 }
 .pro-gate-card:hover .pro-gate-card-cta { background: var(--gold); color: oklch(20% 0.04 60); }
 .pro-gate-card.is-business .pro-gate-card-cta { color: var(--mediterranean); background: color-mix(in oklch, var(--mediterranean) 14%, transparent); }
@@ -14386,7 +14527,7 @@ section[class^="hero-"] {
     font-size: var(--text-xs);
     font-weight: 600;
     text-decoration: none;
-    transition: all var(--duration-fast) var(--ease-out);
+    transition: color var(--duration-fast) var(--ease-out), background-color var(--duration-fast) var(--ease-out), border-color var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out), transform var(--duration-fast) var(--ease-out), opacity var(--duration-fast) var(--ease-out), filter var(--duration-fast) var(--ease-out);
 }
 .pro-gate-pill:hover { background: var(--gold); color: oklch(20% 0.04 60); }
 .pro-gate-pill.is-business { background: color-mix(in oklch, var(--cyan) 18%, transparent); color: oklch(40% 0.12 200); }
@@ -14452,6 +14593,35 @@ section[class^="hero-"] {
     padding: 4px 0 8px;
     margin: 0 -4px;
 }
+/* Compact invite shown when nobody has an active story. */
+.stories-v2-empty {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 12px 16px;
+    background: var(--surface);
+    border: 1px dashed var(--border);
+    border-radius: var(--radius-xl);
+    cursor: pointer;
+    text-align: left;
+    color: inherit;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+.stories-v2-empty:hover { border-color: var(--accent); background: var(--surface-hover, var(--surface)); }
+.stories-v2-empty-ring {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    flex: 0 0 auto;
+    border-radius: 50%;
+    border: 2px dashed var(--accent);
+    color: var(--accent);
+}
+.stories-v2-empty-text { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.stories-v2-empty-text strong { font-size: var(--text-sm); color: var(--text-primary); }
+.stories-v2-empty-text span { font-size: var(--text-xs); color: var(--text-tertiary); }
 .stories-v2-track {
     display: flex;
     gap: 14px;
@@ -14607,7 +14777,7 @@ section[class^="hero-"] {
     cursor: pointer;
     font-family: var(--font-sans);
     font-size: var(--text-base);
-    transition: all var(--duration-fast) var(--ease-out);
+    transition: color var(--duration-fast) var(--ease-out), background-color var(--duration-fast) var(--ease-out), border-color var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out), transform var(--duration-fast) var(--ease-out), opacity var(--duration-fast) var(--ease-out), filter var(--duration-fast) var(--ease-out);
     position: relative;
     overflow: hidden;
 }
@@ -14628,7 +14798,7 @@ section[class^="hero-"] {
     color: var(--terracotta);
     opacity: 0;
     transform: translateY(2px) scale(0.6);
-    transition: all var(--duration-normal) var(--ease-spring);
+    transition: color var(--duration-normal) var(--ease-spring), background-color var(--duration-normal) var(--ease-spring), border-color var(--duration-normal) var(--ease-spring), box-shadow var(--duration-normal) var(--ease-spring), transform var(--duration-normal) var(--ease-spring), opacity var(--duration-normal) var(--ease-spring), filter var(--duration-normal) var(--ease-spring);
 }
 .compose-v2-trigger:hover .compose-v2-sparkle {
     opacity: 1;
@@ -14656,7 +14826,7 @@ section[class^="hero-"] {
     font-size: var(--text-sm);
     font-weight: 500;
     cursor: pointer;
-    transition: all var(--duration-fast) var(--ease-out);
+    transition: color var(--duration-fast) var(--ease-out), background-color var(--duration-fast) var(--ease-out), border-color var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out), transform var(--duration-fast) var(--ease-out), opacity var(--duration-fast) var(--ease-out), filter var(--duration-fast) var(--ease-out);
 }
 .compose-v2-chip svg { color: var(--chip-tint); flex-shrink: 0; }
 .compose-v2-chip:hover {
@@ -14869,7 +15039,7 @@ section[class^="hero-"] {
     font-weight: 500;
     border-radius: var(--radius-md);
     cursor: pointer;
-    transition: all var(--duration-fast) var(--ease-out);
+    transition: color var(--duration-fast) var(--ease-out), background-color var(--duration-fast) var(--ease-out), border-color var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out), transform var(--duration-fast) var(--ease-out), opacity var(--duration-fast) var(--ease-out), filter var(--duration-fast) var(--ease-out);
 }
 .post-card-v2-action:hover {
     background: var(--terracotta-pale);
@@ -14917,6 +15087,7 @@ section[class^="hero-"] {
 }
 
 .toast {
+    /* Paper slip (carnet chrome): opaque print stock, hairline rule, slight tilt */
     --toast-accent: var(--terracotta);
     pointer-events: auto;
     display: grid;
@@ -14924,21 +15095,21 @@ section[class^="hero-"] {
     gap: 12px;
     align-items: center;
     padding: 12px 12px 12px 14px;
-    background: var(--surface);
-    border: 1px solid var(--border);
+    background: var(--paper-print);
+    border: 1px solid var(--rule);
     border-left: 3px solid var(--toast-accent);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-xl), 0 0 0 1px oklch(100% 0 0 / 0.04) inset;
+    border-radius: 2px;
+    box-shadow: var(--paper-shadow-lift);
     font-family: var(--font-sans);
-    color: var(--text-primary);
+    color: var(--ink);
     min-width: 280px;
+    rotate: 0.5deg;
     animation: toast-in 320ms var(--ease-spring) both;
-    backdrop-filter: blur(8px) saturate(140%);
 }
 .toast-success    { --toast-accent: var(--success); }
 .toast-error      { --toast-accent: var(--error); }
 .toast-info       { --toast-accent: var(--mediterranean); }
-.toast-achievement{ --toast-accent: var(--gold); box-shadow: var(--shadow-xl), var(--shadow-glow-gold); }
+.toast-achievement{ --toast-accent: var(--gold); }
 
 .toast-icon {
     width: 32px; height: 32px;
@@ -14958,11 +15129,11 @@ section[class^="hero-"] {
     font-family: var(--font-display);
     font-weight: 700;
     font-size: 14px;
-    color: var(--text-primary);
+    color: var(--ink);
 }
 .toast-body span {
     font-size: 13px;
-    color: var(--text-secondary);
+    color: var(--ink-soft);
     overflow: hidden;
     text-overflow: ellipsis;
     display: -webkit-box;
@@ -14991,7 +15162,7 @@ section[class^="hero-"] {
     cursor: pointer;
     font-size: 18px; line-height: 1;
     border-radius: 50%;
-    transition: all var(--duration-fast) var(--ease-out);
+    transition: color var(--duration-fast) var(--ease-out), background-color var(--duration-fast) var(--ease-out), border-color var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out), transform var(--duration-fast) var(--ease-out), opacity var(--duration-fast) var(--ease-out), filter var(--duration-fast) var(--ease-out);
 }
 .toast-close:hover { background: oklch(0% 0 0 / 0.06); color: var(--text-primary); }
 
@@ -15006,12 +15177,9 @@ section[class^="hero-"] {
     to   { transform: translateX(120%); opacity: 0; }
 }
 
-@media (prefers-color-scheme: dark) {
-    .toast { background: oklch(20% 0.012 260); border-color: oklch(28% 0.012 260); color: oklch(95% 0 0); }
-    .toast-body strong { color: oklch(96% 0 0); }
-    .toast-body span { color: oklch(75% 0.008 60); }
-    .toast-close:hover { background: oklch(100% 0 0 / 0.08); color: oklch(96% 0 0); }
-}
+/* Paper/ink tokens follow [data-theme] — the old prefers-color-scheme override
+   (which mismatched the app's data-theme switch) is retired. */
+[data-theme="dark"] .toast-close:hover { background: oklch(100% 0 0 / 0.08); color: oklch(96% 0 0); }
 
 /* ============================================
    PREMIUM POLISH LAYER — ports the new passport/feed surfaces onto the
@@ -15129,7 +15297,7 @@ section[class^="hero-"] {
     background: var(--surface);
     border-color: var(--border-light);
     border-radius: var(--radius-lg);
-    transition: all var(--duration-normal) var(--ease-spring);
+    transition: color var(--duration-normal) var(--ease-spring), background-color var(--duration-normal) var(--ease-spring), border-color var(--duration-normal) var(--ease-spring), box-shadow var(--duration-normal) var(--ease-spring), transform var(--duration-normal) var(--ease-spring), opacity var(--duration-normal) var(--ease-spring), filter var(--duration-normal) var(--ease-spring);
 }
 .mood-pill:hover {
     transform: translateY(-3px) scale(1.01);
@@ -15138,38 +15306,94 @@ section[class^="hero-"] {
 }
 .mood-pill-text strong { font-family: var(--font-display); font-weight: 600; }
 
-/* ─── Tunisia Now panel — gradient-hero header, glass body ─── */
-.now-panel {
-    background: var(--surface);
-    border-color: var(--border-light);
-    border-radius: var(--radius-xl);
-    box-shadow: var(--shadow-xl);
-    overflow: hidden;
+/* ═══════════════════════════════════════════════════════════════════════
+   CARNET OVERRIDES — feed-top widgets (Phase 1)
+   Scoped to [data-design="carnet"] so only the opted feed changes. Converts
+   the dark aurora/neon/glass widgets to paper & ink so the logged-in feed is
+   continuous with the landing. Higher specificity → order-independent.
+   ═══════════════════════════════════════════════════════════════════════ */
+/* Guest hero → ink-dipped page */
+[data-design="carnet"] .hero-anon {
+    background: var(--paper-deep);
+    border: 1px solid var(--rule-strong);
+    box-shadow: var(--paper-shadow-lift);
 }
-.now-panel-head {
-    background:
-        radial-gradient(80% 100% at 0% 0%, oklch(58% 0.2 290 / 0.25), transparent 60%),
-        var(--gradient-hero);
+[data-design="carnet"] .hero-anon h1,
+[data-design="carnet"] .hero-anon p { color: var(--ink-on-deep); }
+[data-design="carnet"] .hero-anon-kicker,
+[data-design="carnet"] .hero-anon-cta .btn.ghost {
+    background: transparent;
+    border: 1px solid oklch(100% 0 0 / 0.25);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    color: var(--ink-on-deep);
 }
-.now-panel-title {
-    font-family: var(--font-display);
-    color: oklch(100% 0 0 / 0.92);
-    letter-spacing: var(--tracking-widest);
+[data-design="carnet"] .hero-anon-cta .btn.primary {
+    background: var(--paper);
+    color: var(--ink);
+    box-shadow: 3px 3px 0 oklch(100% 0 0 / 0.28);
 }
-.now-panel-tabs button.active {
-    color: var(--gold);
-    border-bottom-color: var(--gold);
-    text-shadow: 0 0 12px oklch(78% 0.17 80 / 0.5);
+[data-design="carnet"] .hero-anon-cta .btn.primary:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 5px 5px 0 oklch(100% 0 0 / 0.28);
 }
-.now-row a { border-radius: var(--radius-md); transition: all var(--duration-fast) var(--ease-out); }
-.now-row a:hover { background: var(--terracotta-pale); transform: translateX(2px); }
-.now-row-text strong { font-family: var(--font-display); font-weight: 600; }
-.now-panel-foot a {
-    font-family: var(--font-display);
-    font-weight: 600;
-    color: var(--accent);
+
+/* Welcome strip → clean paper card */
+[data-design="carnet"] .welcome-strip {
+    background: var(--paper-print);
+    border: 1px solid var(--rule);
+    box-shadow: var(--paper-shadow);
 }
-.now-panel-foot a:hover { color: var(--accent-hover); }
+[data-design="carnet"] .welcome-strip-avatar img,
+[data-design="carnet"] .welcome-strip-avatar-fallback { box-shadow: var(--paper-shadow); }
+[data-design="carnet"] .welcome-action-pill.primary {
+    background: var(--accent);
+    color: var(--accent-text);
+    border: 1.5px solid var(--ink);
+    box-shadow: 2px 2px 0 var(--ink);
+}
+[data-design="carnet"] .welcome-action-pill.primary:hover {
+    background: var(--accent);
+    transform: translate(-1px, -1px);
+    box-shadow: 3px 3px 0 var(--ink);
+}
+
+/* Tunisia Pulse → ink section, coral "live" dot (no neon) */
+[data-design="carnet"] .tunisia-pulse {
+    background: var(--paper-deep);
+    border: 1px solid var(--rule-strong);
+    box-shadow: var(--paper-shadow);
+}
+[data-design="carnet"] .tunisia-pulse-text strong,
+[data-design="carnet"] .tunisia-pulse-text { color: var(--ink-on-deep); }
+[data-design="carnet"] .tunisia-pulse-dot-core { background: var(--coral); box-shadow: none; }
+[data-design="carnet"] .tunisia-pulse-dot-ring { border-color: var(--coral); }
+[data-design="carnet"] .tunisia-pulse-link {
+    background: transparent;
+    border: 1px solid oklch(100% 0 0 / 0.25);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    color: var(--ink-on-deep);
+}
+
+/* Mood compass → clean paper card */
+[data-design="carnet"] .mood-compass {
+    background: var(--paper-print);
+    border: 1px solid var(--rule);
+    box-shadow: var(--paper-shadow);
+}
+
+/* Tunisia Now panel → clean paper card (carnet feed). Header blends with the
+   card; identity comes from the accent tab underline, not an ink/navy band. */
+[data-design="carnet"] .now-panel {
+    background: var(--paper-print);
+    border: 1px solid var(--rule);
+    box-shadow: var(--paper-shadow);
+}
+
+/* The full Tunisia Now panel is one clean, token-based block below (search
+   "TUNISIA NOW PANEL"). The old gradient-hero/gold override was retired for
+   the cleaner/app-like direction. */
 
 /* ─── Passport hero — full token integration ─── */
 .passport-hero {
@@ -15246,7 +15470,7 @@ section[class^="hero-"] {
 /* ─── Nav search trigger ─── */
 .nav-search-trigger {
     border-radius: var(--radius-full);
-    transition: all var(--duration-fast) var(--ease-out);
+    transition: color var(--duration-fast) var(--ease-out), background-color var(--duration-fast) var(--ease-out), border-color var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out), transform var(--duration-fast) var(--ease-out), opacity var(--duration-fast) var(--ease-out), filter var(--duration-fast) var(--ease-out);
     font-family: var(--font-sans);
 }
 .nav-search-trigger:hover {
@@ -15368,7 +15592,7 @@ section[class^="hero-"] {
     overflow: hidden;
     text-decoration: none;
     color: inherit;
-    transition: all 160ms ease;
+    transition: color 160ms ease, background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease, opacity 160ms ease, filter 160ms ease;
     display: flex; flex-direction: column;
 }
 .mood-place-tile:hover {
@@ -15413,7 +15637,7 @@ section[class^="hero-"] {
     overflow: hidden;
     text-decoration: none;
     color: inherit;
-    transition: all 160ms ease;
+    transition: color 160ms ease, background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease, opacity 160ms ease, filter 160ms ease;
 }
 .mood-trip-card:hover {
     transform: translateY(-2px);
@@ -15439,7 +15663,7 @@ section[class^="hero-"] {
     border-radius: 14px;
     text-decoration: none;
     color: inherit;
-    transition: all 160ms ease;
+    transition: color 160ms ease, background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease, opacity 160ms ease, filter 160ms ease;
 }
 .mood-guide-card:hover { border-color: var(--mood-tint); transform: translateY(-2px); }
 .mood-guide-card img, .mood-guide-fallback {
@@ -15491,7 +15715,7 @@ section[class^="hero-"] {
     border-radius: 14px;
     color: var(--text-primary);
     text-decoration: none;
-    transition: all 160ms ease;
+    transition: color 160ms ease, background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease, opacity 160ms ease, filter 160ms ease;
 }
 .mood-other-pill:hover { border-color: var(--mood-tint); transform: translateY(-2px); box-shadow: 0 8px 18px color-mix(in srgb, var(--mood-tint) 18%, transparent); }
 .mood-other-emoji {
@@ -15584,7 +15808,10 @@ section[class^="hero-"] {
 .mood-compass-head span { font-size: 13px; color: var(--text-secondary); }
 .mood-compass-track {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    /* Fixed 4-up: auto-fit wrapped 8 moods as a ragged 6+2. Equal rows keep
+       the two-line "Spiritual & Slow" card from denting its row. */
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-auto-rows: 1fr;
     gap: 10px;
 }
 @media (max-width: 720px) {
@@ -15607,7 +15834,7 @@ section[class^="hero-"] {
     border-radius: 16px;
     color: var(--text-primary);
     text-decoration: none;
-    transition: all 160ms cubic-bezier(0.34, 1.56, 0.64, 1);
+    transition: color 160ms cubic-bezier(0.34, 1.56, 0.64, 1), background-color 160ms cubic-bezier(0.34, 1.56, 0.64, 1), border-color 160ms cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 160ms cubic-bezier(0.34, 1.56, 0.64, 1), transform 160ms cubic-bezier(0.34, 1.56, 0.64, 1), opacity 160ms cubic-bezier(0.34, 1.56, 0.64, 1), filter 160ms cubic-bezier(0.34, 1.56, 0.64, 1);
     position: relative;
     overflow: hidden;
 }
@@ -15637,47 +15864,54 @@ section[class^="hero-"] {
 .mood-pill-text strong { font-size: 14px; color: var(--text-primary); }
 .mood-pill-text span { font-size: 11px; color: var(--text-muted, #5a6371); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-/* ─── TUNISIA NOW PANEL (right rail, single card with tabs) ── */
+/* ─── TUNISIA NOW PANEL (right rail, single card with tabs) ──
+   Clean/app-like: light card, blended header, terracotta tab underline.
+   Fully token-based → adapts to light/dark via [data-theme] automatically. */
 .now-panel {
     display: none;
     position: sticky;
-    top: 80px;
-    max-height: calc(100vh - 96px);
+    top: calc(var(--nav-height) + var(--space-4));
+    max-height: calc(100vh - var(--nav-height) - var(--space-8));
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 20px;
+    border-radius: var(--radius-xl);
     overflow: hidden;
-    box-shadow: 0 8px 24px rgba(11, 30, 63, 0.06);
+    box-shadow: var(--shadow-sm);
 }
-@media (min-width: 1100px) { .now-panel { display: flex; flex-direction: column; } }
+/* Show at 1024px to match .compass-body's 336px rail column (no empty gap). */
+@media (min-width: 1024px) { .now-panel { display: flex; flex-direction: column; } }
 
 .now-panel-head {
-    background: linear-gradient(135deg, #0b1e3f 0%, #1a3a73 100%);
-    color: #fff;
+    background: transparent;
+    color: var(--text-primary);
     padding: 14px 16px 0;
 }
 .now-panel-title {
     display: inline-flex; align-items: center; gap: 6px;
     font-size: 12px;
-    letter-spacing: 0.10em;
+    font-weight: 700;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: rgba(255,255,255,0.78);
+    color: var(--text-tertiary);
     margin-bottom: 12px;
 }
-.now-panel-tabs { display: flex; gap: 4px; }
+.now-panel-title svg { color: var(--accent); }
+.now-panel-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border-light); }
 .now-panel-tabs button {
     flex: 1;
     display: inline-flex; align-items: center; justify-content: center; gap: 6px;
     padding: 8px 6px 10px;
+    margin-bottom: -1px;
     background: transparent;
     border: none; border-bottom: 2px solid transparent;
-    color: rgba(255,255,255,0.65);
+    color: var(--text-secondary);
     font-size: 13px; font-weight: 500;
     cursor: pointer;
-    transition: all 150ms ease;
+    transition: color var(--duration-fast) var(--ease-out),
+                border-color var(--duration-fast) var(--ease-out);
 }
-.now-panel-tabs button:hover { color: rgba(255,255,255,0.9); }
-.now-panel-tabs button.active { color: #fff; border-bottom-color: #f4c542; }
+.now-panel-tabs button:hover { color: var(--text-primary); }
+.now-panel-tabs button.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
 
 .now-panel-body {
     flex: 1;
@@ -15688,72 +15922,68 @@ section[class^="hero-"] {
 .now-row a {
     display: flex; align-items: center; gap: 10px;
     padding: 8px 10px;
-    border-radius: 10px;
+    border-radius: var(--radius-md);
     text-decoration: none;
     color: var(--text-primary);
-    transition: background 120ms ease;
+    transition: background var(--duration-fast) var(--ease-out);
 }
-.now-row a:hover { background: rgba(212, 98, 58, 0.08); }
+.now-row a:hover { background: color-mix(in oklab, var(--accent) 8%, transparent); }
 .now-row img, .now-row-fallback {
     width: 34px; height: 34px; border-radius: 50%;
     object-fit: cover; flex-shrink: 0;
 }
 .now-row-fallback {
-    background: linear-gradient(135deg, #1a3a73, #d4623a);
-    color: #fff;
+    background: var(--accent-light);
+    color: var(--accent);
     display: inline-flex; align-items: center; justify-content: center;
     font-weight: 700; font-size: 13px;
 }
 .now-row-text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-.now-row-text strong { font-size: 13px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.now-row-text span { font-size: 11px; color: var(--text-muted, #9aa0a6); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.now-row-text em { font-style: normal; color: #d4623a; font-weight: 500; }
+.now-row-text strong { font-size: 13px; font-weight: 600; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.now-row-text span { font-size: 11px; color: var(--text-tertiary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.now-row-text em { font-style: normal; color: var(--accent); font-weight: 500; }
 .now-row-time, .now-row-points {
-    font-size: 11px; color: var(--text-muted, #9aa0a6);
+    font-size: 11px; color: var(--text-tertiary);
     flex-shrink: 0;
 }
 .now-row-rank {
     font-size: 12px; font-weight: 700;
-    color: #f4c542;
+    color: var(--accent);
     flex-shrink: 0;
 }
 .now-guide {
     display: inline-flex; align-items: center; justify-content: center;
     width: 14px; height: 14px; border-radius: 50%;
-    background: rgba(86,207,225,0.4); color: #14202b;
+    background: color-mix(in oklab, var(--mediterranean) 18%, transparent); color: var(--mediterranean);
     font-size: 9px; font-weight: 700; margin-left: 4px;
 }
-.now-empty { padding: 32px 16px; text-align: center; color: var(--text-muted, #9aa0a6); font-size: 13px; }
+.now-empty { padding: 32px 16px; text-align: center; color: var(--text-tertiary); font-size: 13px; }
 .now-skel { display: flex; flex-direction: column; gap: 6px; padding: 8px; }
 .now-skel-row {
-    height: 50px; border-radius: 10px;
-    background: linear-gradient(90deg, var(--bg-tertiary) 25%, var(--surface) 50%, var(--bg-tertiary) 75%);
+    height: 50px; border-radius: var(--radius-md);
+    background: linear-gradient(90deg, var(--surface-hover) 25%, var(--surface-active) 50%, var(--surface-hover) 75%);
     background-size: 200% 100%;
     animation: passport-shimmer 1.4s infinite;
 }
 .now-panel-foot {
     padding: 10px 16px;
-    background: rgba(0,0,0,0.03);
-    border-top: 1px solid var(--border, #e5e7eb);
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border-light);
     text-align: center;
 }
 .now-panel-foot a {
     font-size: 13px; font-weight: 600;
-    color: #d4623a; text-decoration: none;
+    color: var(--accent); text-decoration: none;
 }
-.now-panel-foot a:hover { color: #c25030; }
+.now-panel-foot a:hover { color: var(--accent-hover); }
 
-/* Dark mode */
+/* Dark mode — mood widgets still use OS-preference overrides here; the Tunisia
+   Now panel is fully token-based and adapts via [data-theme] automatically. */
 @media (prefers-color-scheme: dark) {
     .mood-compass { background: linear-gradient(135deg, rgba(244,197,66,0.06) 0%, rgba(86,207,225,0.05) 100%); border-color: rgba(212,98,58,0.25); }
     .mood-compass-head strong { color: #e8eaed; }
     .mood-pill { background: #1a1d23; border-color: #2a2f37; color: #e8eaed; }
     .mood-pill-text strong { color: #e8eaed; }
-    .now-panel { background: #14181f; border-color: #2a2f37; }
-    .now-row a { color: #e8eaed; }
-    .now-row a:hover { background: rgba(212, 98, 58, 0.14); }
-    .now-skel-row { background: linear-gradient(90deg, #1a1d23 25%, #20242a 50%, #1a1d23 75%); background-size: 200% 100%; }
-    .now-panel-foot { background: rgba(255,255,255,0.03); border-top-color: #2a2f37; }
 }
 
 /* ─── ANON HERO ────────────────────────────────────── */
@@ -15871,13 +16101,16 @@ section[class^="hero-"] {
 .welcome-action-pill {
     display: inline-flex; align-items: center; gap: 6px;
     padding: 8px 14px; border-radius: 999px;
-    background: rgba(255,255,255,0.7);
-    border: 1px solid rgba(11,30,63,0.10);
+    /* Visible border + tinted icon: the old washed-out gray pill read as a
+       *disabled* button next to the primary Explore CTA. */
+    background: var(--surface, rgba(255,255,255,0.7));
+    border: 1.5px solid var(--border, rgba(11,30,63,0.22));
     color: var(--text-primary);
-    font-size: 13px; font-weight: 500;
+    font-size: 13px; font-weight: 600;
     text-decoration: none;
-    transition: all 120ms ease;
+    transition: color 120ms ease, background-color 120ms ease, border-color 120ms ease, box-shadow 120ms ease, transform 120ms ease, opacity 120ms ease, filter 120ms ease;
 }
+.welcome-action-pill svg { color: var(--accent, #d4623a); }
 .welcome-action-pill:hover { transform: translateY(-1px); border-color: #d4623a; }
 .welcome-action-pill.primary {
     background: #0b1e3f; color: #fff; border-color: #0b1e3f;
@@ -16321,7 +16554,7 @@ section[class^="hero-"] {
     color: var(--text-primary);
     cursor: pointer;
     font-size: 13px;
-    transition: all 120ms;
+    transition: color 120ms, background-color 120ms, border-color 120ms, box-shadow 120ms, transform 120ms, opacity 120ms, filter 120ms;
 }
 .activity-tabs button:hover { border-color: #d4623a; }
 .activity-tabs button.active { background: #0b1e3f; color: #fff; border-color: #0b1e3f; }
@@ -16412,7 +16645,7 @@ section[class^="hero-"] {
     color: var(--text-primary);
     cursor: pointer;
     font-size: 13px;
-    transition: all 120ms;
+    transition: color 120ms, background-color 120ms, border-color 120ms, box-shadow 120ms, transform 120ms, opacity 120ms, filter 120ms;
 }
 .leaderboard-tab:hover { border-color: #d4623a; }
 .leaderboard-tab.active { background: #0b1e3f; color: #fff; border-color: #0b1e3f; }
@@ -16459,7 +16692,7 @@ section[class^="hero-"] {
     border-radius: var(--radius-full);
     color: var(--text-tertiary);
     opacity: 0.7;
-    transition: all var(--duration-fast) var(--ease-out);
+    transition: color var(--duration-fast) var(--ease-out), background-color var(--duration-fast) var(--ease-out), border-color var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out), transform var(--duration-fast) var(--ease-out), opacity var(--duration-fast) var(--ease-out), filter var(--duration-fast) var(--ease-out);
 }
 .passport-stamp-ink { width: 26px; height: 26px; display: grid; place-items: center; border-radius: 50%; border: 1.5px solid currentColor; }
 .passport-stamp-name { font-size: var(--text-sm); font-weight: 600; }
@@ -16506,23 +16739,22 @@ section[class^="hero-"] {
 .story-composer-share:disabled { opacity: 0.6; cursor: default; }
 
 /* ---- Pro passport themes (hero gradient overrides — higher specificity wins) ---- */
+/* Pro passport "editions" — the carnet identity page tinted by hue.
+   Ink-dipped paper base + a single faint colour wash, not aurora gradients. */
 .passport-hero.passport-theme-sahara .passport-hero-bg {
     background:
-        radial-gradient(120% 80% at 0% 0%, rgba(224, 168, 74, 0.5), transparent 60%),
-        radial-gradient(100% 80% at 100% 100%, rgba(196, 92, 46, 0.55), transparent 60%),
-        linear-gradient(135deg, #5a2c12 0%, #b4571f 55%, #e0a84a 100%);
+        radial-gradient(120% 90% at 100% 100%, oklch(74% 0.18 60 / 0.16), transparent 62%),
+        var(--paper-deep);
 }
 .passport-hero.passport-theme-mediterranean .passport-hero-bg {
     background:
-        radial-gradient(120% 80% at 0% 0%, rgba(64, 182, 210, 0.45), transparent 60%),
-        radial-gradient(100% 80% at 100% 100%, rgba(20, 52, 110, 0.65), transparent 60%),
-        linear-gradient(135deg, #07203f 0%, #0e4a6e 50%, #2bb1c9 100%);
+        radial-gradient(120% 90% at 100% 100%, oklch(52% 0.14 240 / 0.2), transparent 62%),
+        var(--paper-deep);
 }
 .passport-hero.passport-theme-medina .passport-hero-bg {
     background:
-        radial-gradient(120% 80% at 0% 0%, rgba(240, 228, 200, 0.5), transparent 60%),
-        radial-gradient(100% 80% at 100% 100%, rgba(40, 86, 150, 0.6), transparent 60%),
-        linear-gradient(135deg, #16335e 0%, #3a6ea5 55%, #ecdfc4 100%);
+        radial-gradient(120% 90% at 100% 100%, oklch(57% 0.13 145 / 0.16), transparent 62%),
+        var(--paper-deep);
 }
 
 /* ---- Theme picker (Pro owners) ---- */
@@ -16530,7 +16762,7 @@ section[class^="hero-"] {
 .passport-theme-picker-head { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; color: var(--text-secondary); font-size: var(--text-sm); }
 .passport-theme-picker-head strong { color: var(--text-primary); font-family: var(--font-display); }
 .passport-theme-swatches { display: flex; flex-wrap: wrap; gap: 8px; }
-.passport-theme-swatch { display: inline-flex; align-items: center; gap: 7px; padding: 6px 12px; border-radius: var(--radius-full); border: 1px solid var(--border); background: var(--surface); color: var(--text-secondary); font-size: var(--text-sm); font-weight: 600; cursor: pointer; transition: all var(--duration-fast) var(--ease-out); }
+.passport-theme-swatch { display: inline-flex; align-items: center; gap: 7px; padding: 6px 12px; border-radius: var(--radius-full); border: 1px solid var(--border); background: var(--surface); color: var(--text-secondary); font-size: var(--text-sm); font-weight: 600; cursor: pointer; transition: color var(--duration-fast) var(--ease-out), background-color var(--duration-fast) var(--ease-out), border-color var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out), transform var(--duration-fast) var(--ease-out), opacity var(--duration-fast) var(--ease-out), filter var(--duration-fast) var(--ease-out); }
 .passport-theme-swatch:hover:not(:disabled) { border-color: var(--text-tertiary); color: var(--text-primary); }
 .passport-theme-swatch.active { border-color: var(--gold); color: var(--text-primary); box-shadow: 0 0 0 1px var(--gold); }
 .passport-theme-swatch:disabled { opacity: .6; cursor: default; }
@@ -16605,7 +16837,7 @@ section[class^="hero-"] {
     display: inline-flex; align-items: center; justify-content: center;
     flex-shrink: 0;
     font-size: 11px; font-weight: 700; color: transparent;
-    transition: all 120ms ease;
+    transition: color 120ms ease, background-color 120ms ease, border-color 120ms ease, box-shadow 120ms ease, transform 120ms ease, opacity 120ms ease, filter 120ms ease;
 }
 .passport-completion-list li.done .passport-completion-check { background: #56d364; border-color: #56d364; color: #fff; }
 .passport-completion-label { flex: 1; min-width: 0; }
@@ -16647,7 +16879,7 @@ section[class^="hero-"] {
     background: var(--surface);
     color: var(--text-primary);
     cursor: pointer;
-    transition: all 120ms ease;
+    transition: color 120ms ease, background-color 120ms ease, border-color 120ms ease, box-shadow 120ms ease, transform 120ms ease, opacity 120ms ease, filter 120ms ease;
     font-size: 13px;
     text-align: left;
 }
@@ -16715,10 +16947,39 @@ section[class^="hero-"] {
 .passport-onb-card p { color: var(--text-muted, #9aa0a6); margin: 0; }
 .passport-onb-input { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border, #e5e7eb); font-size: 15px; margin: 12px 0 18px; box-sizing: border-box; color: var(--text-primary); background: var(--input-bg, #f7f7f8); }
 .passport-onb-chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 22px; }
-.passport-chip { padding: 8px 14px; border-radius: 999px; border: 1px solid var(--border, #e5e7eb); background: transparent; cursor: pointer; font-size: 14px; color: var(--text-primary); transition: all 120ms; }
+.passport-chip { padding: 8px 14px; border-radius: 999px; border: 1px solid var(--border, #e5e7eb); background: transparent; cursor: pointer; font-size: 14px; color: var(--text-primary); transition: color 120ms, background-color 120ms, border-color 120ms, box-shadow 120ms, transform 120ms, opacity 120ms, filter 120ms; }
 .passport-chip:hover { border-color: #d4623a; }
 .passport-chip.on { background: #0b1e3f; color: #fff; border-color: #0b1e3f; }
-.passport-onb-celebrate { text-align: center; }
+.passport-onb-celebrate { text-align: center; padding: 8px 0 4px; }
+/* The first stamp thunks onto the card — the card IS the carnet page, so it
+   stamps in place rather than using the full-screen slam (that idiom is for
+   check-ins, where nothing sits centre-screen to collide with).
+   Reuses the shared `stamp-thunk` keyframes from carnet.css. */
+.passport-onb-stamp {
+    width: clamp(140px, 42%, 178px);
+    margin: 0 auto 10px;
+    color: var(--stamp-ink);
+    animation: stamp-thunk 340ms var(--ease-out) both;
+}
+.passport-onb-stamp svg { width: 100%; height: auto; display: block; }
+@media (prefers-reduced-motion: reduce) {
+    .passport-onb-stamp { animation: none; transform: rotate(-3deg); }
+}
+.passport-onb-celebrate h2 { font-family: var(--font-display); }
+.passport-onb-card .passport-onb-hand {
+    font-family: var(--font-hand);
+    font-size: 1.4rem;
+    line-height: 1.25;
+    color: var(--text-secondary);
+    margin: 10px 0 0;
+    rotate: -1deg;
+}
+.passport-onb-card .passport-onb-taking {
+    font-size: 0.82rem;
+    letter-spacing: 0.04em;
+    opacity: 0.65;
+    margin: 18px 0 0;
+}
 .passport-onb-badge { font-size: 72px; animation: badge-pop 700ms cubic-bezier(.34,1.56,.64,1); }
 @keyframes badge-pop { from { transform: scale(0.3); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
@@ -16833,12 +17094,11 @@ section[class^="hero-"] {
   text-wrap: balance;
 }
 
+/* Gradient text retired (carnet) — Fraunces italic gold ink. Kept in sync with explore.css. */
 .explore-hero-grad {
-  background: linear-gradient(120deg, var(--gold) 0%, var(--terracotta-light) 55%, var(--coral) 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: transparent;
+  font-style: italic;
+  font-weight: 600;
+  color: var(--gold);
 }
 
 .explore-hero p,
@@ -16869,21 +17129,21 @@ section[class^="hero-"] {
 .explore-search-input {
   width: 100%;
   padding: 14px 18px 14px 46px;
-  border-radius: var(--radius-full);
-  border: 1px solid var(--glass-border);
-  background: oklch(100% 0 0 / 0.12);
-  backdrop-filter: var(--glass-blur);
-  color: #fff;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--ink);
+  background: var(--paper-print);
+  backdrop-filter: none;
+  color: var(--ink);
   font-size: var(--text-base);
   font-family: var(--font-sans);
-  transition: all var(--duration-fast) var(--ease-out);
+  transition: color var(--duration-fast) var(--ease-out), background-color var(--duration-fast) var(--ease-out), border-color var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out), transform var(--duration-fast) var(--ease-out), opacity var(--duration-fast) var(--ease-out), filter var(--duration-fast) var(--ease-out);
 }
-.explore-search-input::placeholder { color: rgba(255, 255, 255, 0.6); }
+.explore-search-input::placeholder { color: var(--ink-faint); }
 .explore-search-input:focus {
   outline: none;
-  background: oklch(100% 0 0 / 0.18);
-  border-color: rgba(255, 255, 255, 0.5);
-  box-shadow: 0 0 0 4px oklch(100% 0 0 / 0.1);
+  background: var(--paper-print);
+  border-color: var(--ink);
+  box-shadow: 3px 3px 0 var(--gold);
 }
 .explore-search-clear {
   position: absolute;
@@ -16902,33 +17162,9 @@ section[class^="hero-"] {
 }
 .explore-search-clear:hover { background: oklch(100% 0 0 / 0.3); }
 
-/* Floating ambient orbs */
-.explore-hero-orbs { position: absolute; inset: 0; z-index: 1; overflow: hidden; pointer-events: none; }
-.explore-hero-orb {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(40px);
-  opacity: 0.5;
-  animation: explore-orb-float 14s ease-in-out infinite;
-}
-.explore-hero-orb:nth-child(1) {
-  width: 280px; height: 280px;
-  background: var(--terracotta);
-  top: -80px; left: -40px;
-}
-.explore-hero-orb:nth-child(2) {
-  width: 320px; height: 320px;
-  background: var(--mediterranean);
-  bottom: -120px; right: -60px;
-  animation-delay: -7s;
-}
-@keyframes explore-orb-float {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(20px, -16px) scale(1.08); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .explore-hero-orb { animation: none; }
-}
+/* Floating ambient orbs retired (carnet) — neutralised in both stylesheets */
+.explore-hero-orbs,
+.explore-hero-orb { display: none; }
 
 /* Search post results */
 .search-post-list { display: flex; flex-direction: column; gap: 0.75rem; }

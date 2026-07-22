@@ -36,11 +36,32 @@ export class UsersController {
         private ogService: OgService,
     ) { }
 
+    /**
+     * The User entity marks password / passwordResetToken / passwordResetExpires
+     * / tokenVersion with `@Exclude()`, but those are INERT: no
+     * ClassSerializerInterceptor is registered (main.ts only wires
+     * TransformInterceptor + LoggingInterceptor), so `findById` returns the raw
+     * row. Any endpoint handing that straight back leaks the bcrypt hash and a
+     * live password-reset token. Strip them at the boundary.
+     *
+     * Not stripped inside `findById` itself on purpose — jwt.strategy.ts reads
+     * `user.tokenVersion` from it to validate every request.
+     */
+    private stripSecrets<T extends Record<string, any>>(user: T): T {
+        if (!user) return user;
+        const safe: any = { ...user };
+        delete safe.password;
+        delete safe.passwordResetToken;
+        delete safe.passwordResetExpires;
+        delete safe.tokenVersion;
+        return safe;
+    }
+
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()
     @Get('me')
-    getProfile(@Request() req) {
-        return this.usersService.findById(req.user.id);
+    async getProfile(@Request() req) {
+        return this.stripSecrets(await this.usersService.findById(req.user.id));
     }
 
     /** Pro: who viewed your passport (gated by the passportAnalytics cap). */
@@ -55,10 +76,12 @@ export class UsersController {
         return this.usersService.getPassportAnalytics(req.user.id);
     }
 
-    /** Public: search users by handle prefix or fullName substring. */
+    /** Public: search users by handle prefix or fullName substring. Hides blocked users when signed in. */
     @Get('search')
-    searchUsers(@Query('q') q: string, @Query('limit') limit?: string) {
-        return this.usersService.searchUsers(q || '', limit ? Number(limit) : 12);
+    @UseGuards(OptionalJwtAuthGuard)
+    searchUsers(@Request() req, @Query('q') q: string, @Query('limit') limit?: string) {
+        const lim = limit ? Number(limit) : 12;
+        return this.usersService.searchUsers(q || '', lim, req?.user?.id || null);
     }
 
     /** Public: live availability check used by the signup form. */
@@ -230,7 +253,7 @@ export class UsersController {
             if (!capsFor(effectivePlan(me) as any).customThemes) delete safe.passportTheme;
         }
 
-        return this.usersService.update(req.user.id, safe);
+        return this.stripSecrets(await this.usersService.update(req.user.id, safe));
     }
 
     @UseGuards(JwtAuthGuard)

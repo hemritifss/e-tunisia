@@ -11,9 +11,11 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { AdminGuard } from '../admin/admin.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { MarketplaceService } from './marketplace.service';
 import { ProductCategory } from './product.entity';
+import { CreateProductDto, UpdateProductDto } from './dto/product.dto';
 
 @ApiTags('marketplace')
 @Controller('marketplace')
@@ -57,7 +59,7 @@ export class MarketplaceController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create a product listing' })
-  createProduct(@CurrentUser('id') sellerId: string, @Body() data: any) {
+  createProduct(@CurrentUser('id') sellerId: string, @Body() data: CreateProductDto) {
     return this.marketplaceService.createProduct(sellerId, data);
   }
 
@@ -68,7 +70,7 @@ export class MarketplaceController {
   updateProduct(
     @CurrentUser('id') sellerId: string,
     @Param('id') id: string,
-    @Body() data: any,
+    @Body() data: UpdateProductDto,
   ) {
     return this.marketplaceService.updateProduct(sellerId, id, data);
   }
@@ -121,10 +123,15 @@ export class MarketplaceController {
     return this.marketplaceService.getOrder(id, userId);
   }
 
+  // IDOR fix: `getOrder` above checks `order.buyerId !== userId`, but this took
+  // no user at all — any logged-in user could change ANY order's status.
+  // An order can span multiple sellers, so there is no single-seller check to
+  // make here; fulfilment is an operational action, so admin-gate it (nothing
+  // in the frontend calls this).
   @Put('orders/:id/status')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, AdminGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Update order status' })
+  @ApiOperation({ summary: 'Update order status (admin)' })
   updateOrderStatus(
     @Param('id') id: string,
     @Body('status') status: string,

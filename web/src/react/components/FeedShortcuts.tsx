@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import {
     Compass, Map, Bookmark, Trophy, Globe2, IdCard,
     Heart, Briefcase, Send, Calendar, Crown, Lightbulb, Award,
-    ChevronDown, ChevronUp, Clapperboard, Sparkles, Route, Layers, Shield,
+    ChevronDown, ChevronUp, Clapperboard, Sparkles, Route, Layers, Shield, Gem, Bus, Waves, Wand2, Gift, Swords,
 } from 'lucide-react';
 import { api, getImageUrl } from '../../shared/api';
 import { useAuthStore } from '../stores/auth-store';
@@ -32,6 +32,7 @@ const PRIMARY: ShortcutItem[] = [
     { id: 'reels',      icon: <Clapperboard size={18} />, label: 'Reels',    href: '#/reels' },
     { id: 'activity',   icon: <Globe2 size={18} />,   label: 'Following',    href: '#/activity' },
     { id: 'explore',    icon: <Compass size={18} />,  label: 'Explore',      href: '#/explore' },
+    { id: 'add-gem',    icon: <Gem size={18} />,      label: 'Add a hidden gem', href: '#/submit-gem' },
     { id: 'ai-planner', icon: <Sparkles size={18} />, label: 'AI Planner',   href: '#/ai-planner' },
     { id: 'map',        icon: <Map size={18} />,      label: 'Map',          href: '#/map' },
     { id: 'itineraries',icon: <Route size={18} />,    label: 'Itineraries',  href: '#/itineraries' },
@@ -48,6 +49,11 @@ const SECONDARY: ShortcutItem[] = [
     { id: 'events',    icon: <Calendar size={18} />,  label: 'Events',       href: '#/events' },
     { id: 'tips',      icon: <Lightbulb size={18} />, label: 'Travel Tips',  href: '#/tips' },
     { id: 'safety',    icon: <Shield size={18} />,    label: 'Safety & essentials', href: '#/safety' },
+    { id: 'louage',    icon: <Bus size={18} />,       label: 'Louage & transport', href: '#/louage' },
+    { id: 'jellyfish', icon: <Waves size={18} />,     label: 'Beach report 🪼', href: '#/jellyfish' },
+    { id: 'city-quiz', icon: <Wand2 size={18} />,     label: 'Which city are you?', href: '#/city-quiz' },
+    { id: 'wrapped',   icon: <Gift size={18} />,      label: 'Summer Wrapped ✨', href: '#/wrapped' },
+    { id: 'mapping',   icon: <Swords size={18} />,    label: 'Mapping Weekend 🗺️', href: '#/mapping-weekend' },
     { id: 'owner',     icon: <Briefcase size={18} />, label: 'Owner Tools',  href: '#/owner', creatorOnly: true },
     { id: 'premium',   icon: <Crown size={18} />,     label: 'Go Premium',   href: '#/premium' },
 ];

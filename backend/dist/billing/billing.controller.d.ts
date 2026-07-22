@@ -21,11 +21,15 @@ export declare class BillingController {
             monthly: number;
             yearly: number;
             features: string[];
+            featureGroups: import("./plan-catalog").FeatureGroup[];
+            featureCount: number;
+            advancedControls: import("./plan-catalog").AdvancedControl[];
             ctaLabel: string;
             featured: boolean;
             caps: {
                 maxTrips: number;
                 maxSaves: number;
+                maxCollections: number;
                 aiMessagesPerDay: number;
                 customThemes: boolean;
                 passportAnalytics: boolean;

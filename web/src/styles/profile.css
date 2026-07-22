@@ -264,9 +264,26 @@
 .profile-page-v2 .pp-xp-bar {
     height: 10px;
     border-radius: var(--radius-full);
-    background: var(--bg-tertiary);
+    /* Itinerary-style track: a dashed route line through the middle keeps the
+       empty bar visible (bg-tertiary alone vanished on dark cards at 0 XP). */
+    background:
+        repeating-linear-gradient(90deg, var(--border) 0 8px, transparent 8px 16px) left center / calc(100% - 14px) 2px no-repeat,
+        var(--bg-tertiary);
+    border: 1px solid var(--border-light);
     overflow: hidden;
     position: relative;
+}
+/* Destination dot at the end of the route. */
+.profile-page-v2 .pp-xp-bar::after {
+    content: '';
+    position: absolute;
+    right: 3px;
+    top: 50%;
+    width: 4px;
+    height: 4px;
+    margin-top: -2px;
+    border-radius: 50%;
+    background: var(--text-tertiary);
 }
 .profile-page-v2 .pp-xp-fill {
     height: 100%;

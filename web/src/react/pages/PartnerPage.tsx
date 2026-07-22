@@ -4,9 +4,8 @@ import { showToast } from '../../ui-utils';
 import { MARKETING_STATS } from '../data/marketingStats';
 import PublicMasthead from '../components/public/PublicMasthead';
 import PublicFooter from '../components/public/PublicFooter';
-// PartnerPage is a lazy-loaded island; the tn-*/partner-v3-* classes it renders
-// live in landing.css, which only HeroPage imported. Without this a deep link to
-// #/partner loads the page unstyled.
+// partner-v3 / tn-landing styles live in landing.css (de-linked from index.html
+// when the editorial landing shipped). Import it here so this page stays styled.
 import '../../styles/landing.css';
 
 // Rebuilt on the .tn-landing design system so the partner page shares the

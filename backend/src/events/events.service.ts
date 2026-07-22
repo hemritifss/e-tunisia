@@ -62,8 +62,9 @@ export class EventsService {
 
     async attend(id: string) {
         const event = await this.findById(id);
+        await this.eventsRepo.increment({ id: event.id }, 'attendeeCount', 1);
         event.attendeeCount += 1;
-        return this.eventsRepo.save(event);
+        return event;
     }
 
     async findAllAdmin() {

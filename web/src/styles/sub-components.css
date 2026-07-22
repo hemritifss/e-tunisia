@@ -1325,6 +1325,25 @@
     }
 }
 
+/* Phones: icon-only round FAB — the labeled pill covered composers/content.
+   The #id selector intentionally outranks the base .trip-cart-fab rules. */
+@media (max-width: 480px) {
+    #trip-cart-fab {
+        width: 44px;
+        height: 44px;
+        padding: 0;
+        justify-content: center;
+        border-radius: 50%;
+    }
+    #trip-cart-fab > span:not(.trip-cart-count):not(:first-child) { display: none; }
+    #trip-cart-fab .trip-cart-count {
+        position: absolute;
+        top: -4px;
+        right: -4px;
+        border: 2px solid var(--bg-primary, #fff);
+    }
+}
+
 .trip-cart-backdrop {
     position: fixed;
     inset: 0;

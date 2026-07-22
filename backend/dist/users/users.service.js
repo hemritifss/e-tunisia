@@ -32,8 +32,9 @@ const badges_service_1 = require("../badges/badges.service");
 const gamification_service_1 = require("../gamification/gamification.service");
 const endorsements_service_1 = require("./endorsements.service");
 const effective_plan_1 = require("./effective-plan");
+const safety_service_1 = require("../safety/safety.service");
 let UsersService = class UsersService {
-    constructor(usersRepository, reviewsRepo, placesRepo, tripsRepo, savesRepo, passportViewsRepo, placeVisitsRepo, cache, badges, notifications, gamification, endorsements) {
+    constructor(usersRepository, reviewsRepo, placesRepo, tripsRepo, savesRepo, passportViewsRepo, placeVisitsRepo, cache, badges, notifications, gamification, safety, endorsements) {
         this.usersRepository = usersRepository;
         this.reviewsRepo = reviewsRepo;
         this.placesRepo = placesRepo;
@@ -45,6 +46,7 @@ let UsersService = class UsersService {
         this.badges = badges;
         this.notifications = notifications;
         this.gamification = gamification;
+        this.safety = safety;
         this.endorsements = endorsements;
     }
     async findByEmail(email) {
@@ -261,6 +263,7 @@ let UsersService = class UsersService {
         return visited;
     }
     async activeTravelers(limit = 50) {
+        limit = Math.min(200, Math.max(1, limit));
         const rows = await this.placeVisitsRepo.createQueryBuilder('v')
             .select([
             'v.userId as userId',
@@ -313,11 +316,12 @@ let UsersService = class UsersService {
         return user.visitedPlaceIds || [];
     }
     async suggestedUsers(limit = 6) {
+        limit = Math.min(50, Math.max(1, limit));
         const rows = await this.usersRepository
             .createQueryBuilder('u')
-            .where('u.isActive = :a', { a: true })
-            .andWhere('u.email NOT LIKE :p', { p: 'platform@%' })
-            .andWhere('u.email NOT LIKE :a', { a: 'admin@%' })
+            .where('u.isActive = :active', { active: true })
+            .andWhere('u.email NOT LIKE :platformPrefix', { platformPrefix: 'platform@%' })
+            .andWhere('u.email NOT LIKE :adminPrefix', { adminPrefix: 'admin@%' })
             .orderBy('u.points', 'DESC')
             .addOrderBy('u.createdAt', 'DESC')
             .take(limit)
@@ -391,7 +395,7 @@ let UsersService = class UsersService {
         await this.cache.set(key, passport, 300_000);
         return passport;
     }
-    async searchUsers(query, limit = 12) {
+    async searchUsers(query, limit = 12, viewerId = null) {
         const q = (query || '').trim();
         if (q.length < 1)
             return [];
@@ -399,13 +403,15 @@ let UsersService = class UsersService {
         const handlePrefix = `${safe.toLowerCase()}%`;
         const nameNeedle = `%${safe}%`;
         const lim = Math.min(50, Math.max(1, limit));
+        const hidden = viewerId ? await this.safety.getHiddenUserIds(viewerId) : new Set();
+        const fetchLim = hidden.size > 0 ? Math.min(200, lim + hidden.size) : lim;
         const rows = await this.usersRepository
             .createQueryBuilder('u')
             .where('LOWER(u.handle) LIKE :hp', { hp: handlePrefix })
             .orWhere('u.fullName ILIKE :nn', { nn: nameNeedle })
             .orderBy('u.points', 'DESC')
             .addOrderBy('u.fullName', 'ASC')
-            .limit(lim)
+            .limit(fetchLim)
             .getMany()
             .catch(async () => {
             return this.usersRepository
@@ -414,10 +420,11 @@ let UsersService = class UsersService {
                 .orWhere('LOWER(u.fullName) LIKE :nn', { nn: nameNeedle.toLowerCase() })
                 .orderBy('u.points', 'DESC')
                 .addOrderBy('u.fullName', 'ASC')
-                .limit(lim)
+                .limit(fetchLim)
                 .getMany();
         });
-        return rows.map((u) => ({
+        const visible = hidden.size > 0 ? rows.filter((u) => !hidden.has(u.id)) : rows;
+        return visible.slice(0, lim).map((u) => ({
             id: u.id,
             handle: u.handle ?? null,
             fullName: u.fullName,
@@ -600,7 +607,7 @@ exports.UsersService = UsersService = __decorate([
     __param(5, (0, typeorm_1.InjectRepository)(passport_view_entity_1.PassportView)),
     __param(6, (0, typeorm_1.InjectRepository)(place_visit_entity_1.PlaceVisit)),
     __param(7, (0, common_1.Inject)(cache_manager_1.CACHE_MANAGER)),
-    __param(11, (0, common_1.Inject)((0, common_1.forwardRef)(() => endorsements_service_1.EndorsementsService))),
+    __param(12, (0, common_1.Inject)((0, common_1.forwardRef)(() => endorsements_service_1.EndorsementsService))),
     __metadata("design:paramtypes", [typeorm_2.Repository,
         typeorm_2.Repository,
         typeorm_2.Repository,
@@ -610,6 +617,7 @@ exports.UsersService = UsersService = __decorate([
         typeorm_2.Repository, Object, badges_service_1.BadgesService,
         notifications_service_1.NotificationsService,
         gamification_service_1.GamificationService,
+        safety_service_1.SafetyService,
         endorsements_service_1.EndorsementsService])
 ], UsersService);
 //# sourceMappingURL=users.service.js.map

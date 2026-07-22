@@ -3,7 +3,8 @@
    Next-gen OKLCH + Neon + Glass + Motion system
    ============================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Kufi+Arabic:wght@300;400;500;600;700&family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Caveat:wght@400;500;600;700&display=swap');
+/* Fonts load once from web/index.html (<link>, non-blocking) — no @import here.
+   Families: Inter · Noto Kufi Arabic · Fraunces · Caveat · JetBrains Mono. */
 
 :root {
   /* ── Brand Colors (OKLCH perceptual) ── */
@@ -107,6 +108,7 @@
   --ink-on-deep:        oklch(93.5% 0.018 85);
   --rule:               oklch(23% 0.022 55 / 0.16);  /* hairline rules */
   --rule-strong:        oklch(23% 0.022 55 / 0.52);
+  --rule-faint:         oklch(23% 0.022 55 / 0.09);  /* sub-hairline (borders-light) */
   --tape:               oklch(86% 0.055 85 / 0.55);  /* masking tape */
   --stamp-ink:          oklch(50% 0.15 30);          /* rubber-stamp red */
   --paper-shadow:       0 1px 2px oklch(28% 0.03 55 / 0.1), 0 10px 26px -10px oklch(28% 0.03 55 / 0.22);
@@ -129,7 +131,9 @@
   --downvote-bg:        oklch(93% 0.03 25);
 
   /* ── Typography ── */
-  --font-display:       'Outfit', 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+  /* Outfit + Plus Jakarta retired (generic AI pairing) — display falls to Inter by
+     default; carnet pages remap --font-display to Fraunces (see [data-design="carnet"]). */
+  --font-display:       'Inter', 'Noto Kufi Arabic', system-ui, sans-serif;
   --font-sans:          'Inter', 'Noto Kufi Arabic', system-ui, -apple-system, sans-serif;
   --font-mono:          'JetBrains Mono', 'Fira Code', monospace;
   /* Editorial layer — marketing/storytelling surfaces (landing, campaigns) */
@@ -226,6 +230,7 @@
   --z-modal:            300;
   --z-toast:            400;
   --z-tooltip:          500;
+  --z-grain:            600;   /* film-grain overlay sits above everything */
 }
 
 /* ── Dark Theme ── */
@@ -281,6 +286,7 @@
   --ink-on-deep:        oklch(92% 0.016 85);
   --rule:               oklch(90% 0.015 85 / 0.14);
   --rule-strong:        oklch(90% 0.015 85 / 0.45);
+  --rule-faint:         oklch(90% 0.015 85 / 0.08);
   --tape:               oklch(42% 0.04 80 / 0.55);
   --stamp-ink:          oklch(66% 0.16 30);
   --paper-shadow:       0 1px 2px oklch(0% 0 0 / 0.45), 0 12px 28px -10px oklch(0% 0 0 / 0.55);
@@ -362,5 +368,58 @@
   [data-design="sleek"] {
     --sleek-motion-fast: 0ms linear;
     --sleek-motion-base: 0ms linear;
+  }
+}
+
+/* ============================================
+   CARNET LAYER — "One Living Carnet"
+   Applied via [data-design="carnet"] on a page root.
+   Remaps app semantic tokens onto the editorial paper & ink
+   system (spec: design-system/UNIQUENESS.md). Every alias
+   resolves through var(), so the dark "night edition" defined
+   in [data-theme="dark"] follows automatically — do NOT add
+   raw color values here.
+   ============================================ */
+[data-design="carnet"] {
+  /* Surfaces → paper */
+  --bg-primary:         var(--paper);
+  --bg-secondary:       var(--paper-warm);
+  --bg-tertiary:        var(--paper-warm);
+  --surface:            var(--paper-print);
+  --surface-hover:      var(--paper-warm);
+  --surface-active:     var(--paper-warm);
+  --surface-elevated:   var(--paper-print);
+  --border:             var(--rule);
+  --border-light:       var(--rule-faint);
+
+  /* Text → ink */
+  --text-primary:       var(--ink);
+  --text-secondary:     var(--ink-soft);
+  --text-tertiary:      var(--ink-faint);
+  --text-muted:         var(--ink-faint);
+
+  /* Display type goes editorial serif on carnet pages */
+  --font-display:       var(--font-editorial);
+
+  /* Elevation → paper shadows (ambient grays retire on carnet surfaces) */
+  --shadow-sm:          var(--paper-shadow);
+  --shadow-md:          var(--paper-shadow);
+  --shadow-lg:          var(--paper-shadow-lift);
+  --shadow-xl:          var(--paper-shadow-lift);
+  --shadow-card-hover:  var(--paper-shadow-lift);
+
+  /* Component voice (letterpress offsets, focus, motion) */
+  --carnet-btn-shadow:      3px 3px 0 var(--ink);
+  --carnet-btn-shadow-lift: 5px 5px 0 var(--ink);
+  --carnet-btn-shadow-sink: 1px 1px 0 var(--ink);
+  --carnet-focus:           3px solid var(--mediterranean);
+  --carnet-motion-fast:     150ms var(--ease-out);
+  --carnet-motion-base:     280ms var(--ease-out);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-design="carnet"] {
+    --carnet-motion-fast: 0ms linear;
+    --carnet-motion-base: 0ms linear;
   }
 }

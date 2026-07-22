@@ -19,14 +19,25 @@ const typeorm_2 = require("typeorm");
 const message_entity_1 = require("./message.entity");
 const chat_room_entity_1 = require("./chat-room.entity");
 const websocket_gateway_1 = require("../websocket/websocket.gateway");
+const safety_service_1 = require("../safety/safety.service");
 let MessagesService = class MessagesService {
-    constructor(messageRepo, roomRepo, gateway) {
+    constructor(messageRepo, roomRepo, safety, gateway) {
         this.messageRepo = messageRepo;
         this.roomRepo = roomRepo;
+        this.safety = safety;
         this.gateway = gateway;
+    }
+    async assertNotBlocked(userId, otherIds) {
+        const hidden = await this.safety.getHiddenUserIds(userId);
+        if (otherIds.some((id) => hidden.has(id))) {
+            throw new common_1.ForbiddenException('You cannot message this user');
+        }
     }
     async createRoom(creatorId, participantIds, name, type = 'direct') {
         const allParticipants = [...new Set([creatorId, ...participantIds])];
+        if (type === 'direct') {
+            await this.assertNotBlocked(creatorId, allParticipants.filter((id) => id !== creatorId));
+        }
         if (type === 'direct' && allParticipants.length === 2) {
             const candidates = await this.roomRepo
                 .createQueryBuilder('room')
@@ -61,7 +72,12 @@ let MessagesService = class MessagesService {
             .andWhere('room.isActive = true')
             .orderBy('room.updatedAt', 'DESC')
             .getMany();
-        return rooms.filter(r => Array.isArray(r.participantIds) && r.participantIds.includes(userId));
+        const mine = rooms.filter(r => Array.isArray(r.participantIds) && r.participantIds.includes(userId));
+        const hidden = await this.safety.getHiddenUserIds(userId);
+        if (hidden.size === 0)
+            return mine;
+        return mine.filter(r => r.type !== 'direct' ||
+            !r.participantIds.some((id) => id !== userId && hidden.has(id)));
     }
     async getRoom(roomId, userId) {
         const room = await this.roomRepo.findOne({ where: { id: roomId } });
@@ -81,8 +97,47 @@ let MessagesService = class MessagesService {
             take: limit,
         });
     }
+    async deleteMessage(messageId, userId) {
+        const message = await this.messageRepo.findOne({ where: { id: messageId } });
+        if (!message)
+            throw new common_1.NotFoundException('Message not found');
+        if (message.senderId !== userId) {
+            throw new common_1.ForbiddenException('You can only remove your own messages');
+        }
+        if (message.isDeleted)
+            return { ok: true, id: messageId };
+        message.isDeleted = true;
+        message.deletedAt = new Date();
+        message.content = '';
+        message.metadata = null;
+        await this.messageRepo.save(message);
+        const room = await this.roomRepo.findOne({ where: { id: message.roomId } });
+        if (room) {
+            const latest = await this.messageRepo.findOne({
+                where: { roomId: message.roomId, isDeleted: false },
+                order: { createdAt: 'DESC' },
+            });
+            room.lastMessage = latest
+                ? { content: latest.content, senderId: latest.senderId, senderName: '', timestamp: latest.createdAt }
+                : null;
+            await this.roomRepo.save(room);
+            for (const uid of room.participantIds || []) {
+                try {
+                    this.gateway?.broadcastToUser(uid, 'dm:message-deleted', {
+                        roomId: message.roomId,
+                        messageId,
+                    });
+                }
+                catch { }
+            }
+        }
+        return { ok: true, id: messageId };
+    }
     async saveMessage(roomId, senderId, content, type = 'text', metadata) {
         const room = await this.getRoom(roomId, senderId);
+        if (room.type === 'direct') {
+            await this.assertNotBlocked(senderId, (room.participantIds || []).filter((id) => id !== senderId));
+        }
         const message = this.messageRepo.create({
             roomId,
             senderId,
@@ -145,10 +200,11 @@ exports.MessagesService = MessagesService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(message_entity_1.Message)),
     __param(1, (0, typeorm_1.InjectRepository)(chat_room_entity_1.ChatRoom)),
-    __param(2, (0, common_1.Optional)()),
-    __param(2, (0, common_1.Inject)((0, common_1.forwardRef)(() => websocket_gateway_1.EventsGateway))),
+    __param(3, (0, common_1.Optional)()),
+    __param(3, (0, common_1.Inject)((0, common_1.forwardRef)(() => websocket_gateway_1.EventsGateway))),
     __metadata("design:paramtypes", [typeorm_2.Repository,
         typeorm_2.Repository,
+        safety_service_1.SafetyService,
         websocket_gateway_1.EventsGateway])
 ], MessagesService);
 //# sourceMappingURL=messages.service.js.map

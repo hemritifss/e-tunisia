@@ -2,6 +2,7 @@ import { Injectable, NotFoundException, ForbiddenException, BadRequestException 
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Like, MoreThanOrEqual, LessThan } from 'typeorm';
 import { Place } from './place.entity';
+import { User } from '../users/user.entity';
 import { CreatePlaceDto } from './dto/create-place.dto';
 import { QueryPlacesDto } from './dto/query-places.dto';
 import slugify from 'slugify';
@@ -20,8 +21,28 @@ export class PlacesService {
     constructor(
         @InjectRepository(Place)
         private placesRepo: Repository<Place>,
+        @InjectRepository(User)
+        private usersRepo: Repository<User>,
         private credits: CreditsService,
     ) { }
+
+    /**
+     * "Discovered by @handle" — permanent credit for community-submitted gems
+     * (the contribution ladder's status payoff). Attached to detail payloads.
+     */
+    private async attachDiscoveredBy<T extends Place>(place: T): Promise<T> {
+        if (!place?.submittedBy) return place;
+        const u = await this.usersRepo.findOne({
+            where: { id: place.submittedBy },
+            select: ['id', 'handle', 'fullName', 'avatar'] as any,
+        }).catch(() => null);
+        if (u) {
+            (place as any).discoveredBy = {
+                id: u.id, handle: u.handle, fullName: u.fullName, avatar: u.avatar || null,
+            };
+        }
+        return place;
+    }
 
     /**
      * Sweep places whose boost expired and flip the flag back.
@@ -89,7 +110,10 @@ export class PlacesService {
         const qb = this.placesRepo
             .createQueryBuilder('place')
             .leftJoinAndSelect('place.category', 'category')
-            .where('place.isActive = :active', { active: true });
+            .where('place.isActive = :active', { active: true })
+            // Community-submitted gems stay out of listings until confirmed/approved —
+            // they remain reachable by direct link so friends can confirm them.
+            .andWhere('place.isApproved = :approved', { approved: true });
 
         if (search) {
             qb.andWhere(
@@ -154,11 +178,13 @@ export class PlacesService {
         });
         if (!place) throw new NotFoundException('Place not found');
 
-        // Increment view count
-        place.viewCount += 1;
-        await this.placesRepo.save(place);
+        // Atomic increment — `place.viewCount += 1; save(place)` is a
+        // read-modify-write race (concurrent views lose counts) and re-persists
+        // the whole row with possibly-stale sibling columns.
+        await this.placesRepo.increment({ id: place.id }, 'viewCount', 1);
+        place.viewCount += 1; // reflect it in the response without a re-read
 
-        return place;
+        return this.attachDiscoveredBy(place);
     }
 
     async findById(id: string): Promise<Place> {
@@ -167,12 +193,13 @@ export class PlacesService {
             relations: ['category', 'reviews', 'reviews.user'],
         });
         if (!place) throw new NotFoundException('Place not found');
-        return place;
+        return this.attachDiscoveredBy(place);
     }
 
-    async create(dto: CreatePlaceDto): Promise<Place> {
+    async create(dto: CreatePlaceDto, submittedBy?: string): Promise<Place> {
         const slug = slugify(dto.name, { lower: true, strict: true });
-        const place = this.placesRepo.create({ ...dto, slug });
+        // Attribute the creator — every place should have a human behind it.
+        const place = this.placesRepo.create({ ...dto, slug, ...(submittedBy ? { submittedBy } : {}) });
         return this.placesRepo.save(place);
     }
 
@@ -205,7 +232,7 @@ export class PlacesService {
 
     async getPopular(): Promise<Place[]> {
         return this.placesRepo.find({
-            where: { isActive: true },
+            where: { isActive: true, isApproved: true },
             relations: ['category'],
             order: { viewCount: 'DESC' },
             take: 10,
@@ -218,6 +245,7 @@ export class PlacesService {
             .createQueryBuilder('place')
             .leftJoinAndSelect('place.category', 'category')
             .where('place.isActive = :active', { active: true })
+            .andWhere('place.isApproved = :approved', { approved: true })
             .addSelect(
                 `(6371 * acos(cos(radians(:lat)) * cos(radians(place.latitude)) * cos(radians(place.longitude) - radians(:lng)) + sin(radians(:lat)) * sin(radians(place.latitude))))`,
                 'distance',

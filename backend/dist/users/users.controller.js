@@ -33,8 +33,18 @@ let UsersController = class UsersController {
         this.activityService = activityService;
         this.ogService = ogService;
     }
-    getProfile(req) {
-        return this.usersService.findById(req.user.id);
+    stripSecrets(user) {
+        if (!user)
+            return user;
+        const safe = { ...user };
+        delete safe.password;
+        delete safe.passwordResetToken;
+        delete safe.passwordResetExpires;
+        delete safe.tokenVersion;
+        return safe;
+    }
+    async getProfile(req) {
+        return this.stripSecrets(await this.usersService.findById(req.user.id));
     }
     async passportAnalytics(req) {
         const me = await this.usersService.findById(req.user.id);
@@ -43,8 +53,9 @@ let UsersController = class UsersController {
         }
         return this.usersService.getPassportAnalytics(req.user.id);
     }
-    searchUsers(q, limit) {
-        return this.usersService.searchUsers(q || '', limit ? Number(limit) : 12);
+    searchUsers(req, q, limit) {
+        const lim = limit ? Number(limit) : 12;
+        return this.usersService.searchUsers(q || '', lim, req?.user?.id || null);
     }
     async handleAvailable(h) {
         const { isHandleFormatValid, isHandleReserved } = await Promise.resolve().then(() => require('./reserved-handles'));
@@ -149,7 +160,7 @@ let UsersController = class UsersController {
             if (!(0, plan_catalog_1.capsFor)((0, effective_plan_1.effectivePlan)(me)).customThemes)
                 delete safe.passportTheme;
         }
-        return this.usersService.update(req.user.id, safe);
+        return this.stripSecrets(await this.usersService.update(req.user.id, safe));
     }
     toggleFavorite(req, placeId) {
         return this.usersService.toggleFavorite(req.user.id, placeId);
@@ -200,7 +211,7 @@ __decorate([
     __param(0, (0, common_1.Request)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
+    __metadata("design:returntype", Promise)
 ], UsersController.prototype, "getProfile", null);
 __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
@@ -213,10 +224,12 @@ __decorate([
 ], UsersController.prototype, "passportAnalytics", null);
 __decorate([
     (0, common_1.Get)('search'),
-    __param(0, (0, common_1.Query)('q')),
-    __param(1, (0, common_1.Query)('limit')),
+    (0, common_1.UseGuards)(optional_jwt_auth_guard_1.OptionalJwtAuthGuard),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Query)('q')),
+    __param(2, (0, common_1.Query)('limit')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:paramtypes", [Object, String, String]),
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "searchUsers", null);
 __decorate([

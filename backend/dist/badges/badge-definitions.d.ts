@@ -1,4 +1,4 @@
-export type BadgeEvent = 'user.created' | 'place.visited' | 'trip.created' | 'review.created' | 'post.saved';
+export type BadgeEvent = 'user.created' | 'place.visited' | 'trip.created' | 'review.created' | 'post.saved' | 'gem.submitted' | 'gem.approved';
 export interface BadgeDefinition {
     id: string;
     label: string;

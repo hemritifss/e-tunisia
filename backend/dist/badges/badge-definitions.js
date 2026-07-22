@@ -71,5 +71,19 @@ exports.BADGE_DEFINITIONS = [
             !!p?.city &&
             BEACH_CITIES.has(p.city),
     },
+    {
+        id: 'gem_scout',
+        label: 'Gem Scout',
+        description: 'Submitted your first hidden gem.',
+        points: 20,
+        eligible: (e, _, c) => e === 'gem.submitted' && !has('gem_scout', c),
+    },
+    {
+        id: 'gem_hunter',
+        label: 'Gem Hunter',
+        description: 'Your discovery was confirmed by the community — it is on the map forever.',
+        points: 60,
+        eligible: (e, _, c) => e === 'gem.approved' && !has('gem_hunter', c),
+    },
 ];
 //# sourceMappingURL=badge-definitions.js.map

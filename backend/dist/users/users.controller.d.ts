@@ -11,6 +11,7 @@ export declare class UsersController {
     private activityService;
     private ogService;
     constructor(usersService: UsersService, followsService: FollowsService, endorsementsService: EndorsementsService, activityService: ActivityService, ogService: OgService);
+    private stripSecrets;
     getProfile(req: any): Promise<import("./user.entity").User>;
     passportAnalytics(req: any): Promise<{
         totalViews: number;
@@ -29,7 +30,7 @@ export declare class UsersController {
             count: number;
         }[];
     }>;
-    searchUsers(q: string, limit?: string): Promise<{
+    searchUsers(req: any, q: string, limit?: string): Promise<{
         id: any;
         handle: any;
         fullName: any;
