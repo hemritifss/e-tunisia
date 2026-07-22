@@ -1,4 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { isLoggedIn } from '../../api';
+import PublicMasthead from '../components/public/PublicMasthead';
+import PublicFooter from '../components/public/PublicFooter';
 import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { LucideIcon } from 'lucide-react';
@@ -449,6 +452,7 @@ export default function ExplorePage() {
 
   return (
     <div className="explore-page animate-fade-in" data-design="carnet" style={{ '--cat-tint': activeCat.tint } as React.CSSProperties}>
+      {!isLoggedIn() && <PublicMasthead active="explore" />}
       {/* Hero — atmospheric mesh, search baked in */}
       <header className="explore-hero">
         <div className="explore-hero-bg" aria-hidden="true" />
@@ -654,6 +658,7 @@ export default function ExplorePage() {
           </div>
         )}
       </div>
+      {!isLoggedIn() && <PublicFooter />}
     </div>
   );
 }

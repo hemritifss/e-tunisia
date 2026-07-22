@@ -1,4 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { isLoggedIn } from '../../api';
+import PublicMasthead from '../components/public/PublicMasthead';
+import PublicFooter from '../components/public/PublicFooter';
 // The .tn-landing / partner-v3 / about-v3 styles live in landing.css. It used to
 // be linked globally in index.html but was de-linked when the editorial landing
 // (.ej-*, landing-editorial.css) shipped — leaving this page unstyled. Import it
@@ -88,6 +91,7 @@ export default function AboutPage() {
 
   return (
     <div className="tn-landing partner-v3 about-v3" ref={rootRef}>
+      {!isLoggedIn() && <PublicMasthead active="about" />}
       {/* ── Hero ── */}
       <section className="partner-v3-hero">
         <div className="partner-v3-hero-bg"><img src="/img/hero1.png" alt="Tunisia" /></div>
@@ -185,6 +189,7 @@ export default function AboutPage() {
           <p className="tn-cta-small">Ahlan wa Sahlan. Welcome.</p>
         </div>
       </section>
+      {!isLoggedIn() && <PublicFooter />}
     </div>
   );
 }

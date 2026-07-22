@@ -7,6 +7,9 @@ import {
 } from 'lucide-react';
 import { useUserPlan } from '../hooks/useUserPlan';
 import { api } from '../../shared/api';
+import { isLoggedIn } from '../../api';
+import PublicMasthead from '../components/public/PublicMasthead';
+import PublicFooter from '../components/public/PublicFooter';
 import { goTo, currentRoute } from '../../router';
 import { openTopupModal } from '../../topup-modal';
 import { Tier, Cycle, fmtPrice, usePlanCatalog, planFeatureCount, CatalogPlan } from '../lib/plan-catalog';
@@ -309,6 +312,7 @@ export default function ProUpgradePage() {
 
     return (
         <main className="pro-page">
+            {!isLoggedIn() && <PublicMasthead active="pricing" />}
             {offline && (
                 <div className="pro-offline-banner">
                     <strong>Billing service offline</strong>
@@ -407,6 +411,7 @@ export default function ProUpgradePage() {
                     end of the period.
                 </p>
             </section>
+            {!isLoggedIn() && <PublicFooter />}
         </main>
     );
 }

@@ -1,6 +1,9 @@
 import '../../styles/itineraries.css';
 import React, { useEffect, useState } from 'react';
 import { currentPath, onRouteChange } from '../../router';
+import { isLoggedIn } from '../../api';
+import PublicMasthead from '../components/public/PublicMasthead';
+import PublicFooter from '../components/public/PublicFooter';
 import CircuitsDirectory from './itineraries/CircuitsDirectory';
 import CircuitDetail from './itineraries/CircuitDetail';
 
@@ -21,5 +24,11 @@ function slugFromPath(): string | null {
 export default function ItinerariesPage() {
   const [slug, setSlug] = useState(slugFromPath);
   useEffect(() => onRouteChange(() => setSlug(slugFromPath())), []);
-  return slug ? <CircuitDetail key={slug} slug={slug} /> : <CircuitsDirectory />;
+  return (
+    <>
+      {!isLoggedIn() && <PublicMasthead active="itineraries" />}
+      {slug ? <CircuitDetail key={slug} slug={slug} /> : <CircuitsDirectory />}
+      {!isLoggedIn() && <PublicFooter />}
+    </>
+  );
 }

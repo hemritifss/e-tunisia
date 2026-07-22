@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as api from '../../api';
 import { showToast } from '../../ui-utils';
+import PublicMasthead from '../components/public/PublicMasthead';
+import PublicFooter from '../components/public/PublicFooter';
 // partner-v3 / tn-landing styles live in landing.css (de-linked from index.html
 // when the editorial landing shipped). Import it here so this page stays styled.
 import '../../styles/landing.css';
@@ -121,6 +123,7 @@ export default function PartnerPage() {
 
   return (
     <div className="tn-landing partner-v3" ref={rootRef}>
+      {!api.isLoggedIn() && <PublicMasthead />}
       {/* ── Hero ── */}
       <section className="partner-v3-hero">
         <div className="partner-v3-hero-bg"><img src="/img/hero2.png" alt="Tunisia" /></div>
@@ -331,6 +334,7 @@ export default function PartnerPage() {
           <p className="tn-cta-small">Ahlan wa Sahlan. Welcome aboard.</p>
         </div>
       </section>
+      {!api.isLoggedIn() && <PublicFooter />}
     </div>
   );
 }
