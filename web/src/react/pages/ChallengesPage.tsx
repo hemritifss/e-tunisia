@@ -215,9 +215,9 @@ export default function ChallengesPage() {
     onError: () => showToast('Check-in failed — try again.', 'error'),
   });
 
-  const challenges: Challenge[] = challengesData?.data || challengesData || [];
+  const challenges: Challenge[] = (challengesData as any)?.data || challengesData || [];
   const streak: StreakData = streakData?.data || streakData || { currentStreak: 0, longestStreak: 0, totalDaysActive: 0 };
-  const leaderboard = leaderboardData?.data || leaderboardData || [];
+  const leaderboard = (leaderboardData as any)?.data || leaderboardData || [];
   const todayStr = new Date().toISOString().split('T')[0];
   const checkedInToday = !!streak.lastCheckInDate && String(streak.lastCheckInDate).slice(0, 10) === todayStr;
 

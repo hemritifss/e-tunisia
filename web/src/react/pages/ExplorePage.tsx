@@ -406,6 +406,7 @@ export default function ExplorePage() {
         // Fallback to mock data if API fails
         const mockPlaces: Place[] = Array.from({ length: 12 }).map((_, i) => ({
           id: `place-${pageParam}-${i}`,
+          slug: `place-${pageParam}-${i}`,
           name: [
             'Sidi Bou Said',
             'Carthage Ruins',

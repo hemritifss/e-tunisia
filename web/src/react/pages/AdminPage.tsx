@@ -171,7 +171,8 @@ function Hub() {
 
     if (stats === ADMIN_FORBIDDEN) return <AdminLocked />;
     const a = (analytics && analytics !== ADMIN_FORBIDDEN ? analytics : null) as Analytics | null;
-    const s = (stats && stats !== ADMIN_FORBIDDEN ? stats : null) as PlatformStats | null;
+    // The ADMIN_FORBIDDEN case already returned above, so stats is narrowed here.
+    const s = stats ?? null;
 
     return (
         <>
