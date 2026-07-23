@@ -1293,7 +1293,7 @@ function initPostModal() {
       }
       mentionDropdown.innerHTML = users.map((u: any) => `
         <div class="post-modal-mention-item" data-handle="${esc(u.handle || '')}" data-name="${esc(u.fullName || '')}">
-          <img class="post-modal-mention-avatar" src="${apiService.getImageUrl(u.avatar, 'avatar')}" alt="" />
+          <img class="post-modal-mention-avatar" src="${esc(apiService.getImageUrl(u.avatar, 'avatar'))}" alt="" />
           <div class="post-modal-mention-info">
             <div class="post-modal-mention-name">${esc(u.fullName || u.handle)}</div>
             <div class="post-modal-mention-handle">@${esc(u.handle)}</div>

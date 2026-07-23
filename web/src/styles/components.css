@@ -618,6 +618,9 @@ a.notif-item:hover, .notif-item:hover { background: var(--surface-hover); }
   opacity: 0.9;
 }
 .post-modal-ai-label i { width: 14px; height: 14px; }
+/* Dark mode: the brand red (~48% L) plus opacity 0.9 fell to 3.18:1 on the
+   dark modal surface. A lighter red at full opacity clears WCAG AA (~5.9:1). */
+[data-theme="dark"] .post-modal-ai-label { color: #ff6b6b; opacity: 1; }
 .post-modal-ai-btn {
   border: 1px solid var(--border, rgba(0,0,0,0.1));
   background: var(--surface-elevated, rgba(0,0,0,0.02));

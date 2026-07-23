@@ -1,53 +1,113 @@
-# Itineraries page (`#/itineraries`)
+# Circuits — `#/itineraries` and `#/itineraries/<slug>`
 
-> Page-level overrides to `design-system/MASTER.md` for curated multi-day trip plans. Inherits everything not listed here.
+> The old "Itineraries" page shipped five hardcoded Unsplash brochures whose only
+> action was a toast. It is now the **carnet de circuits**: curated routes
+> hydrated from the live place catalog, remixable to the traveller's real
+> constraints, and exportable into the trip cart. Overrides `design-system/MASTER.md`;
+> inherits everything not listed here.
 
 ## Style direction
 
-Cinematic mesh hero (MASTER §2b — gold/cyan/terracotta orb palette) + Nature-Distilled card grid below. The card's signature primitive is the **photo cover with floating tag chips** + **per-difficulty tint** on the body.
+Carnet Journal dialect (UNIQUENESS §6), **not** the old cinematic-mesh hero. Both
+views opt in via `data-design="carnet"` + `.cn-grain` on the page root, so every
+color resolves through the paper/ink token remap and the dark "night edition"
+follows for free. **No orbs, no glass, no gradient text.** Editorial serif
+(`--font-editorial`) for titles, handwritten (`--font-hand`) for taglines, mono
+(`--font-mono`) for labels and stats, hairline `--rule` dividers, letterpress
+offsets on the sticky bars.
 
-## Difficulty palette
+## Data model — everything is real
 
-Each itinerary card carries `--diff-tint` inline based on `it.difficulty`:
+Circuits are **not** stored records. `backend/src/itineraries/circuits.data.ts`
+holds editorial templates (anchors: a city + governorate + tag hints + a "why"),
+and `circuits.service.ts` resolves each anchor against the live `places` table:
+preferred slug → best tag match in the city → best in the city → best in the
+governorate, skipping anything already used so a route never repeats a place. A
+template that resolves to fewer than 3 real places is hidden, never shipped as a
+broken 2-pin route. Cached 10 min. Every stop the traveller sees therefore has
+real coordinates, a real cover and its own `/place/:id` page.
 
-| Difficulty | Tint token |
-|------------|-----------|
-| easy | `var(--success)` |
-| moderate | `var(--amber)` |
-| hard / challenging | `var(--coral)` |
+Endpoints (declared **before** the `:id` route so the uuid matcher doesn't eat them):
+- `GET /itineraries/circuits` — card summaries (no stops/knowHow/packing).
+- `GET /itineraries/circuits/:slug` — full detail with resolved `stops`.
 
-The tint drives the card's hover border, the difficulty pill text, and the bottom of the modal's CTA. **Don't tokenize Pro as a difficulty** — Pro is a payment tier, not a difficulty level.
+## Directory (`#/itineraries`)
 
-## Card chrome
+- **Masthead** + toolbar: search, "I have N days" pills, sort
+  (`Best for <month>` / least driving / cheapest / longest).
+- **Filter chips**: theme, region, "no car needed", "in season now", "saved (n)".
+- **Cards** are field-notes prints, not hero images: a photo plate tipped onto
+  paper, a city chain (`Tunis → Carthage → …`), a 12-cell **season strip**
+  (filled = prime month, struck = avoid, ringed = the visitor's current month),
+  facts row, and — only when the traveller has stamps on that route — a carnet
+  overlap bar. Cards carry save + compare actions.
+- **Compare**: sticky tray (max 3) → side-by-side sheet.
+- "Recommended" sort = what you could actually enjoy *this* month first.
 
-- 16:10 cover image with overlay gradient + tag chips floating on top.
-- **Tags**: duration (frosted glass with `CalendarDays`) + Pro (gold gradient with `Crown`). Pro replaces the old 👑 emoji.
-- Title sits inside the cover on the bottom edge with text shadow for legibility.
-- Body: difficulty chip (uppercase 11px, tinted) + 3-line clamped description + full-width outline "View full itinerary" CTA.
+## Detail (`#/itineraries/<slug>`)
 
-## Modal
+The whole page is one live document driven by `plan.ts` (`buildPlan`), which
+re-plans instantly on every control change. Sections, in order:
 
-Shared chrome with Collections — defined in `itineraries.css` and reused there:
-- `--surface-elevated` card with `--radius-2xl` + `--shadow-2xl`.
-- Spring entry animation (`translateY(12px) scale(0.96) → 0/1`, reduced-motion safe).
-- Cover image with overlay + tag chips + title.
-- Body with meta chips (difficulty + duration) + description + two-button action row (primary CTA + outline Save).
-- Premium itineraries get a gold "Unlock with Pro" CTA pointing to `#/premium`; free itineraries get a terracotta "Start exploring" CTA pointing to `#/explore`.
-- ESC closes. Scrim click closes. Focus trapped within.
+1. **Header** — title, handwritten tagline, summary, season verdict + strip.
+   Actions: save, share, copy-as-text, print, save-offline.
+2. **Remix bar** — days slider (clamped to the circuit's `dayRange`), pace
+   (relaxed/balanced/packed → daily active-minute budget), transport
+   (car/louage/driver → speed + cost model), start date (→ real dates + weather),
+   travellers, reverse direction. Persisted per-circuit in localStorage.
+3. **Overview** — stat boxes (days, stops, road km, drive time, on-site time,
+   per-person cost, stamps) + a "longest hop is brutal" warning when ≥ 200 km.
+4. **Map** — the real `TripRouteMap` (Leaflet, road geometry) with day chips.
+5. **Timeline** — day cards with arrival clocks, weather badge, "sleep in <city>"
+   base, per-stop swap/add/remove (nearby catalog picker, 35 km), slot warnings
+   (arrives at the wrong time of day), transport warnings (no transit to a
+   trailhead). Between days in different cities, a **louage-ticket connector**
+   (`TransportOptions`).
+6. **Budget** — entry (from place records) + transport + stay + food, with stay
+   and food tier toggles; per-person and per-person-per-day. Assumptions are
+   shown, never buried.
+7. **Know-how + packing** — editorial notes and a persisted checklist (theme
+   items + a universal set).
+8. **Commit bar** (sticky) — "Send to my trip" loads the plan into the real
+   `trip-cart` (keeps day + arrival time per stop); "Save & share a link"
+   persists it server-side via `saveTrip`.
 
-## Accessibility
+## The planner (`plan.ts`)
 
-- Each card is `<article>` for semantic outline.
-- Modal is `role="dialog" aria-modal="true"`.
-- Difficulty pill carries visible text (no SR cue needed beyond the label).
+Pure, client-side, no invented facts. Distances = haversine on catalog coords ×
+`ROAD_FACTOR` (1.25). `splitIntoDays` binary-searches a daily minute budget to
+hit the requested day count, with a hard rule that a ≥ 90 km hop always ends the
+day. `fitToDays` cuts priority-3 then priority-2 stops (never priority-1) when
+the days are too few, and reports what it cut so the UI can say so out loud.
+
+## Difficulty / priority
+
+Anchors carry `priority` 1–3: 1 = the reason the circuit exists (never cut),
+3 = first to drop when short on time. This replaces the old easy/moderate/hard
+*difficulty tint* as the structural signal (difficulty still exists on the
+circuit as a whole, shown as a plain word in compare).
 
 ## Anti-patterns
 
-- Don't add a 4th difficulty level. The 3-tier system (easy / moderate / hard) is mental-model-aligned with hiking/travel grading; adding "very hard" or "expert" creates confusion.
-- Don't show the "Unlock with Pro" CTA on free itineraries. The two-CTA branching is intentional.
-- Don't replace the cover image's title with a separate `<h3>` outside the cover. The integrated title is the signature primitive.
+- **Don't reintroduce the mesh/orb hero or gradient-text title.** This page is
+  carnet now; the cinematic hero belongs to other surfaces.
+- **Don't hardcode place data into a circuit template.** Anchors resolve against
+  the catalog — that is what keeps every stop clickable and current. Add a slug
+  hint or a tag, not a coordinate.
+- **Don't call the auth-only `getVisitedIds` for anonymous users.** A 401 there
+  triggers the global `/hero` redirect in the api wrapper; gate the query on
+  `api.isLoggedIn()`.
+- **Don't present the cost as a single hidden number.** The tier toggles and the
+  assumptions note are the honesty; keep them.
 
 ## Files
 
-- Page: [web/src/pages/itineraries.ts](../../web/src/pages/itineraries.ts)
-- Styles: [web/src/styles/itineraries.css](../../web/src/styles/itineraries.css) (modal chrome reused by collections.css)
+- Page entry: [web/src/react/pages/ItinerariesPage.tsx](../../web/src/react/pages/ItinerariesPage.tsx) (routes directory vs detail)
+- Directory: [web/src/react/pages/itineraries/CircuitsDirectory.tsx](../../web/src/react/pages/itineraries/CircuitsDirectory.tsx)
+- Detail: [web/src/react/pages/itineraries/CircuitDetail.tsx](../../web/src/react/pages/itineraries/CircuitDetail.tsx)
+- Planner: [web/src/react/pages/itineraries/plan.ts](../../web/src/react/pages/itineraries/plan.ts)
+- Local state: [web/src/react/pages/itineraries/store.ts](../../web/src/react/pages/itineraries/store.ts)
+- Shared bits: [web/src/react/pages/itineraries/bits.tsx](../../web/src/react/pages/itineraries/bits.tsx)
+- Styles: [web/src/styles/itineraries.css](../../web/src/styles/itineraries.css) (carnet; the shared modal chrome moved to collections.css)
+- Backend data: [backend/src/itineraries/circuits.data.ts](../../backend/src/itineraries/circuits.data.ts)
+- Backend service: [backend/src/itineraries/circuits.service.ts](../../backend/src/itineraries/circuits.service.ts)

@@ -15,6 +15,17 @@ interface OpenOpts {
   onSuccess?: () => void;
 }
 
+/** Escape user-controlled values before they go into the modal's innerHTML —
+ *  recipientName/recipientAvatar come from another member's profile. */
+function esc(s: unknown): string {
+  return String(s ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 const PRESETS = [5, 10, 20, 50];
 
 // Mirrors backend GIFT_CATALOG (server is authoritative on price). Emojis are product content.
@@ -48,10 +59,10 @@ export function openDonateModal(opts: OpenOpts) {
         <i class="lucide-x"></i>
       </button>
       <div class="donate-modal-header">
-        <img src="${recipientAvatar}" alt="" class="donate-modal-avatar" />
+        <img src="${esc(recipientAvatar)}" alt="" class="donate-modal-avatar" />
         <div>
           <span class="text-xs text-muted">${isPlatform ? 'Support the platform' : 'Send credits to'}</span>
-          <h3>${recipientName}</h3>
+          <h3>${esc(recipientName)}</h3>
         </div>
       </div>
 
