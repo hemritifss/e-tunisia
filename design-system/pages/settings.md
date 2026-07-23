@@ -36,6 +36,16 @@ This is the only place in the app where we apply `--error` to a non-error-state 
 
 The list of blocked users sits inside the Safety group. Each row carries `data-user-*` attrs so the global `UserActionMenu` activates on right-click / long-press — but the in-row Unblock button is the primary action.
 
+## Field Notes dialect (carnet)
+
+The page root carries `data-design="carnet"` — the same token-layer opt-in the
+feed/explore/passport use. Surfaces remap to paper, text to ink, borders to
+hairline rules, and the "Settings" title picks up Fraunces; dark mode follows
+the night edition automatically. **The tinted group chips stay** — they are the
+one exception (see the anti-pattern below): they're a scanning aid, not
+decoration, so they survive the de-generification. No structural change, no new
+CSS — the attribute alone drives the remap.
+
 ## Anti-patterns
 
 - Don't add a hero. This is a utility page.
@@ -45,7 +55,7 @@ The list of blocked users sits inside the Safety group. Each row carries `data-u
 
 ## Files
 
-- Page: [web/src/pages/settings.ts](../../web/src/pages/settings.ts)
+- Page: [web/src/react/pages/SettingsPage.tsx](../../web/src/react/pages/SettingsPage.tsx) (React; the vanilla `pages/settings.ts` is retired)
 - Styles: [web/src/styles/settings.css](../../web/src/styles/settings.css)
 
 ## Related
