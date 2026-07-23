@@ -217,8 +217,9 @@
   --nav-height:         68px;
   --mobile-nav-height:  68px;
   --sidebar-width:      336px;
-  --content-max:        700px;
-  --page-max:           1280px;
+  --content-max:        700px;    /* single reading column (feed, articles) */
+  --page-standard:      940px;    /* default page width (.page) */
+  --page-max:           1280px;   /* wide dashboards / galleries */
   --page-padding:       clamp(1rem, 4vw, 2rem);
 
   /* ── Z-index scale ── */
@@ -300,28 +301,37 @@
 }
 
 /* ============================================
-   SLEEK LAYER — minimalist semantic tokens
-   Applied via [data-design="sleek"] on a page root.
-   Surfaces are quiet/neutral; brand reserved for ~10%
-   (CTAs, votes, focus). Existing tokens kept intact.
+   SLEEK LAYER — now folded into the ONE carnet language.
+   Historically a separate minimalist skin, `sleek` shipped on
+   ~31 pages while `carnet` shipped on ~18 and the rest ran the
+   generic default — three visual languages with no IA logic,
+   the root cause of the "incohérence" users reported.
+   We keep the [data-design="sleek"] hook (31 pages reference it,
+   plus ~300 `--sleek-*` rules in pages.css) but re-point every
+   `--sleek-*` token onto the carnet paper & ink system. Result:
+   sleek pages inherit the carnet look with ZERO page rewrites,
+   and — because the carnet selector below also matches `sleek` —
+   their shared components pick up the same paper surfaces.
+   All values resolve through var(), so dark "night edition"
+   follows automatically. Do NOT reintroduce raw color here.
    ============================================ */
 [data-design="sleek"] {
-  /* Surfaces (neutral, 60% of the visual budget) */
-  --sleek-surface:          oklch(100% 0 0);
-  --sleek-surface-muted:    oklch(98% 0.002 80);
-  --sleek-surface-sunken:   oklch(96.5% 0.003 80);
-  --sleek-surface-hover:    oklch(97% 0.003 80);
+  /* Surfaces → paper */
+  --sleek-surface:          var(--paper-print);
+  --sleek-surface-muted:    var(--paper);
+  --sleek-surface-sunken:   var(--paper-warm);
+  --sleek-surface-hover:    var(--paper-warm);
 
-  /* Borders (hairline, the silhouette of the design) */
-  --sleek-border:           oklch(91% 0.005 80);
-  --sleek-border-strong:    oklch(84% 0.006 80);
+  /* Borders → ink hairlines */
+  --sleek-border:           var(--rule);
+  --sleek-border-strong:    var(--rule-strong);
 
-  /* Text (30% — neutral hierarchy) */
-  --sleek-text:             oklch(18% 0.008 60);
-  --sleek-text-secondary:   oklch(42% 0.006 60);
-  --sleek-text-muted:       oklch(58% 0.005 60);
+  /* Text → ink */
+  --sleek-text:             var(--ink);
+  --sleek-text-secondary:   var(--ink-soft);
+  --sleek-text-muted:       var(--ink-faint);
 
-  /* Accent (10% — brand) — uses existing brand var so palette stays Tunisian */
+  /* Accent (brand) — unchanged */
   --sleek-accent:           var(--accent);
   --sleek-accent-hover:     var(--accent-hover);
   --sleek-accent-text:      var(--accent-text);
@@ -330,10 +340,10 @@
   /* Focus ring — WCAG 2.2 AA visible */
   --sleek-focus-ring:       0 0 0 2px var(--sleek-surface), 0 0 0 4px var(--sleek-accent);
 
-  /* Quiet elevation — Sleek prefers borders over shadow */
+  /* Elevation → paper shadows */
   --sleek-elev-0:           none;
-  --sleek-elev-1:           0 1px 2px oklch(0% 0 0 / 0.04);
-  --sleek-elev-2:           0 4px 12px -4px oklch(0% 0 0 / 0.06);
+  --sleek-elev-1:           var(--paper-shadow);
+  --sleek-elev-2:           var(--paper-shadow-lift);
 
   /* Radii — restrained */
   --sleek-radius-sm:        6px;
@@ -343,25 +353,6 @@
   /* Motion — fast, subtle */
   --sleek-motion-fast:      120ms var(--ease-out);
   --sleek-motion-base:      200ms var(--ease-out);
-}
-
-[data-theme="dark"] [data-design="sleek"] {
-  --sleek-surface:          oklch(16% 0.013 260);
-  --sleek-surface-muted:    oklch(14% 0.013 260);
-  --sleek-surface-sunken:   oklch(12% 0.013 260);
-  --sleek-surface-hover:    oklch(20% 0.014 260);
-
-  --sleek-border:           oklch(26% 0.012 260);
-  --sleek-border-strong:    oklch(34% 0.014 260);
-
-  --sleek-text:             oklch(94% 0.006 80);
-  --sleek-text-secondary:   oklch(72% 0.006 80);
-  --sleek-text-muted:       oklch(54% 0.005 80);
-
-  --sleek-focus-ring:       0 0 0 2px var(--sleek-surface), 0 0 0 4px var(--sleek-accent);
-
-  --sleek-elev-1:           0 1px 2px oklch(0% 0 0 / 0.4);
-  --sleek-elev-2:           0 4px 12px -4px oklch(0% 0 0 / 0.5);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -379,8 +370,12 @@
    resolves through var(), so the dark "night edition" defined
    in [data-theme="dark"] follows automatically — do NOT add
    raw color values here.
+
+   NOTE: `[data-design="sleek"]` is intentionally matched here too
+   so the two former languages render as ONE. See the sleek block above.
    ============================================ */
-[data-design="carnet"] {
+[data-design="carnet"],
+[data-design="sleek"] {
   /* Surfaces → paper */
   --bg-primary:         var(--paper);
   --bg-secondary:       var(--paper-warm);

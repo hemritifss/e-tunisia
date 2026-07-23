@@ -93,7 +93,7 @@
         bottom: 0;
         left: 0;
         right: 0;
-        width: 100vw;
+        width: auto;
         max-height: 80dvh;
         border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
         transform: translateY(100%);

@@ -285,6 +285,38 @@ function navigate() {
     mobileNavEl.setAttribute('aria-hidden', 'false');
   }
 
+  // Auto-hide the bottom rail while reading: slide it away on scroll-down, bring
+  // it back on scroll-up (or near the very top/bottom). Attached once.
+  if (mobileNavEl && !(window as any).__railAutoHideInit) {
+    (window as any).__railAutoHideInit = true;
+    let lastY = window.scrollY;
+    let ticking = false;
+    const THRESHOLD = 8; // ignore tiny jitters
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        const y = window.scrollY;
+        const dy = y - lastY;
+        const nearTop = y < 80;
+        const nearBottom = window.innerHeight + y >= document.documentElement.scrollHeight - 80;
+        if (nearTop || nearBottom) {
+          mobileNavEl.classList.remove('mobile-nav--hidden');
+        } else if (dy > THRESHOLD) {
+          mobileNavEl.classList.add('mobile-nav--hidden');      // scrolling down
+        } else if (dy < -THRESHOLD) {
+          mobileNavEl.classList.remove('mobile-nav--hidden');   // scrolling up
+        }
+        lastY = y;
+        ticking = false;
+      });
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+  }
+  // A fresh navigation (this runs each render) should always reveal the rail;
+  // the scroll-to-top below then re-syncs the scroll baseline.
+  if (mobileNavEl) mobileNavEl.classList.remove('mobile-nav--hidden');
+
   // Mobile nav create button → open post modal
   const mobileCreateBtn = document.getElementById('mobile-nav-create') as HTMLButtonElement | null;
   if (mobileCreateBtn) {
@@ -470,6 +502,32 @@ function navigate() {
     }
     link.classList.toggle('active', page === route.page);
   });
+
+  // ── Orientation chrome ──────────────────────────────────────────────
+  // Global back button: shown on deep/secondary pages (place, post, settings,
+  // messages/:id, …) so phone users always have a way back. Hidden on the
+  // primary destinations reachable from the bottom rail.
+  {
+    const currentPath = currentRoute().split('?')[0];
+    const PRIMARY_PATHS = ['/', '/explore', '/map', '/itineraries', '/reels', '/events', '/tips', '/collections', '/profile'];
+    const isPrimary = PRIMARY_PATHS.includes(currentPath);
+    const backBtn = document.getElementById('nav-back') as HTMLButtonElement | null;
+    if (backBtn) {
+      backBtn.hidden = isPrimary;
+      backBtn.onclick = () => {
+        if (window.history.length > 1) window.history.back();
+        else goTo('/');
+      };
+    }
+    // Keep the active tab of the scrollable rail centered in view.
+    const scroller = document.getElementById('mobile-nav-scroll');
+    const activeItem = scroller?.querySelector<HTMLElement>('.mobile-nav-item.active');
+    if (scroller && activeItem) {
+      const target = activeItem.offsetLeft - (scroller.clientWidth - activeItem.offsetWidth) / 2;
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      scroller.scrollTo({ left: Math.max(0, target), behavior: reduce ? 'auto' : 'smooth' });
+    }
+  }
 
   // Restore scroll position on back/forward; scroll to top on new navigation.
   // We detect popstate by checking if the navigation was not triggered by goTo/replace.

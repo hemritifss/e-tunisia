@@ -645,7 +645,9 @@
         gap: var(--space-2);
     }
     .map-page .map-info-panel {
-        width: 100vw;
+        /* left:0 + right:0 already span the viewport; 100vw added the scrollbar
+           width on top and caused horizontal overflow. */
+        width: auto;
         bottom: 0;
         top: auto;
         left: 0;

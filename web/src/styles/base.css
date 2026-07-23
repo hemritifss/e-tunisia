@@ -17,6 +17,13 @@ html {
   /* Default — overridden below per theme. Tells browsers to render native form
      controls (<select> options, scrollbars, date pickers) using the right palette. */
   color-scheme: light;
+  /* Clip (not hidden) so a stray full-width child can never trigger horizontal
+     scroll, while position:sticky descendants keep working. */
+  overflow-x: clip;
+  /* Reserve the scrollbar gutter at all times so navigating between a tall page
+     and a short one no longer shifts every centered layout left/right — a subtle
+     but constant source of the "sizes jump / white edges" feeling. */
+  scrollbar-gutter: stable;
 }
 
 html[data-theme="dark"] { color-scheme: dark; }
@@ -39,7 +46,9 @@ body {
   background: var(--bg-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overflow-x: hidden;
+  /* clip, not hidden: hidden makes <body> a scroll container and silently
+     disables position:sticky (right rails, sticky headers) inside pages. */
+  overflow-x: clip;
   min-height: 100dvh;
   transition: background 0.3s var(--ease-out), color 0.3s var(--ease-out);
 }
