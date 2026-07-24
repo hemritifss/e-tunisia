@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, BadRequestException, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Like, MoreThanOrEqual, LessThan } from 'typeorm';
 import { Place } from './place.entity';
@@ -7,6 +7,7 @@ import { CreatePlaceDto } from './dto/create-place.dto';
 import { QueryPlacesDto } from './dto/query-places.dto';
 import slugify from 'slugify';
 import { CreditsService } from '../credits/credits.service';
+import { applyFuzzy, ensureFuzzySearch } from '../common/fuzzy-search';
 
 /** Pricing model for listing boosts — credits per duration. */
 export const BOOST_TIERS = {
@@ -17,7 +18,12 @@ export const BOOST_TIERS = {
 export type BoostTier = keyof typeof BOOST_TIERS;
 
 @Injectable()
-export class PlacesService {
+export class PlacesService implements OnModuleInit {
+    /** Connection is Postgres — enables ILIKE and the trigram search path. */
+    private isPg = false;
+    /** pg_trgm/unaccent installed — findAll() can do typo/accent-tolerant search. */
+    private fuzzyReady = false;
+
     constructor(
         @InjectRepository(Place)
         private placesRepo: Repository<Place>,
@@ -25,6 +31,11 @@ export class PlacesService {
         private usersRepo: Repository<User>,
         private credits: CreditsService,
     ) { }
+
+    async onModuleInit() {
+        this.isPg = this.placesRepo.manager.connection.options.type === 'postgres';
+        this.fuzzyReady = await ensureFuzzySearch(this.placesRepo);
+    }
 
     /**
      * "Discovered by @handle" — permanent credit for community-submitted gems
@@ -115,10 +126,19 @@ export class PlacesService {
             // they remain reachable by direct link so friends can confirm them.
             .andWhere('place.isApproved = :approved', { approved: true });
 
+        // Typo/accent-tolerant across the name (incl. AR/FR variants), city, tags and
+        // description. `searchRank` orders the closest matches first when available.
+        let searchRank: string | null = null;
         if (search) {
-            qb.andWhere(
-                '(place.name ILIKE :search OR place.description ILIKE :search OR place.city ILIKE :search OR place.tags ILIKE :search)',
-                { search: `%${search}%` },
+            searchRank = applyFuzzy(
+                qb,
+                this.isPg,
+                this.fuzzyReady,
+                {
+                    like: ['place.name', 'place.nameFr', 'place.nameAr', 'place.city', 'place.tags', 'place.description'],
+                    fuzzy: ['place.name', 'place.nameFr', 'place.nameAr', 'place.city'],
+                },
+                search,
             );
         }
 
@@ -155,7 +175,13 @@ export class PlacesService {
             );
         }
 
-        qb.orderBy(`place.${sortBy}`, order as 'ASC' | 'DESC');
+        // Best fuzzy match first when searching; then the requested sort.
+        if (searchRank) {
+            qb.orderBy(searchRank, 'DESC');
+            qb.addOrderBy(`place.${sortBy}`, order as 'ASC' | 'DESC');
+        } else {
+            qb.orderBy(`place.${sortBy}`, order as 'ASC' | 'DESC');
+        }
         qb.skip((page - 1) * limit).take(limit);
 
         const [data, total] = await qb.getManyAndCount();
@@ -169,6 +195,40 @@ export class PlacesService {
                 totalPages: Math.ceil(total / limit),
             },
         };
+    }
+
+    /**
+     * Typeahead suggestions for the search box — a slim, fast counterpart to
+     * findAll(): only the fields a dropdown row needs, capped low, and typo/accent
+     * tolerant via the same trigram path so "Djar…" already surfaces "Djerba".
+     */
+    async suggest(q: string, limit = 8): Promise<Partial<Place>[]> {
+        const term = (q || '').trim();
+        if (term.length < 2) return [];
+
+        const qb = this.placesRepo
+            .createQueryBuilder('place')
+            .select(['place.id', 'place.name', 'place.slug', 'place.city', 'place.governorate', 'place.coverImage'])
+            .where('place.isActive = :active', { active: true })
+            .andWhere('place.isApproved = :approved', { approved: true })
+            .take(Math.min(Math.max(Number(limit) || 8, 1), 12));
+
+        const rank = applyFuzzy(
+            qb,
+            this.isPg,
+            this.fuzzyReady,
+            {
+                like: ['place.name', 'place.nameFr', 'place.nameAr', 'place.city'],
+                fuzzy: ['place.name', 'place.nameFr', 'place.nameAr', 'place.city'],
+            },
+            term,
+            's',
+        );
+        // Closest match first; popular places break ties (and order the substring fallback).
+        if (rank) qb.orderBy(rank, 'DESC').addOrderBy('place.viewCount', 'DESC');
+        else qb.orderBy('place.viewCount', 'DESC');
+
+        return qb.getMany();
     }
 
     async findBySlug(slug: string): Promise<Place> {

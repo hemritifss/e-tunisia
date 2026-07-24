@@ -13,6 +13,7 @@ import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { AdminGuard } from '../admin/admin.guard';
 import { InventoryService } from './inventory.service';
+import { CreateInventoryItemDto, UpdateInventoryItemDto } from './dto/inventory-item.dto';
 
 @ApiTags('inventory')
 @ApiBearerAuth()
@@ -55,14 +56,14 @@ export class InventoryController {
   @Post()
   @UseGuards(JwtAuthGuard, AdminGuard)
   @ApiOperation({ summary: 'Create inventory item (admin)' })
-  create(@Body() dto: any) {
+  create(@Body() dto: CreateInventoryItemDto) {
     return this.inventoryService.create(dto);
   }
 
   @Put(':id')
   @UseGuards(JwtAuthGuard, AdminGuard)
   @ApiOperation({ summary: 'Update inventory item (admin)' })
-  update(@Param('id') id: string, @Body() dto: any) {
+  update(@Param('id') id: string, @Body() dto: UpdateInventoryItemDto) {
     return this.inventoryService.update(id, dto);
   }
 

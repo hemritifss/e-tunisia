@@ -144,6 +144,67 @@
 .explore-search-clear:hover { background: var(--surface-hover); color: var(--text-primary); }
 .explore-search-clear:active { transform: scale(0.92); }
 
+/* ── Search autocomplete (typeahead) ──────────
+   Portaled to <body> (fixed position set inline) so it escapes the hero's
+   overflow:hidden. Styled as a carnet paper card to match the search field. */
+.explore-search-wrap { display: block; }
+.explore-suggest {
+    z-index: var(--z-dropdown, 1000);
+    margin: 0;
+    padding: 6px;
+    list-style: none;
+    background: var(--paper-print);
+    border: 1.5px solid var(--ink);
+    border-radius: var(--radius-sm);
+    box-shadow: 4px 4px 0 oklch(0% 0 0 / 0.35);
+    max-height: min(58vh, 360px);
+    overflow-y: auto;
+    animation: explore-suggest-in var(--duration-fast) var(--ease-out);
+}
+@keyframes explore-suggest-in {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.explore-suggest li { margin: 0; }
+.explore-suggest-item {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: 9px var(--space-3);
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-xs, 8px);
+    cursor: pointer;
+    text-align: left;
+    color: var(--text-primary);
+    transition: background var(--duration-instant) var(--ease-out);
+}
+.explore-suggest-item.is-active,
+.explore-suggest-item:hover { background: var(--surface-hover); }
+.explore-suggest-pin { color: var(--gold); flex: 0 0 auto; }
+.explore-suggest-text { display: flex; flex-direction: column; min-width: 0; }
+.explore-suggest-name {
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.explore-suggest-mark {
+    background: transparent;
+    color: var(--gold-ink, var(--gold));
+    font-weight: 800;
+}
+.explore-suggest-sub {
+    font-size: var(--text-xs);
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 /* ── Controls row ─────────────────────────── */
 .explore-controls {
     display: flex;

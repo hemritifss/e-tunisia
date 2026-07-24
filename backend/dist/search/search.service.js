@@ -20,12 +20,15 @@ const typeorm_2 = require("typeorm");
 const place_entity_1 = require("../places/place.entity");
 const post_entity_1 = require("../posts/post.entity");
 const user_entity_1 = require("../users/user.entity");
+const fuzzy_search_1 = require("../common/fuzzy-search");
 let SearchService = class SearchService {
     constructor(placesRepo, postsRepo, usersRepo) {
         this.placesRepo = placesRepo;
         this.postsRepo = postsRepo;
         this.usersRepo = usersRepo;
         this.isReady = false;
+        this.isPg = false;
+        this.fuzzyReady = false;
         const host = process.env.MEILISEARCH_HOST;
         const apiKey = process.env.MEILISEARCH_API_KEY || '';
         if (host && typeof MeiliSearch === 'function') {
@@ -38,6 +41,8 @@ let SearchService = class SearchService {
         }
     }
     async onModuleInit() {
+        this.isPg = this.placesRepo.manager.connection.options.type === 'postgres';
+        this.fuzzyReady = await (0, fuzzy_search_1.ensureFuzzySearch)(this.placesRepo);
         if (!this.client)
             return;
         try {
@@ -121,19 +126,36 @@ let SearchService = class SearchService {
     }
     async databaseFallbackSearch(query, options) {
         const limit = options?.limit || 20;
-        const q = (0, typeorm_2.ILike)(`%${query}%`);
+        const placeQb = this.placesRepo.createQueryBuilder('place').take(limit);
+        const placeRank = (0, fuzzy_search_1.applyFuzzy)(placeQb, this.isPg, this.fuzzyReady, {
+            like: ['place.name', 'place.nameFr', 'place.nameAr', 'place.city', 'place.description'],
+            fuzzy: ['place.name', 'place.nameFr', 'place.nameAr', 'place.city'],
+        }, query, 'p');
+        if (placeRank)
+            placeQb.orderBy(placeRank, 'DESC');
+        const postQb = this.postsRepo.createQueryBuilder('post').take(limit);
+        const postRank = (0, fuzzy_search_1.applyFuzzy)(postQb, this.isPg, this.fuzzyReady, {
+            like: ['post.title', 'post.body'],
+            fuzzy: ['post.title'],
+        }, query, 'po');
+        if (postRank)
+            postQb.orderBy(postRank, 'DESC');
+        const userQb = this.usersRepo.createQueryBuilder('user')
+            .select([
+            'user.id', 'user.fullName', 'user.handle', 'user.avatar',
+            'user.bio', 'user.country', 'user.plan', 'user.role', 'user.followersCount',
+        ])
+            .take(limit);
+        const userRank = (0, fuzzy_search_1.applyFuzzy)(userQb, this.isPg, this.fuzzyReady, {
+            like: ['user.fullName', 'user.handle'],
+            fuzzy: ['user.fullName', 'user.handle'],
+        }, query, 'u');
+        if (userRank)
+            userQb.orderBy(userRank, 'DESC');
         const [places, posts, users] = await Promise.all([
-            this.placesRepo.find({ where: [
-                    { name: q }, { city: q }, { description: q },
-                ], take: limit }),
-            this.postsRepo.find({ where: [
-                    { title: q }, { body: q },
-                ], take: limit }),
-            this.usersRepo.find({
-                where: [{ fullName: q }, { handle: q }],
-                select: ['id', 'fullName', 'handle', 'avatar', 'bio', 'country', 'plan', 'role', 'followersCount'],
-                take: limit,
-            }),
+            placeQb.getMany(),
+            postQb.getMany(),
+            userQb.getMany(),
         ]);
         return { places, posts, users, total: places.length + posts.length + users.length };
     }

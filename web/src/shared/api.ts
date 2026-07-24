@@ -195,6 +195,10 @@ export const api = {
     return fetchWithAuth(`/api/v1/places${query}`);
   },
 
+  // Typeahead suggestions for the search box (slim payload, typo/accent tolerant).
+  suggestPlaces: (q: string, limit = 8) =>
+    fetchWithAuth(`/api/v1/places/suggest?q=${encodeURIComponent(q)}&limit=${limit}`),
+
   getPlace: (id: string) => fetchWithAuth(`/api/v1/places/${id}`),
   getFeaturedPlaces: () => fetchWithAuth('/api/v1/places/featured'),
   getPopularPlaces: () => fetchWithAuth('/api/v1/places/popular'),

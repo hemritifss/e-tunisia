@@ -1,0 +1,194 @@
+/* ============================================
+   CARTE — the atomic place card as a "carte postale"
+   --------------------------------------------
+   One postcard-styled card for every place across the app (Explore,
+   Favorites, Search, feed injections…). Extends the landing's `.ej-postcard`
+   visual language so places read as pasted prints in the carnet, not generic
+   web cards. Every value is token-driven → inherits the carnet paper/ink
+   system and its dark "night edition" automatically.
+   Component: react/components/Carte.tsx
+   ============================================ */
+.carte {
+    position: relative;
+    display: block;
+    background: var(--paper-print);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    box-shadow: var(--paper-shadow);
+    padding: var(--space-3);
+    rotate: var(--carte-tilt, 0deg);
+    transition: rotate var(--duration-normal) var(--ease-spring),
+                transform var(--duration-normal) var(--ease-out),
+                box-shadow var(--duration-normal) var(--ease-out);
+}
+/* Scattered-postcard tilt; straightens + lifts on hover. */
+.carte[data-tilt="0"] { --carte-tilt: -0.8deg; }
+.carte[data-tilt="1"] { --carte-tilt: 0.7deg; }
+.carte[data-tilt="2"] { --carte-tilt: -0.35deg; }
+.carte:hover,
+.carte:focus-within {
+    rotate: 0deg;
+    transform: translateY(-4px);
+    box-shadow: var(--paper-shadow-lift);
+}
+.carte:focus-within {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+}
+@media (prefers-reduced-motion: reduce) {
+    .carte { transition: box-shadow var(--duration-fast) var(--ease-out); }
+    .carte:hover, .carte:focus-within { transform: none; }
+}
+
+.carte-link {
+    display: block;
+    color: inherit;
+    text-decoration: none;
+}
+.carte-link:focus-visible { outline: none; } /* ring is on .carte via focus-within */
+
+/* ── Pasted photo print ─────────────────────── */
+.carte-photo {
+    position: relative;
+    margin: 0 0 var(--space-3);
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    border-radius: 2px;
+    background: var(--paper-warm);
+    box-shadow: inset 0 0 0 1px var(--rule-faint),
+                inset 0 -44px 40px -40px oklch(0% 0 0 / 0.28);
+}
+.carte-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform var(--duration-slow) var(--ease-out);
+}
+.carte:hover .carte-photo img { transform: scale(1.045); }
+
+/* Masking-tape strip, top-left of the print. */
+.carte-tape {
+    position: absolute;
+    top: -8px;
+    left: 16px;
+    width: 58px;
+    height: 20px;
+    background: var(--tape);
+    border-inline: 1px solid color-mix(in oklab, var(--ink) 8%, transparent);
+    rotate: -4deg;
+    box-shadow: 0 1px 3px oklch(0% 0 0 / 0.10);
+    z-index: 2;
+    pointer-events: none;
+}
+
+/* Rating as a postage stamp, bottom-right of the print. */
+.carte-stamp {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 3px 7px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--ink);
+    background: color-mix(in oklab, var(--paper-print) 90%, transparent);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    box-shadow: var(--shadow-sm);
+}
+.carte-stamp svg { color: var(--gold); fill: var(--gold); }
+
+/* Featured as a rubber stamp, bottom-left of the print. */
+.carte-featured {
+    position: absolute;
+    bottom: 8px;
+    left: 8px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--stamp-ink);
+    padding: 3px 7px;
+    border: 1.5px solid var(--stamp-ink);
+    border-radius: 3px;
+    background: color-mix(in oklab, var(--stamp-ink) 10%, var(--paper-print));
+    rotate: -5deg;
+    opacity: 0.92;
+}
+
+/* Save — a small paper button pinned to the card corner. */
+.carte-fav {
+    position: absolute;
+    top: var(--space-4);
+    right: var(--space-4);
+    width: 34px;
+    height: 34px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    color: var(--ink-soft);
+    background: color-mix(in oklab, var(--paper-print) 80%, transparent);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    border: 1px solid var(--rule);
+    box-shadow: var(--shadow-sm);
+    cursor: pointer;
+    z-index: 3;
+    transition: transform var(--duration-instant) var(--ease-spring),
+                color var(--duration-fast) var(--ease-out),
+                background var(--duration-fast) var(--ease-out);
+}
+.carte-fav:hover { color: var(--stamp-ink); transform: scale(1.08); }
+.carte-fav:active { transform: scale(0.92); }
+.carte-fav:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.carte-fav.is-saved { color: var(--stamp-ink); }
+.carte-fav-filled { fill: currentColor; }
+
+/* ── Body — kicker · serif title · postmark ─── */
+.carte-body { padding: 0 var(--space-1) var(--space-1); }
+.carte-kicker {
+    display: inline-block;
+    margin-bottom: 4px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+}
+.carte-title {
+    margin: 0 0 4px;
+    font-family: var(--font-editorial);
+    font-size: var(--text-lg);
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: var(--tracking-tight);
+    color: var(--text-primary);
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    transition: color var(--duration-fast) var(--ease-out);
+}
+.carte:hover .carte-title { color: var(--accent); }
+.carte-postmark {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    color: var(--ink-faint);
+}
+.carte-postmark svg { flex-shrink: 0; }
+.carte-postmark-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}

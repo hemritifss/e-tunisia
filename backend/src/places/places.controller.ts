@@ -39,6 +39,13 @@ export class PlacesController {
         return this.placesService.getPopular();
     }
 
+    // Must precede @Get(':id') — otherwise "suggest" is captured as an :id.
+    @Get('suggest')
+    @ApiOperation({ summary: 'Typeahead place-name suggestions (typo/accent tolerant)' })
+    suggest(@Query('q') q: string, @Query('limit') limit?: string) {
+        return this.placesService.suggest(q || '', limit ? Number(limit) : 8);
+    }
+
     @Get('nearby')
     @ApiOperation({ summary: 'Get nearby places' })
     getNearby(

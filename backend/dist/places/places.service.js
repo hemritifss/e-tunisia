@@ -20,6 +20,7 @@ const place_entity_1 = require("./place.entity");
 const user_entity_1 = require("../users/user.entity");
 const slugify_1 = require("slugify");
 const credits_service_1 = require("../credits/credits.service");
+const fuzzy_search_1 = require("../common/fuzzy-search");
 exports.BOOST_TIERS = {
     1: { days: 1, credits: 50, label: '1 day' },
     7: { days: 7, credits: 280, label: '7 days' },
@@ -30,6 +31,12 @@ let PlacesService = class PlacesService {
         this.placesRepo = placesRepo;
         this.usersRepo = usersRepo;
         this.credits = credits;
+        this.isPg = false;
+        this.fuzzyReady = false;
+    }
+    async onModuleInit() {
+        this.isPg = this.placesRepo.manager.connection.options.type === 'postgres';
+        this.fuzzyReady = await (0, fuzzy_search_1.ensureFuzzySearch)(this.placesRepo);
     }
     async attachDiscoveredBy(place) {
         if (!place?.submittedBy)
@@ -88,8 +95,12 @@ let PlacesService = class PlacesService {
             .leftJoinAndSelect('place.category', 'category')
             .where('place.isActive = :active', { active: true })
             .andWhere('place.isApproved = :approved', { approved: true });
+        let searchRank = null;
         if (search) {
-            qb.andWhere('(place.name ILIKE :search OR place.description ILIKE :search OR place.city ILIKE :search OR place.tags ILIKE :search)', { search: `%${search}%` });
+            searchRank = (0, fuzzy_search_1.applyFuzzy)(qb, this.isPg, this.fuzzyReady, {
+                like: ['place.name', 'place.nameFr', 'place.nameAr', 'place.city', 'place.tags', 'place.description'],
+                fuzzy: ['place.name', 'place.nameFr', 'place.nameAr', 'place.city'],
+            }, search);
         }
         if (categoryId) {
             qb.andWhere('place.categoryId = :categoryId', { categoryId });
@@ -112,7 +123,13 @@ let PlacesService = class PlacesService {
         if (verified === 'true') {
             qb.andWhere(`place.submittedBy IN (SELECT u.id FROM users u WHERE u.plan = 'business' AND (u."subscriptionExpiresAt" IS NULL OR u."subscriptionExpiresAt" > :nowVerified))`, { nowVerified: new Date() });
         }
-        qb.orderBy(`place.${sortBy}`, order);
+        if (searchRank) {
+            qb.orderBy(searchRank, 'DESC');
+            qb.addOrderBy(`place.${sortBy}`, order);
+        }
+        else {
+            qb.orderBy(`place.${sortBy}`, order);
+        }
         qb.skip((page - 1) * limit).take(limit);
         const [data, total] = await qb.getManyAndCount();
         return {
@@ -124,6 +141,26 @@ let PlacesService = class PlacesService {
                 totalPages: Math.ceil(total / limit),
             },
         };
+    }
+    async suggest(q, limit = 8) {
+        const term = (q || '').trim();
+        if (term.length < 2)
+            return [];
+        const qb = this.placesRepo
+            .createQueryBuilder('place')
+            .select(['place.id', 'place.name', 'place.slug', 'place.city', 'place.governorate', 'place.coverImage'])
+            .where('place.isActive = :active', { active: true })
+            .andWhere('place.isApproved = :approved', { approved: true })
+            .take(Math.min(Math.max(Number(limit) || 8, 1), 12));
+        const rank = (0, fuzzy_search_1.applyFuzzy)(qb, this.isPg, this.fuzzyReady, {
+            like: ['place.name', 'place.nameFr', 'place.nameAr', 'place.city'],
+            fuzzy: ['place.name', 'place.nameFr', 'place.nameAr', 'place.city'],
+        }, term, 's');
+        if (rank)
+            qb.orderBy(rank, 'DESC').addOrderBy('place.viewCount', 'DESC');
+        else
+            qb.orderBy('place.viewCount', 'DESC');
+        return qb.getMany();
     }
     async findBySlug(slug) {
         const place = await this.placesRepo.findOne({

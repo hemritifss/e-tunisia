@@ -9,6 +9,8 @@ export declare class SearchService implements OnModuleInit {
     private usersRepo;
     private client;
     private isReady;
+    private isPg;
+    private fuzzyReady;
     constructor(placesRepo: Repository<Place>, postsRepo: Repository<Post>, usersRepo: Repository<User>);
     onModuleInit(): Promise<void>;
     private ensureIndexes;

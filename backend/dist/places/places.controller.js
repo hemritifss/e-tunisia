@@ -41,6 +41,9 @@ let PlacesController = class PlacesController {
     getPopular() {
         return this.placesService.getPopular();
     }
+    suggest(q, limit) {
+        return this.placesService.suggest(q || '', limit ? Number(limit) : 8);
+    }
     getNearby(lat, lng, radius) {
         return this.placesService.getNearby(lat, lng, radius);
     }
@@ -89,6 +92,15 @@ __decorate([
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)
 ], PlacesController.prototype, "getPopular", null);
+__decorate([
+    (0, common_1.Get)('suggest'),
+    (0, swagger_1.ApiOperation)({ summary: 'Typeahead place-name suggestions (typo/accent tolerant)' }),
+    __param(0, (0, common_1.Query)('q')),
+    __param(1, (0, common_1.Query)('limit')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:returntype", void 0)
+], PlacesController.prototype, "suggest", null);
 __decorate([
     (0, common_1.Get)('nearby'),
     (0, swagger_1.ApiOperation)({ summary: 'Get nearby places' }),

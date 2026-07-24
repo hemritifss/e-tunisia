@@ -4,33 +4,12 @@ import { api, getImageUrl } from '../../shared/api';
 import { ArrowLeft, MapPin, Star, Compass, Award, Sparkles, ImageOff, Route, Check } from 'lucide-react';
 import { moodFromHash, MOOD_LIST, MoodDef } from '../components/mood-definitions';
 import { onRouteChange } from '../../router';
+import { Carte } from '../components/Carte';
 
 interface Place { id: string; name: string; city?: string; rating?: number; coverImage?: string; images?: string[]; category?: any; }
 interface Trip { slug: string; title: string; days: number; travelers: number; stops?: any[]; }
 interface Guide { id: string; handle: string | null; fullName: string; avatar: string | null; country: string | null; bio?: string | null; role?: string; followersCount?: number; }
 
-function PlaceTile({ p, tint }: { p: Place; tint: string }) {
-    const img = p.coverImage || (p.images && p.images[0]);
-    return (
-        <a
-            className="mood-place-tile"
-            href={`#/place/${p.id}`}
-            style={{ '--mood-tint': tint } as React.CSSProperties}
-            data-user-handle={undefined}
-        >
-            <div className="mood-place-cover">
-                {img
-                    ? <img src={getImageUrl(img)} alt="" loading="lazy" />
-                    : <span className="mood-place-cover-fallback" aria-hidden="true"><MapPin size={28} /></span>}
-                {p.rating ? <span className="mood-place-rating"><Star size={11} /> {Number(p.rating).toFixed(1)}</span> : null}
-            </div>
-            <div className="mood-place-body">
-                <strong>{p.name}</strong>
-                <span><MapPin size={11} /> {p.city || ''}{p.category?.name ? ` · ${p.category.name}` : ''}</span>
-            </div>
-        </a>
-    );
-}
 
 function TripCard({ t, tint }: { t: Trip; tint: string }) {
     const covers = (t.stops || []).slice(0, 3).map((s: any) => s?.placeCover).filter(Boolean);
@@ -202,7 +181,7 @@ export default function MoodPage() {
                     <div className="mood-skel-grid">{Array.from({ length: 4 }).map((_, i) => <div key={i} className="mood-skel-tile" />)}</div>
                 ) : places.length ? (
                     <div className="mood-place-grid">
-                        {places.map((p) => <PlaceTile key={p.id} p={p} tint={mood.tint} />)}
+                        {places.map((p, i) => <Carte key={p.id} place={p} index={i} />)}
                     </div>
                 ) : (
                     <div className="mood-empty">No {mood.label.toLowerCase()} places indexed yet. Be the first to add one.</div>

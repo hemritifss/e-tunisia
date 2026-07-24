@@ -1,8 +1,9 @@
 import '../../styles/messages-search.css';
 import React, { useEffect, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Search, X, MapPin, Users, Sparkles, Check, BadgeCheck } from 'lucide-react';
+import { Search, X, Users, Sparkles, Check, BadgeCheck } from 'lucide-react';
 import * as api from '../../api';
+import { Carte } from '../components/Carte';
 import { replace, currentPath, query as routeQuery } from '../../router';
 
 // Migrated from vanilla pages/search.ts — debounced aggregate search.
@@ -149,18 +150,9 @@ export default function SearchPage() {
             {places.length > 0 && (
               <Section title="Places" count={places.length}>
                 <div className="search-place-grid">
-                  {places.map((p: any) => {
-                    const cat = p.category?.name || p.category || '';
-                    return (
-                      <a key={p.id} href={`#/place/${p.id}`} className="search-place-card">
-                        <div className="search-place-img"><img src={api.getImageUrl(p.coverImage || (p.images && p.images[0]) || '', 'place')} alt="" loading="lazy" /></div>
-                        <div className="search-place-info">
-                          <strong>{p.name}</strong>
-                          <span className="search-place-sub"><MapPin /> {p.city || ''}{cat ? ' · ' + cat : ''}</span>
-                        </div>
-                      </a>
-                    );
-                  })}
+                  {places.map((p: any, i: number) => (
+                    <Carte key={p.id} place={p} index={i} />
+                  ))}
                 </div>
               </Section>
             )}

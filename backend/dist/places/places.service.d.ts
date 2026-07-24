@@ -1,3 +1,4 @@
+import { OnModuleInit } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { Place } from './place.entity';
 import { User } from '../users/user.entity';
@@ -22,11 +23,14 @@ export declare const BOOST_TIERS: {
     };
 };
 export type BoostTier = keyof typeof BOOST_TIERS;
-export declare class PlacesService {
+export declare class PlacesService implements OnModuleInit {
     private placesRepo;
     private usersRepo;
     private credits;
+    private isPg;
+    private fuzzyReady;
     constructor(placesRepo: Repository<Place>, usersRepo: Repository<User>, credits: CreditsService);
+    onModuleInit(): Promise<void>;
     private attachDiscoveredBy;
     sweepExpiredBoosts(): Promise<void>;
     boostListing(placeId: string, ownerUserId: string, days: number): Promise<{
@@ -45,6 +49,7 @@ export declare class PlacesService {
             totalPages: number;
         };
     }>;
+    suggest(q: string, limit?: number): Promise<Partial<Place>[]>;
     findBySlug(slug: string): Promise<Place>;
     findById(id: string): Promise<Place>;
     create(dto: CreatePlaceDto, submittedBy?: string): Promise<Place>;

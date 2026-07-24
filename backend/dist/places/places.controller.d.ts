@@ -18,6 +18,7 @@ export declare class PlacesController {
     }>;
     getFeatured(): Promise<import("./place.entity").Place[]>;
     getPopular(): Promise<import("./place.entity").Place[]>;
+    suggest(q: string, limit?: string): Promise<Partial<import("./place.entity").Place>[]>;
     getNearby(lat: number, lng: number, radius?: number): Promise<import("./place.entity").Place[]>;
     listMine(req: any): Promise<import("./place.entity").Place[]>;
     boostTiers(): ({

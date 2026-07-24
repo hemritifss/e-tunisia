@@ -1,15 +1,20 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 const MeiliSearch = require('meilisearch').MeiliSearch;
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, ILike } from 'typeorm';
+import { Repository } from 'typeorm';
 import { Place } from '../places/place.entity';
 import { Post } from '../posts/post.entity';
 import { User } from '../users/user.entity';
+import { applyFuzzy, ensureFuzzySearch } from '../common/fuzzy-search';
 
 @Injectable()
 export class SearchService implements OnModuleInit {
   private client: any;
   private isReady = false;
+  /** Connection is Postgres — enables ILIKE and the trigram fallback path. */
+  private isPg = false;
+  /** pg_trgm/unaccent installed — the DB fallback can do typo/accent-tolerant search. */
+  private fuzzyReady = false;
 
   constructor(
     @InjectRepository(Place) private placesRepo: Repository<Place>,
@@ -31,6 +36,10 @@ export class SearchService implements OnModuleInit {
   }
 
   async onModuleInit() {
+    // Prepare the DB fuzzy fallback regardless of whether Meilisearch is configured.
+    this.isPg = this.placesRepo.manager.connection.options.type === 'postgres';
+    this.fuzzyReady = await ensureFuzzySearch(this.placesRepo);
+
     if (!this.client) return;
     try {
       await this.client.health();
@@ -119,21 +128,40 @@ export class SearchService implements OnModuleInit {
 
   private async databaseFallbackSearch(query: string, options?: { limit?: number }) {
     const limit = options?.limit || 20;
-    const q = ILike(`%${query}%`);
+
+    // Typo/accent-tolerant on Postgres (trigram); plain substring elsewhere. Closest
+    // matches first when the fuzzy path is available.
+    const placeQb = this.placesRepo.createQueryBuilder('place').take(limit);
+    const placeRank = applyFuzzy(placeQb, this.isPg, this.fuzzyReady, {
+      like: ['place.name', 'place.nameFr', 'place.nameAr', 'place.city', 'place.description'],
+      fuzzy: ['place.name', 'place.nameFr', 'place.nameAr', 'place.city'],
+    }, query, 'p');
+    if (placeRank) placeQb.orderBy(placeRank, 'DESC');
+
+    const postQb = this.postsRepo.createQueryBuilder('post').take(limit);
+    const postRank = applyFuzzy(postQb, this.isPg, this.fuzzyReady, {
+      like: ['post.title', 'post.body'],
+      fuzzy: ['post.title'],
+    }, query, 'po');
+    if (postRank) postQb.orderBy(postRank, 'DESC');
+
+    // Public endpoint — select only safe, displayable fields (never password).
+    const userQb = this.usersRepo.createQueryBuilder('user')
+      .select([
+        'user.id', 'user.fullName', 'user.handle', 'user.avatar',
+        'user.bio', 'user.country', 'user.plan', 'user.role', 'user.followersCount',
+      ])
+      .take(limit);
+    const userRank = applyFuzzy(userQb, this.isPg, this.fuzzyReady, {
+      like: ['user.fullName', 'user.handle'],
+      fuzzy: ['user.fullName', 'user.handle'],
+    }, query, 'u');
+    if (userRank) userQb.orderBy(userRank, 'DESC');
 
     const [places, posts, users] = await Promise.all([
-      this.placesRepo.find({ where: [
-        { name: q }, { city: q }, { description: q },
-      ], take: limit }),
-      this.postsRepo.find({ where: [
-        { title: q }, { body: q },
-      ], take: limit }),
-      // Public endpoint — select only safe, displayable fields (never password).
-      this.usersRepo.find({
-        where: [{ fullName: q }, { handle: q }],
-        select: ['id', 'fullName', 'handle', 'avatar', 'bio', 'country', 'plan', 'role', 'followersCount'],
-        take: limit,
-      }),
+      placeQb.getMany(),
+      postQb.getMany(),
+      userQb.getMany(),
     ]);
 
     return { places, posts, users, total: places.length + posts.length + users.length };

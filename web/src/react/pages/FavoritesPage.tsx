@@ -1,9 +1,10 @@
 import React from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Heart, MapPin, Star, Compass } from 'lucide-react';
+import { Heart, Compass } from 'lucide-react';
 import * as api from '../../api';
 import { toggleFlag, isFlagged } from '../../ui-utils';
 import TunisiaLoader from '../components/TunisiaLoader';
+import { Carte } from '../components/Carte';
 
 // Migrated from vanilla pages/favorites.ts — same classes, same data merge
 // (server favoriteIds + local flags), same mock fallback.
@@ -42,10 +43,6 @@ async function loadFavorites(): Promise<any[]> {
   }
   // No mock fallback: a user with nothing saved sees the real empty state.
   return saved;
-}
-
-function placeImage(p: any): string {
-  return api.getImageUrl(p.coverImage || p.image || p.imageUrl || (p.images && p.images[0]) || '');
 }
 
 function Empty() {
@@ -94,34 +91,14 @@ export default function FavoritesPage() {
         ) : !saved || saved.length === 0 ? (
           <Empty />
         ) : (
-          saved.map((p) => (
-            <div key={p.id} className="place-card reveal-on-scroll">
-              <a href={`#/place/${p.id}`} className="place-card-link">
-                <img src={placeImage(p)} alt={p.name} className="place-card-img" loading="lazy" />
-                <div className="place-card-body">
-                  <div className="place-card-category">{p.category?.name || p.category || ''}</div>
-                  <h4 className="place-card-title">{p.name}</h4>
-                  <div className="place-card-location">
-                    <MapPin />
-                    {p.location || p.city || ''}
-                  </div>
-                  <div className="place-card-footer">
-                    <div className="place-card-rating">
-                      <Star />
-                      {p.rating || '4.5'}
-                    </div>
-                    <button
-                      className="place-card-save saved"
-                      data-place={p.id}
-                      aria-label="Unsave"
-                      onClick={(e) => unsave(e, p.id)}
-                    >
-                      <Heart />
-                    </button>
-                  </div>
-                </div>
-              </a>
-            </div>
+          saved.map((p, i) => (
+            <Carte
+              key={p.id}
+              place={p}
+              index={i}
+              isSaved
+              onToggleSave={(e) => unsave(e, p.id)}
+            />
           ))
         )}
       </div>
