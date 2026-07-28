@@ -28,6 +28,8 @@ export interface MoodDef {
     tagline: string;
     /** CSS variable expression; resolved via `--mood-tint` inline style. */
     tint: string;
+    /** Repo-local photograph for the arch-cropped feed rail. Never external. */
+    image: string;
     /** Tunisian cities most strongly associated with this mood. */
     cities: string[];
     /** Endorsement topic id (must match endorsement-topics). */
@@ -41,6 +43,7 @@ export const MOOD_DEFS: Record<string, MoodDef> = {
         id: 'beach', label: 'Beach', Icon: Waves,
         tagline: 'Mediterranean sunsets, white sand, lazy afternoons.',
         tint: 'var(--cyan)',
+        image: '/img/journey/djerba.webp',
         cities: ['Hammamet', 'Djerba', 'Sidi Bou Said', 'Sousse', 'Mahdia'],
         endorsementTopic: 'beach-spots',
         searchQuery: 'beach',
@@ -49,6 +52,7 @@ export const MOOD_DEFS: Record<string, MoodDef> = {
         id: 'desert', label: 'Desert', Icon: Sparkles,
         tagline: 'The Sahara is closer than you think — golden dunes, oases, silent skies.',
         tint: 'var(--terracotta)',
+        image: '/img/journey/douz.webp',
         cities: ['Tozeur', 'Matmata', 'Douz', 'Tataouine'],
         endorsementTopic: 'desert-trips',
         searchQuery: 'desert',
@@ -57,6 +61,7 @@ export const MOOD_DEFS: Record<string, MoodDef> = {
         id: 'medina', label: 'Medina', Icon: Landmark,
         tagline: 'Ancient walls, mosaic doorways, bargaining in the souks.',
         tint: 'var(--sand)',
+        image: '/img/journey/medina-tunis.webp',
         cities: ['Tunis', 'Kairouan', 'Sfax', 'Sousse'],
         endorsementTopic: 'medina-tours',
         searchQuery: 'medina',
@@ -65,6 +70,7 @@ export const MOOD_DEFS: Record<string, MoodDef> = {
         id: 'foodie', label: 'Foodie', Icon: UtensilsCrossed,
         tagline: 'Couscous, brik, makrouk — eat like a Tunisian grandmother.',
         tint: 'var(--warning)',
+        image: '/img/journey/brik.webp',
         cities: ['Sfax', 'Tunis', 'Sousse', 'Mahdia'],
         endorsementTopic: 'food-culture',
         searchQuery: 'food',
@@ -73,6 +79,7 @@ export const MOOD_DEFS: Record<string, MoodDef> = {
         id: 'adventure', label: 'Adventure', Icon: Mountain,
         tagline: 'Atlas peaks, salt flats, dune buggies, sea kayaking.',
         tint: 'var(--olive)',
+        image: '/img/journey/chott-el-djerid.webp',
         cities: ['Tabarka', 'Ain Draham', 'Tozeur', 'Douz'],
         endorsementTopic: 'hidden-gems',
         searchQuery: 'adventure',
@@ -81,6 +88,7 @@ export const MOOD_DEFS: Record<string, MoodDef> = {
         id: 'culture', label: 'Culture', Icon: Library,
         tagline: 'Roman ruins, Berber villages, museums you can lose a day in.',
         tint: 'var(--violet)',
+        image: '/img/journey/dougga.webp',
         cities: ['Carthage', 'Dougga', 'El Jem', 'Kairouan'],
         endorsementTopic: 'local-history',
         searchQuery: 'culture',
@@ -89,6 +97,7 @@ export const MOOD_DEFS: Record<string, MoodDef> = {
         id: 'relax', label: 'Relax', Icon: Wind,
         tagline: 'Hammams, blue doors, slow terraces, the kind of afternoon you call ahead about.',
         tint: 'var(--mediterranean-light)',
+        image: '/img/journey/sidi-bou-said.webp',
         cities: ['Sidi Bou Said', 'Djerba', 'Hammamet', 'Tabarka'],
         endorsementTopic: 'beach-spots',
         searchQuery: 'spa wellness',
@@ -97,6 +106,7 @@ export const MOOD_DEFS: Record<string, MoodDef> = {
         id: 'spiritual', label: 'Spiritual & Slow', Icon: Sunrise,
         tagline: 'Kairouan at dawn, Sufi nights, desert silence — Tunisia at its quietest.',
         tint: 'var(--warning)',
+        image: '/img/journey/kairouan.webp',
         cities: ['Kairouan', 'Tozeur', 'Matmata', 'Mahdia'],
         endorsementTopic: 'local-history',
         searchQuery: 'mosque spiritual',

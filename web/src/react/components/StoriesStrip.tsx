@@ -104,13 +104,15 @@ export function StoriesStrip() {
 
   if (isLoading) {
     return (
-      <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
-        {Array.from({ length: 7 }).map((_, i) => (
-          <div key={i} className="flex-shrink-0 flex flex-col items-center gap-1.5">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-black/5 dark:bg-white/10 animate-pulse" />
-            <div className="w-14 h-2 rounded bg-black/5 dark:bg-white/10 animate-pulse" />
-          </div>
-        ))}
+      <div className="stories-v2-wrap">
+        <div className="stories-v2-track">
+          {Array.from({ length: 7 }).map((_, i) => (
+            <div key={i} className="stories-v2-tile" aria-hidden="true">
+              <span className="stories-v2-skel-ring" />
+              <span className="stories-v2-skel-label" />
+            </div>
+          ))}
+        </div>
       </div>
     );
   }

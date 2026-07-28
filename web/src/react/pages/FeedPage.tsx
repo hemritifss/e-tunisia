@@ -1,15 +1,12 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { goTo } from '../../router';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
   MessageCircle,
   Share2,
   Bookmark,
   MapPin,
-  Clock,
-  TrendingUp,
-  Flame,
   Coins,
   Repeat,
   Languages,
@@ -33,12 +30,11 @@ import { AdCard } from '../components/AdCard';
 import { ComposeBox } from '../components/ComposeBox';
 import { SuggestedUsers } from '../components/SuggestedUsers';
 import { TrendingHashtags } from '../components/TrendingHashtags';
-import { ReactionPicker, REACTIONS } from '../components/ReactionPicker';
+import { ReactionPicker } from '../components/ReactionPicker';
 import { OnboardingBanner } from '../components/OnboardingBanner';
 import { FeaturedPlaces } from '../components/FeaturedPlaces';
 import { DiscoverTrips } from '../components/DiscoverTrips';
 import { WelcomeStrip } from '../components/WelcomeStrip';
-import { TunisiaPulse } from '../components/TunisiaPulse';
 import { MoodCompass } from '../components/MoodCompass';
 import { TierBadge } from '../components/TierBadge';
 import { PullToRefresh } from '../components/PullToRefresh';
@@ -49,21 +45,14 @@ import { StarRating } from '../components/StarRating';
 import { DiscoveryCard } from '../components/DiscoveryCard';
 import { Reveal } from '../components/Reveal';
 import { SponsorsStrip } from '../components/SponsorsStrip';
-import { Plus, User as UserIcon, RefreshCcw, Users as UsersIcon, Sparkles, Compass } from 'lucide-react';
+import { Plus, RefreshCcw, Sparkles, Compass } from 'lucide-react';
 import { useAuthStore as _useAuthStoreFeed } from '../stores/auth-store';
 import { requireAuth } from '../../ui-utils';
 
 type SortType = 'foryou' | 'hot' | 'new' | 'top' | 'following' | 'mine';
 
-// Labels resolve through i18n at render time (see FeedSortBar); only icons here.
-const sortIcons: Record<SortType, React.ReactNode> = {
-  foryou:    <Sparkles size={14} />,
-  hot:       <Flame size={14} />,
-  new:       <Clock size={14} />,
-  top:       <TrendingUp size={14} />,
-  following: <UsersIcon size={14} />,
-  mine:      <UserIcon size={14} />,
-};
+/** Tab order. Labels resolve through i18n at render time (see FeedSortBar). */
+const SORT_VALUES: SortType[] = ['foryou', 'hot', 'new', 'top', 'following', 'mine'];
 
 // Hover hints: one-word tab labels don't explain what each ranking means.
 const sortHints: Record<SortType, string> = {
@@ -267,16 +256,16 @@ function PostCard({ post, priority = false }: { post: Post; priority?: boolean }
             fallback={post.author?.fullName}
             size="sm"
           />
-          <div className="post-card-v2-byline">
-            <strong>
-              {post.author?.fullName || 'Anonymous'}
-              <TierBadge plan={(post.author as any)?.plan} role={(post.author as any)?.role} size="xs" />
-            </strong>
-            <span>
-              {authorHandle ? `@${authorHandle} · ` : ''}{formatDate(post.createdAt)}
-            </span>
-          </div>
+          <strong className="post-card-v2-byline">
+            {post.author?.fullName || 'Anonymous'}
+            <TierBadge plan={(post.author as any)?.plan} role={(post.author as any)?.role} size="xs" />
+          </strong>
         </a>
+        {/* Time and place are real values, so they carry the mono treatment.
+            Place sits in the byline on desktop and under the media on mobile,
+            where the 3a head has no room for it. */}
+        <span className="post-card-v2-meta">· {formatDate(post.createdAt)}</span>
+        {post.location && <span className="post-card-v2-place">· {post.location}</span>}
         {post.category && (
           <span className="post-card-v2-category">{post.category}</span>
         )}
@@ -315,7 +304,7 @@ function PostCard({ post, priority = false }: { post: Post; priority?: boolean }
           type="button"
           onClick={handleTranslate}
           disabled={translating}
-          className="post-card-v2-translate inline-flex items-center gap-1 text-xs font-medium text-brand hover:underline disabled:opacity-50 mt-0.5 ml-0.5"
+          className="post-card-v2-translate"
         >
           <Languages size={12} />
           {translating ? 'Translating…' : translated && !showOriginal ? 'Show original' : 'Translate'}
@@ -329,11 +318,8 @@ function PostCard({ post, priority = false }: { post: Post; priority?: boolean }
             muted
             playsInline
             preload="metadata"
-            className="w-full h-full object-cover rounded-xl"
           />
-          <span className="absolute bottom-2 right-2 px-2 py-0.5 rounded-md bg-black/50 text-white text-xs font-medium">
-            VIDEO
-          </span>
+          <span className="post-card-v2-media-tag">VIDEO</span>
         </a>
       )}
       {images.length > 0 && !(post as any).videoUrl && (
@@ -342,7 +328,7 @@ function PostCard({ post, priority = false }: { post: Post; priority?: boolean }
 
       {post.location && (
         <div className="post-card-v2-loc">
-          <MapPin size={12} /> {post.location}
+          <MapPin size={11} /> {post.location}
         </div>
       )}
 
@@ -361,23 +347,24 @@ function PostCard({ post, priority = false }: { post: Post; priority?: boolean }
             />
             {/* Zero counts are noise — show the number only once it exists. */}
             <button className="post-card-v2-action pc-act-comment" onClick={handleComment} aria-label="Comments">
-              <MessageCircle size={15} />
+              <MessageCircle size={17} />
               {Number(post.commentCount) > 0 && <span>{formatNumber(post.commentCount)}</span>}
             </button>
             <button className={`post-card-v2-action pc-act-repost ${repostedLocal ? 'is-active' : ''}`} onClick={handleRepost} aria-label={repostedLocal ? 'Undo repost' : 'Repost'}>
-              <Repeat size={15} />
+              <Repeat size={17} />
               {Number(repostCount) > 0 && <span>{formatNumber(repostCount)}</span>}
             </button>
           </>
         )}
         {isReview && (
           <a className="post-card-v2-action pc-act-review" href={detailHash} aria-label="Read review on place page">
-            <MapPin size={15} />
+            <MapPin size={17} />
             <span>Visit place</span>
           </a>
         )}
+        {/* Verbs sit opposite the counts; the rule is CSS-side so RTL mirrors. */}
         <button className="post-card-v2-action pc-act-share" onClick={handleShare} aria-label="Share">
-          <Share2 size={15} />
+          <Share2 size={17} />
           <span>Share</span>
         </button>
         <button
@@ -385,13 +372,7 @@ function PostCard({ post, priority = false }: { post: Post; priority?: boolean }
           onClick={handleSave}
           aria-label={isSavedLocal ? 'Unsave' : 'Save'}
         >
-          <motion.span
-            animate={isSavedLocal ? { scale: [1, 1.35, 1] } : { scale: 1 }}
-            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-            style={{ display: 'inline-flex' }}
-          >
-            <Bookmark size={15} className={isSavedLocal ? 'fill-current' : ''} />
-          </motion.span>
+          <Bookmark size={17} className={isSavedLocal ? 'fill-current' : ''} />
           <span>{isSavedLocal ? 'Saved' : 'Save'}</span>
         </button>
         {post.author && (
@@ -406,8 +387,7 @@ function PostCard({ post, priority = false }: { post: Post; priority?: boolean }
             aria-label="Tip the author"
             title="Send a small thank-you (TND) to the author"
           >
-            <Coins size={15} />
-            <span>Tip</span>
+            <Coins size={17} />
           </button>
         )}
       </footer>
@@ -416,9 +396,9 @@ function PostCard({ post, priority = false }: { post: Post; priority?: boolean }
 }
 
 /**
- * Segmented-pill sort bar that becomes elevated when the page scrolls past it.
- * Replaces the old Tailwind-utility sort row with a token-driven, sticky control
- * that matches the rest of the redesign.
+ * Underline tab rail. It is deliberately not sticky: the feed reads as one
+ * document, and a floating pill bar re-introduces the card chrome the rest of
+ * this page just shed.
  */
 function FeedSortBar({
   sort,
@@ -433,23 +413,8 @@ function FeedSortBar({
   onRefresh: () => void;
   total: number;
 }) {
-  const railRef = useRef<HTMLDivElement | null>(null);
   const refreshBtnRef = useRef<HTMLButtonElement | null>(null);
   const t = useT();
-
-  useEffect(() => {
-    const rail = railRef.current;
-    if (!rail) return;
-    // Sentinel a pixel above the rail tells us when it sticks.
-    const sentinel = document.createElement('div');
-    sentinel.style.cssText = 'position:absolute;top:-1px;height:1px;width:1px;';
-    rail.parentElement?.insertBefore(sentinel, rail);
-    const obs = new IntersectionObserver(([entry]) => {
-      rail.classList.toggle('is-scrolled', !entry.isIntersecting);
-    }, { threshold: [0] });
-    obs.observe(sentinel);
-    return () => { obs.disconnect(); sentinel.remove(); };
-  }, []);
 
   const handleRefresh = () => {
     const btn = refreshBtnRef.current;
@@ -461,8 +426,8 @@ function FeedSortBar({
   };
 
   return (
-    <div ref={railRef} className="feed-sort-rail" role="tablist" aria-label="Feed sort">
-      {(Object.keys(sortIcons) as SortType[]).map((key) => {
+    <div className="feed-tabs" role="tablist" aria-label="Feed sort">
+      {SORT_VALUES.map((key) => {
         if ((key === 'mine' || key === 'following') && !isAuth) return null;
         const isActive = sort === key;
         return (
@@ -471,21 +436,20 @@ function FeedSortBar({
             role="tab"
             aria-selected={isActive}
             onClick={() => onSort(key)}
-            className={`feed-sort-pill${isActive ? ' is-active' : ''}`}
+            className={`feed-tab${isActive ? ' is-active' : ''}`}
             title={sortHints[key]}
           >
-            {sortIcons[key]}
             {t(`sort.${key}`)}
           </button>
         );
       })}
       {total > 0 && (
-        <span className="feed-sort-meta" aria-live="polite">{total} {t('sort.posts')}</span>
+        <span className="feed-tabs-count" aria-live="polite">{total} {t('sort.posts')}</span>
       )}
       <button
         ref={refreshBtnRef}
         onClick={handleRefresh}
-        className="feed-sort-refresh"
+        className="feed-tabs-refresh"
         title="Refresh feed"
         aria-label="Refresh feed"
       >
@@ -494,8 +458,6 @@ function FeedSortBar({
     </div>
   );
 }
-
-const SORT_VALUES: SortType[] = ['foryou', 'hot', 'new', 'top', 'following', 'mine'];
 
 /** Sort tab lives in the URL (?sort=hot) so refresh and share keep context. */
 function sortFromUrl(): SortType {
@@ -609,15 +571,15 @@ export default function FeedPage() {
   };
 
   return (
-    <div className="compass-shell animate-fade-in" data-design="carnet">
+    <div className="compass-shell animate-fade-in">
       {/* The page had no h1 at all — headings started at h3/h4. */}
       <h1 className="visually-hidden">e-Tunisia community feed</h1>
       {/* Top band: welcome/hero spans full width */}
       <div className="compass-top">
         <WelcomeStrip />
         {isAuth && <OnboardingBanner />}
-        <TunisiaPulse />
         <MoodCompass />
+        <div className="feed-zellige" aria-hidden="true" />
       </div>
 
       {/* 2-column body: wide feed + sticky discovery panel */}
@@ -633,7 +595,7 @@ export default function FeedPage() {
             <Reveal delay={0.24}><SponsorsStrip /></Reveal>
           </div>
 
-      {/* Sort bar — segmented pill control with sliding refresh affordance */}
+      {/* Sort rail — underline tabs above the reading column */}
       <FeedSortBar
         sort={sort}
         onSort={setSort}
@@ -647,8 +609,10 @@ export default function FeedPage() {
         await queryClient.invalidateQueries({ queryKey: ['feed'] });
         await queryClient.refetchQueries({ queryKey: ['feed'] });
       }}>
-      <div className="space-y-4">
-        <AnimatePresence mode="popLayout">
+      {/* Each post owns its own bottom rule and spacing, so the list itself
+          adds none. AnimatePresence/popLayout is deliberately absent: pulling
+          an exiting item out of flow makes the rules below it jump. */}
+      <div className="feed-list">
           {isLoading ? (
             Array.from({ length: 3 }).map((_, i) => <PostCardSkeleton key={i} />)
           ) : isError ? (
@@ -697,14 +661,14 @@ export default function FeedPage() {
                   : <PostCard key={item.id} post={item} priority={i === 0} />
             )
           )}
-        </AnimatePresence>
       </div>
       </PullToRefresh>
 
-      {/* Load more trigger */}
-      <div ref={loadMoreRef} className="py-4 text-center">
+      {/* Load more trigger. Must stay a plain in-flow block: the infinite-scroll
+          IntersectionObserver watches this element, not a class. */}
+      <div ref={loadMoreRef} className="feed-load-more">
         {isFetchingNextPage && (
-          <div className="space-y-3">
+          <div className="feed-list">
             <PostCardSkeleton />
             <PostCardSkeleton />
           </div>
@@ -713,7 +677,7 @@ export default function FeedPage() {
           <button
             type="button"
             onClick={() => fetchNextPage()}
-            className="px-5 py-2 rounded-full bg-surface border border-black/5 dark:border-white/10 text-sm font-medium"
+            className="feed-retry"
           >
             Couldn't load more — tap to retry
           </button>
@@ -726,10 +690,9 @@ export default function FeedPage() {
       </div>
         </div>{/* /compass-feed */}
 
-        {/* Right sticky column: the tabbed Tunisia Now panel + quick DMs.
-            The conversations rail card was a shipped messenger surface that
-            silently vanished from desktop when this column replaced the old
-            FeedRightRail stack — and it fills the empty space below the panel. */}
+        {/* Right sticky column: three ruled sections + quick DMs. The
+            conversations rail is a shipped messenger surface and it fills the
+            space below the sections. */}
         <aside className="compass-rail">
           <TunisiaNowPanel />
           <ActiveConversationsRail />

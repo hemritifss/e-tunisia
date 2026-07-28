@@ -59,17 +59,20 @@ export const PlaceCardSkeleton = () => (
   </div>
 );
 
+/**
+ * Mirrors the rules layout of a real post, block for block, so the crossfade
+ * to content lands without a layout shift.
+ */
 export const PostCardSkeleton = () => (
-  <div className="rounded-2xl overflow-hidden bg-surface shadow-sm p-4 space-y-3">
-    <div className="flex gap-3">
-      <Skeleton variant="circle" width={40} height={40} />
-      <div className="flex-1 space-y-2">
-        <Skeleton variant="text" width="60%" />
-        <Skeleton variant="text" width="30%" />
-      </div>
+  <article className="post-skeleton" aria-hidden="true">
+    <div className="post-skeleton-head">
+      <span className="post-skeleton-avatar" />
+      <span className="post-skeleton-bar" style={{ width: '30%' }} />
     </div>
-    <Skeleton variant="text" width="90%" />
-    <Skeleton variant="text" width="75%" />
-    <Skeleton variant="rect" height={200} className="w-full rounded-xl" />
-  </div>
+    <span className="post-skeleton-title" />
+    <span className="post-skeleton-title" style={{ width: '62%' }} />
+    <span className="post-skeleton-bar" style={{ width: '96%' }} />
+    <span className="post-skeleton-bar" style={{ width: '88%' }} />
+    <span className="post-skeleton-media" />
+  </article>
 );
