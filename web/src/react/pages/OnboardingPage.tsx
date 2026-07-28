@@ -7,7 +7,7 @@ import {
 import * as api from '../../api';
 import { requireAuth, showToast } from '../../ui-utils';
 import { goTo } from '../../router';
-import TunisiaLoader from '../components/TunisiaLoader';
+import { FormSkeleton } from '../components/RouteSkeleton';
 
 // Migrated from vanilla pages/onboarding.ts — day-1 retention wizard.
 
@@ -194,7 +194,7 @@ export default function OnboardingPage() {
       </div>
       <main className="onb-shell">
         {loading ? (
-          <div className="onb-loading"><TunisiaLoader size={56} label="Setting things up…" /></div>
+          <div className="onb-loading"><FormSkeleton fields={4} label="Setting things up" /></div>
         ) : step === 0 ? (
           <section className="onb-card onb-welcome">
             <div className="onb-illustration onb-illustration-welcome" aria-hidden="true">

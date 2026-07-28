@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Compass, MapPin, CalendarDays, Flame, Clock, Users, Eye, SearchX } from 'lucide-react';
+import { PageHeader } from '../components/PageHeader';
 import * as api from '../../api';
-import TunisiaLoader from '../components/TunisiaLoader';
+import { CardGridSkeleton } from '../components/RouteSkeleton';
 
 // Migrated from vanilla pages/discover-trips.ts — community trip browse with
 // sort tabs + debounced city filter + duration select.
@@ -87,19 +88,11 @@ export default function DiscoverTripsPage() {
 
   return (
     <div className="discover-trips-page page-enter" id="discover-trips-root">
-      <header className="discover-trips-hero">
-        <div className="discover-trips-hero-bg" aria-hidden="true" />
-        <div className="discover-trips-hero-mesh" aria-hidden="true" />
-        <div className="discover-trips-hero-orbs" aria-hidden="true">
-          <span className="discover-trips-hero-orb" />
-          <span className="discover-trips-hero-orb" />
-        </div>
-        <div className="discover-trips-hero-content">
-          <span className="discover-trips-eyebrow"><Compass /> Community plans</span>
-          <h1>Discover <span className="discover-trips-accent">trips</span></h1>
-          <p>Travel plans shared by the e-Tunisia community. Tap any trip to view the full plan or clone it as your own.</p>
-        </div>
-      </header>
+      <PageHeader
+        eyebrow={<><Compass size={13} /> Community plans · carnet de voyages</>}
+        title={<>Discover <em>trips</em></>}
+        subtitle="Travel plans shared by the e-Tunisia community. Tap any trip to view the full plan or clone it as your own."
+      />
 
       <div className="discover-trips-filters">
         <div className="discover-trips-tabs" role="tablist" aria-label="Sort trips">
@@ -148,7 +141,7 @@ export default function DiscoverTripsPage() {
 
       <div className="discover-trips-grid">
         {isLoading ? (
-          <div className="discover-trips-loading"><TunisiaLoader size={56} label="Loading trips…" /></div>
+          <CardGridSkeleton count={6} label="Loading trips" />
         ) : isError ? (
           <p className="text-muted" style={{ padding: 'var(--space-3)' }}>Could not load trips.</p>
         ) : (data || []).length === 0 ? (

@@ -6,7 +6,11 @@
 import React from 'react';
 import { mountIsland, unmountAllIslands } from './react/lib/islands';
 import { showToast } from './ui-utils';
-import { goTo, replace, currentRoute, onRouteChange, normalizeLegacyHash, beforeLeave, restoreScroll } from './router';
+import { goTo, replace, currentRoute, onRouteChange, normalizeLegacyHash, beforeLeave, restoreScroll, cancelScrollRestore } from './router';
+import { startNavProgress, finishNavProgress } from './nav-progress';
+import { PRIMARY_PATHS } from './destinations';
+import { initHints, maybeShowHints } from './hints';
+import { initOptimistic } from './optimistic';
 import { useAuthStore } from './react/stores/auth-store';
 import { initAnalytics } from './analytics';
 import { initI18n } from './i18n';
@@ -70,6 +74,7 @@ const BadgesPage = React.lazy(() => import('./react/pages/BadgesPage'));
 const ProfileEditPage = React.lazy(() => import('./react/pages/ProfileEditPage'));
 const HeroPage = React.lazy(() => import('./react/pages/HeroPage'));
 const NotFoundPage = React.lazy(() => import('./react/pages/NotFoundPage'));
+const YouPage = React.lazy(() => import('./react/pages/YouPage'));
 const AboutPage = React.lazy(() => import('./react/pages/AboutPage'));
 const PartnerPage = React.lazy(() => import('./react/pages/PartnerPage'));
 const LegalPage = React.lazy(() => import('./react/pages/LegalPage'));
@@ -132,9 +137,11 @@ function getRoute(route: string): Route {
     return { render: () => '', init: () => {}, page: 'explore', isReact: true };
   }
 
-  // Trip plan — /trip (cart) or /trip/<slug> (saved); React island reads slug from path
+  // Trip plan — /trip (cart) or /trip/<slug> (saved); React island reads slug from path.
+  // page: 'trip' — it is its own bottom-rail tab now, so it must not borrow
+  // 'itineraries' or the Trip tab would never light up.
   if (/^\/trip(?:\/[a-z0-9]{4,32})?$/i.test(path)) {
-    return { render: () => '', init: () => {}, page: 'itineraries', isReact: true };
+    return { render: () => '', init: () => {}, page: 'trip', isReact: true };
   }
 
   // Circuit detail — /itineraries/<slug>; the island reads the slug from the path
@@ -228,6 +235,9 @@ function getRoute(route: string): Route {
     '/collections': { render: () => '', init: () => {}, page: 'collections', isReact: true },
     '/about': { render: () => '', init: () => {}, page: 'hero', isReact: true },
     '/hero': { render: () => '', init: () => {}, page: 'hero', isReact: true },
+    // The "You" hub — the single home for everything that used to be buried in
+    // the avatar dropdown and the mobile drawer.
+    '/you': { render: () => '', init: () => {}, page: 'you', isReact: true },
     '/credits': { render: () => '', init: () => {}, page: 'profile', isReact: true },
     '/profile/edit': { render: () => '', init: () => {}, page: 'profile', isReact: true },
     '/profile-edit': { render: () => '', init: () => {}, page: 'profile', isReact: true },
@@ -248,6 +258,11 @@ function getRoute(route: string): Route {
 function navigate() {
   const content = document.getElementById('page-content');
   if (!content) return;
+
+  // Thin top line instead of a blanking spinner. Self-hides if the route turns
+  // out to be instant; React routes complete it from inside the Suspense
+  // boundary (islands.tsx), vanilla routes complete it after paint below.
+  startNavProgress();
 
   // Save scroll position before leaving current route
   beforeLeave();
@@ -285,36 +300,10 @@ function navigate() {
     mobileNavEl.setAttribute('aria-hidden', 'false');
   }
 
-  // Auto-hide the bottom rail while reading: slide it away on scroll-down, bring
-  // it back on scroll-up (or near the very top/bottom). Attached once.
-  if (mobileNavEl && !(window as any).__railAutoHideInit) {
-    (window as any).__railAutoHideInit = true;
-    let lastY = window.scrollY;
-    let ticking = false;
-    const THRESHOLD = 8; // ignore tiny jitters
-    const onScroll = () => {
-      if (ticking) return;
-      ticking = true;
-      requestAnimationFrame(() => {
-        const y = window.scrollY;
-        const dy = y - lastY;
-        const nearTop = y < 80;
-        const nearBottom = window.innerHeight + y >= document.documentElement.scrollHeight - 80;
-        if (nearTop || nearBottom) {
-          mobileNavEl.classList.remove('mobile-nav--hidden');
-        } else if (dy > THRESHOLD) {
-          mobileNavEl.classList.add('mobile-nav--hidden');      // scrolling down
-        } else if (dy < -THRESHOLD) {
-          mobileNavEl.classList.remove('mobile-nav--hidden');   // scrolling up
-        }
-        lastY = y;
-        ticking = false;
-      });
-    };
-    window.addEventListener('scroll', onScroll, { passive: true });
-  }
-  // A fresh navigation (this runs each render) should always reveal the rail;
-  // the scroll-to-top below then re-syncs the scroll baseline.
+  // The rail no longer hides on scroll. Auto-hide made the app's only
+  // orientation cue disappear exactly when people were lost in a long feed,
+  // and combined with the old horizontal scroller it meant the nav was often
+  // neither visible nor complete. Five fixed tabs stay put.
   if (mobileNavEl) mobileNavEl.classList.remove('mobile-nav--hidden');
 
   // Mobile nav create button → open post modal
@@ -446,6 +435,8 @@ function navigate() {
         currentUnmount = mountIsland(BadgesPage, islandRoot);
       } else if (path === '/profile/edit' || path === '/profile-edit') {
         currentUnmount = mountIsland(ProfileEditPage, islandRoot);
+      } else if (path === '/you') {
+        currentUnmount = mountIsland(YouPage, islandRoot);
       } else if (path === '/hero') {
         currentUnmount = mountIsland(HeroPage, islandRoot);
       } else if (path === '/about') {
@@ -466,6 +457,8 @@ function navigate() {
       content.innerHTML = route.render();
       route.init();
       replaceIcons();
+      // Vanilla routes render synchronously — done the moment they paint.
+      finishNavProgress();
     };
     // Vanilla route - use View Transitions API if available.
     if ('startViewTransition' in document) {
@@ -490,7 +483,9 @@ function navigate() {
     const el = link as HTMLElement;
     const href = el.getAttribute('href')?.replace('#', '') || '';
     // For guest users, auth-gated mobile nav items redirect to login
-    const authGated = ['/messages', '/profile', '/favorites', '/saved', '/settings'];
+    // /you is deliberately NOT gated — it renders a sign-in prompt plus the
+    // public destinations, so guests get an orientation page rather than a wall.
+    const authGated = ['/messages', '/profile', '/favorites', '/saved', '/settings', '/trip'];
     const isProtected = authGated.some(p => href === p || href.startsWith(p + '/'));
     if (isProtected && !apiService.isLoggedIn()) {
       el.onclick = (e) => {
@@ -508,9 +503,10 @@ function navigate() {
   // messages/:id, …) so phone users always have a way back. Hidden on the
   // primary destinations reachable from the bottom rail.
   {
-    const currentPath = currentRoute().split('?')[0];
-    const PRIMARY_PATHS = ['/', '/explore', '/map', '/itineraries', '/reels', '/events', '/tips', '/collections', '/profile'];
-    const isPrimary = PRIMARY_PATHS.includes(currentPath);
+    const path = currentRoute().split('?')[0];
+    // Top-level tabs have nothing above them, so the back control would be a
+    // lie. Sourced from the shared registry so it can't drift from the rail.
+    const isPrimary = PRIMARY_PATHS.includes(path);
     const backBtn = document.getElementById('nav-back') as HTMLButtonElement | null;
     if (backBtn) {
       backBtn.hidden = isPrimary;
@@ -519,14 +515,11 @@ function navigate() {
         else goTo('/');
       };
     }
-    // Keep the active tab of the scrollable rail centered in view.
-    const scroller = document.getElementById('mobile-nav-scroll');
-    const activeItem = scroller?.querySelector<HTMLElement>('.mobile-nav-item.active');
-    if (scroller && activeItem) {
-      const target = activeItem.offsetLeft - (scroller.clientWidth - activeItem.offsetWidth) / 2;
-      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      scroller.scrollTo({ left: Math.max(0, target), behavior: reduce ? 'auto' : 'smooth' });
-    }
+    // No auto-scrolling of the rail any more — all five tabs are always on
+    // screen, so there is never an off-screen tab to bring into view.
+
+    // Offer at most one contextual hint for this page, after it settles.
+    maybeShowHints(path);
   }
 
   // Restore scroll position on back/forward; scroll to top on new navigation.
@@ -535,6 +528,9 @@ function navigate() {
   if (isPopstate) {
     restoreScroll(currentRoute());
   } else {
+    // A forward navigation always starts at the top — and must abort any restore
+    // still retrying for the page we just left, or it would drag us back down.
+    cancelScrollRestore();
     window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
   }
   (window as any).__routerPush = false;
@@ -1624,9 +1620,29 @@ function initLinkInterceptor() {
       const a = el as HTMLAnchorElement;
       if (a.target === '_blank' || a.hasAttribute('download')) return;
       const href = a.getAttribute('href') || '';
-      // Only intercept in-app routes: legacy "#/x". Bare "#" anchors, "#section"
-      // jumps, and external/absolute URLs keep their native behavior.
-      if (href.startsWith('#/')) target = href;
+
+      if (href.startsWith('#/')) {
+        // Legacy hash route — still supported, plenty of templates use it.
+        target = href;
+      } else if (
+        // Real in-app URL, e.g. href="/explore". These used to fall through to
+        // the browser and trigger a FULL PAGE RELOAD on every shell link, which
+        // is why the markup had to keep using "#/x" everywhere despite the
+        // router advertising clean URLs. Same-origin, non-hash, non-protocol
+        // links now route client-side.
+        href &&
+        !href.startsWith('#') &&
+        !/^[a-z][a-z0-9+.-]*:/i.test(href) &&   // mailto:, tel:, http(s):, …
+        !href.startsWith('//') &&               // protocol-relative → external
+        a.origin === location.origin
+      ) {
+        // Anything the app doesn't route (e.g. /uploads/x.jpg, /api/…) must keep
+        // its native behaviour, or we'd swallow real file navigations.
+        const path = a.pathname;
+        if (!/^\/(api|uploads|assets|icon\.png|manifest|sw\.js)/.test(path)) {
+          target = path + a.search;
+        }
+      }
     }
     if (!target) return;
 
@@ -1654,6 +1670,8 @@ function init() {
   initPostModal();
   initLinkInterceptor();
   initIconTooltips(); // aria-label → hover hint for every icon-only control
+  initHints();        // one-at-a-time coach marks tethered to real controls
+  initOptimistic();   // flush held save/like commits when the page is hidden
 
   document.getElementById('theme-toggle')?.addEventListener('click', toggleTheme);
 

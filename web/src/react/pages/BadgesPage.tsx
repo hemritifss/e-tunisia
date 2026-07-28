@@ -1,5 +1,6 @@
 import '../../styles/badges.css';
 import React from 'react';
+import { PageHeader } from '../components/PageHeader';
 import { useQuery } from '@tanstack/react-query';
 import {
   Award, Trophy, Star, Footprints, Pencil, Mountain, Lightbulb, Camera, MapPin,
@@ -65,16 +66,11 @@ export default function BadgesPage() {
 
   return (
     <div className="badges-page page-enter">
-      <header className="badges-hero">
-        <div className="badges-hero-bg" aria-hidden="true" />
-        <div className="badges-hero-mesh" aria-hidden="true" />
-        <div className="badges-hero-orbs" aria-hidden="true"><span className="badges-hero-orb" /><span className="badges-hero-orb" /></div>
-        <div className="badges-hero-content">
-          <span className="badges-eyebrow"><Award /> Achievements</span>
-          <h1>Badges &amp; <span className="badges-accent">milestones</span></h1>
-          <p>Explore Tunisia and earn badges for your adventures. Complete challenges to unlock new achievements.</p>
-        </div>
-      </header>
+      <PageHeader
+        eyebrow={<><Award size={13} /> Achievements · carnet des trophées</>}
+        title={<>Badges &amp; <em>milestones</em></>}
+        subtitle="Explore Tunisia and earn badges for your adventures. Complete challenges to unlock new achievements."
+      />
 
       <section className="badges-stats" id="badges-stats" aria-label="Badge progress">
         {!isLoading && badges.length > 0 && (

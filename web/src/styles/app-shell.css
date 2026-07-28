@@ -73,6 +73,13 @@
     letter-spacing: var(--tracking-tight);
     color: var(--text-primary);
 }
+/* Editorial italic-accent emphasis inside masthead titles (the circuits look:
+   "Circuits you can <em>actually take</em>"). */
+.page-head__title em {
+    font-style: italic;
+    color: var(--accent);
+    font-weight: inherit;
+}
 .page-head__subtitle {
     margin-top: var(--space-2);
     max-width: 60ch;

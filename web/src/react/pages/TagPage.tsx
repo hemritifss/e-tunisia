@@ -4,7 +4,7 @@ import { ArrowLeft, Hash, Rss, Heart, MessageCircle, MapPin } from 'lucide-react
 import * as api from '../../api';
 import { linkifyHashtagsAndMentions } from '../../ui-utils';
 import { currentPath, onRouteChange } from '../../router';
-import TunisiaLoader from '../components/TunisiaLoader';
+import { ListSkeleton } from '../components/RouteSkeleton';
 
 // Migrated from vanilla pages/tag.ts — /tag/:tag hashtag feed.
 
@@ -118,7 +118,7 @@ export default function TagPage() {
       </header>
       <div id="tag-list" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
         {isLoading ? (
-          <div className="favorites-loading"><TunisiaLoader size={52} /></div>
+          <ListSkeleton count={5} label="Loading posts" rowHeight={92} />
         ) : items.length === 0 ? (
           <div className="empty-state">
             <Hash style={{ width: '3rem', height: '3rem', color: 'var(--text-muted)' }} />

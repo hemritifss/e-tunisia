@@ -1,6 +1,6 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { Challenge, ChallengeType } from './challenge.entity';
 import { UserChallenge, UserChallengeStatus } from './user-challenge.entity';
 import { UserStreak } from './streak.entity';
@@ -146,14 +146,20 @@ export class ChallengesService {
 
   async getOrCreateUserChallenges(userId: string): Promise<UserChallenge[]> {
     const dailyChallenges = await this.generateDailyChallenges();
+    if (!dailyChallenges.length) return [];
+
+    // One query for all the user's existing rows instead of a findOne per
+    // challenge, and one batched insert for whichever are missing.
+    const existing = await this.userChallengeRepo.find({
+      where: { userId, challengeId: In(dailyChallenges.map((c) => c.id)) },
+      relations: ['challenge'],
+    });
+    const byChallengeId = new Map(existing.map((uc) => [uc.challengeId, uc]));
+
+    const toCreate: UserChallenge[] = [];
     const userChallenges: UserChallenge[] = [];
-
     for (const challenge of dailyChallenges) {
-      let userChallenge = await this.userChallengeRepo.findOne({
-        where: { userId, challengeId: challenge.id },
-        relations: ['challenge'],
-      });
-
+      let userChallenge = byChallengeId.get(challenge.id);
       if (!userChallenge) {
         userChallenge = new UserChallenge();
         userChallenge.userId = userId;
@@ -161,11 +167,11 @@ export class ChallengesService {
         userChallenge.status = UserChallengeStatus.IN_PROGRESS;
         userChallenge.progress = 0;
         userChallenge.target = challenge.requirements?.targetCount || 1;
-        await this.userChallengeRepo.save(userChallenge);
+        toCreate.push(userChallenge);
       }
-
       userChallenges.push(userChallenge);
     }
+    if (toCreate.length) await this.userChallengeRepo.save(toCreate);
 
     return userChallenges;
   }

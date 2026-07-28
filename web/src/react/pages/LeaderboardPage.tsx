@@ -4,7 +4,8 @@ import React, { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Trophy, Globe, Building2, Check, Sparkles, BadgeCheck, Gem, Crown } from 'lucide-react';
 import * as api from '../../api';
-import TunisiaLoader from '../components/TunisiaLoader';
+import { ListSkeleton } from '../components/RouteSkeleton';
+import { PageHeader } from '../components/PageHeader';
 
 // Migrated from the vanilla pages/leaderboard.ts — same markup classes, same
 // data calls + mock fallback, same data-user-* attrs (drive the right-click
@@ -130,12 +131,7 @@ function CityRow({ entry }: { entry: any }) {
 }
 
 function Loading({ label }: { label: string }) {
-  return (
-    <div className="leaderboard-loading">
-      <TunisiaLoader size={52} />
-      <p>{label}</p>
-    </div>
-  );
+  return <ListSkeleton count={8} label={label} rowHeight={64} />;
 }
 
 function Empty({ message }: { message: string }) {
@@ -268,19 +264,11 @@ export default function LeaderboardPage() {
 
   return (
     <div className="leaderboard-page page-enter">
-      <header className="leaderboard-hero">
-        <div className="leaderboard-hero-bg" aria-hidden="true" />
-        <div className="leaderboard-hero-mesh" aria-hidden="true" />
-        <div className="leaderboard-hero-orbs" aria-hidden="true">
-          <span className="leaderboard-hero-orb" />
-          <span className="leaderboard-hero-orb" />
-        </div>
-        <div className="leaderboard-hero-content">
-          <span className="leaderboard-eyebrow"><Trophy /> Rankings</span>
-          <h1><span className="leaderboard-accent">Leaderboard</span></h1>
-          <p>Climb the ranks by exploring, reviewing, and sharing.</p>
-        </div>
-      </header>
+      <PageHeader
+        eyebrow={<><Trophy size={13} /> Rankings · carnet des classements</>}
+        title={<>The <em>Leaderboard</em></>}
+        subtitle="Climb the ranks by exploring, reviewing, and sharing."
+      />
 
       <nav className="leaderboard-tabs" role="tablist" aria-label="Leaderboard mode">
         <button

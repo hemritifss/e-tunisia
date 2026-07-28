@@ -59,6 +59,7 @@
   <link rel="stylesheet" href="/src/styles/sub-components.css" />
   <link rel="stylesheet" href="/src/styles/skeletons.css" />
   <link rel="stylesheet" href="/src/styles/popups.css" />
+  <link rel="stylesheet" href="/src/styles/ux.css" />
   <link rel="stylesheet" href="/src/styles/tailwind.css" />
 </head>
 <body>
@@ -81,11 +82,14 @@
           <span class="logo-text-ar" lang="ar" aria-hidden="true">تونس</span>
         </a>
         <div class="nav-links" id="nav-links">
-          <a href="#/" class="nav-link active" data-page="feed" data-i18n="nav.feed">Home</a>
-          <a href="#/explore" class="nav-link" data-page="explore" data-i18n="nav.explore">Explore</a>
-          <a href="#/map" class="nav-link" data-page="map" data-i18n="nav.map">Map</a>
-          <a href="#/ai-planner" class="nav-link" data-page="ai-planner" data-i18n="nav.aiPlanner">AI Planner</a>
-          <a href="#/reels" class="nav-link" data-page="reels" data-i18n="nav.reels">Reels</a>
+          <!-- Mirrors the mobile rail's primary destinations, plus the two
+               discovery surfaces desktop has room for. Same labels as the
+               registry — no more "Circuits" here and "Itineraries" there. -->
+          <a href="/" class="nav-link active" data-page="feed" data-i18n="nav.feed">Home</a>
+          <a href="/explore" class="nav-link" data-page="explore" data-i18n="nav.explore">Explore</a>
+          <a href="/map" class="nav-link" data-page="map" data-i18n="nav.map">Map</a>
+          <a href="/trip" class="nav-link" data-page="trip">Trip</a>
+          <a href="/reels" class="nav-link" data-page="reels" data-i18n="nav.reels">Reels</a>
         </div>
         <div class="nav-actions">
           <button class="nav-search-trigger" data-open-cmdk aria-label="Search anything (Ctrl+K)">
@@ -115,36 +119,17 @@
                 <span class="text-muted" data-user-level>Welcome</span>
               </div>
 
-              <div class="dropdown-section">Profile</div>
-              <a href="#/profile" class="dropdown-item"><i class="lucide-user"></i> Profile</a>
-              <a href="#/u/me" class="dropdown-item" data-passport-link><i class="lucide-id-card"></i> My Passport</a>
-              <a href="#/activity" class="dropdown-item"><i class="lucide-rss"></i> Following Activity</a>
-              <a href="#/messages" class="dropdown-item"><i class="lucide-message-circle"></i> Messages</a>
-
-              <div class="dropdown-section">Discover</div>
-              <a href="#/ai-planner" class="dropdown-item"><i class="lucide-sparkles"></i> AI Planner</a>
-              <a href="#/map" class="dropdown-item"><i class="lucide-map"></i> Map</a>
-              <a href="#/itineraries" class="dropdown-item"><i class="lucide-route"></i> Itineraries</a>
-              <a href="#/collections" class="dropdown-item"><i class="lucide-layers"></i> Collections</a>
-
-              <div class="dropdown-section">Library</div>
-              <a href="#/favorites" class="dropdown-item"><i class="lucide-heart"></i> Saved Places</a>
-              <a href="#/saved" class="dropdown-item"><i class="lucide-bookmark"></i> Saved Posts</a>
-              <a href="#/trip" class="dropdown-item"><i class="lucide-luggage"></i> My Trip</a>
-              <a href="#/discover-trips" class="dropdown-item"><i class="lucide-compass"></i> Discover Trips</a>
-
-              <div class="dropdown-section">Achievements</div>
-              <a href="#/challenges" class="dropdown-item"><i class="lucide-flame"></i> Daily Tasks</a>
-              <a href="#/badges" class="dropdown-item"><i class="lucide-award"></i> Badges</a>
-              <a href="#/leaderboard" class="dropdown-item"><i class="lucide-trophy"></i> Leaderboard</a>
-              <a href="#/credits" class="dropdown-item"><i class="lucide-coins"></i> Credits &amp; Donations</a>
-
-              <div class="dropdown-section">Business</div>
-              <a href="#/inquiries" class="dropdown-item"><i class="lucide-send"></i> My Inquiries</a>
-              <a href="#/owner" class="dropdown-item"><i class="lucide-briefcase"></i> Owner Dashboard</a>
+              <!-- Shortcuts only. This used to be a 21-link, 6-section menu that
+                   duplicated the mobile drawer under different names; the full,
+                   described list now lives on the /you hub. Keep this to the
+                   handful of things worth reaching without a page load. -->
+              <a href="/u/me" class="dropdown-item" data-passport-link><i class="lucide-id-card"></i> My passport</a>
+              <a href="/messages" class="dropdown-item"><i class="lucide-message-circle"></i> Messages</a>
+              <a href="/favorites" class="dropdown-item"><i class="lucide-heart"></i> Saved places</a>
+              <a href="/settings" class="dropdown-item"><i class="lucide-settings"></i> Settings</a>
 
               <div class="dropdown-divider"></div>
-              <a href="#/settings" class="dropdown-item"><i class="lucide-settings"></i> Settings</a>
+              <a href="/you" class="dropdown-item"><i class="lucide-layout-grid"></i> All of You</a>
               <button class="dropdown-item text-danger" id="logout-btn"><i class="lucide-log-out"></i> Log out</button>
             </div>
           </div>
@@ -187,55 +172,33 @@
         </button>
       </div>
 
-      <!-- Discover — everything for exploring Tunisia. -->
+      <!-- This drawer used to mirror the avatar dropdown: ~20 links, the same
+           pages under different names ("Collections" here vs "Carnets" in the
+           rail, "Itineraries" vs "Circuits"). Both are now shortcut lists that
+           defer to the /you hub, which is the one place the full, described
+           set of destinations lives. -->
       <div class="mobile-menu-section">
-        <div class="mobile-menu-section-label">Discover</div>
-        <a href="#/" class="mobile-menu-item" data-page="feed"><i class="lucide-home"></i> Home</a>
-        <a href="#/explore" class="mobile-menu-item" data-page="explore"><i class="lucide-compass"></i> Explore</a>
-        <a href="#/map" class="mobile-menu-item" data-page="map"><i class="lucide-map"></i> Map</a>
-        <a href="#/itineraries" class="mobile-menu-item" data-page="itineraries"><i class="lucide-route"></i> Circuits</a>
-        <a href="#/collections" class="mobile-menu-item" data-page="collections"><i class="lucide-layers"></i> Collections</a>
-        <a href="#/events" class="mobile-menu-item" data-page="events"><i class="lucide-calendar"></i> Events</a>
-        <a href="#/tips" class="mobile-menu-item" data-page="tips"><i class="lucide-lightbulb"></i> Tips</a>
-        <a href="#/reels" class="mobile-menu-item" data-page="reels"><i class="lucide-clapperboard"></i> Reels</a>
-        <a href="#/ai-planner" class="mobile-menu-item" data-page="ai-planner"><i class="lucide-sparkles"></i> AI Planner</a>
+        <div class="mobile-menu-section-label">Go to</div>
+        <a href="/" class="mobile-menu-item" data-page="feed"><i class="lucide-home"></i> Home</a>
+        <a href="/explore" class="mobile-menu-item" data-page="explore"><i class="lucide-compass"></i> Explore</a>
+        <a href="/trip" class="mobile-menu-item" data-page="trip"><i class="lucide-luggage"></i> Trip</a>
+        <a href="/you" class="mobile-menu-item" data-page="you"><i class="lucide-user"></i> You</a>
       </div>
 
-      <!-- You — the traveller's own things. -->
       <div class="mobile-menu-section">
-        <div class="mobile-menu-section-label">You</div>
-        <a href="#/profile" class="mobile-menu-item"><i class="lucide-user"></i> Profile</a>
-        <a href="#/u/me" class="mobile-menu-item" data-passport-link><i class="lucide-id-card"></i> My Passport</a>
-        <a href="#/trip" class="mobile-menu-item"><i class="lucide-luggage"></i> My Trip</a>
-        <a href="#/favorites" class="mobile-menu-item"><i class="lucide-heart"></i> Saved Places</a>
-        <a href="#/saved" class="mobile-menu-item"><i class="lucide-bookmark"></i> Saved Posts</a>
-        <a href="#/activity" class="mobile-menu-item"><i class="lucide-rss"></i> Following Activity</a>
-      </div>
-
-      <!-- Rewards — gamification in one place. -->
-      <div class="mobile-menu-section">
-        <div class="mobile-menu-section-label">Rewards</div>
-        <a href="#/challenges" class="mobile-menu-item"><i class="lucide-flame"></i> Daily Tasks</a>
-        <a href="#/badges" class="mobile-menu-item"><i class="lucide-award"></i> Badges</a>
-        <a href="#/leaderboard" class="mobile-menu-item"><i class="lucide-trophy"></i> Leaderboard</a>
-        <a href="#/credits" class="mobile-menu-item"><i class="lucide-coins"></i> Credits &amp; Donations</a>
-      </div>
-
-      <!-- Business — kept together, out of the traveller's way. -->
-      <div class="mobile-menu-section">
-        <div class="mobile-menu-section-label">Business</div>
-        <a href="#/inquiries" class="mobile-menu-item"><i class="lucide-send"></i> My Inquiries</a>
-        <a href="#/owner" class="mobile-menu-item"><i class="lucide-briefcase"></i> Owner Dashboard</a>
-        <a href="#/partner" class="mobile-menu-item"><i class="lucide-handshake"></i> Become a Partner</a>
+        <div class="mobile-menu-section-label">Shortcuts</div>
+        <a href="/u/me" class="mobile-menu-item" data-passport-link><i class="lucide-id-card"></i> My passport</a>
+        <a href="/messages" class="mobile-menu-item"><i class="lucide-message-circle"></i> Messages</a>
+        <a href="/favorites" class="mobile-menu-item"><i class="lucide-heart"></i> Saved places</a>
       </div>
 
       <!-- Premium CTA — highlighted, single. -->
       <div class="mobile-menu-section">
-        <a href="#/premium" class="mobile-menu-item mobile-menu-item--premium"><i class="lucide-crown"></i> Go Premium</a>
+        <a href="/premium" class="mobile-menu-item mobile-menu-item--premium"><i class="lucide-crown"></i> Go Premium</a>
       </div>
 
       <div class="mobile-menu-section">
-        <a href="#/settings" class="mobile-menu-item"><i class="lucide-settings"></i> Settings</a>
+        <a href="/settings" class="mobile-menu-item"><i class="lucide-settings"></i> Settings</a>
         <button class="mobile-menu-item text-danger" id="mobile-logout-btn"><i class="lucide-log-out"></i> Log out</button>
       </div>
     </div>
@@ -440,52 +403,31 @@
 
     <main id="page-content" class="main-content"></main>
 
-    <!-- Scrollable bottom-nav rail: the primary tabs stay visible, the rest of the
-         app's destinations swipe into view. The active tab auto-scrolls into view
-         (main.ts) so you always see where you are. Create button is anchored at the
-         end so it never scrolls away. -->
+    <!-- Bottom rail: five fixed tabs, always all visible.
+         It used to hold nine tabs in a horizontal scroller, which hid its own
+         contents — a tab you have to swipe to find is a tab nobody finds. The
+         four destinations plus a centred Create action fit any phone without
+         scrolling, and everything that was cut now lives on the /you hub. -->
     <nav class="mobile-nav" id="mobile-nav" aria-label="Primary">
-      <div class="mobile-nav-scroll" id="mobile-nav-scroll" role="tablist">
-        <a href="#/" class="mobile-nav-item active" data-page="feed">
-          <i class="lucide-home"></i>
-          <span>Home</span>
-        </a>
-        <a href="#/explore" class="mobile-nav-item" data-page="explore">
-          <i class="lucide-compass"></i>
-          <span>Explore</span>
-        </a>
-        <a href="#/map" class="mobile-nav-item" data-page="map">
-          <i class="lucide-map"></i>
-          <span>Map</span>
-        </a>
-        <a href="#/itineraries" class="mobile-nav-item" data-page="itineraries">
-          <i class="lucide-route"></i>
-          <span>Circuits</span>
-        </a>
-        <a href="#/reels" class="mobile-nav-item" data-page="reels">
-          <i class="lucide-clapperboard"></i>
-          <span>Reels</span>
-        </a>
-        <a href="#/events" class="mobile-nav-item" data-page="events">
-          <i class="lucide-calendar"></i>
-          <span>Events</span>
-        </a>
-        <a href="#/tips" class="mobile-nav-item" data-page="tips">
-          <i class="lucide-lightbulb"></i>
-          <span>Tips</span>
-        </a>
-        <a href="#/collections" class="mobile-nav-item" data-page="collections">
-          <i class="lucide-layers"></i>
-          <span>Carnets</span>
-        </a>
-        <a href="#/profile" class="mobile-nav-item" data-page="profile">
-          <i class="lucide-user"></i>
-          <span>Profile</span>
-        </a>
-      </div>
-      <button type="button" class="mobile-nav-create" id="mobile-nav-create" aria-label="Create post">
+      <a href="/" class="mobile-nav-item active" data-page="feed">
+        <i class="lucide-home"></i>
+        <span data-i18n="nav.feed">Home</span>
+      </a>
+      <a href="/explore" class="mobile-nav-item" data-page="explore">
+        <i class="lucide-compass"></i>
+        <span data-i18n="nav.explore">Explore</span>
+      </a>
+      <button type="button" class="mobile-nav-create" id="mobile-nav-create" aria-label="Create a post">
         <i class="lucide-plus"></i>
       </button>
+      <a href="/trip" class="mobile-nav-item" data-page="trip">
+        <i class="lucide-luggage"></i>
+        <span data-i18n="nav.trip">Trip</span>
+      </a>
+      <a href="/you" class="mobile-nav-item" data-page="you">
+        <i class="lucide-user"></i>
+        <span data-i18n="nav.you">You</span>
+      </a>
     </nav>
   </div>
 

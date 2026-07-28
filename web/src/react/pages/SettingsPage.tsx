@@ -7,7 +7,7 @@ import { showToast, isLoggedIn } from '../../ui-utils';
 import { goTo } from '../../router';
 import { getLocale, setLocale, LOCALES } from '../../i18n';
 import { useT } from '../../i18n/useT';
-import TunisiaLoader from '../components/TunisiaLoader';
+import { FormSkeleton } from '../components/RouteSkeleton';
 
 // Migrated from vanilla pages/settings.ts — appearance/language/notifications
 // (mostly cosmetic), blocked-users list (fetch + unblock), delete account.
@@ -40,8 +40,7 @@ function BlockedList() {
   if (isLoading) {
     return (
       <div className="settings-blocked-loading">
-        <TunisiaLoader size={52} />
-        <span>{t('settings.loading')}</span>
+        <FormSkeleton fields={6} label={t('settings.loading')} />
       </div>
     );
   }

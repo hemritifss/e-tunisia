@@ -6,7 +6,7 @@ import { ArrowLeft, FileQuestion, ThumbsUp, MessageSquare, Eye, BarChart3, Heart
 import * as api from '../../api';
 import { requireAuth, showToast, linkifyHashtagsAndMentions, isLoggedIn } from '../../ui-utils';
 import { currentPath, onRouteChange } from '../../router';
-import TunisiaLoader from '../components/TunisiaLoader';
+import { DetailSkeleton } from '../components/RouteSkeleton';
 
 // Migrated from vanilla pages/post-detail.ts — post + threaded comments + reactors sheet.
 
@@ -265,7 +265,7 @@ export default function PostDetailPage() {
     return (
       <div className="post-detail-page page-enter" data-design="sleek" id="post-detail-root">
         {BackLink}
-        <div className="post-detail-loading"><TunisiaLoader size={56} label="Loading post…" /></div>
+        <div className="post-detail-loading"><DetailSkeleton label="Loading post" hero={220} /></div>
       </div>
     );
   }

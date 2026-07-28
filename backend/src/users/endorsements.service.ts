@@ -1,6 +1,6 @@
 import { BadRequestException, Inject, Injectable, NotFoundException, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { Endorsement } from './endorsement.entity';
 import { User } from './user.entity';
 import { UsersService } from './users.service';
@@ -107,35 +107,45 @@ export class EndorsementsService {
         const summary = await this.topForUser(user.id, 20);
         if (!summary.length) return [];
 
-        // Fetch the recent endorsers for each topic in parallel.
-        const groups = await Promise.all(
-            summary.map(async (s) => {
-                const rows = await this.endorsementsRepo.find({
-                    where: { endorsedId: user.id, topic: s.topic },
-                    order: { createdAt: 'DESC' },
-                    take: 5,
-                });
-                if (!rows.length) return { ...s, recent: [] };
-                const endorsers = await this.usersRepo.find({
-                    where: rows.map((r) => ({ id: r.endorserId })),
-                    select: ['id', 'handle', 'fullName', 'avatar'] as any,
-                });
-                const byId = new Map(endorsers.map((u: any) => [u.id, u]));
-                return {
-                    ...s,
-                    recent: rows
-                        .map((r) => byId.get(r.endorserId))
-                        .filter(Boolean)
-                        .map((u: any) => ({
-                            id: u.id,
-                            handle: u.handle ?? null,
-                            fullName: u.fullName,
-                            avatar: u.avatar || null,
-                        })),
-                };
-            }),
-        );
-        return groups;
+        // Was N+2 queries PER topic (up to ~40 round-trips even with Promise.all,
+        // which just saturates the connection pool). Now 2 queries total: one for
+        // every endorsement across the summary topics, one for all endorsers.
+        const topics = summary.map((s) => s.topic);
+        const allRows = await this.endorsementsRepo.find({
+            where: { endorsedId: user.id, topic: In(topics) },
+            order: { createdAt: 'DESC' },
+        });
+
+        // Keep the 5 most-recent endorsers per topic (rows already sorted DESC).
+        const recentByTopic = new Map<string, Endorsement[]>();
+        for (const r of allRows) {
+            const arr = recentByTopic.get(r.topic) || [];
+            if (arr.length < 5) { arr.push(r); recentByTopic.set(r.topic, arr); }
+        }
+
+        const endorserIds = [
+            ...new Set([...recentByTopic.values()].flat().map((r) => r.endorserId)),
+        ];
+        const endorsers = endorserIds.length
+            ? await this.usersRepo.find({
+                where: { id: In(endorserIds) },
+                select: ['id', 'handle', 'fullName', 'avatar'] as any,
+            })
+            : [];
+        const byId = new Map(endorsers.map((u: any) => [u.id, u]));
+
+        return summary.map((s) => ({
+            ...s,
+            recent: (recentByTopic.get(s.topic) || [])
+                .map((r) => byId.get(r.endorserId))
+                .filter(Boolean)
+                .map((u: any) => ({
+                    id: u.id,
+                    handle: u.handle ?? null,
+                    fullName: u.fullName,
+                    avatar: u.avatar || null,
+                })),
+        }));
     }
 
     /** Which topics has the viewer already endorsed for this user? */

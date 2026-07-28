@@ -3,7 +3,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Bookmark, BookmarkX, Heart, MessageCircle, Tag, MapPin, AlertCircle, Rss } from 'lucide-react';
 import * as api from '../../api';
 import { showToast } from '../../ui-utils';
-import TunisiaLoader from '../components/TunisiaLoader';
+import { ListSkeleton } from '../components/RouteSkeleton';
+import { PageHeader } from '../components/PageHeader';
 
 // Migrated from vanilla pages/saved.ts — same classes/inline styles, same
 // api.listSavedPosts / unsavePost calls.
@@ -117,15 +118,14 @@ export default function SavedPage() {
 
   return (
     <div className="saved-page page-enter" data-design="sleek" id="saved-root">
-      <div className="favorites-header">
-        <h1><Bookmark /> Saved Posts</h1>
-        <p>Posts you've bookmarked to revisit. They stay here until you unsave them.</p>
-      </div>
+      <PageHeader
+        eyebrow={<><Bookmark size={13} /> Library · carnet personnel</>}
+        title="Saved Posts"
+        subtitle="Posts you've bookmarked to revisit. They stay here until you unsave them."
+      />
       <div>
         {isLoading ? (
-          <div className="favorites-loading">
-            <TunisiaLoader size={52} label="Loading your saved posts…" />
-          </div>
+          <ListSkeleton count={5} label="Loading your saved posts" rowHeight={92} />
         ) : isError ? (
           <div className="empty-state">
             <AlertCircle style={{ width: '3rem', height: '3rem', color: 'var(--text-muted)' }} />

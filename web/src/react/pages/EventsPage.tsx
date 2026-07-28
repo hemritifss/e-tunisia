@@ -1,5 +1,6 @@
 import '../../styles/events.css';
 import React, { useState } from 'react';
+import { PageHeader } from '../components/PageHeader';
 import { useQuery } from '@tanstack/react-query';
 import {
   CalendarDays, Music2, Theater, UtensilsCrossed, Trophy, Palette,
@@ -148,19 +149,11 @@ export default function EventsPage() {
 
   return (
     <div className="events-page page-enter">
-      <section className="event2-hero">
-        <div className="event2-hero-gradient" aria-hidden="true" />
-        <div className="event2-hero-mesh" aria-hidden="true" />
-        <div className="event2-hero-orbs" aria-hidden="true">
-          <span className="event2-hero-orb" />
-          <span className="event2-hero-orb" />
-        </div>
-        <div className="event2-hero-content">
-          <span className="event2-eyebrow"><CalendarDays /> Don't miss out</span>
-          <h1>What's happening in <span className="event2-accent">Tunisia</span></h1>
-          <p>Festivals, cultural tours, food tastings, and unforgettable experiences across the country.</p>
-        </div>
-      </section>
+      <PageHeader
+        eyebrow={<><CalendarDays size={13} /> Don't miss out · carnet des événements</>}
+        title={<>What's happening in <em>Tunisia</em></>}
+        subtitle="Festivals, cultural tours, food tastings, and unforgettable experiences across the country."
+      />
 
       <nav className="event2-filters-wrapper" aria-label="Event category filter">
         <div className="event2-filters" role="tablist">

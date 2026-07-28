@@ -23,7 +23,21 @@ const ROUTE_EVENT = 'router:change';
 
 /** Scroll position memory per route for back/forward restoration. */
 const scrollMemory = new Map<string, number>();
-let lastRoute = '';
+
+/**
+ * The route the user is currently *looking at*.
+ *
+ * This is NOT the same as `currentRoute()` during a navigation: `goTo()` pushes
+ * the new URL onto history *before* notifying listeners, so by the time the app
+ * reacts, `location` already describes the destination. Saving scroll against
+ * `currentRoute()` therefore filed the departing page's offset under the
+ * destination's key — and back-navigation restored that wrong value. We track
+ * the outgoing route explicitly instead.
+ */
+let lastRoute = currentRoute();
+
+/** Pending rAF for an in-flight scroll restore, so a new nav can cancel it. */
+let restoreFrame = 0;
 
 /** Normalize any target ('x' | '/x' | '#/x') into a clean path '/x'. */
 function normalize(target: string): string {
@@ -42,20 +56,76 @@ export function saveScroll(path: string): void {
   scrollMemory.set(path, window.scrollY);
 }
 
-/** Restore scroll position for a route (if we have one). */
-export function restoreScroll(path: string): void {
-  const y = scrollMemory.get(path);
-  if (typeof y === 'number') {
-    window.scrollTo({ top: y, behavior: 'instant' as ScrollBehavior });
-  } else {
-    window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
+/** Abort an in-flight restore (a newer navigation, or the user taking over). */
+export function cancelScrollRestore(): void {
+  if (restoreFrame) {
+    cancelAnimationFrame(restoreFrame);
+    restoreFrame = 0;
   }
 }
 
-/** Called by the router before leaving a route. Saves current scroll. */
+/**
+ * Restore the remembered scroll position for a route.
+ *
+ * The destination's content comes from a lazily-imported React island, so at
+ * call time the document is typically still 0px tall and a plain scrollTo()
+ * would clamp to the top — which is why "back" always dumped you at the top of
+ * the feed. We re-apply the offset across animation frames until the page has
+ * grown tall enough to honour it, giving up after ~1.2s so a genuinely short
+ * page doesn't retry forever.
+ */
+export function restoreScroll(path: string): void {
+  cancelScrollRestore();
+
+  const y = scrollMemory.get(path);
+  if (typeof y !== 'number' || y <= 0) {
+    window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
+    return;
+  }
+
+  const deadline = Date.now() + 1200;
+
+  // If the user starts scrolling while content streams in, they win — stop
+  // yanking the viewport out from under them.
+  const yieldToUser = () => cancelScrollRestore();
+  const opts = { passive: true, once: true } as AddEventListenerOptions;
+  window.addEventListener('wheel', yieldToUser, opts);
+  window.addEventListener('touchstart', yieldToUser, opts);
+  window.addEventListener('keydown', yieldToUser, opts);
+
+  const cleanup = () => {
+    window.removeEventListener('wheel', yieldToUser);
+    window.removeEventListener('touchstart', yieldToUser);
+    window.removeEventListener('keydown', yieldToUser);
+  };
+
+  const attempt = () => {
+    const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+    window.scrollTo({
+      top: Math.min(y, Math.max(0, maxScroll)),
+      behavior: 'instant' as ScrollBehavior,
+    });
+    // Short of the target and still within the budget → the island is probably
+    // still rendering. Try again next frame.
+    if (maxScroll < y && Date.now() < deadline) {
+      restoreFrame = requestAnimationFrame(attempt);
+    } else {
+      restoreFrame = 0;
+      cleanup();
+    }
+  };
+
+  attempt();
+}
+
+/**
+ * Called by the router before painting a new route. Files the current scroll
+ * offset against the route being *left* (see `lastRoute`), then advances the
+ * marker to the destination.
+ */
 export function beforeLeave(): void {
-  const path = currentRoute();
-  if (path) scrollMemory.set(path, window.scrollY);
+  if (lastRoute) scrollMemory.set(lastRoute, window.scrollY);
+  lastRoute = currentRoute();
 }
 
 /** Clear saved scroll for a route (e.g. after form submission). */

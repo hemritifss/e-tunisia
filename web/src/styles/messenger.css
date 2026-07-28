@@ -6,27 +6,28 @@
 /* ── Guest-mode global hides ─────────────────────
    `body.guest-mode` is toggled in main.ts when not authenticated.
    pages.css already hides #main-nav + post-modal + notif-panel; these
-   are the global FAB/launcher surfaces that were leaking through. The JS
-   in main.ts also sets `hidden` on #mobile-nav and removes the trip-cart
-   FAB outright, but these rules are a belt-and-braces guarantee. */
+   are the global FAB/launcher surfaces that were leaking through.
+
+   #mobile-nav is deliberately NOT in this list any more. It used to be, with
+   `display:none !important`, which meant logged-out visitors had no bottom
+   navigation whatsoever — while main.ts, further down the same flow, sets
+   `hidden = false` on it with the comment "show for everyone". The CSS won,
+   so the JS intent never took effect and the people with the least idea where
+   anything lives got the least navigation.
+
+   The rail is guest-safe: Home and Explore are public, Trip bounces guests to
+   sign-in (authGated in main.ts), and /you renders a sign-in card plus the
+   public destinations. */
 html body.guest-mode .trip-cart-fab,
 html body.guest-mode #trip-cart-fab,
 html body.guest-mode #trip-cart-drawer,
 html body.guest-mode .trip-cart-backdrop,
-html body.guest-mode #mobile-nav,
-html body.guest-mode .mobile-nav,
 html body.guest-mode #messenger-root .active-conv-fab,
 html body.guest-mode #messenger-root .active-conv-rail,
 html body.guest-mode #messenger-root .chat-pop-stack {
     display: none !important;
     visibility: hidden !important;
     pointer-events: none !important;
-}
-/* Reclaim the bottom safe-area padding that .main-content reserves for the
-   mobile bottom nav — now that the nav is hidden for guests, content can sit
-   flush against the edge. */
-html body.guest-mode .main-content {
-    padding-bottom: env(safe-area-inset-bottom, 0) !important;
 }
 
 /* ── Chat popups stack (bottom-right) ────────── */

@@ -204,6 +204,32 @@
     overflow: hidden;
     text-overflow: ellipsis;
 }
+/* Recent-searches header row (empty-box state) */
+.explore-suggest-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px var(--space-3) 4px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: var(--tracking-widest);
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+}
+.explore-suggest-clear-recents {
+    background: transparent;
+    border: none;
+    padding: 2px 4px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    cursor: pointer;
+    border-radius: var(--radius-xs, 6px);
+}
+.explore-suggest-clear-recents:hover { color: var(--gold-ink, var(--gold)); background: var(--surface-hover); }
 
 /* ── Controls row ─────────────────────────── */
 .explore-controls {

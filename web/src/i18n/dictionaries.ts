@@ -5,15 +5,21 @@ export type Locale = 'en' | 'fr' | 'ar';
 
 export const DICTIONARIES: Record<Locale, Record<string, string>> = {
     en: {
-        'nav.feed': 'Feed',
+        // Labels here must match src/destinations.ts exactly — that registry is
+        // the single source of truth for what a destination is called. The
+        // English nav used to say "Feed" while the bottom rail said "Home", and
+        // "Itineraries"/"Collections" here fought "Circuits"/"Carnets" elsewhere.
+        'nav.feed': 'Home',
         'nav.explore': 'Explore',
         'nav.aiPlanner': 'AI Planner',
         'nav.reels': 'Reels',
         'nav.events': 'Events',
         'nav.tips': 'Tips',
         'nav.map': 'Map',
-        'nav.itineraries': 'Itineraries',
-        'nav.collections': 'Collections',
+        'nav.trip': 'Trip',
+        'nav.you': 'You',
+        'nav.itineraries': 'Circuits',
+        'nav.collections': 'Carnets',
         'nav.search': 'Search anything…',
 
         'sort.foryou': 'For You',
@@ -203,15 +209,17 @@ export const DICTIONARIES: Record<Locale, Record<string, string>> = {
         'personality.revealFailed': "Couldn't reveal your personality right now — try again!",
     },
     fr: {
-        'nav.feed': 'Fil',
+        'nav.feed': 'Accueil',
+        'nav.trip': 'Voyage',
+        'nav.you': 'Vous',
         'nav.explore': 'Explorer',
         'nav.aiPlanner': 'Planificateur IA',
         'nav.reels': 'Reels',
         'nav.events': 'Événements',
         'nav.tips': 'Conseils',
         'nav.map': 'Carte',
-        'nav.itineraries': 'Itinéraires',
-        'nav.collections': 'Collections',
+        'nav.itineraries': 'Circuits',
+        'nav.collections': 'Carnets',
         'nav.search': 'Rechercher…',
 
         'sort.foryou': 'Pour vous',
@@ -402,6 +410,8 @@ export const DICTIONARIES: Record<Locale, Record<string, string>> = {
     },
     ar: {
         'nav.feed': 'الرئيسية',
+        'nav.trip': 'رحلتي',
+        'nav.you': 'حسابي',
         'nav.explore': 'استكشف',
         'nav.aiPlanner': 'المخطط الذكي',
         'nav.reels': 'ريلز',

@@ -11,6 +11,7 @@ import { openDonateModal } from '../../donate-modal';
 import { currentPath, goTo } from '../../router';
 import { isLoggedIn, requireAuth, showToast, linkifyHashtagsAndMentions } from '../../ui-utils';
 import { openSafetyMenu } from '../../safety-menu';
+import { optimistic } from '../../optimistic';
 import { getLocale } from '../../i18n';
 
 // Migrated from vanilla pages/user-profile.ts — public profile at /user/:id.
@@ -47,22 +48,29 @@ function userIdFromPath(): string {
 function FollowButton({ userId, userName, initial, onCountDelta }: { userId: string; userName: string; initial: boolean; onCountDelta: (d: number) => void }) {
   const [following, setFollowing] = useState(initial);
   const [hovering, setHovering] = useState(false);
-  const [busy, setBusy] = useState(false);
 
-  const onClick = async () => {
+  const onClick = () => {
     if (!requireAuth('follow members')) return;
     const was = following;
-    setBusy(true);
-    try {
-      if (was) await api.unfollowUser(userId); else await api.followUser(userId);
-      setFollowing(!was);
-      onCountDelta(was ? -1 : 1);
-      showToast(was ? `Unfollowed ${userName}` : `Following ${userName}`);
-    } catch (err: any) {
-      showToast(err?.message || 'Could not update follow', { type: 'error' });
-    } finally {
-      setBusy(false);
-    }
+    // Previously this awaited the request before flipping the label, so the
+    // button sat disabled and unchanged for the whole round-trip — the classic
+    // "did my tap register?" gap. Now it flips instantly and the request is
+    // held for the undo window, which also makes an accidental follow free to
+    // take back (no follow notification is ever sent).
+    optimistic({
+      key: `follow:${userId}`,
+      apply: () => {
+        setFollowing(!was);
+        onCountDelta(was ? -1 : 1);
+      },
+      revert: () => {
+        setFollowing(was);
+        onCountDelta(was ? 1 : -1);
+      },
+      commit: () => (was ? api.unfollowUser(userId) : api.followUser(userId)),
+      message: was ? `Unfollowed ${userName}` : `Following ${userName}`,
+      errorMessage: 'Could not update follow — check your connection.',
+    });
   };
 
   const label = following ? (hovering ? 'Unfollow' : 'Following') : 'Follow';
@@ -70,7 +78,6 @@ function FollowButton({ userId, userName, initial, onCountDelta }: { userId: str
   return (
     <button
       className={`btn ${following ? 'btn-following' : 'btn-primary'} ${following && hovering ? 'btn-following-hover' : ''}`}
-      disabled={busy}
       onMouseEnter={() => setHovering(true)}
       onMouseLeave={() => setHovering(false)}
       onClick={onClick}

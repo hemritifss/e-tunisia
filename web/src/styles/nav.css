@@ -290,58 +290,44 @@
     margin: var(--space-2) 0;
 }
 
-/* ── Mobile bottom nav — scrollable rail ─────────────
-   The old bar showed a fixed 5 destinations; users reported "there aren't enough
-   navs, especially on phone." It's now a horizontally scrollable strip: the
-   primary tabs are visible, the rest of the app swipes into view, and the active
-   tab auto-scrolls into view (main.ts) so you can always see where you are. */
+/* ── Mobile bottom nav ───────────────────────────────
+ * Four fixed tabs around a centred Create action — never scrolls, never hides.
+ *
+ * History worth keeping, because this bar has now failed twice in opposite
+ * directions. It began as 5 fixed destinations; users said "there aren't enough
+ * navs, especially on phone", so it became a 9-tab horizontal scroller. That
+ * was worse: a tab you have to swipe sideways to discover is a tab nobody
+ * discovers, and the auto-hide removed the bar exactly when a long feed had
+ * people most disoriented.
+ *
+ * The real defect in the original 5-tab bar was not the count — it was that
+ * everything cut from it fell into a 21-item dropdown and a 20-item drawer that
+ * used *different names for the same pages*. So the fix is a small fixed rail
+ * plus one real overflow destination (/you), not more tabs. */
+/* NB: display/align/justify stay in components.css, which keeps the rail
+ * `display:none` above 768px. Setting `display:flex` here would leak the
+ * mobile rail onto desktop, since this file loads after components.css. */
 .mobile-nav {
     background: var(--paper);
     border-top: 1px solid var(--rule);
     box-shadow: 0 -4px 16px oklch(0% 0 0 / 0.04);
-    justify-content: flex-start;   /* overrides the old space-around */
     gap: 0;
-    padding: 0;
-    /* Auto-hide: slides away on scroll-down, returns on scroll-up (main.ts),
-       giving reading pages the full screen while staying one flick away. */
-    transition: transform var(--duration-normal) var(--ease-out);
-    will-change: transform;
-}
-.mobile-nav--hidden {
-    transform: translateY(calc(100% + env(safe-area-inset-bottom, 0px)));
-}
-@media (prefers-reduced-motion: reduce) {
-    .mobile-nav { transition: none; }
+    padding: 0 var(--space-1);
 }
 
-.mobile-nav-scroll {
-    flex: 1 1 auto;
+/* Retained so any stray JS toggle degrades harmlessly; nothing sets it now. */
+.mobile-nav--hidden { transform: none; }
+
+.mobile-nav .mobile-nav-item {
+    flex: 1 1 0;
     min-width: 0;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    gap: 2px;
-    padding: 0 var(--space-2);
-    overflow-x: auto;
-    overflow-y: hidden;
-    scroll-snap-type: x proximity;
-    scroll-behavior: smooth;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    /* Fade both edges so it reads as "there's more — swipe me". */
-    -webkit-mask-image: linear-gradient(to right, transparent 0, #000 14px, #000 calc(100% - 14px), transparent 100%);
-            mask-image: linear-gradient(to right, transparent 0, #000 14px, #000 calc(100% - 14px), transparent 100%);
-}
-.mobile-nav-scroll::-webkit-scrollbar { display: none; height: 0; }
-@media (prefers-reduced-motion: reduce) {
-    .mobile-nav-scroll { scroll-behavior: auto; }
 }
 
-/* Create button — anchored at the end so it never scrolls out of reach. */
+/* Create button — centred in the rail, the one action among four destinations. */
 .mobile-nav .mobile-nav-create {
     flex: 0 0 auto;
     align-self: center;
-    margin: 0 var(--space-2) 0 4px;
+    margin: 0 var(--space-1);
     transform: none;                /* sit inside the bar, not floating above */
     background: var(--accent);
     box-shadow: var(--paper-shadow);

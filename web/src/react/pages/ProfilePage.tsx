@@ -11,7 +11,7 @@ import { goTo } from '../../router';
 import { getLocale } from '../../i18n';
 import { useT } from '../../i18n/useT';
 import { TravelPersonalityCard } from '../components/TravelPersonalityCard';
-import TunisiaLoader from '../components/TunisiaLoader';
+import { ProfilePageSkeleton } from '../components/RouteSkeleton';
 
 // Migrated from vanilla pages/profile.ts — own profile (cover, identity, XP, stats, quick links).
 
@@ -40,7 +40,7 @@ export default function ProfilePage() {
   if (userQ.isLoading) {
     return (
       <div className="profile-page-v2 page-enter" data-design="sleek">
-        <div className="up-loading" style={{ paddingTop: 120 }}><TunisiaLoader size={56} label={t('profile.loading')} /></div>
+        <ProfilePageSkeleton label={t('profile.loading')} />
       </div>
     );
   }

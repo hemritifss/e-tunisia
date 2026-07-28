@@ -1,8 +1,8 @@
 import { enqueuePopup, usePopupStore } from '../../stores/popup-store';
-import { TUTORIAL_DONE_KEY } from './TutorialPopup';
 import { BADGES } from '../badge-definitions';
 import * as api from '../../../api';
-import { currentPath, onRouteChange } from '../../../router';
+import { currentPath, onRouteChange, goTo } from '../../../router';
+import { showToast } from '../../../toasts';
 
 /**
  * Wires the events that surface popups. Call once at app boot.
@@ -61,14 +61,6 @@ function onQuietRoute(): boolean {
 
 function todayKey(): string {
   return new Date().toISOString().slice(0, 10); // YYYY-MM-DD
-}
-
-function tutorialDone(): boolean {
-  try {
-    return !!localStorage.getItem(TUTORIAL_DONE_KEY);
-  } catch {
-    return false;
-  }
 }
 
 function dailySeenToday(): boolean {
@@ -235,18 +227,23 @@ export async function checkStreakMilestone(): Promise<boolean> {
 }
 
 /**
- * Decide the one ambient popup for this session. Idempotent across reconnects:
- * the localStorage guards (last-seen, daily-seen, last-level) prevent re-firing.
+ * Decide the one ambient interruption for this session.
+ *
+ * Popups are now split into two lanes by how much they have earned:
+ *
+ *   MODAL  — level-up, streak milestone, badge, big tip. Things that just
+ *            happened *because of something the user did*. A modal is a fair
+ *            trade for a genuine moment.
+ *   QUIET  — welcome-back, the daily nudge. Things *we* want, not things they
+ *            did. These are now toasts: visible, dismissible, and they never
+ *            block the page or lock body scroll.
+ *
+ * First-run guidance left this file entirely. The tutorial modal fired before
+ * the user had any context for it and never returned; contextual hints
+ * (src/hints.ts) explain each control at the moment it is actually on screen.
  */
 export async function runSessionPopups() {
   if (!isLoggedIn() || onQuietRoute()) return;
-
-  // First run → the guided tour, nothing else competes.
-  if (!tutorialDone()) {
-    enqueuePopup({ kind: 'tutorial', priority: 10, dedupeKey: 'tutorial' });
-    touchLastSeen();
-    return;
-  }
 
   // Read the absence gap before refreshing the baseline.
   const days = daysSinceLastSeen();
@@ -264,23 +261,30 @@ export async function runSessionPopups() {
     return;
   }
 
-  // 3) Welcome back after an absence.
+  // 3) Welcome back after an absence — a greeting, not a dialogue box.
   if (days !== null && days >= WELCOME_BACK_DAYS) {
-    const added = enqueuePopup({ kind: 'welcome', priority: 8, dedupeKey: 'welcome', data: { days } });
-    if (added) {
-      markDailySeen();
-      return;
-    }
+    showToast({
+      message: `Welcome back — it's been ${days} days. Tunisia's been busy.`,
+      type: 'info',
+      duration: 6000,
+      action: { label: 'See what changed', onClick: () => goTo('/activity') },
+    });
+    markDailySeen();
+    return;
   }
 
-  // 4) Otherwise the daily nudge, once per day — but never at t=0. Wait for
-  //    the first scroll (or 8s), so the user sees the feed before we ask for
-  //    anything. Big moments above (level-up, streak) still fire immediately.
+  // 4) Otherwise the daily nudge, once per day — still never at t=0. Wait for
+  //    the first scroll (or 8s) so the feed lands before we ask for anything.
   if (!dailySeenToday()) {
     await afterFirstScrollOr(8000);
     if (onQuietRoute() || !isLoggedIn() || dailySeenToday()) return;
-    const added = enqueuePopup({ kind: 'daily', priority: 5, dedupeKey: 'daily' });
-    if (added) markDailySeen();
+    showToast({
+      message: 'Your daily tasks are ready.',
+      type: 'info',
+      duration: 6000,
+      action: { label: 'Open', onClick: () => goTo('/challenges') },
+    });
+    markDailySeen();
   }
 }
 

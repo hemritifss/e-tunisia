@@ -2,7 +2,8 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Send, Compass, AlertCircle, Star } from 'lucide-react';
 import * as api from '../../api';
-import TunisiaLoader from '../components/TunisiaLoader';
+import { ListSkeleton } from '../components/RouteSkeleton';
+import { PageHeader } from '../components/PageHeader';
 
 // Migrated from vanilla pages/inquiries.ts — quote/booking requests the user sent.
 
@@ -80,13 +81,14 @@ export default function InquiriesPage() {
 
   return (
     <div className="inquiries-page page-enter" data-design="sleek" id="inquiries-root">
-      <div className="favorites-header">
-        <h1><Send /> My Inquiries</h1>
-        <p>Quote and booking requests you've sent to places.</p>
-      </div>
+      <PageHeader
+        eyebrow={<><Send size={13} /> Requests · carnet de demandes</>}
+        title="My Inquiries"
+        subtitle="Quote and booking requests you've sent to places."
+      />
       <div className="inquiry-list">
         {isLoading ? (
-          <div className="favorites-loading"><TunisiaLoader size={56} label="Loading your inquiries…" /></div>
+          <ListSkeleton count={4} label="Loading your inquiries" rowHeight={96} />
         ) : isError ? (
           <div className="empty-state">
             <AlertCircle style={{ width: '3rem', height: '3rem', color: 'var(--text-muted)' }} />

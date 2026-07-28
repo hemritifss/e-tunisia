@@ -6,6 +6,7 @@ import * as api from '../../api';
 import { shareUrl, isFlagged, toggleFlag, requireAuth } from '../../ui-utils';
 import { absoluteUrl } from '../../router';
 import { formatShortDate } from '../../shared/dates';
+import { PageHeader } from '../components/PageHeader';
 
 // Migrated from vanilla pages/tips.ts — filters + like/share cards + submit modal.
 
@@ -196,22 +197,16 @@ export default function TipsPage() {
 
   return (
     <div className="tips-page page-enter">
-      <section className="tips2-hero">
-        <div className="tips2-hero-gradient" aria-hidden="true" />
-        <div className="tips2-hero-mesh" aria-hidden="true" />
-        <div className="tips2-hero-orbs" aria-hidden="true">
-          <span className="tips2-hero-orb" />
-          <span className="tips2-hero-orb" />
-        </div>
-        <div className="tips2-hero-content">
-          <span className="tips2-eyebrow"><Sparkles /> Community wisdom</span>
-          <h1>Travel <span className="tips2-accent">smarter</span></h1>
-          <p>Insider knowledge from experienced travelers and locals. Real tips, tested in the real Tunisia.</p>
-          <button type="button" className="tips2-share-cta" onClick={openModal}>
-            <Plus /> Share your tip
+      <PageHeader
+        eyebrow={<><Sparkles size={13} /> Community wisdom · carnet de conseils</>}
+        title={<>Travel <em>smarter</em></>}
+        subtitle="Insider knowledge from experienced travelers and locals. Real tips, tested in the real Tunisia."
+        actions={
+          <button type="button" className="btn btn-primary" onClick={openModal}>
+            <Plus size={15} /> Share your tip
           </button>
-        </div>
-      </section>
+        }
+      />
 
       <nav className="tips2-categories-wrapper" aria-label="Tip category filter">
         <div className="tips2-categories" role="tablist">

@@ -5,6 +5,7 @@ import { Search, X, Users, Sparkles, Check, BadgeCheck } from 'lucide-react';
 import * as api from '../../api';
 import { Carte } from '../components/Carte';
 import { replace, currentPath, query as routeQuery } from '../../router';
+import { useSearchAutocomplete } from '../components/useSearchAutocomplete';
 
 // Migrated from vanilla pages/search.ts — debounced aggregate search.
 
@@ -85,6 +86,13 @@ export default function SearchPage() {
     }
   };
 
+  // Shared typeahead + recent searches. Picking a recent refills the box and
+  // re-runs the keyword search; a place suggestion jumps straight to its page.
+  const ac = useSearchAutocomplete({
+    query: input,
+    onPickRecent: (term) => { setInput(term); setAiData(null); },
+  });
+
   const result = aiData || data;
   const places = result?.places || [];
   const posts = result?.posts || [];
@@ -99,18 +107,26 @@ export default function SearchPage() {
         <span className="search-page-eyebrow"><Search /> Discover</span>
         <h1>Search Tunisia</h1>
         <p>Find places, cities, tags, or travelers — all in one place.</p>
-        <div className="search-page-input-wrap">
+        <div className="search-page-input-wrap" ref={ac.anchorRef}>
           <Search className="search-page-input-icon" />
           <input
             ref={inputRef} id="search-page-input" type="search" className="search-page-input"
             placeholder="Search places, cities, tags, people…" autoComplete="off" aria-label="Search"
-            value={input} onChange={(e) => { setInput(e.target.value); if (aiData) setAiData(null); }}
-            onKeyDown={(e) => { if (e.key === 'Enter') runAiSearch(); }}
+            value={input} onChange={(e) => { setInput(e.target.value); ac.setOpen(true); if (aiData) setAiData(null); }}
+            {...ac.inputProps}
+            onFocus={() => ac.setOpen(true)}
+            onKeyDown={(e) => {
+              ac.inputProps.onKeyDown(e);
+              // Enter with a highlighted suggestion is consumed by the hook; a bare
+              // Enter falls through to natural-language AI search.
+              if (!e.defaultPrevented && e.key === 'Enter') runAiSearch();
+            }}
           />
           {input && (
-            <button type="button" className="search-page-clear" aria-label="Clear search" onClick={() => { setInput(''); setAiData(null); inputRef.current?.focus(); }}><X /></button>
+            <button type="button" className="search-page-clear" aria-label="Clear search" onClick={() => { setInput(''); setAiData(null); ac.setOpen(false); inputRef.current?.focus(); }}><X /></button>
           )}
         </div>
+        {ac.dropdown}
         {input.trim() && (
           <div className="search-ai-row">
             <button type="button" className="search-ai-btn" onClick={runAiSearch} disabled={aiLoading}>

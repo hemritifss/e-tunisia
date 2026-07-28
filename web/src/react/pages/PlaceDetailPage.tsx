@@ -12,9 +12,10 @@ import {
 import * as apiService from '../../api';
 import { useMoney } from '../lib/useCurrency';
 import { shareUrl, toggleSaved, isSaved, showToast } from '../../ui-utils';
+import { optimistic } from '../../optimistic';
 import * as tripCart from '../../trip-cart';
 import { Reveal } from '../components/Reveal';
-import TunisiaLoader from '../components/TunisiaLoader';
+import { DetailSkeleton } from '../components/RouteSkeleton';
 import { KontHouniButton } from '../components/KontHouniButton';
 import { GemConfirmBlock } from '../components/GemWidgets';
 import { currentPath, query as routeQuery, absoluteUrl, onRouteChange } from '../../router';
@@ -406,7 +407,7 @@ export default function PlaceDetailPage() {
   if (placeQ.isLoading || !place) {
     return (
       <div className="place-detail-page page-enter" id="place-detail-page" data-design="carnet" data-place-id={placeId}>
-        <div className="place-detail-loading"><TunisiaLoader size={56} label="Loading place details…" /></div>
+        <div className="place-detail-loading"><DetailSkeleton label="Loading place details" /></div>
       </div>
     );
   }
@@ -430,10 +431,23 @@ export default function PlaceDetailPage() {
   }
 
   const onSave = () => {
-    const nowSaved = toggleSaved('place:' + placeId);
-    setSaved(nowSaved);
-    showToast(nowSaved ? 'Saved to favorites' : 'Removed from favorites');
-    try { apiService.toggleFavorite(placeId); } catch { /* best-effort */ }
+    // Local state flips instantly; the server call is held for the undo window
+    // so a mistaken tap costs no request and no round-trip wait.
+    const nowSaved = !saved;
+    optimistic({
+      key: `save:place:${placeId}`,
+      apply: () => {
+        toggleSaved('place:' + placeId);
+        setSaved(nowSaved);
+      },
+      revert: () => {
+        toggleSaved('place:' + placeId);
+        setSaved(!nowSaved);
+      },
+      commit: () => apiService.toggleFavorite(placeId),
+      message: nowSaved ? 'Saved to your places' : 'Removed from your places',
+      errorMessage: nowSaved ? "Couldn't save that — check your connection." : "Couldn't remove that — check your connection.",
+    });
   };
 
   const onShare = () => shareUrl({ title: place.name || 'e-Tunisia', text: place.description || '', url: absoluteUrl(`/place/${placeId}`) });

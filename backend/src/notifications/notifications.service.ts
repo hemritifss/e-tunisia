@@ -144,8 +144,9 @@ export class NotificationsService {
             { title: '🤝 New Sponsor: Tunisair', body: 'Tunisia\'s national airline is now a Gold sponsor. Check out special flight deals!', type: NotificationType.SPONSOR },
         ];
 
-        for (const n of notifications) {
-            await this.notifRepo.save(this.notifRepo.create({ ...n, userId }));
-        }
+        // One batched insert rather than 6 sequential round-trips.
+        await this.notifRepo.save(
+            notifications.map((n) => this.notifRepo.create({ ...n, userId })),
+        );
     }
 }

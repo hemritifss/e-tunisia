@@ -3,7 +3,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Heart, Compass } from 'lucide-react';
 import * as api from '../../api';
 import { toggleFlag, isFlagged } from '../../ui-utils';
-import TunisiaLoader from '../components/TunisiaLoader';
+import { optimistic } from '../../optimistic';
+import { CardGridSkeleton } from '../components/RouteSkeleton';
 import { Carte } from '../components/Carte';
 
 // Migrated from vanilla pages/favorites.ts — same classes, same data merge
@@ -66,15 +67,29 @@ export default function FavoritesPage() {
   const unsave = (e: React.MouseEvent, placeId: string) => {
     e.preventDefault();
     e.stopPropagation();
-    if (isFlagged('place:' + placeId + ':fav')) toggleFlag('place:' + placeId + ':fav');
-    try {
-      api.toggleFavorite(placeId);
-    } catch {
-      /* best-effort */
-    }
-    queryClient.setQueryData<any[]>(['favorites', 'places'], (old) =>
-      (old || []).filter((p) => p.id !== placeId),
-    );
+
+    const flagKey = 'place:' + placeId + ':fav';
+    const wasFlagged = isFlagged(flagKey);
+    // Snapshot the list so undo can restore the card in its original position
+    // rather than appending it to the end.
+    const before = queryClient.getQueryData<any[]>(['favorites', 'places']);
+
+    optimistic({
+      key: `save:place:${placeId}`,
+      apply: () => {
+        if (wasFlagged) toggleFlag(flagKey);
+        queryClient.setQueryData<any[]>(['favorites', 'places'], (old) =>
+          (old || []).filter((p) => p.id !== placeId),
+        );
+      },
+      revert: () => {
+        if (wasFlagged) toggleFlag(flagKey);
+        queryClient.setQueryData<any[]>(['favorites', 'places'], before);
+      },
+      commit: () => api.toggleFavorite(placeId),
+      message: 'Removed from your places',
+      errorMessage: "Couldn't remove that — check your connection.",
+    });
   };
 
   return (
@@ -85,9 +100,7 @@ export default function FavoritesPage() {
       </div>
       <div className="favorites-grid">
         {isLoading ? (
-          <div className="favorites-loading">
-            <TunisiaLoader size={52} label="Loading saved places…" />
-          </div>
+          <CardGridSkeleton count={6} label="Loading saved places" />
         ) : !saved || saved.length === 0 ? (
           <Empty />
         ) : (

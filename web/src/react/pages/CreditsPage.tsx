@@ -13,7 +13,7 @@ import { openDonateModal } from '../../donate-modal';
 import { formatShortDate } from '../../shared/dates';
 import { openTopupModal } from '../../topup-modal';
 import { absoluteUrl } from '../../router';
-import TunisiaLoader from '../components/TunisiaLoader';
+import { StatsRowSkeleton } from '../components/RouteSkeleton';
 
 // Migrated from vanilla pages/credits.ts — balance, top-up, donate, referral,
 // transaction history.
@@ -141,7 +141,7 @@ export default function CreditsPage() {
 
       <section className="credits-balance-card">
         {isLoading ? (
-          <div className="credits-balance-loading"><TunisiaLoader size={56} label="Loading balance…" /></div>
+          <div className="credits-balance-loading"><StatsRowSkeleton count={3} label="Loading balance" /></div>
         ) : isError || !me ? (
           <p className="text-danger">Could not load your credits.</p>
         ) : (

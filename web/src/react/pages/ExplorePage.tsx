@@ -1,5 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { createPortal } from 'react-dom';
+import React, { useState, useEffect, useRef } from 'react';
 import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { LucideIcon } from 'lucide-react';
@@ -24,9 +23,10 @@ import {
 } from 'lucide-react';
 import { api, getImageUrl } from '../../shared/api';
 import { isLoggedIn } from '../../api';
-import { goTo } from '../../router';
+import { useSearchAutocomplete } from '../components/useSearchAutocomplete';
 import { coverPlaceholder } from '../../shared/placeholder';
 import { requireAuth } from '../../ui-utils';
+import { optimistic } from '../../optimistic';
 import type { Place, Category } from '../../shared/types/api';
 import { Card, CardContent } from '../components/Card';
 import { Carte } from '../components/Carte';
@@ -142,16 +142,25 @@ function PlaceCard({
     e.stopPropagation();
     if (!requireAuth('save places')) return;
     const next = !isLiked;
-    setIsLiked(next);
-    persistFav(next);
-    if (next) {
-      addFavorite(place.id);
-      showToast('Added to favorites!', 'success');
-      try { api.toggleFavorite(place.id); } catch {}
-    } else {
-      removeFavorite(place.id);
-      try { api.toggleFavorite(place.id); } catch {}
-    }
+    // Card hearts are the app's most-tapped control — they must never wait on
+    // the network, and a mis-tap must be reversible without a second request.
+    optimistic({
+      key: `save:place:${place.id}`,
+      apply: () => {
+        setIsLiked(next);
+        persistFav(next);
+        if (next) addFavorite(place.id);
+        else removeFavorite(place.id);
+      },
+      revert: () => {
+        setIsLiked(!next);
+        persistFav(!next);
+        if (next) removeFavorite(place.id);
+        else addFavorite(place.id);
+      },
+      commit: () => api.toggleFavorite(place.id),
+      message: next ? 'Saved to your places' : 'Removed from your places',
+    });
   };
 
   if (viewMode === 'list') {
@@ -302,35 +311,6 @@ function ForYouStrip() {
   );
 }
 
-/** Slim shape returned by GET /places/suggest — just what a typeahead row shows. */
-interface Suggestion {
-  id: string;
-  name: string;
-  slug?: string;
-  city?: string;
-  governorate?: string;
-  coverImage?: string | null;
-}
-
-/**
- * Bold the matched slice of a suggestion name. Best-effort, case-insensitive
- * substring only — a fuzzy (typo) match that isn't a literal substring just
- * renders plain, which is fine.
- */
-function highlightMatch(name: string, q: string): React.ReactNode {
-  const query = q.trim();
-  if (!query) return name;
-  const i = name.toLowerCase().indexOf(query.toLowerCase());
-  if (i < 0) return name;
-  return (
-    <>
-      {name.slice(0, i)}
-      <mark className="explore-suggest-mark">{name.slice(i, i + query.length)}</mark>
-      {name.slice(i + query.length)}
-    </>
-  );
-}
-
 /** Active category lives in the URL (?cat=beaches) so refresh/share keep the filter. */
 function categoryFromUrl(): string {
   try {
@@ -362,74 +342,9 @@ export default function ExplorePage() {
   const observerRef = useRef<IntersectionObserver | null>(null);
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
-  // ── Search autocomplete (typeahead) ──────────────────────────────
-  // Suggestions as you type — shows the canonical place name (Google-Maps style)
-  // so a divergent spelling still resolves. Powered by the typo/accent-tolerant
-  // /places/suggest endpoint. Rendered in a portal to escape the hero's overflow.
-  const [suggestOpen, setSuggestOpen] = useState(false);
-  const [activeIdx, setActiveIdx] = useState(-1);
-  const [debouncedSearch, setDebouncedSearch] = useState('');
-  const [anchor, setAnchor] = useState<{ top: number; left: number; width: number } | null>(null);
-  const searchWrapRef = useRef<HTMLDivElement>(null);
-  const suggestListRef = useRef<HTMLUListElement>(null);
-
-  useEffect(() => {
-    const t = setTimeout(() => setDebouncedSearch(searchQuery.trim()), 150);
-    return () => clearTimeout(t);
-  }, [searchQuery]);
-  useEffect(() => { setActiveIdx(-1); }, [debouncedSearch]);
-
-  const { data: suggestData } = useQuery({
-    queryKey: ['place-suggest', debouncedSearch],
-    queryFn: () => api.suggestPlaces(debouncedSearch, 8).catch(() => [] as Suggestion[]),
-    enabled: suggestOpen && debouncedSearch.length >= 2,
-    staleTime: 60_000,
-  });
-  const suggestions: Suggestion[] = Array.isArray(suggestData) ? suggestData : [];
-  const suggestVisible = suggestOpen && debouncedSearch.length >= 2 && suggestions.length > 0;
-
-  // Keep the portal glued under the input across scroll/resize.
-  const updateAnchor = useCallback(() => {
-    const el = searchWrapRef.current;
-    if (!el) return;
-    const r = el.getBoundingClientRect();
-    setAnchor({ top: r.bottom + 8, left: r.left, width: r.width });
-  }, []);
-  useEffect(() => {
-    if (!suggestVisible) return;
-    updateAnchor();
-    window.addEventListener('scroll', updateAnchor, true);
-    window.addEventListener('resize', updateAnchor);
-    return () => {
-      window.removeEventListener('scroll', updateAnchor, true);
-      window.removeEventListener('resize', updateAnchor);
-    };
-  }, [suggestVisible, updateAnchor]);
-
-  // Close on outside pointer-down (the portal list isn't inside the wrap, so check both).
-  useEffect(() => {
-    if (!suggestOpen) return;
-    const onDown = (e: MouseEvent) => {
-      const t = e.target as Node;
-      if (searchWrapRef.current?.contains(t) || suggestListRef.current?.contains(t)) return;
-      setSuggestOpen(false);
-    };
-    document.addEventListener('mousedown', onDown);
-    return () => document.removeEventListener('mousedown', onDown);
-  }, [suggestOpen]);
-
-  const selectSuggestion = (s: Suggestion) => {
-    setSuggestOpen(false);
-    setActiveIdx(-1);
-    goTo(`/place/${s.id}`);
-  };
-  const onSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (!suggestVisible) return;
-    if (e.key === 'ArrowDown') { e.preventDefault(); setActiveIdx((i) => Math.min(i + 1, suggestions.length - 1)); }
-    else if (e.key === 'ArrowUp') { e.preventDefault(); setActiveIdx((i) => Math.max(i - 1, -1)); }
-    else if (e.key === 'Enter' && activeIdx >= 0) { e.preventDefault(); selectSuggestion(suggestions[activeIdx]); }
-    else if (e.key === 'Escape') { setSuggestOpen(false); setActiveIdx(-1); }
-  };
+  // Search typeahead + recent searches (shared with the Search page). Picking a
+  // recent refills the box, which re-runs the live grid filter below.
+  const ac = useSearchAutocomplete({ query: searchQuery, onPickRecent: setSearchQuery });
 
   const {
     data,
@@ -559,7 +474,7 @@ export default function ExplorePage() {
           </span>
           <h1>Find your next <span className="explore-hero-grad">Tunisia</span></h1>
           <p>Authentic places curated by locals and travelers — from ancient ruins to secret beaches.</p>
-          <div className="explore-search-wrap" ref={searchWrapRef}>
+          <div className="explore-search-wrap" ref={ac.anchorRef}>
             <form
               className="explore-search-form"
               role="search"
@@ -570,63 +485,25 @@ export default function ExplorePage() {
                 type="search"
                 placeholder="Search places, cities, tags…"
                 value={searchQuery}
-                onChange={(e) => { setSearchQuery(e.target.value); setSuggestOpen(true); }}
-                onFocus={() => setSuggestOpen(true)}
-                onKeyDown={onSearchKeyDown}
+                onChange={(e) => { setSearchQuery(e.target.value); ac.setOpen(true); }}
                 className="explore-search-input"
                 aria-label="Search places"
-                aria-autocomplete="list"
-                aria-expanded={suggestVisible}
-                aria-controls="explore-suggest-list"
-                aria-activedescendant={activeIdx >= 0 ? `explore-suggest-${activeIdx}` : undefined}
-                role="combobox"
                 autoComplete="off"
                 enterKeyHint="search"
+                {...ac.inputProps}
               />
               {searchQuery && (
                 <button
                   type="button"
                   className="explore-search-clear"
-                  onClick={() => { setSearchQuery(''); setSuggestOpen(false); }}
+                  onClick={() => { setSearchQuery(''); ac.setOpen(false); }}
                   aria-label="Clear search"
                 >
                   <X size={14} />
                 </button>
               )}
             </form>
-            {suggestVisible && anchor && createPortal(
-              <ul
-                ref={suggestListRef}
-                id="explore-suggest-list"
-                className="explore-suggest"
-                role="listbox"
-                aria-label="Place suggestions"
-                style={{ position: 'fixed', top: anchor.top, left: anchor.left, width: anchor.width }}
-              >
-                {suggestions.map((s, i) => (
-                  <li key={s.id} id={`explore-suggest-${i}`} role="option" aria-selected={i === activeIdx}>
-                    <button
-                      type="button"
-                      className={`explore-suggest-item${i === activeIdx ? ' is-active' : ''}`}
-                      onMouseEnter={() => setActiveIdx(i)}
-                      onMouseDown={(e) => e.preventDefault()}
-                      onClick={() => selectSuggestion(s)}
-                    >
-                      <MapPin size={15} className="explore-suggest-pin" aria-hidden="true" />
-                      <span className="explore-suggest-text">
-                        <span className="explore-suggest-name">{highlightMatch(s.name, debouncedSearch)}</span>
-                        {(s.city || s.governorate) && (
-                          <span className="explore-suggest-sub">
-                            {Array.from(new Set([s.city, s.governorate].filter(Boolean))).join(' · ')}
-                          </span>
-                        )}
-                      </span>
-                    </button>
-                  </li>
-                ))}
-              </ul>,
-              document.body,
-            )}
+            {ac.dropdown}
           </div>
         </div>
       </header>

@@ -1,0 +1,294 @@
+/* ============================================================================
+   UX CHROME — orientation & guidance layer
+   Route progress bar + contextual hints (coach marks).
+   Both are "quiet by default": they only appear when they earn their place.
+   ============================================================================ */
+
+/* ── Route progress bar ──────────────────────────────────────────────────
+   A 2px ink line across the top of the viewport, driven by nav-progress.ts.
+   Sits above sticky chrome but below modals, so a modal is never underlined
+   by a stray progress bar. */
+.nav-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  z-index: var(--z-sticky);
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  background: linear-gradient(90deg, var(--accent), var(--stamp-ink));
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 140ms var(--ease-out), opacity 180ms var(--ease-out);
+}
+
+.nav-progress.is-active {
+  opacity: 1;
+}
+
+/* The completion sprint should feel decisive, then get out of the way. */
+.nav-progress.is-done {
+  transition: transform 120ms var(--ease-out), opacity 220ms var(--ease-out) 100ms;
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-progress { transition: opacity 120ms linear; }
+}
+
+/* ── The "You" hub ───────────────────────────────────────────────────────
+   Replaces the 21-item avatar dropdown and the 20-item mobile drawer. Given a
+   full page, every destination can afford a one-line description — so the name
+   is no longer the only clue to what a link does. */
+.you-page {
+  padding-bottom: 5rem;
+}
+
+.you-identity {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  margin-bottom: 1.75rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-lg, 10px);
+  background: var(--bg-secondary, transparent);
+}
+
+.you-identity__avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.you-identity__text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.you-identity__text strong {
+  font-family: var(--font-editorial);
+  font-size: 1.15rem;
+  line-height: 1.2;
+}
+
+.you-identity__text span,
+.you-identity__text p {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.you-identity--guest {
+  border-style: dashed;
+}
+
+.you-section {
+  margin-bottom: 1.75rem;
+}
+
+.you-section__title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin: 0 0 0.6rem;
+}
+
+.you-section__rows {
+  display: grid;
+  /* Two columns where there is room, one on a phone — the list is long enough
+     that a single column would turn the hub into its own scrolling problem. */
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: 0.5rem;
+}
+
+.you-row {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--border-light, var(--border));
+  border-radius: var(--radius-md, 6px);
+  color: inherit;
+  text-decoration: none;
+  transition: border-color var(--duration-fast) var(--ease-out),
+              transform var(--duration-fast) var(--ease-out);
+}
+
+@media (hover: hover) {
+  .you-row:hover {
+    border-color: var(--accent);
+    transform: translateX(2px);
+  }
+}
+
+.you-row:active { transform: scale(0.99); }
+
+.you-row__icon {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border-radius: var(--radius-sm, 4px);
+  background: var(--accent-light);
+  color: var(--accent);
+}
+
+.you-row__text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.you-row__label {
+  font-weight: 600;
+  font-size: 0.94rem;
+  line-height: 1.3;
+}
+
+.you-row__blurb {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.you-row__chev {
+  flex-shrink: 0;
+  color: var(--text-muted);
+  opacity: 0.6;
+}
+
+.you-logout {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font: inherit;
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 0.6rem 1rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md, 6px);
+  background: transparent;
+  color: var(--danger, #dc2626);
+  cursor: pointer;
+}
+
+.you-logout:hover { border-color: var(--danger, #dc2626); }
+
+/* ── Contextual hints (coach marks) ──────────────────────────────────────
+   A single small card tethered to a real element, shown at most once. Styled
+   as a torn notebook slip so it reads as a margin note from the carnet, not a
+   product tour bubble bolted onto the page. */
+.hint-pop {
+  position: fixed;
+  z-index: var(--z-tooltip);
+  max-width: min(19rem, calc(100vw - 2rem));
+  padding: 0.75rem 0.875rem 0.8rem;
+  background: var(--bg-elevated, var(--bg-primary));
+  color: var(--ink);
+  border: 1.5px solid var(--ink);
+  border-radius: 2px;
+  box-shadow: 3px 3px 0 var(--ink);
+  font-size: 0.875rem;
+  line-height: 1.45;
+  /* Animated in by JS after positioning, so it never flashes at 0,0. */
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 200ms var(--ease-out), transform 200ms var(--ease-out);
+}
+
+.hint-pop.is-shown {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.hint-pop-title {
+  display: block;
+  font-family: var(--font-hand, cursive);
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.15rem;
+}
+
+.hint-pop-body {
+  display: block;
+  color: var(--ink-soft);
+}
+
+.hint-pop-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 0.6rem;
+}
+
+.hint-pop-btn {
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.25rem 0.6rem;
+  border: 1.5px solid var(--ink);
+  border-radius: 2px;
+  background: var(--ink);
+  color: var(--bg-primary);
+  cursor: pointer;
+}
+
+.hint-pop-btn.is-ghost {
+  background: transparent;
+  color: var(--ink-soft);
+  border-color: transparent;
+}
+
+.hint-pop-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Little arrow tethering the slip to its anchor. */
+.hint-pop::after {
+  content: '';
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  background: var(--bg-elevated, var(--bg-primary));
+  border-left: 1.5px solid var(--ink);
+  border-top: 1.5px solid var(--ink);
+}
+
+.hint-pop[data-placement='bottom']::after {
+  top: -6px;
+  left: var(--hint-arrow-x, 1.25rem);
+  transform: rotate(45deg);
+}
+
+.hint-pop[data-placement='top']::after {
+  bottom: -6px;
+  left: var(--hint-arrow-x, 1.25rem);
+  transform: rotate(225deg);
+}
+
+/* The anchored element gets a soft ring so the eye connects slip → target. */
+.hint-anchor-lit {
+  position: relative;
+  z-index: var(--z-overlay);
+  box-shadow: 0 0 0 3px var(--accent-light), 0 0 0 5px var(--accent);
+  border-radius: var(--radius-md, 6px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hint-pop { transition: opacity 120ms linear; transform: none; }
+  .hint-pop.is-shown { transform: none; }
+}

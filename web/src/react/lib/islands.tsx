@@ -5,10 +5,25 @@ import { MotionConfig } from 'framer-motion';
 import { queryClient } from './query-client';
 import { ErrorBoundary } from './ErrorBoundary';
 import TunisiaLoader from '../components/TunisiaLoader';
+import { finishNavProgress } from '../../nav-progress';
 
 const rootMap = new Map<HTMLElement, Root>();
 
+/**
+ * Suspense fallback for a route chunk that is still downloading.
+ *
+ * Deliberately *delayed*: a chunk that resolves in <200ms (the common case once
+ * it is cached) should swap straight to content. Flashing a spinner for 80ms and
+ * yanking it away reads as a glitch, so we render nothing at all until the wait
+ * is long enough to be worth acknowledging.
+ */
 function IslandFallback() {
+  const [visible, setVisible] = React.useState(false);
+  React.useEffect(() => {
+    const t = window.setTimeout(() => setVisible(true), 200);
+    return () => window.clearTimeout(t);
+  }, []);
+  if (!visible) return null;
   return (
     <div style={{ padding: '72px 24px', display: 'flex', justifyContent: 'center' }}>
       <TunisiaLoader size={64} label="Loading…" />
@@ -16,14 +31,16 @@ function IslandFallback() {
   );
 }
 
-// Sometimes hold the loader for a short minimum so the Tunisia trace is actually
-// seen instead of flashing for a few ms on a fast (cached) navigation. Not every
-// time, and the floor varies, so the app almost never feels deliberately slow.
-function pickMinHold(): number {
-  const r = Math.random();
-  if (r < 0.65) return 0;    // most navigations: no artificial floor
-  if (r < 0.92) return 750;  // sometimes: 0.75s
-  return 1000;               // occasionally: 1s
+/**
+ * Completes the route progress bar. Lives *inside* the Suspense boundary, so it
+ * only mounts once the lazy chunk has resolved and the real page is committing
+ * — which is the honest definition of "the navigation finished".
+ */
+function ReadySignal() {
+  React.useEffect(() => {
+    finishNavProgress();
+  }, []);
+  return null;
 }
 
 function IslandHost({
@@ -33,18 +50,10 @@ function IslandHost({
   Component: React.ComponentType | React.LazyExoticComponent<React.ComponentType>;
   islandProps?: Record<string, unknown>;
 }) {
-  const holdRef = React.useRef<number | null>(null);
-  if (holdRef.current === null) holdRef.current = pickMinHold();
-  const [holding, setHolding] = React.useState(holdRef.current > 0);
-  React.useEffect(() => {
-    if (!holdRef.current) return;
-    const t = window.setTimeout(() => setHolding(false), holdRef.current);
-    return () => window.clearTimeout(t);
-  }, []);
-  if (holding) return <IslandFallback />;
   return (
     <Suspense fallback={<IslandFallback />}>
       <Component {...islandProps} />
+      <ReadySignal />
     </Suspense>
   );
 }

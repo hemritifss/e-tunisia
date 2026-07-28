@@ -11,7 +11,14 @@ import { WelcomeBackPopup } from './WelcomeBackPopup';
 import { StreakMilestonePopup } from './StreakMilestonePopup';
 import type { PopupItem } from '../../stores/popup-store';
 
-/** Whether scrim-click / Escape should be allowed to dismiss this kind. */
+/**
+ * Whether scrim-click / Escape should be allowed to dismiss this kind.
+ *
+ * NOTE: 'tutorial' is no longer enqueued by anything — first-run guidance moved
+ * to contextual hints (src/hints.ts), which explain each control when it is
+ * actually on screen instead of front-loading a tour nobody had context for.
+ * The case below is kept only so a manually-enqueued tutorial still renders.
+ */
 function isDismissibleByScrim(item: PopupItem): boolean {
   // Celebration & daily are casual — tapping outside closes them.
   // Tutorial uses its own Skip button so a stray tap doesn't abort the tour.
