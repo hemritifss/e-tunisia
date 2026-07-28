@@ -80,7 +80,7 @@ export default function InquiriesPage() {
   });
 
   return (
-    <div className="inquiries-page page-enter" data-design="sleek" id="inquiries-root">
+    <div className="inquiries-page page-enter" id="inquiries-root">
       <PageHeader
         eyebrow={<><Send size={13} /> Requests · carnet de demandes</>}
         title="My Inquiries"

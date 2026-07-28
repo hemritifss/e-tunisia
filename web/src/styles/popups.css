@@ -21,20 +21,20 @@
 
 .toast {
     /* Paper slip (carnet chrome): opaque print stock, hairline rule, slight tilt */
-    --toast-accent: var(--terracotta);
+    --toast-accent: var(--accent);
     pointer-events: auto;
     display: grid;
     grid-template-columns: auto 1fr auto auto;
     gap: 12px;
     align-items: center;
     padding: 12px 12px 12px 14px;
-    background: var(--paper-print);
-    border: 1px solid var(--rule);
+    background: var(--surface);
+    border: 1px solid var(--border);
     border-left: 3px solid var(--toast-accent);
     border-radius: 2px;
     box-shadow: var(--paper-shadow-lift);
     font-family: var(--font-sans);
-    color: var(--ink);
+    color: var(--text-primary);
     min-width: 280px;
     rotate: 0.5deg;
     animation: toast-in 320ms var(--ease-spring) both;
@@ -62,11 +62,11 @@
     font-family: var(--font-display);
     font-weight: 700;
     font-size: 14px;
-    color: var(--ink);
+    color: var(--text-primary);
 }
 .toast-body span {
     font-size: 13px;
-    color: var(--ink-soft);
+    color: var(--text-secondary);
     overflow: hidden;
     text-overflow: ellipsis;
     display: -webkit-box;
@@ -313,7 +313,7 @@
 .popup-task-count {
   font-size: 0.78rem;
   font-weight: 700;
-  color: var(--terracotta);
+  color: var(--accent);
   display: inline-flex;
   align-items: center;
 }
@@ -332,8 +332,8 @@
 
 /* ---- Tutorial ---- */
 .popup-tutorial-icon {
-  background: var(--terracotta-pale);
-  color: var(--terracotta);
+  background: var(--accent-light);
+  color: var(--accent);
 }
 .popup-tutorial-step {
   font-size: 0.72rem;
@@ -358,7 +358,7 @@
   cursor: pointer;
   transition: width 0.2s, background 0.2s;
 }
-.popup-dot.on { width: 22px; background: var(--terracotta); }
+.popup-dot.on { width: 22px; background: var(--accent); }
 
 /* In the multi-step tour, Skip/Back + Next sit side-by-side. */
 .popup-tutorial .popup-actions { flex-direction: row; }
@@ -374,7 +374,7 @@
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--terracotta);
+  color: var(--accent);
 }
 
 /* ---- Badge unlocked ---- */
@@ -425,7 +425,7 @@
   justify-content: center;
   border-radius: var(--radius-full);
   background: var(--surface-elevated);
-  color: var(--terracotta);
+  color: var(--accent);
   border: 2px solid var(--surface-elevated);
   box-shadow: var(--shadow-md);
   font-size: 0.9rem;
@@ -506,7 +506,7 @@
   .popup-root { align-items: flex-end; padding: 0; }
   .popup-card {
     max-width: 100%;
-    border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
     padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
     max-height: 88vh;
   }

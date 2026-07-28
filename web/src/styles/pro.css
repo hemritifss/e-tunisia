@@ -47,7 +47,7 @@
 .pro-page-hero {
     position: relative;
     overflow: hidden;
-    border-radius: var(--radius-3xl);
+    border-radius: var(--radius-xl);
     padding: clamp(48px, 7vw, 80px) clamp(28px, 5vw, 56px);
     color: #fff;
     text-align: center;
@@ -130,14 +130,14 @@
     gap: 18px;
 }
 .pro-plan-card {
-    --plan-accent: var(--terracotta);
+    --plan-accent: var(--accent);
     position: relative;
     display: flex; flex-direction: column;
     gap: 14px;
     padding: 24px 22px;
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: var(--radius-2xl);
+    border-radius: var(--radius-xl);
     box-shadow: var(--shadow-md);
     transition: color var(--duration-normal) var(--ease-spring), background-color var(--duration-normal) var(--ease-spring), border-color var(--duration-normal) var(--ease-spring), box-shadow var(--duration-normal) var(--ease-spring), transform var(--duration-normal) var(--ease-spring), opacity var(--duration-normal) var(--ease-spring), filter var(--duration-normal) var(--ease-spring);
 }
@@ -290,9 +290,9 @@
 .pro-controls-section { margin-top: 48px; }
 .pro-controls-head { text-align: center; max-width: 620px; margin: 0 auto 24px; }
 .pro-kicker-dark {
-    color: var(--violet);
-    background: color-mix(in oklch, var(--violet) 12%, transparent);
-    border-color: color-mix(in oklch, var(--violet) 26%, transparent);
+    color: var(--accent);
+    background: color-mix(in oklch, var(--accent) 12%, transparent);
+    border-color: color-mix(in oklch, var(--accent) 26%, transparent);
 }
 .pro-controls-head h2 {
     font-family: var(--font-display);
@@ -315,20 +315,20 @@
     padding: 26px 24px;
     background: var(--surface);
     border: 1px solid color-mix(in oklch, var(--accent) 22%, var(--border));
-    border-radius: var(--radius-2xl);
+    border-radius: var(--radius-xl);
     transition: transform var(--duration-normal) var(--ease-spring), box-shadow var(--duration-normal) var(--ease-spring), border-color var(--duration-normal) var(--ease-spring);
 }
 .pro-control-card:hover {
     transform: translateY(-3px);
     box-shadow: var(--shadow-xl);
-    border-color: var(--violet);
+    border-color: var(--accent);
 }
 .pro-control-icon {
     width: 48px; height: 48px;
     display: inline-flex; align-items: center; justify-content: center;
     border-radius: 14px;
-    background: color-mix(in oklch, var(--violet) 16%, transparent);
-    color: var(--violet);
+    background: color-mix(in oklch, var(--accent) 16%, transparent);
+    color: var(--accent);
     margin-bottom: 14px;
 }
 .pro-control-card h3 {
@@ -344,8 +344,8 @@
     display: inline-flex; align-items: center; gap: 5px;
     padding: 3px 10px;
     border-radius: var(--radius-full);
-    background: color-mix(in oklch, var(--violet) 12%, transparent);
-    color: var(--violet);
+    background: color-mix(in oklch, var(--accent) 12%, transparent);
+    color: var(--accent);
     font-family: var(--font-display);
     font-weight: 600;
     font-size: var(--text-xs);
@@ -387,13 +387,13 @@
 }
 .pro-gate-card.is-business {
     background:
-        radial-gradient(80% 100% at 100% 0%, color-mix(in oklch, var(--cyan) 16%, transparent), transparent 60%),
+        radial-gradient(80% 100% at 100% 0%, color-mix(in oklch, var(--mediterranean) 16%, transparent), transparent 60%),
         var(--surface);
-    border-color: color-mix(in oklch, var(--cyan) 22%, var(--border));
+    border-color: color-mix(in oklch, var(--mediterranean) 22%, var(--border));
 }
 .pro-gate-card.is-business:hover {
     box-shadow: var(--shadow-md);
-    border-color: var(--cyan);
+    border-color: var(--mediterranean);
 }
 .pro-gate-card-icon {
     width: 40px; height: 40px;
@@ -404,7 +404,7 @@
     flex-shrink: 0;
 }
 .pro-gate-card.is-business .pro-gate-card-icon {
-    background: linear-gradient(135deg, var(--mediterranean), var(--cyan));
+    background: linear-gradient(135deg, var(--mediterranean), var(--mediterranean));
     color: #fff;
 }
 .pro-gate-card-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
@@ -445,8 +445,8 @@
     transition: color var(--duration-fast) var(--ease-out), background-color var(--duration-fast) var(--ease-out), border-color var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out), transform var(--duration-fast) var(--ease-out), opacity var(--duration-fast) var(--ease-out), filter var(--duration-fast) var(--ease-out);
 }
 .pro-gate-pill:hover { background: var(--warning); color: oklch(20% 0.04 60); }
-.pro-gate-pill.is-business { background: color-mix(in oklch, var(--cyan) 18%, transparent); color: oklch(40% 0.12 200); }
-.pro-gate-pill.is-business:hover { background: var(--cyan); color: #fff; }
+.pro-gate-pill.is-business { background: color-mix(in oklch, var(--mediterranean) 18%, transparent); color: oklch(40% 0.12 200); }
+.pro-gate-pill.is-business:hover { background: var(--mediterranean); color: #fff; }
 
 /* Tease — children rendered behind a glass overlay with the CTA on top. */
 .pro-gate-tease { position: relative; border-radius: var(--radius-xl); overflow: hidden; }
@@ -466,7 +466,7 @@
 }
 .pro-gate-tease.is-business .pro-gate-tease-overlay {
     background:
-        radial-gradient(60% 60% at 50% 50%, color-mix(in oklch, var(--cyan) 25%, transparent), transparent 70%),
+        radial-gradient(60% 60% at 50% 50%, color-mix(in oklch, var(--mediterranean) 25%, transparent), transparent 70%),
         oklch(100% 0 0 / 0.4);
 }
 .pro-gate-tease-overlay:hover { background: radial-gradient(60% 60% at 50% 50%, color-mix(in oklch, var(--warning) 35%, transparent), transparent 70%), oklch(100% 0 0 / 0.55); }
@@ -479,7 +479,7 @@
     color: oklch(20% 0.04 60);
 }
 .pro-gate-tease.is-business .pro-gate-tease-emoji {
-    background: linear-gradient(135deg, var(--mediterranean), var(--cyan));
+    background: linear-gradient(135deg, var(--mediterranean), var(--mediterranean));
     color: #fff;
 }
 .pro-gate-tease-overlay strong { font-family: var(--font-display); font-weight: 700; font-size: var(--text-lg); color: var(--text-primary); }

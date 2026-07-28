@@ -132,9 +132,9 @@
 .credits-header p { color: var(--text-secondary); margin-bottom: var(--space-6); }
 
 .credits-balance-card {
-  background: linear-gradient(135deg, var(--terracotta) 0%, var(--coral) 100%);
+  background: var(--accent);
   color: white;
-  border-radius: var(--radius-2xl);
+  border-radius: var(--radius-xl);
   padding: var(--space-6);
   box-shadow: var(--shadow-lg);
   margin-bottom: var(--space-5);
@@ -330,7 +330,7 @@
 .tag-header {
     background: var(--surface-elevated);
     border: 1px solid var(--border);
-    border-radius: var(--radius-2xl);
+    border-radius: var(--radius-xl);
     padding: var(--space-4) var(--space-5) !important;
     align-items: center !important;
     gap: var(--space-4) !important;
@@ -339,7 +339,7 @@
 .tag-icon {
     width: 64px !important;
     height: 64px !important;
-    border-radius: var(--radius-2xl) !important;
+    border-radius: var(--radius-xl) !important;
     background: var(--accent) !important;
     color: oklch(98% 0 0) !important;
     font-family: var(--font-display);
@@ -395,7 +395,7 @@
     gap: var(--space-2);
 }
 .favorites-page .favorites-header h1 i {
-    color: var(--rose);
+    color: var(--accent);
 }
 .favorites-page .favorites-header p {
     color: var(--text-secondary);
@@ -420,7 +420,7 @@
 .favorites-page .place-card:hover {
     transform: translateY(-4px);
     box-shadow: var(--shadow-lg);
-    border-color: var(--rose);
+    border-color: var(--accent);
 }
 .favorites-page .place-card-link {
     display: block;
@@ -491,14 +491,14 @@
     background: var(--bg-secondary);
     border: 1px solid var(--border);
     border-radius: 50%;
-    color: var(--rose);
+    color: var(--accent);
     cursor: pointer;
     transition: background var(--duration-fast) var(--ease-out),
                 transform var(--duration-instant) var(--ease-spring);
 }
 .favorites-page .place-card-save.saved i { fill: currentColor; }
 .favorites-page .place-card-save:hover {
-    background: var(--rose);
+    background: var(--accent);
     color: oklch(98% 0 0);
 }
 .favorites-page .place-card-save:active { transform: scale(0.9); }
@@ -598,7 +598,7 @@
 .credits-balance-card {
     background: var(--surface-elevated);
     border: 1px solid var(--border);
-    border-radius: var(--radius-2xl);
+    border-radius: var(--radius-xl);
     padding: var(--space-5);
     position: relative;
     overflow: hidden;
@@ -907,8 +907,8 @@
     color: var(--accent);
     margin-bottom: var(--space-3);
 }
-.about-page .about-value-card:nth-child(1) .about-value-icon { background: color-mix(in oklch, var(--coral) 14%, transparent); color: var(--coral); }
-.about-page .about-value-card:nth-child(2) .about-value-icon { background: color-mix(in oklch, var(--olive) 14%, transparent); color: var(--olive); }
+.about-page .about-value-card:nth-child(1) .about-value-icon { background: color-mix(in oklch, var(--accent) 14%, transparent); color: var(--accent); }
+.about-page .about-value-card:nth-child(2) .about-value-icon { background: color-mix(in oklch, var(--success) 14%, transparent); color: var(--success); }
 .about-page .about-value-card:nth-child(3) .about-value-icon { background: color-mix(in oklch, var(--mediterranean) 14%, transparent); color: var(--mediterranean); }
 .about-page .about-value-card:nth-child(4) .about-value-icon { background: color-mix(in oklch, var(--warning) 16%, transparent); color: var(--warning); }
 @supports not (color: color-mix(in oklch, red, blue)) {
@@ -947,7 +947,7 @@
 }
 .owner-tier-chip i { font-size: 11px; }
 .owner-tier-chip.is-business {
-    background: linear-gradient(135deg, var(--mediterranean), var(--violet));
+    background: linear-gradient(135deg, var(--mediterranean), var(--accent));
     color: var(--text-inverse);
 }
 .owner-tier-chip.is-pro {

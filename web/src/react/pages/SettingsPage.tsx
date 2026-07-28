@@ -213,7 +213,7 @@ export default function SettingsPage() {
     // Field Notes via the token layer only — surfaces/text/borders remap to
     // paper/ink/rules. The tinted group chips stay: settings.md documents them
     // as a deliberate scanning aid (the only page in the app that keeps them).
-    <div className="settings-page page-enter" data-design="carnet">
+    <div className="settings-page page-enter">
       <header className="settings-head">
         <a href="#/profile" className="settings-back" aria-label={t('settings.back')}><ArrowLeft /></a>
         <div className="settings-head-text">

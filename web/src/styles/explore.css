@@ -8,11 +8,8 @@
    The hero markup (eyebrow, gradient title, orbs, search form) shipped
    without matching CSS, leaving content jammed left against an empty
    gradient. This block centers everything and styles the missing parts.
-   Specificity matches the [data-design="sleek"] overrides and sits later
-   in the cascade, so it wins for both default + sleek.
    ============================================ */
-.explore-hero,
-[data-design="sleek"] .explore-hero {
+.explore-hero {
   height: auto;
   min-height: 300px;
   display: flex;
@@ -20,19 +17,16 @@
   justify-content: center;
   text-align: center;
   padding: clamp(2rem, 5vw, 3.5rem) clamp(1rem, 4vw, 2rem);
-  border-radius: var(--radius-2xl);
+  border-radius: var(--radius-xl);
 }
 
 /* Flat navy panel — the hero carries white text, so it must not depend on a
    gradient stack that any deleted token can invalidate. */
-.explore-hero-bg,
-[data-design="sleek"] .explore-hero-bg,
-[data-theme="dark"] [data-design="sleek"] .explore-hero-bg {
+.explore-hero-bg {
   background: var(--paper-deep);
 }
 
-.explore-hero-content,
-[data-design="sleek"] .explore-hero-content {
+.explore-hero-content {
   position: relative;
   z-index: 2;
   display: flex;
@@ -45,8 +39,8 @@
   color: #fff;
 }
 
-/* Sits on the navy hero — fill and ink are owned by explore.css, which loads
-   after this file; setting them here painted a white pill under white text. */
+/* Sits on the navy hero, so it inherits the white ink rather than setting a
+   fill of its own — a white pill under white text was the original bug. */
 .explore-hero-eyebrow {
   display: inline-flex;
   align-items: center;
@@ -61,8 +55,7 @@
   text-transform: uppercase;
 }
 
-.explore-hero h1,
-[data-design="sleek"] .explore-hero h1 {
+.explore-hero h1 {
   margin: 0;
   color: #fff;
   font-family: var(--font-display);
@@ -73,15 +66,14 @@
   text-wrap: balance;
 }
 
-/* Gradient text retired (carnet) — serif display italic gold ink. Kept in sync with explore.css. */
+/* Gradient text retired — serif display italic, stone ink. */
 .explore-hero-grad {
   font-style: italic;
   font-weight: 600;
   color: var(--warning);
 }
 
-.explore-hero p,
-[data-design="sleek"] .explore-hero p {
+.explore-hero p {
   margin: 0;
   max-width: 460px;
   color: rgba(255, 255, 255, 0.82);
@@ -109,18 +101,18 @@
   width: 100%;
   padding: 14px 18px 14px 46px;
   border-radius: var(--radius-sm);
-  border: 1.5px solid var(--ink);
-  background: var(--paper-print);
-  color: var(--ink);
+  border: 1.5px solid var(--text-primary);
+  background: var(--surface);
+  color: var(--text-primary);
   font-size: var(--text-base);
   font-family: var(--font-sans);
   transition: color var(--duration-fast) var(--ease-out), background-color var(--duration-fast) var(--ease-out), border-color var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out), transform var(--duration-fast) var(--ease-out), opacity var(--duration-fast) var(--ease-out), filter var(--duration-fast) var(--ease-out);
 }
-.explore-search-input::placeholder { color: var(--ink-faint); }
+.explore-search-input::placeholder { color: var(--text-tertiary); }
 .explore-search-input:focus {
   outline: none;
-  background: var(--paper-print);
-  border-color: var(--ink);
+  background: var(--surface);
+  border-color: var(--text-primary);
   box-shadow: 3px 3px 0 var(--warning);
 }
 .explore-search-clear {
@@ -164,7 +156,7 @@
 .explore-hero {
     position: relative;
     overflow: hidden;
-    border-radius: var(--radius-2xl);
+    border-radius: var(--radius-xl);
     padding: clamp(var(--space-8), 6vw, var(--space-12)) clamp(var(--space-5), 4vw, var(--space-10));
     color: oklch(98% 0 0);
     isolation: isolate;
@@ -183,7 +175,7 @@
     inset: 0;
     background-image: repeating-linear-gradient(
         transparent 0 31px,
-        var(--rule-faint) 31px 32px
+        var(--border-light) 31px 32px
     );
     opacity: 0.4;
     pointer-events: none;
@@ -239,8 +231,8 @@
     position: relative;
     display: flex;
     align-items: center;
-    background: var(--paper-print);
-    border: 1.5px solid var(--ink);
+    background: var(--surface);
+    border: 1.5px solid var(--text-primary);
     border-radius: var(--radius-sm);
     box-shadow: 3px 3px 0 oklch(0% 0 0 / 0.35);
     padding: 6px 6px 6px var(--space-4);
@@ -298,8 +290,8 @@
     margin: 0;
     padding: 6px;
     list-style: none;
-    background: var(--paper-print);
-    border: 1.5px solid var(--ink);
+    background: var(--surface);
+    border: 1.5px solid var(--text-primary);
     border-radius: var(--radius-sm);
     box-shadow: 4px 4px 0 oklch(0% 0 0 / 0.35);
     max-height: min(58vh, 360px);

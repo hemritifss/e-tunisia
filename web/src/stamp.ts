@@ -1,6 +1,6 @@
 // Reusable rubber-stamp / postmark SVG (carnet identity).
 // Returns an inline SVG string coloured via `currentColor`, so the caller sets
-// `color: var(--stamp-ink)` on the container. Used by the check-in stamp slam
+// `color: var(--accent)` on the container. Used by the check-in stamp slam
 // now, and by the passport stamp album later (Phase 2 governorate set).
 
 export interface StampOptions {

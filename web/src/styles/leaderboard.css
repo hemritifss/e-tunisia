@@ -141,7 +141,7 @@
 .leaderboard-page .leaderboard-hero {
     position: relative;
     overflow: hidden;
-    border-radius: 0 0 var(--radius-2xl) var(--radius-2xl);
+    border-radius: 0 0 var(--radius-xl) var(--radius-xl);
     margin: 0 calc(var(--page-padding) * -1);
     padding: clamp(var(--space-8), 5vw, var(--space-12)) clamp(var(--space-5), 4vw, var(--space-10));
     color: oklch(98% 0 0);
@@ -362,7 +362,7 @@
     color: oklch(22% 0.02 260);
 }
 .leaderboard-medal-bronze {
-    background: linear-gradient(135deg, var(--terracotta-light), var(--terracotta));
+    background: linear-gradient(135deg, var(--mediterranean), var(--accent));
     color: oklch(22% 0.06 30);
 }
 
@@ -410,8 +410,8 @@
 }
 .leaderboard-tier i { font-size: 10px; }
 .leaderboard-tier-pro      { background: var(--warning); color: oklch(20% 0.05 80); }
-.leaderboard-tier-business { background: linear-gradient(135deg, var(--mediterranean), var(--violet)); color: var(--text-inverse); }
-.leaderboard-tier-guide    { background: var(--olive); color: var(--text-inverse); }
+.leaderboard-tier-business { background: linear-gradient(135deg, var(--mediterranean), var(--accent)); color: var(--text-inverse); }
+.leaderboard-tier-guide    { background: var(--success); color: var(--text-inverse); }
 
 .leaderboard-page .leaderboard-points {
     text-align: right;

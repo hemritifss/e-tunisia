@@ -1793,7 +1793,7 @@ a.notif-item:hover, .notif-item:hover { background: var(--surface-hover); }
   gap: var(--space-1);
   font-size: var(--text-sm);
   font-weight: 600;
-  color: var(--sand);
+  color: var(--stone-deep);
 }
 
 .place-card-reviews {
@@ -2052,8 +2052,8 @@ a.notif-item:hover, .notif-item:hover { background: var(--surface-hover); }
 }
 
 .badge-icon.earned {
-  background: var(--sand-light);
-  color: var(--sand);
+  background: var(--stone-pale);
+  color: var(--stone-deep);
 }
 
 .badge-icon.locked {

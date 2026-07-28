@@ -213,7 +213,7 @@
     display: inline-flex; align-items: center; gap: 4px;
     padding: 2px 10px;
     border-radius: var(--radius-full);
-    background: linear-gradient(135deg, var(--mediterranean), var(--cyan));
+    background: linear-gradient(135deg, var(--mediterranean), var(--mediterranean));
     color: #fff;
     font-family: var(--font-display);
     font-weight: 700;
@@ -223,7 +223,7 @@
 }
 /* ─── Passport hero — full token integration ─── */
 .passport-hero {
-    border-radius: var(--radius-3xl);
+    border-radius: var(--radius-xl);
     box-shadow: var(--shadow-2xl), inset 0 1px 0 oklch(100% 0 0 / 0.10);
 }
 .passport-hero-bg {
@@ -245,7 +245,7 @@
 
 /* ---- Passport stamps (14 iconic destinations, collectible) ---- */
 .passport-stamps-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
-.passport-stamps-progress { font-size: var(--text-sm); font-weight: 700; color: var(--terracotta); }
+.passport-stamps-progress { font-size: var(--text-sm); font-weight: 700; color: var(--accent); }
 .passport-stamps-grid { display: flex; flex-wrap: wrap; gap: 10px; }
 .passport-stamp {
     display: inline-flex; align-items: center; gap: 8px;
@@ -261,14 +261,14 @@
 .passport-stamp-rarity { font-size: var(--text-xs); font-weight: 600; opacity: 0.75; padding-left: 6px; border-left: 1px solid color-mix(in oklch, currentColor 30%, transparent); }
 .passport-stamp.is-earned {
     border-style: solid;
-    border-color: color-mix(in oklch, var(--terracotta) 55%, transparent);
-    color: var(--terracotta);
+    border-color: color-mix(in oklch, var(--accent) 55%, transparent);
+    color: var(--accent);
     opacity: 1;
     transform: rotate(-2deg);
-    background: color-mix(in oklch, var(--terracotta) 8%, transparent);
+    background: color-mix(in oklch, var(--accent) 8%, transparent);
 }
-.passport-stamp.is-earned .passport-stamp-ink { background: color-mix(in oklch, var(--terracotta) 14%, transparent); }
-.passport-stamps-cta { display: inline-block; margin-top: 14px; color: var(--terracotta); font-weight: 600; font-size: var(--text-sm); text-decoration: none; }
+.passport-stamp.is-earned .passport-stamp-ink { background: color-mix(in oklch, var(--accent) 14%, transparent); }
+.passport-stamps-cta { display: inline-block; margin-top: 14px; color: var(--accent); font-weight: 600; font-size: var(--text-sm); text-decoration: none; }
 .passport-stamps-cta:hover { text-decoration: underline; }
 
 /* ---- Passport highlights ("My Tunisia Journey") ---- */
@@ -284,7 +284,7 @@
 .passport-highlight-cap { font-size: var(--text-xs); color: var(--text-secondary); max-width: 84px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .passport-highlight-overlay { position: fixed; inset: 0; z-index: 400; background: oklch(0% 0 0 / 0.9); display: flex; align-items: center; justify-content: center; padding: 20px; }
 .passport-highlight-overlay-inner { position: relative; max-width: 420px; width: 100%; }
-.passport-highlight-overlay-inner img { width: 100%; border-radius: var(--radius-2xl); }
+.passport-highlight-overlay-inner img { width: 100%; border-radius: var(--radius-xl); }
 .passport-highlight-overlay-cap { color: #fff; text-align: center; margin-top: 12px; font-size: var(--text-sm); }
 .passport-highlight-close { position: absolute; top: 10px; right: 10px; padding: 8px; border-radius: 50%; border: 0; background: oklch(100% 0 0 / 0.15); color: #fff; cursor: pointer; }
 /* ---- Pro passport themes (hero gradient overrides — higher specificity wins) ---- */
@@ -422,7 +422,7 @@
 .passport-onb-stamp {
     width: clamp(140px, 42%, 178px);
     margin: 0 auto 10px;
-    color: var(--stamp-ink);
+    color: var(--accent);
     animation: stamp-thunk 340ms var(--ease-out) both;
 }
 .passport-onb-stamp svg { width: 100%; height: auto; display: block; }
@@ -431,7 +431,7 @@
 }
 .passport-onb-celebrate h2 { font-family: var(--font-display); }
 .passport-onb-card .passport-onb-hand {
-    font-family: var(--font-hand);
+    font-family: var(--font-display);
     font-size: 1.4rem;
     line-height: 1.25;
     color: var(--text-secondary);
@@ -483,13 +483,13 @@
     font-family: var(--font-mono);
     font-size: var(--text-2xl);
     font-weight: 600;
-    color: var(--stamp-ink);
+    color: var(--accent);
     white-space: nowrap;
 }
-.gov-album-progress span { color: var(--ink-faint); font-size: var(--text-lg); }
+.gov-album-progress span { color: var(--text-tertiary); font-size: var(--text-lg); }
 .gov-album-bar {
     height: 3px;
-    background: var(--rule);
+    background: var(--border);
     border-radius: var(--radius-full);
     overflow: hidden;
     margin-bottom: var(--space-6);
@@ -497,7 +497,7 @@
 .gov-album-bar span {
     display: block;
     height: 100%;
-    background: var(--stamp-ink);
+    background: var(--accent);
     transition: width var(--duration-slow) var(--ease-out);
 }
 
@@ -514,7 +514,7 @@
     padding: var(--space-1);
 }
 /* Earned — the inked rubber stamp, slight per-item tilt for the pressed feel. */
-.gov-stamp.is-earned { color: var(--stamp-ink); }
+.gov-stamp.is-earned { color: var(--accent); }
 .gov-stamp.is-earned .gov-stamp-ink { display: block; width: 100%; }
 .gov-stamp.is-earned .gov-stamp-ink svg { width: 100%; height: 100%; display: block; }
 .gov-stamp.is-earned:nth-child(3n)   { rotate: -3deg; }
@@ -537,7 +537,7 @@
     text-align: center;
     border: 1.5px dashed var(--rule-strong);
     border-radius: 50%;
-    color: var(--ink-faint);
+    color: var(--text-tertiary);
     opacity: 0.55;
     padding: var(--space-2);
 }
@@ -547,11 +547,11 @@
     letter-spacing: 0.06em;
 }
 .gov-stamp-locked-name {
-    font-family: var(--font-editorial);
+    font-family: var(--font-display);
     font-size: var(--text-sm);
     font-weight: 600;
     line-height: 1.05;
-    color: var(--ink-soft);
+    color: var(--text-secondary);
 }
 .gov-stamp-locked-ar {
     font-family: 'Noto Kufi Arabic', sans-serif;
@@ -621,8 +621,8 @@
     pointer-events: none;
     opacity: 0.5;
     background-image:
-        repeating-linear-gradient(45deg, var(--rule-faint) 0 1px, transparent 1px 11px),
-        repeating-linear-gradient(-45deg, var(--rule-faint) 0 1px, transparent 1px 11px);
+        repeating-linear-gradient(45deg, var(--border-light) 0 1px, transparent 1px 11px),
+        repeating-linear-gradient(-45deg, var(--border-light) 0 1px, transparent 1px 11px);
 }
 /* Orbs retired */
 .passport-hero-orbs,
@@ -759,7 +759,7 @@
     border-color: transparent !important;
 }
 .passport-page .passport-business-chip {
-    background: linear-gradient(135deg, var(--mediterranean), var(--violet)) !important;
+    background: linear-gradient(135deg, var(--mediterranean), var(--accent)) !important;
     color: var(--text-inverse) !important;
     border-color: transparent !important;
 }
@@ -1143,13 +1143,13 @@
    kickers, stats become an almanac row, and the completion card
    loses its mesh/neon tells. Scoped to the opted-in root.
    ============================================================ */
-.passport-page[data-design="carnet"] .passport-section {
-    background: var(--paper-print);
-    border: 1px solid var(--rule);
+.passport-page .passport-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
     border-radius: 3px;
     box-shadow: var(--paper-shadow);
 }
-.passport-page[data-design="carnet"] .passport-section-title {
+.passport-page .passport-section-title {
     display: flex;
     width: 100%;
     align-items: center;
@@ -1159,24 +1159,24 @@
     font-weight: 600;
     letter-spacing: 0.16em;
     text-transform: uppercase;
-    color: var(--ink-soft);
+    color: var(--text-secondary);
 }
-.passport-page[data-design="carnet"] .passport-section-title::after {
+.passport-page .passport-section-title::after {
     content: '';
     flex: 1;
-    border-top: 1px solid var(--rule);
+    border-top: 1px solid var(--border);
 }
 
 /* stats → almanac row: hairline-ruled, mono tabular, honest & static */
-.passport-page[data-design="carnet"] .passport-stats {
+.passport-page .passport-stats {
     gap: 0;
     border-top: 1.5px solid var(--rule-strong);
-    border-bottom: 1px solid var(--rule);
+    border-bottom: 1px solid var(--border);
 }
-.passport-page[data-design="carnet"] .passport-stat {
+.passport-page .passport-stat {
     background: transparent;
     border: none;
-    border-left: 1px solid var(--rule);
+    border-left: 1px solid var(--border);
     border-radius: 0;
     box-shadow: none;
     padding: var(--space-4) var(--space-4);
@@ -1184,52 +1184,52 @@
     align-items: baseline;
     gap: 10px;
 }
-.passport-page[data-design="carnet"] .passport-stat:first-child { border-left: none; }
-.passport-page[data-design="carnet"] .passport-stat:hover { transform: none; }
-.passport-page[data-design="carnet"] .passport-stat svg { color: var(--ink-faint); align-self: center; }
-.passport-page[data-design="carnet"] .passport-stat strong {
+.passport-page .passport-stat:first-child { border-left: none; }
+.passport-page .passport-stat:hover { transform: none; }
+.passport-page .passport-stat svg { color: var(--text-tertiary); align-self: center; }
+.passport-page .passport-stat strong {
     font-family: var(--font-mono);
     font-size: 1.55rem;
     font-weight: 500;
     font-variant-numeric: tabular-nums;
-    color: var(--ink);
+    color: var(--text-primary);
 }
-.passport-page[data-design="carnet"] .passport-stat span {
+.passport-page .passport-stat span {
     font-family: var(--font-mono);
     font-size: 0.6rem;
     letter-spacing: 0.15em;
     text-transform: uppercase;
-    color: var(--ink-faint);
+    color: var(--text-tertiary);
 }
 
 /* completion → a to-do note pinned in the journal (no mesh, no glow) */
-.passport-page[data-design="carnet"] .passport-completion {
-    background: var(--paper-warm);
+.passport-page .passport-completion {
+    background: var(--bg-secondary);
     border: 1.5px dashed var(--rule-strong);
     border-radius: 3px;
 }
-.passport-page[data-design="carnet"] .passport-completion::before { background: none; }
-.passport-page[data-design="carnet"] .passport-completion-head strong {
-    font-family: var(--font-editorial);
+.passport-page .passport-completion::before { background: none; }
+.passport-page .passport-completion-head strong {
+    font-family: var(--font-display);
     font-optical-sizing: auto;
     font-weight: 580;
     letter-spacing: -0.01em;
-    color: var(--ink);
+    color: var(--text-primary);
 }
-.passport-page[data-design="carnet"] .passport-completion-head span { color: var(--ink-soft); }
-.passport-page[data-design="carnet"] .passport-completion-bar {
+.passport-page .passport-completion-head span { color: var(--text-secondary); }
+.passport-page .passport-completion-bar {
     height: 6px;
-    background: var(--paper);
-    border: 1px solid var(--rule);
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
     border-radius: 2px;
 }
-.passport-page[data-design="carnet"] .passport-completion-bar span {
-    background: var(--terracotta);
+.passport-page .passport-completion-bar span {
+    background: var(--accent);
     box-shadow: none;
     border-radius: 0;
 }
-.passport-page[data-design="carnet"] .passport-completion-dismiss {
+.passport-page .passport-completion-dismiss {
     border-radius: 3px;
     border-color: var(--rule-strong);
-    color: var(--ink-soft);
+    color: var(--text-secondary);
 }

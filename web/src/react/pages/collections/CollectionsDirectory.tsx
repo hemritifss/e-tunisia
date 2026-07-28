@@ -147,7 +147,7 @@ export default function CollectionsDirectory({ onOpen, onNewCarnet, onEditCarnet
     };
 
     return (
-        <div className="collections-page cn-grain page-enter" data-design="carnet">
+        <div className="collections-page cn-grain page-enter">
             <header className="collections-masthead">
                 <span className="cn-kicker"><Layers size={13} /> Carnet de collections</span>
                 <h1 className="cn-title">

@@ -5,7 +5,7 @@
 
 /* ---- Story composer (caption step before posting) ---- */
 .story-composer { position: fixed; inset: 0; z-index: 410; background: oklch(0% 0 0 / 0.9); display: flex; align-items: center; justify-content: center; padding: 20px; }
-.story-composer-card { position: relative; width: 100%; max-width: 380px; background: var(--surface); border-radius: var(--radius-2xl); overflow: hidden; box-shadow: var(--shadow-2xl); }
+.story-composer-card { position: relative; width: 100%; max-width: 380px; background: var(--surface); border-radius: var(--radius-xl); overflow: hidden; box-shadow: var(--shadow-2xl); }
 .story-composer-close { position: absolute; top: 10px; right: 10px; z-index: 2; padding: 7px; border-radius: 50%; border: 0; background: oklch(0% 0 0 / 0.45); color: #fff; cursor: pointer; }
 .story-composer-preview { width: 100%; max-height: 50vh; object-fit: cover; display: block; }
 .story-composer-caption { width: 100%; border: 0; border-top: 1px solid var(--border); padding: 14px 16px; font-size: var(--text-sm); background: var(--surface); color: var(--text-primary); resize: none; min-height: 72px; font-family: inherit; }

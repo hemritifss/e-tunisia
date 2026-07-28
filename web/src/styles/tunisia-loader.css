@@ -6,12 +6,12 @@
   align-items: center;
   justify-content: center;
   gap: 0.7em;
-  color: var(--coral);
+  color: var(--accent);
 }
 .tn-loader-svg { display: block; overflow: visible; }
 .tn-loader-shape {
-  fill: color-mix(in oklab, var(--coral) 15%, transparent);
-  stroke: var(--coral);
+  fill: color-mix(in oklab, var(--accent) 15%, transparent);
+  stroke: var(--accent);
   stroke-width: 550; /* path units; the 0.1 transform scales this to ~55 viewBox units */
   stroke-linejoin: round;
   stroke-linecap: round;
@@ -33,7 +33,7 @@
   position: fixed;
   inset: 0;
   z-index: var(--z-modal);
-  background: var(--paper);
+  background: var(--bg-primary);
 }
 @media (prefers-reduced-motion: reduce) {
   .tn-loader-shape { animation: none; stroke-dashoffset: 0; }

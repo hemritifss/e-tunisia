@@ -78,7 +78,7 @@ export function PullToRefresh({ onRefresh, children }: Props) {
       >
         <motion.div
           className="grid place-items-center w-9 h-9 rounded-full bg-surface shadow-md"
-          style={{ color: ready || refreshing ? 'var(--olive)' : 'var(--coral)' }}
+          style={{ color: ready || refreshing ? 'var(--success)' : 'var(--accent)' }}
           animate={refreshing ? { rotate: 360, scale: 1 } : { rotate: progress * 270, scale: 0.6 + progress * 0.4 }}
           transition={refreshing
             ? { repeat: Infinity, ease: 'linear', duration: 0.8 }

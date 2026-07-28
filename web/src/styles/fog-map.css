@@ -16,18 +16,18 @@
     font-weight: 600;
     letter-spacing: 0.16em;
     text-transform: uppercase;
-    color: var(--ink-soft);
+    color: var(--text-secondary);
 }
 .fog-map-count {
     font-family: var(--font-mono);
     font-size: 0.72rem;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: var(--ink-faint);
+    color: var(--text-tertiary);
 }
 .fog-map-count strong {
     font-size: 1.05rem;
-    color: var(--terracotta);
+    color: var(--accent);
     font-variant-numeric: tabular-nums;
 }
 
@@ -36,15 +36,15 @@
     align-self: center;
     width: min(100%, 360px);
     padding: var(--space-4);
-    background: var(--paper-warm);
-    border: 1px solid var(--rule);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
     border-radius: 3px;
     box-shadow: var(--paper-shadow);
 }
 .fog-map-svg { display: block; width: 100%; height: auto; overflow: visible; }
 
 /* ── fog (unvisited) ── */
-.fog-hatch-line { stroke: var(--ink-faint); stroke-width: 0.35; opacity: 0.5; }
+.fog-hatch-line { stroke: var(--text-tertiary); stroke-width: 0.35; opacity: 0.5; }
 .fog-region-fog {
     fill: url(#fog-hatch);
     stroke: none;
@@ -59,17 +59,17 @@
 }
 /* ── ink (visited) — sits under fog, revealed by fading the fog + rising ink ── */
 .fog-region-ink {
-    fill: var(--terracotta);
+    fill: var(--accent);
     fill-opacity: 0;
     stroke: none;
     transition: fill-opacity 700ms var(--ease-out);
 }
 .fog-region.is-inked .fog-region-ink { fill-opacity: 0.82; }
 .fog-region.is-inked .fog-region-fog { opacity: 0; }
-.fog-region.is-inked .fog-region-edge { stroke: var(--stamp-ink); opacity: 0.9; }
+.fog-region.is-inked .fog-region-edge { stroke: var(--accent); opacity: 0.9; }
 
 .fog-region { cursor: default; }
-.fog-region.is-hover .fog-region-edge { stroke: var(--ink); opacity: 1; stroke-width: 0.6; }
+.fog-region.is-hover .fog-region-edge { stroke: var(--text-primary); opacity: 1; stroke-width: 0.6; }
 .fog-region:not(.is-inked).is-hover .fog-region-fog { opacity: 0.55; }
 
 /* ── labels ── */
@@ -77,18 +77,18 @@
     font-family: var(--font-mono);
     font-size: 2.15px;
     letter-spacing: 0.02em;
-    fill: var(--ink-faint);
+    fill: var(--text-tertiary);
     opacity: 0.75;
 }
 .fog-label.is-inked .fog-label-name {
-    fill: var(--paper-print);
+    fill: var(--surface);
     opacity: 1;
     font-weight: 600;
 }
 .fog-label-no {
     font-family: var(--font-mono);
     font-size: 1.7px;
-    fill: color-mix(in oklab, var(--paper-print) 82%, transparent);
+    fill: color-mix(in oklab, var(--surface) 82%, transparent);
     letter-spacing: 0.04em;
 }
 
@@ -101,21 +101,21 @@
     flex-direction: column;
     gap: 1px;
     padding: 6px 10px;
-    background: var(--paper-print);
+    background: var(--surface);
     border: 1px solid var(--rule-strong);
     border-radius: 2px;
     box-shadow: var(--paper-shadow);
     pointer-events: none;
 }
-.fog-map-tip strong { font-family: var(--font-editorial); font-optical-sizing: auto; font-size: 0.95rem; color: var(--ink); }
-.fog-map-tip span { font-family: 'Noto Kufi Arabic', var(--font-sans); font-size: 0.72rem; color: var(--ink-soft); }
+.fog-map-tip strong { font-family: var(--font-display); font-optical-sizing: auto; font-size: 0.95rem; color: var(--text-primary); }
+.fog-map-tip span { font-family: 'Noto Kufi Arabic', var(--font-sans); font-size: 0.72rem; color: var(--text-secondary); }
 .fog-map-tip em {
     font-family: var(--font-mono);
     font-style: normal;
     font-size: 0.56rem;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: var(--ink-faint);
+    color: var(--text-tertiary);
     margin-top: 2px;
 }
 
@@ -124,15 +124,15 @@
     height: 6px;
     align-self: center;
     width: min(100%, 360px);
-    background: var(--paper);
-    border: 1px solid var(--rule);
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
     border-radius: 2px;
     overflow: hidden;
 }
 .fog-map-bar span {
     display: block;
     height: 100%;
-    background: var(--terracotta);
+    background: var(--accent);
     transition: width 800ms var(--ease-out);
 }
 .fog-map-empty {
@@ -142,10 +142,10 @@
     flex-direction: column;
     gap: 3px;
     text-decoration: none;
-    color: var(--ink-soft);
+    color: var(--text-secondary);
     font-size: var(--text-sm);
 }
-.fog-map-empty strong { color: var(--terracotta); font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; }
+.fog-map-empty strong { color: var(--accent); font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; }
 
 @media (prefers-reduced-motion: reduce) {
     .fog-region-fog, .fog-region-ink, .fog-map-bar span { transition: none; }

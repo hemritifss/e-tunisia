@@ -55,7 +55,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: var(--coral);
+  color: var(--accent);
   margin-bottom: 1rem;
 }
 
@@ -112,7 +112,7 @@
 .tips2-tag.active {
   background: color-mix(in srgb, var(--accent) 15%, transparent);
   border-color: color-mix(in srgb, var(--accent) 30%, transparent);
-  color: var(--coral);
+  color: var(--accent);
 }
 
 .tips2-grid {
@@ -232,13 +232,13 @@
 .tip2-like-btn:hover {
   background: color-mix(in srgb, var(--accent) 10%, transparent);
   border-color: color-mix(in srgb, var(--accent) 20%, transparent);
-  color: var(--coral);
+  color: var(--accent);
 }
 
 .tip2-like-btn.liked {
   background: color-mix(in srgb, var(--accent) 15%, transparent);
   border-color: color-mix(in srgb, var(--accent) 30%, transparent);
-  color: var(--coral);
+  color: var(--accent);
 }
 
 .tip2-like-btn svg {
@@ -246,8 +246,8 @@
 }
 
 .tip2-like-btn.liked svg {
-  fill: var(--coral);
-  stroke: var(--coral);
+  fill: var(--accent);
+  stroke: var(--accent);
 }
 
 .tip2-share-btn {
@@ -427,7 +427,7 @@
 .tips-page .tips2-hero {
     position: relative;
     overflow: hidden;
-    border-radius: var(--radius-2xl);
+    border-radius: var(--radius-xl);
     padding: clamp(var(--space-8), 6vw, var(--space-12)) clamp(var(--space-5), 4vw, var(--space-10));
     color: oklch(98% 0 0);
     isolation: isolate;
@@ -718,8 +718,8 @@
                 transform var(--duration-instant) var(--ease-spring);
 }
 .tips-page .tip2-like-btn:hover {
-    color: var(--coral);
-    border-color: var(--coral);
+    color: var(--accent);
+    border-color: var(--accent);
 }
 .tips-page .tip2-share-btn:hover {
     color: var(--mediterranean);
@@ -735,9 +735,9 @@
 .tips-page .tip2-share-btn span { font-variant-numeric: tabular-nums; }
 
 .tips-page .tip2-like-btn.is-liked {
-    background: color-mix(in oklch, var(--coral) 14%, transparent);
-    border-color: var(--coral);
-    color: var(--coral);
+    background: color-mix(in oklch, var(--accent) 14%, transparent);
+    border-color: var(--accent);
+    color: var(--accent);
     font-weight: 600;
 }
 @supports not (color: color-mix(in oklch, red, blue)) {
@@ -909,7 +909,7 @@
     overflow-y: auto;
     background: var(--surface-elevated);
     border: 1px solid var(--border);
-    border-radius: var(--radius-2xl);
+    border-radius: var(--radius-xl);
     box-shadow: var(--shadow-2xl);
     padding: var(--space-6);
     display: flex;

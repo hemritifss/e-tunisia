@@ -32,7 +32,6 @@
   --accent-hover:       #16447A;
   --accent-light:       #E4EDF9;
   --accent-text:        #FFFFFF;
-  --primary:            var(--accent);   /* legacy alias */
 
   /* Azure — secondary blue only (was --mediterranean) */
   --mediterranean:      #4B8FD4;
@@ -61,55 +60,30 @@
   --downvote:           #5B6B82;
   --downvote-bg:        #EDF1F7;
 
-  /* ── Legacy accent aliases (Phase 2: re-point usages, then delete) ──
-     The old six-accent rainbow collapses into the system above. These keep
-     ~60 stylesheets rendering while their usages migrate. No new uses. */
-  --terracotta:         var(--accent);
-  --terracotta-light:   var(--mediterranean);
-  --terracotta-pale:    var(--accent-light);
-  /* --sand is read as a foreground in several sheets, so it points at the deep
-     stone, not the pale surface tint. */
-  --sand:               var(--stone-deep);
-  --sand-light:         var(--stone-pale);
-  --olive:              var(--success);
-  --olive-light:        var(--success);
-  --coral:              var(--accent);
-  --violet:             var(--accent);
-  --cyan:               var(--mediterranean);
-  --rose:               var(--accent);
-
-  /* Landing `.tn-*` palette — mapped per handoff */
-  --tn-dark:            #1D2E4A;
-  --tn-surface:         #141C29;
-  --tn-border:          rgba(232, 238, 247, 0.10);
-  --tn-terracotta:      var(--accent);
-  --tn-ochre:           var(--warning);
-
-  /* ── Editorial paper & ink → remapped onto whitewash (Phase 2: fold) ── */
-  --paper:              var(--bg-primary);
-  --paper-warm:         var(--bg-secondary);
-  --paper-print:        var(--surface);
-  --paper-deep:         #1D2E4A;
-  --ink:                var(--text-primary);
-  --ink-soft:           var(--text-secondary);
-  --ink-faint:          var(--text-tertiary);
-  --ink-on-deep:        #E8EEF7;
-  --rule:               var(--border);
+  /* ── Editorial deep-panel system ──
+     The one part of the old paper/ink layer that is not expressible with the
+     surface/text tokens above: an ink-dipped panel that stays dark in BOTH
+     themes, the type that sits on it, and the hairline/letterpress treatments
+     that belong to it. Landing, passport, carnet and the deep heroes read
+     these. Everything else uses --surface / --text-* / --border directly. */
+  --paper-deep:         #1D2E4A;   /* navy panel — dark in light theme too */
+  --ink-on-deep:        #E8EEF7;   /* the only type colour legible on it */
   --rule-strong:        rgba(29, 46, 74, 0.52);
-  --rule-faint:         var(--border-light);
   --tape:               rgba(231, 222, 204, 0.55);
-  /* Stamp ink is passport-blue, not flag red: featured/saved are neither live nor destructive */
-  --stamp-ink:          var(--accent);
   --paper-shadow:       none;
   --paper-shadow-lift:  0 28px 60px -24px rgba(29, 46, 74, 0.4);
+
+  /* ── Carnet motion — the editorial pages share one timing pair ── */
+  --carnet-motion-fast: 150ms var(--ease-out);
+  --carnet-motion-base: 260ms var(--ease-out);
+  --carnet-focus:       2px solid var(--accent);
+  /* Letterpress offsets flatten: rules separate content, not shadows. */
+  --carnet-btn-shadow:  none;
 
   /* ── Typography: three roles, no exceptions ── */
   --font-display:       'Instrument Serif', 'Noto Kufi Arabic', Georgia, serif;
   --font-sans:          'Instrument Sans', 'Noto Kufi Arabic', system-ui, -apple-system, sans-serif;
   --font-mono:          'JetBrains Mono', monospace;
-  /* Legacy role aliases (Phase 2: re-point usages, then delete) */
-  --font-editorial:     var(--font-display);
-  --font-hand:          var(--font-display);
 
   --text-xs:            12px;
   --text-sm:            13px;
@@ -119,9 +93,7 @@
   --text-2xl:           26px;
   --text-3xl:           34px;
   --text-4xl:           40px;
-  --text-5xl:           60px;   /* hero only */
-  --text-6xl:           60px;   /* Phase 2: retire (scale caps at 5xl) */
-  --text-7xl:           60px;   /* Phase 2: retire */
+  --text-5xl:           60px;   /* hero only — the scale caps here */
 
   --leading-tight:      1.15;
   --leading-snug:       1.3;
@@ -154,8 +126,6 @@
   --radius-md:          4px;
   --radius-lg:          4px;
   --radius-xl:          0;
-  --radius-2xl:         0;   /* Phase 2: delete token */
-  --radius-3xl:         0;   /* Phase 2: delete token */
   --radius-full:        9999px;
 
   /* ── Elevation: rules separate content; shadows exist only for overlays ── */
@@ -248,7 +218,7 @@
   --downvote:           #7C8CA3;
   --downvote-bg:        #223045;
 
-  /* Paper & ink follow the night surfaces */
+  /* Editorial deep-panel system follows the night surfaces */
   --paper-deep:         #0A101A;
   --ink-on-deep:        #E8EEF7;
   --rule-strong:        rgba(232, 238, 247, 0.45);
@@ -267,53 +237,8 @@
   --leading-relaxed: 1.85;
 }
 
-/* ============================================
-   COMPAT LAYER — [data-design] hooks (Phase 2: remove attributes + this block)
-   The sleek/carnet remap blocks are gone: with Bled there is ONE system and
-   the remaps would fight it. ~300 `--sleek-*` rules in pages.css still read
-   these, so they alias straight to the base tokens — pure pass-through.
-   ============================================ */
-[data-design="sleek"] {
-  --sleek-surface:          var(--surface);
-  --sleek-surface-muted:    var(--bg-primary);
-  --sleek-surface-sunken:   var(--bg-secondary);
-  --sleek-surface-hover:    var(--surface-hover);
-  --sleek-border:           var(--border);
-  --sleek-border-strong:    var(--rule-strong);
-  --sleek-text:             var(--text-primary);
-  --sleek-text-secondary:   var(--text-secondary);
-  --sleek-text-muted:       var(--text-tertiary);
-  --sleek-accent:           var(--accent);
-  --sleek-accent-hover:     var(--accent-hover);
-  --sleek-accent-text:      var(--accent-text);
-  --sleek-accent-soft:      var(--accent-light);
-  --sleek-focus-ring:       0 0 0 2px var(--sleek-surface), 0 0 0 4px var(--sleek-accent);
-  --sleek-elev-0:           none;
-  --sleek-elev-1:           none;
-  --sleek-elev-2:           var(--shadow-xl);
-  --sleek-radius-sm:        var(--radius-sm);
-  --sleek-radius-md:        var(--radius-md);
-  --sleek-radius-lg:        var(--radius-lg);
-  --sleek-motion-fast:      120ms var(--ease-out);
-  --sleek-motion-base:      200ms var(--ease-out);
-}
-
-[data-design="carnet"] {
-  /* Letterpress offsets flatten: rules separate content, not shadows. */
-  --carnet-btn-shadow:      none;
-  --carnet-btn-shadow-lift: none;
-  --carnet-btn-shadow-sink: none;
-  --carnet-focus:           2px solid var(--accent);
-  --carnet-motion-fast:     150ms var(--ease-out);
-  --carnet-motion-base:     260ms var(--ease-out);
-}
-
 @media (prefers-reduced-motion: reduce) {
-  [data-design="sleek"] {
-    --sleek-motion-fast: 0ms linear;
-    --sleek-motion-base: 0ms linear;
-  }
-  [data-design="carnet"] {
+  :root {
     --carnet-motion-fast: 0ms linear;
     --carnet-motion-base: 0ms linear;
   }

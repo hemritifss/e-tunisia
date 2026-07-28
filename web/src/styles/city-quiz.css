@@ -56,7 +56,7 @@
 .quiz-card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius-2xl);
+  border-radius: var(--radius-xl);
   padding: 22px;
   box-shadow: var(--shadow-sm);
   animation: quiz-slide .3s cubic-bezier(.22, 1, .36, 1);
@@ -116,7 +116,7 @@
 .quiz-result-card {
   position: relative;
   color: #fff;
-  border-radius: var(--radius-3xl);
+  border-radius: var(--radius-xl);
   padding: 34px 28px 30px;
   text-align: center;
   overflow: hidden;
@@ -203,7 +203,7 @@
   text-align: center;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius-2xl);
+  border-radius: var(--radius-xl);
   padding: 20px;
 }
 .quiz-signup strong { font-size: var(--text-lg); }

@@ -110,7 +110,7 @@ export default function SubmitGemPage() {
 
   if (phase === 'done' && result) {
     return (
-      <div className="gem-page page-enter" data-design="sleek">
+      <div className="gem-page page-enter">
         <div className="gem-success">
           <div className="gem-success-icon"><CheckCircle2 size={34} /></div>
           <h1>“{result.place.name}” is submitted 💎</h1>
@@ -129,7 +129,7 @@ export default function SubmitGemPage() {
 
   if (phase === 'duplicate' && result) {
     return (
-      <div className="gem-page page-enter" data-design="sleek">
+      <div className="gem-page page-enter">
         <div className="gem-success">
           <div className="gem-success-icon gem-dup-icon"><MapPin size={34} /></div>
           <h1>Already on the map!</h1>
@@ -144,7 +144,7 @@ export default function SubmitGemPage() {
   }
 
   return (
-    <div className="gem-page page-enter" data-design="sleek">
+    <div className="gem-page page-enter">
       <header className="gem-header">
         <span className="gem-kicker"><Gem size={13} /> Put it on the map</span>
         <h1>Share a hidden gem</h1>

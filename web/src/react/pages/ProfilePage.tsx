@@ -39,7 +39,7 @@ export default function ProfilePage() {
 
   if (userQ.isLoading) {
     return (
-      <div className="profile-page-v2 page-enter" data-design="sleek">
+      <div className="profile-page-v2 page-enter">
         <ProfilePageSkeleton label={t('profile.loading')} />
       </div>
     );
@@ -47,7 +47,7 @@ export default function ProfilePage() {
 
   if (!user) {
     return (
-      <div className="profile-page-v2 page-enter" data-design="sleek">
+      <div className="profile-page-v2 page-enter">
         <div className="pp-empty-state">
           <UserX />
           <h2>{t('profile.loadError')}</h2>
@@ -90,7 +90,7 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="profile-page-v2 page-enter" data-design="sleek">
+    <div className="profile-page-v2 page-enter">
       <header className={`pp-cover${isPro ? ' is-pro' : ''}`}>
         <div className="pp-cover-gradient" aria-hidden="true" />
         <div className="pp-cover-pattern" aria-hidden="true" />

@@ -17,7 +17,7 @@
   z-index: var(--z-sticky);
   transform: scaleX(0);
   transform-origin: 0 50%;
-  background: linear-gradient(90deg, var(--accent), var(--stamp-ink));
+  background: linear-gradient(90deg, var(--accent), var(--accent));
   opacity: 0;
   pointer-events: none;
   transition: transform 140ms var(--ease-out), opacity 180ms var(--ease-out);
@@ -73,7 +73,7 @@
 }
 
 .you-identity__text strong {
-  font-family: var(--font-editorial);
+  font-family: var(--font-display);
   font-size: 1.15rem;
   line-height: 1.2;
 }
@@ -197,10 +197,10 @@
   max-width: min(19rem, calc(100vw - 2rem));
   padding: 0.75rem 0.875rem 0.8rem;
   background: var(--bg-elevated, var(--bg-primary));
-  color: var(--ink);
-  border: 1.5px solid var(--ink);
+  color: var(--text-primary);
+  border: 1.5px solid var(--text-primary);
   border-radius: 2px;
-  box-shadow: 3px 3px 0 var(--ink);
+  box-shadow: 3px 3px 0 var(--text-primary);
   font-size: 0.875rem;
   line-height: 1.45;
   /* Animated in by JS after positioning, so it never flashes at 0,0. */
@@ -216,7 +216,7 @@
 
 .hint-pop-title {
   display: block;
-  font-family: var(--font-hand, cursive);
+  font-family: var(--font-display, cursive);
   font-size: 1rem;
   font-weight: 600;
   margin-bottom: 0.15rem;
@@ -224,7 +224,7 @@
 
 .hint-pop-body {
   display: block;
-  color: var(--ink-soft);
+  color: var(--text-secondary);
 }
 
 .hint-pop-actions {
@@ -239,16 +239,16 @@
   font-size: 0.8rem;
   font-weight: 600;
   padding: 0.25rem 0.6rem;
-  border: 1.5px solid var(--ink);
+  border: 1.5px solid var(--text-primary);
   border-radius: 2px;
-  background: var(--ink);
+  background: var(--text-primary);
   color: var(--bg-primary);
   cursor: pointer;
 }
 
 .hint-pop-btn.is-ghost {
   background: transparent;
-  color: var(--ink-soft);
+  color: var(--text-secondary);
   border-color: transparent;
 }
 
@@ -264,8 +264,8 @@
   width: 9px;
   height: 9px;
   background: var(--bg-elevated, var(--bg-primary));
-  border-left: 1.5px solid var(--ink);
-  border-top: 1.5px solid var(--ink);
+  border-left: 1.5px solid var(--text-primary);
+  border-top: 1.5px solid var(--text-primary);
 }
 
 .hint-pop[data-placement='bottom']::after {

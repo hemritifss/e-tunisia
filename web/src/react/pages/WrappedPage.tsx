@@ -111,7 +111,7 @@ export default function WrappedPage() {
   // ── Empty state — not enough summer activity yet ───────────
   if (data.isEmpty) {
     return (
-      <div className="wrapped-page wrapped-guard" data-design="sleek">
+      <div className="wrapped-page wrapped-guard">
         <div className="wrapped-kicker"><Sparkles size={14} /> {data.period.label}</div>
         <h1>{isOwner ? 'Your summer is just getting started' : `@${data.handle}'s summer is just getting started`}</h1>
         <p>{isOwner
@@ -128,7 +128,7 @@ export default function WrappedPage() {
   const isLast = idx === total - 1;
 
   return (
-    <div className="wrapped-page" data-design="sleek">
+    <div className="wrapped-page">
       {/* story progress bars */}
       <div className="wrapped-bars">
         {slides.map((_, i) => (

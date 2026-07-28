@@ -18,7 +18,7 @@
   position: relative;
   height: 200px;
   overflow: hidden;
-  border-radius: 0 0 var(--radius-2xl) var(--radius-2xl);
+  border-radius: 0 0 var(--radius-xl) var(--radius-xl);
   margin-bottom: 80px;
 }
 .pp-cover-gradient {
@@ -484,7 +484,7 @@
 .profile-page-v2 .pp-cover {
     position: relative;
     height: clamp(180px, 28vw, 240px);
-    border-radius: 0 0 var(--radius-2xl) var(--radius-2xl);
+    border-radius: 0 0 var(--radius-xl) var(--radius-xl);
     overflow: hidden;
     margin: 0 calc(var(--page-padding) * -1);
     isolation: isolate;
@@ -783,7 +783,7 @@
 }
 .profile-page-v2 .pp-stat-icon-xp    { background: color-mix(in oklch, var(--warning) 16%, transparent);          color: var(--warning); }
 .profile-page-v2 .pp-stat-icon-rank  { background: color-mix(in oklch, var(--accent) 16%, transparent);        color: var(--accent); }
-.profile-page-v2 .pp-stat-icon-level { background: color-mix(in oklch, var(--coral) 18%, transparent);         color: var(--coral); }
+.profile-page-v2 .pp-stat-icon-level { background: color-mix(in oklch, var(--accent) 18%, transparent);         color: var(--accent); }
 .profile-page-v2 .pp-stat-icon-tier  { background: color-mix(in oklch, var(--mediterranean) 16%, transparent); color: var(--mediterranean); }
 @supports not (color: color-mix(in oklch, red, blue)) {
     .profile-page-v2 .pp-stat-icon-xp,
@@ -826,7 +826,7 @@
 .pp-pro-card.is-business {
     background:
         linear-gradient(var(--surface-elevated), var(--surface-elevated)) padding-box,
-        linear-gradient(135deg, var(--mediterranean) 0%, var(--violet) 100%) border-box;
+        linear-gradient(135deg, var(--mediterranean) 0%, var(--accent) 100%) border-box;
 }
 .pp-pro-icon {
     width: 48px;
@@ -840,7 +840,7 @@
     box-shadow: var(--shadow-sm);
 }
 .pp-pro-card.is-business .pp-pro-icon {
-    background: linear-gradient(135deg, var(--mediterranean), var(--violet));
+    background: linear-gradient(135deg, var(--mediterranean), var(--accent));
     color: var(--text-inverse);
 }
 .pp-pro-body {
@@ -934,12 +934,12 @@
     outline: 2px solid var(--ql-tint);
     outline-offset: 2px;
 }
-.profile-page-v2 .pp-quick-link-card[data-tint="rose"]          { --ql-tint: var(--rose); }
+.profile-page-v2 .pp-quick-link-card[data-tint="rose"]          { --ql-tint: var(--accent); }
 .profile-page-v2 .pp-quick-link-card[data-tint="gold"]          { --ql-tint: var(--warning); }
-.profile-page-v2 .pp-quick-link-card[data-tint="olive"]         { --ql-tint: var(--olive); }
+.profile-page-v2 .pp-quick-link-card[data-tint="olive"]         { --ql-tint: var(--success); }
 .profile-page-v2 .pp-quick-link-card[data-tint="mediterranean"] { --ql-tint: var(--mediterranean); }
-.profile-page-v2 .pp-quick-link-card[data-tint="cyan"]          { --ql-tint: var(--cyan); }
-.profile-page-v2 .pp-quick-link-card[data-tint="violet"]        { --ql-tint: var(--violet); }
+.profile-page-v2 .pp-quick-link-card[data-tint="cyan"]          { --ql-tint: var(--mediterranean); }
+.profile-page-v2 .pp-quick-link-card[data-tint="violet"]        { --ql-tint: var(--accent); }
 .profile-page-v2 .pp-quick-link-card[data-tint="neutral"]       { --ql-tint: var(--text-tertiary); }
 
 .profile-page-v2 .pp-ql-icon {

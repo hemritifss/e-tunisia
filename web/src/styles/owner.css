@@ -228,7 +228,7 @@
     letter-spacing: var(--tracking-wide);
 }
 .owner-tier-chip.is-business {
-    background: linear-gradient(135deg, var(--mediterranean), var(--cyan));
+    background: linear-gradient(135deg, var(--mediterranean), var(--mediterranean));
     color: #fff;
     box-shadow: 0 0 0 1px oklch(100% 0 0 / 0.4) inset;
 }

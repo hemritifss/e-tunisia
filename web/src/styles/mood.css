@@ -5,7 +5,7 @@
 
 /* ─── Mood landing hero — token-driven tinted gradient ─── */
 .mood-hero {
-    border-radius: var(--radius-3xl);
+    border-radius: var(--radius-xl);
 }
 .mood-hero-bg {
     background: color-mix(in oklch, var(--mood-tint) 72%, black);
@@ -282,27 +282,6 @@
    `--mood-tint` custom property set on the root.
    ============================================ */
 
-/* ── MoodCompass strip (feed-top component) ── */
-.mood-pill-icon {
-    width: 40px;
-    height: 40px;
-    display: grid;
-    place-items: center;
-    border-radius: 50%;
-    background: color-mix(in oklch, var(--mood-tint) 18%, transparent);
-    color: var(--mood-tint);
-    flex: 0 0 auto;
-    transition: transform var(--duration-fast) var(--ease-spring),
-                background var(--duration-fast) var(--ease-out);
-}
-@supports not (color: color-mix(in oklch, red, blue)) {
-    .mood-pill-icon { background: var(--bg-tertiary); }
-}
-.mood-pill:hover .mood-pill-icon {
-    transform: scale(1.08);
-    background: color-mix(in oklch, var(--mood-tint) 28%, transparent);
-}
-
 /* ── Page shell ────────────────────────────── */
 .mood-page {
     max-width: var(--page-max);
@@ -336,7 +315,7 @@
 .mood-page .mood-hero {
     position: relative;
     overflow: hidden;
-    border-radius: var(--radius-2xl);
+    border-radius: var(--radius-xl);
     padding: clamp(var(--space-8), 6vw, var(--space-12)) var(--space-6);
     text-align: center;
     margin: var(--space-5) 0 var(--space-10);

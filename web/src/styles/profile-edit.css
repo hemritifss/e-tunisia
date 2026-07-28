@@ -89,8 +89,8 @@
   border-radius: inherit;
   transition: width var(--duration-normal) var(--ease-out);
 }
-.pe-meter-bar[data-tier="low"]  .pe-meter-fill { background: linear-gradient(90deg, var(--error) 0%, var(--coral) 100%); }
-.pe-meter-bar[data-tier="good"] .pe-meter-fill { background: linear-gradient(90deg, var(--accent) 0%, var(--coral) 100%); }
+.pe-meter-bar[data-tier="low"]  .pe-meter-fill { background: linear-gradient(90deg, var(--error) 0%, var(--accent) 100%); }
+.pe-meter-bar[data-tier="good"] .pe-meter-fill { background: linear-gradient(90deg, var(--accent) 0%, var(--accent) 100%); }
 .pe-meter-bar[data-tier="great"] .pe-meter-fill { background: linear-gradient(90deg, var(--success) 0%, var(--warning) 100%); }
 
 .input-required { color: var(--error); margin-left: 2px; }

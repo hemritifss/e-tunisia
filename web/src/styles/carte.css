@@ -11,8 +11,8 @@
 .carte {
     position: relative;
     display: block;
-    background: var(--paper-print);
-    border: 1px solid var(--rule);
+    background: var(--surface);
+    border: 1px solid var(--border);
     border-radius: 4px;
     box-shadow: var(--paper-shadow);
     padding: var(--space-3);
@@ -54,8 +54,8 @@
     aspect-ratio: 4 / 3;
     overflow: hidden;
     border-radius: 2px;
-    background: var(--paper-warm);
-    box-shadow: inset 0 0 0 1px var(--rule-faint),
+    background: var(--bg-secondary);
+    box-shadow: inset 0 0 0 1px var(--border-light),
                 inset 0 -44px 40px -40px oklch(0% 0 0 / 0.28);
 }
 .carte-photo img {
@@ -75,7 +75,7 @@
     width: 58px;
     height: 20px;
     background: var(--tape);
-    border-inline: 1px solid color-mix(in oklab, var(--ink) 8%, transparent);
+    border-inline: 1px solid color-mix(in oklab, var(--text-primary) 8%, transparent);
     rotate: -4deg;
     box-shadow: 0 1px 3px oklch(0% 0 0 / 0.10);
     z-index: 2;
@@ -94,9 +94,9 @@
     font-family: var(--font-mono);
     font-size: 11px;
     font-weight: 700;
-    color: var(--ink);
-    background: color-mix(in oklab, var(--paper-print) 90%, transparent);
-    border: 1px solid var(--rule);
+    color: var(--text-primary);
+    background: color-mix(in oklab, var(--surface) 90%, transparent);
+    border: 1px solid var(--border);
     border-radius: 3px;
     box-shadow: var(--shadow-sm);
 }
@@ -112,11 +112,11 @@
     font-weight: 700;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: var(--stamp-ink);
+    color: var(--accent);
     padding: 3px 7px;
-    border: 1.5px solid var(--stamp-ink);
+    border: 1.5px solid var(--accent);
     border-radius: 3px;
-    background: color-mix(in oklab, var(--stamp-ink) 10%, var(--paper-print));
+    background: color-mix(in oklab, var(--accent) 10%, var(--surface));
     rotate: -5deg;
     opacity: 0.92;
 }
@@ -131,9 +131,9 @@
     display: grid;
     place-items: center;
     border-radius: 50%;
-    color: var(--ink-soft);
-    background: color-mix(in oklab, var(--paper-print) 80%, transparent);
-    border: 1px solid var(--rule);
+    color: var(--text-secondary);
+    background: color-mix(in oklab, var(--surface) 80%, transparent);
+    border: 1px solid var(--border);
     box-shadow: var(--shadow-sm);
     cursor: pointer;
     z-index: 3;
@@ -141,10 +141,10 @@
                 color var(--duration-fast) var(--ease-out),
                 background var(--duration-fast) var(--ease-out);
 }
-.carte-fav:hover { color: var(--stamp-ink); transform: scale(1.08); }
+.carte-fav:hover { color: var(--accent); transform: scale(1.08); }
 .carte-fav:active { transform: scale(0.92); }
 .carte-fav:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.carte-fav.is-saved { color: var(--stamp-ink); }
+.carte-fav.is-saved { color: var(--accent); }
 .carte-fav-filled { fill: currentColor; }
 
 /* ── Body — kicker · serif title · postmark ─── */
@@ -157,11 +157,11 @@
     font-weight: 700;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: var(--ink-faint);
+    color: var(--text-tertiary);
 }
 .carte-title {
     margin: 0 0 4px;
-    font-family: var(--font-editorial);
+    font-family: var(--font-display);
     font-size: var(--text-lg);
     font-weight: 600;
     line-height: 1.2;
@@ -180,7 +180,7 @@
     gap: 5px;
     font-family: var(--font-sans);
     font-size: var(--text-sm);
-    color: var(--ink-faint);
+    color: var(--text-tertiary);
 }
 .carte-postmark svg { flex-shrink: 0; }
 .carte-postmark-text {

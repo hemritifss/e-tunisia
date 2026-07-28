@@ -14,7 +14,7 @@ export interface Itinerary {
 function RouteTicket({ it, index }: { it: Itinerary; index: number }) {
   const reduced = useReducedMotion();
   const [punched, setPunched] = useState(!!reduced);
-  const diffColor = it.difficulty === 'easy' ? 'var(--olive)' : it.difficulty === 'challenging' ? 'var(--coral)' : 'var(--warning)';
+  const diffColor = it.difficulty === 'easy' ? 'var(--success)' : it.difficulty === 'challenging' ? 'var(--accent)' : 'var(--warning)';
   const diffLabel = it.difficulty === 'easy' ? 'Easy' : it.difficulty === 'challenging' ? 'Challenging' : 'Moderate';
   return (
     <motion.a

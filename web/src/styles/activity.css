@@ -206,8 +206,8 @@
 
 /* Per-type tint */
 .activity-page .activity-entry-review   { --entry-tint: var(--warning); }
-.activity-page .activity-entry-trip     { --entry-tint: var(--cyan); }
-.activity-page .activity-entry-endorse  { --entry-tint: var(--violet); }
+.activity-page .activity-entry-trip     { --entry-tint: var(--mediterranean); }
+.activity-page .activity-entry-endorse  { --entry-tint: var(--accent); }
 .activity-page .activity-entry-follow   { --entry-tint: var(--mediterranean); }
 
 .activity-page .activity-entry-icon {
@@ -324,9 +324,9 @@
     display: inline-flex; align-items: center; gap: 4px;
     margin-left: 6px;
     padding: 3px 8px;
-    background: color-mix(in oklch, var(--violet) 14%, transparent);
-    border: 1px solid color-mix(in oklch, var(--violet) 32%, transparent);
-    color: var(--violet);
+    background: color-mix(in oklch, var(--accent) 14%, transparent);
+    border: 1px solid color-mix(in oklch, var(--accent) 32%, transparent);
+    color: var(--accent);
     border-radius: var(--radius-full);
     font-size: 11px;
     font-weight: 600;
@@ -336,7 +336,7 @@
 @supports not (color: color-mix(in oklch, red, blue)) {
     .activity-page .activity-topic-chip {
         background: var(--bg-tertiary);
-        border-color: var(--violet);
+        border-color: var(--accent);
     }
 }
 

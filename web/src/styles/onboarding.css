@@ -72,7 +72,7 @@
 .onb-card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius-2xl);
+  border-radius: var(--radius-xl);
   padding: var(--space-8) var(--space-6);
   text-align: left;
   box-shadow: var(--shadow-sm);
@@ -382,7 +382,7 @@
 .onb-card {
     background: var(--surface-elevated);
     border: 1px solid var(--border);
-    border-radius: var(--radius-2xl);
+    border-radius: var(--radius-xl);
     box-shadow: var(--shadow-lg);
     padding: clamp(var(--space-6), 5vw, var(--space-10));
     display: flex;

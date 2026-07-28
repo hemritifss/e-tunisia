@@ -74,7 +74,7 @@ export default function CircuitDetail({ slug }: { slug: string }) {
 
     if (isLoading) {
         return (
-            <div className="circuit-page cn-grain page-enter" data-design="carnet">
+            <div className="circuit-page cn-grain page-enter">
                 <div className="cn-skeleton cn-skeleton--title" />
                 <div className="cn-skeleton cn-skeleton--print" />
             </div>
@@ -82,7 +82,7 @@ export default function CircuitDetail({ slug }: { slug: string }) {
     }
     if (isError || !circuit || !opts || !plan) {
         return (
-            <div className="circuit-page cn-grain page-enter" data-design="carnet">
+            <div className="circuit-page cn-grain page-enter">
                 <div className="cn-empty">
                     <h3>That route isn’t in the book</h3>
                     <p className="cn-empty-note">It may have been renamed, or the catalog behind it moved.</p>
@@ -95,7 +95,7 @@ export default function CircuitDetail({ slug }: { slug: string }) {
     }
 
     return (
-        <div className="circuit-page cn-grain page-enter" data-design="carnet">
+        <div className="circuit-page cn-grain page-enter">
             <Header circuit={circuit} plan={plan} opts={opts} saved={store.isSaved(circuit.slug)} tick={tick} />
             <RemixBar circuit={circuit} opts={opts} patch={patch} plan={plan} />
             <Overview circuit={circuit} plan={plan} opts={opts} visited={visited} />

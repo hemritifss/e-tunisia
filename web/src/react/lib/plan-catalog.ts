@@ -147,7 +147,7 @@ export const PLAN_FALLBACK: Catalog = {
       id: 'business',
       name: 'Verified Business',
       tagline: 'For riads, restaurants, tours & agencies that want to grow',
-      tint: 'var(--violet)',
+      tint: 'var(--accent)',
       monthly: 74.9,
       yearly: 749,
       ctaLabel: 'Go Business',

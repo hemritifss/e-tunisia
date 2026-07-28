@@ -413,7 +413,7 @@ export default function OwnerPage() {
   const queryClient = useQueryClient();
 
   return (
-    <div className="owner-page page-enter" data-design="sleek" id="owner-root">
+    <div className="owner-page page-enter" id="owner-root">
       <div className="owner-plan-strip"><PlanBanner /></div>
 
       <div className="favorites-header owner-header">

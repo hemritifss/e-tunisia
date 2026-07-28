@@ -18,7 +18,7 @@
   position: relative;
   height: 220px;
   overflow: hidden;
-  border-radius: 0 0 var(--radius-2xl) var(--radius-2xl);
+  border-radius: 0 0 var(--radius-xl) var(--radius-xl);
   margin-bottom: 80px; /* room for the overlapping avatar */
 }
 .up-cover-gradient {
@@ -393,7 +393,7 @@
 .user-profile-card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius-2xl);
+  border-radius: var(--radius-xl);
   padding: var(--space-8);
   text-align: center;
   box-shadow: var(--shadow-sm);
@@ -479,7 +479,7 @@
 .user-profile-v2 .up-cover {
     position: relative;
     height: clamp(200px, 32vw, 280px);
-    border-radius: 0 0 var(--radius-2xl) var(--radius-2xl);
+    border-radius: 0 0 var(--radius-xl) var(--radius-xl);
     overflow: hidden;
     margin: 0 calc(var(--page-padding) * -1);
     isolation: isolate;
@@ -562,8 +562,8 @@
 .up-tier-icon i { font-size: 12px; }
 .up-cover-tier-badge[data-tier="crown"] .up-tier-icon { color: var(--warning); }
 .up-cover-tier-badge[data-tier="star"]  .up-tier-icon { color: var(--warning); }
-.up-cover-tier-badge[data-tier="compass"] .up-tier-icon { color: var(--cyan); }
-.up-cover-tier-badge[data-tier="sprout"]  .up-tier-icon { color: var(--olive); }
+.up-cover-tier-badge[data-tier="compass"] .up-tier-icon { color: var(--mediterranean); }
+.up-cover-tier-badge[data-tier="sprout"]  .up-tier-icon { color: var(--success); }
 
 /* ── Identity row ────────────────────────── */
 .user-profile-v2 .up-identity {
@@ -757,7 +757,7 @@
 }
 .up-stat-icon-posts     { background: color-mix(in oklch, var(--accent) 16%, transparent);        color: var(--accent); }
 .up-stat-icon-followers { background: color-mix(in oklch, var(--mediterranean) 16%, transparent); color: var(--mediterranean); }
-.up-stat-icon-following { background: color-mix(in oklch, var(--violet) 16%, transparent);       color: var(--violet); }
+.up-stat-icon-following { background: color-mix(in oklch, var(--accent) 16%, transparent);       color: var(--accent); }
 .up-stat-icon-xp        { background: color-mix(in oklch, var(--warning) 18%, transparent);          color: var(--warning); }
 @supports not (color: color-mix(in oklch, red, blue)) {
     .up-stat-icon-posts,

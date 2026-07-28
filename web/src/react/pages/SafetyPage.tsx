@@ -26,7 +26,7 @@ function Section({ icon, title, children }: { icon: React.ReactNode; title: stri
 
 export default function SafetyPage() {
   return (
-    <div className="safety-page page-enter" data-design="sleek">
+    <div className="safety-page page-enter">
       <header className="safety-header">
         <span className="safety-kicker"><Shield size={13} /> Travel essentials</span>
         <h1>Stay safe in Tunisia</h1>

@@ -129,7 +129,7 @@ export default function CreditsPage() {
   const creditsEarned = converted * rewardTnd;
 
   return (
-    <div className="credits-page page-enter" data-design="sleek">
+    <div className="credits-page page-enter">
       <a href="#/profile" className="btn btn-ghost" style={{ marginBottom: 'var(--space-4)' }}>
         <ArrowLeft /> Back
       </a>

@@ -332,8 +332,8 @@
     position: relative;
     height: clamp(280px, 50vw, 480px);
     overflow: hidden;
-    border-bottom-left-radius: var(--radius-2xl);
-    border-bottom-right-radius: var(--radius-2xl);
+    border-bottom-left-radius: var(--radius-xl);
+    border-bottom-right-radius: var(--radius-xl);
     isolation: isolate;
 }
 .place-detail-page .place-detail-hero-img {
@@ -380,7 +380,7 @@
 }
 .place-detail-page .place-detail-hero-actions .btn-icon:active { transform: scale(0.92); }
 .place-detail-page .place-detail-save.saved {
-    background: var(--rose);
+    background: var(--accent);
     color: var(--text-inverse);
     border-color: transparent;
 }

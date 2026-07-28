@@ -186,8 +186,8 @@
     border-radius: 50%;
     flex: 0 0 auto;
 }
-.settings-group-icon[data-tint="violet"]        { background: color-mix(in oklch, var(--violet) 16%, transparent);        color: var(--violet); }
-.settings-group-icon[data-tint="cyan"]          { background: color-mix(in oklch, var(--cyan) 16%, transparent);          color: var(--cyan); }
+.settings-group-icon[data-tint="violet"]        { background: color-mix(in oklch, var(--accent) 16%, transparent);        color: var(--accent); }
+.settings-group-icon[data-tint="cyan"]          { background: color-mix(in oklch, var(--mediterranean) 16%, transparent);          color: var(--mediterranean); }
 .settings-group-icon[data-tint="gold"]          { background: color-mix(in oklch, var(--warning) 18%, transparent);          color: var(--warning); }
 .settings-group-icon[data-tint="mediterranean"] { background: color-mix(in oklch, var(--mediterranean) 16%, transparent); color: var(--mediterranean); }
 .settings-group-icon[data-tint="accent"]        { background: var(--accent-light);                                        color: var(--accent); }

@@ -37,7 +37,7 @@
 .admin-growth-ret-fill {
     height: 100%;
     border-radius: var(--radius-full);
-    background: linear-gradient(90deg, var(--mediterranean), var(--terracotta));
+    background: linear-gradient(90deg, var(--mediterranean), var(--accent));
     transition: width var(--duration-slow, 0.6s) var(--ease-out, ease);
 }
 .admin-growth-ret-val {

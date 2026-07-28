@@ -117,7 +117,7 @@
         right: 0;
         width: auto;
         max-height: 80dvh;
-        border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
+        border-radius: var(--radius-xl) var(--radius-xl) 0 0;
         transform: translateY(100%);
     }
     #notif-panel.open { transform: translateY(0); }
