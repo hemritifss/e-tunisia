@@ -1,3 +1,39 @@
+/* ── Moved from pages.css (Phase 2 split) ─────────────────────
+   Prepended so this file's own rules keep winning, exactly as
+   they did when pages.css loaded ahead of it.
+   ──────────────────────────────────────────────────────────── */
+
+/* Hide standard navigation bars and mobile components when unauthenticated */
+body.guest-mode #main-nav,
+body.guest-mode #mobile-menu-overlay,
+body.guest-mode #mobile-menu-panel,
+body.guest-mode #notif-panel-overlay,
+body.guest-mode #notif-panel,
+body.guest-mode #post-modal-overlay,
+body.guest-mode #post-modal {
+  display: none !important;
+}
+
+/* Zero padding for main content so Hero page can bleed edge-to-edge */
+body.guest-mode .main-content {
+  padding-top: 0 !important;
+}
+/* ============================================
+   React island shell — gives FeedPage/ExplorePage
+   the same outer padding & max-width as vanilla pages
+   ============================================ */
+.react-island-shell {
+  width: 100%;
+  max-width: var(--page-max);
+  margin: 0 auto;
+  padding: var(--space-6) var(--page-padding);
+}
+@media (max-width: 768px) {
+  .react-island-shell {
+    padding: var(--space-4) var(--space-3);
+  }
+}
+
 /* ============================================
    APP SHELL — the one shared page skeleton
    --------------------------------------------

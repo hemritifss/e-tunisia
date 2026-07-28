@@ -1,3 +1,280 @@
+/* ── Moved from pages.css (Phase 2 split) ─────────────────────
+   Prepended so this file's own rules keep winning, exactly as
+   they did when pages.css loaded ahead of it.
+   ──────────────────────────────────────────────────────────── */
+
+/* ─── Mood landing hero — token-driven tinted gradient ─── */
+.mood-hero {
+    border-radius: var(--radius-3xl);
+}
+.mood-hero-bg {
+    background: color-mix(in oklch, var(--mood-tint) 72%, black);
+}
+.mood-hero h1 {
+    font-family: var(--font-display);
+    font-weight: 800;
+    letter-spacing: var(--tracking-tightest);
+    text-wrap: balance;
+}
+/* ============================================
+   MOOD LANDING PAGE  (/#/mood/<id>)
+   Each mood inherits its tint via the --mood-tint CSS var
+   set on the page root by MoodPage.
+   ============================================ */
+
+.mood-page {
+    --mood-tint: var(--accent);
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 16px 20px 96px;
+}
+.mood-back {
+    display: inline-flex; align-items: center; gap: 4px;
+    color: var(--text-muted, #5a6371);
+    text-decoration: none; font-size: 13px;
+    padding: 6px 10px; border-radius: 8px;
+}
+.mood-back:hover { color: var(--mood-tint); background: var(--surface-hover); }
+
+.mood-hero {
+    position: relative;
+    overflow: hidden;
+    border-radius: 28px;
+    padding: 44px 32px 32px;
+    text-align: center;
+    color: #fff;
+    margin: 14px 0 28px;
+    isolation: isolate;
+}
+.mood-hero-bg {
+    position: absolute; inset: 0; z-index: -1;
+    background: var(--paper-deep);
+}
+.mood-hero-emoji {
+    font-size: 64px;
+    line-height: 1;
+    margin-bottom: 10px;
+    filter: drop-shadow(0 4px 20px rgba(0,0,0,0.35));
+}
+.mood-hero h1 {
+    font-size: clamp(28px, 4.5vw, 42px);
+    margin: 0 0 8px;
+    color: #fff;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+}
+.mood-hero p {
+    margin: 0 auto 18px;
+    max-width: 560px;
+    font-size: 15px;
+    color: rgba(255,255,255,0.88);
+    line-height: 1.5;
+}
+.mood-hero-cities { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
+.mood-city-chip {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 6px 12px; border-radius: 999px;
+    background: rgba(255,255,255,0.16);
+    border: 1px solid rgba(255,255,255,0.28);
+    color: #fff;
+    font-size: 12px;
+    text-decoration: none;
+    transition: background 120ms ease;
+}
+.mood-city-chip:hover { background: rgba(255,255,255,0.28); }
+
+.mood-section { margin-bottom: 36px; }
+.mood-section header {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+}
+.mood-section header h2 {
+    margin: 0; font-size: 18px;
+    color: var(--text-primary);
+    display: inline-flex; align-items: center; gap: 8px;
+}
+.mood-section header h2 svg { color: var(--mood-tint); }
+.mood-section header a {
+    font-size: 13px; font-weight: 600;
+    color: var(--mood-tint); text-decoration: none;
+}
+.mood-section header a:hover { text-decoration: underline; }
+
+.mood-empty {
+    padding: 32px 16px;
+    text-align: center;
+    color: var(--text-muted, #9aa0a6);
+    font-size: 14px;
+    background: var(--surface-hover);
+    border-radius: 14px;
+    border: 1px dashed var(--border);
+}
+
+.mood-place-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 14px;
+}
+.mood-place-tile {
+    --mood-tint: var(--accent);
+    background: var(--surface);
+    border: 1px solid var(--border, #e5e7eb);
+    border-radius: 16px;
+    overflow: hidden;
+    text-decoration: none;
+    color: inherit;
+    transition: color 160ms ease, background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease, opacity 160ms ease, filter 160ms ease;
+    display: flex; flex-direction: column;
+}
+.mood-place-tile:hover {
+    transform: translateY(-3px);
+    border-color: var(--mood-tint);
+    box-shadow: 0 14px 28px color-mix(in srgb, var(--mood-tint) 18%, transparent);
+}
+.mood-place-cover {
+    position: relative;
+    height: 140px;
+    background: var(--mood-tint);
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+}
+.mood-place-cover img { width: 100%; height: 100%; object-fit: cover; }
+.mood-place-cover-fallback { font-size: 36px; opacity: 0.6; }
+.mood-place-rating {
+    position: absolute;
+    top: 10px; right: 10px;
+    background: rgba(0,0,0,0.55);
+    color: var(--ink-on-deep);
+    padding: 3px 8px;
+    border-radius: 999px;
+    font-size: 12px; font-weight: 600;
+    display: inline-flex; align-items: center; gap: 3px;
+}
+.mood-place-body { padding: 10px 12px 12px; display: flex; flex-direction: column; gap: 3px; }
+.mood-place-body strong { font-size: 14px; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mood-place-body span { font-size: 12px; color: var(--text-muted, #9aa0a6); display: inline-flex; align-items: center; gap: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.mood-trip-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 14px;
+}
+.mood-trip-card {
+    --mood-tint: var(--accent);
+    background: var(--surface);
+    border: 1px solid var(--border, #e5e7eb);
+    border-radius: 16px;
+    overflow: hidden;
+    text-decoration: none;
+    color: inherit;
+    transition: color 160ms ease, background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease, opacity 160ms ease, filter 160ms ease;
+}
+.mood-trip-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--mood-tint);
+}
+.mood-trip-covers {
+    display: flex;
+    height: 110px;
+    background: var(--mood-tint);
+}
+.mood-trip-covers img { flex: 1; object-fit: cover; min-width: 0; }
+.mood-trip-cover-empty { width: 100%; display: flex; align-items: center; justify-content: center; font-size: 36px; color: rgba(255,255,255,0.7); }
+.mood-trip-body { padding: 10px 14px 12px; display: flex; flex-direction: column; gap: 3px; }
+.mood-trip-body strong { font-size: 14px; color: var(--text-primary); }
+.mood-trip-body span { font-size: 12px; color: var(--text-muted, #9aa0a6); }
+
+.mood-guide-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
+.mood-guide-card {
+    display: flex; gap: 12px; align-items: flex-start;
+    padding: 12px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border, #e5e7eb);
+    border-radius: 14px;
+    text-decoration: none;
+    color: inherit;
+    transition: color 160ms ease, background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease, opacity 160ms ease, filter 160ms ease;
+}
+.mood-guide-card:hover { border-color: var(--mood-tint); transform: translateY(-2px); }
+.mood-guide-card img, .mood-guide-fallback {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+.mood-guide-fallback {
+    background: var(--mood-tint);
+    color: var(--accent-text);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 17px;
+}
+.mood-guide-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.mood-guide-body strong { font-size: 14px; color: var(--text-primary); display: inline-flex; align-items: center; }
+.mood-guide-body span { font-size: 12px; color: var(--text-muted, #9aa0a6); }
+.mood-guide-body em { font-style: normal; font-size: 12px; color: var(--text-muted, #5a6371); margin-top: 4px; line-height: 1.4; }
+.mood-guide-check {
+    display: inline-flex; align-items: center; justify-content: center;
+    margin-left: 6px;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--mediterranean) 40%, transparent); color: #14202b;
+    font-size: 10px; font-weight: 700;
+}
+
+.mood-skel-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
+.mood-skel-tile, .mood-skel-trip {
+    height: 200px;
+    border-radius: 16px;
+    background: linear-gradient(90deg, var(--bg-secondary) 25%, var(--surface-elevated) 50%, var(--bg-secondary) 75%);
+    background-size: 200% 100%;
+    animation: passport-shimmer 1.4s infinite;
+}
+.mood-skel-trip { height: 170px; }
+
+.mood-other-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+}
+.mood-other-pill {
+    --mood-tint: var(--accent);
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border, #e5e7eb);
+    border-radius: 14px;
+    color: var(--text-primary);
+    text-decoration: none;
+    transition: color 160ms ease, background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease, opacity 160ms ease, filter 160ms ease;
+}
+.mood-other-pill:hover { border-color: var(--mood-tint); transform: translateY(-2px); box-shadow: 0 8px 18px color-mix(in srgb, var(--mood-tint) 18%, transparent); }
+.mood-other-emoji {
+    font-size: 22px;
+    width: 36px; height: 36px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--mood-tint) 14%, transparent);
+    flex-shrink: 0;
+}
+.mood-other-label { font-size: 14px; font-weight: 600; }
+
+.mood-404 { padding: 80px 24px; text-align: center; color: var(--text-muted, #9aa0a6); }
+.mood-404 h2 { color: var(--text-primary); }
+.mood-404-list { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-top: 16px; }
+.mood-404-pill {
+    --mood-tint: var(--accent);
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: var(--surface);
+    border: 1px solid var(--border, #e5e7eb);
+    color: var(--text-primary);
+    text-decoration: none;
+    font-size: 13px;
+}
+.mood-404-pill:hover { border-color: var(--mood-tint); }
+
 /* ============================================
    MOOD PAGE — redesigned discovery surface
    Loaded after pages.css so refinements win.

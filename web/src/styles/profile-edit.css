@@ -1,3 +1,116 @@
+/* ── Moved from pages.css (Phase 2 split) ─────────────────────
+   Prepended so this file's own rules keep winning, exactly as
+   they did when pages.css loaded ahead of it.
+   ──────────────────────────────────────────────────────────── */
+
+/* ============================================
+   Edit profile — section cards
+   ============================================ */
+.pe-grid {
+  display: grid;
+  gap: var(--space-4);
+  padding: 0 var(--page-padding);
+  margin-top: var(--space-6);
+}
+.pe-section-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+}
+.pe-section-head {
+  display: flex; gap: var(--space-3);
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--border-light);
+  background: var(--surface-hover);
+}
+.pe-section-head > i {
+  width: 36px; height: 36px;
+  border-radius: var(--radius-md);
+  background: var(--accent-light);
+  color: var(--accent);
+  padding: 8px;
+  flex-shrink: 0;
+}
+.pe-section-head h3 { font-size: var(--text-base); margin: 0; }
+.pe-section-head p { font-size: var(--text-xs); color: var(--text-muted); margin: 0; }
+.pe-section-body {
+  padding: var(--space-4);
+  display: flex; flex-direction: column; gap: var(--space-3);
+}
+.input-hint { display: block; font-size: var(--text-xs); color: var(--text-muted); margin-top: 4px; }
+
+/* Profile completeness meter — LinkedIn-style nudge */
+.pe-completeness {
+  margin: 0 var(--page-padding) var(--space-5);
+  padding: var(--space-4) var(--space-5);
+  background: linear-gradient(135deg, var(--accent-light) 0%, oklch(98% 0.012 80) 100%);
+  border: 1px solid var(--accent-light);
+  border-radius: var(--radius-xl);
+}
+[data-theme="dark"] .pe-completeness {
+  background: linear-gradient(135deg, oklch(22% 0.06 30) 0%, oklch(16% 0.014 260) 100%);
+  border-color: oklch(28% 0.06 30);
+}
+.pe-meter-row {
+  display: flex; justify-content: space-between; align-items: center; gap: var(--space-3);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-3);
+}
+.pe-meter-label {
+  display: block;
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  font-weight: 600;
+}
+.pe-meter-value {
+  display: block;
+  font-size: var(--text-xl);
+  letter-spacing: var(--tracking-tight);
+}
+.pe-meter-value small { font-size: var(--text-sm); font-weight: 500; color: var(--accent); }
+.pe-meter-missing {
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  max-width: 100%;
+}
+.pe-meter-bar {
+  height: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+.pe-meter-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent) 0%, var(--warning) 100%);
+  border-radius: inherit;
+  transition: width var(--duration-normal) var(--ease-out);
+}
+.pe-meter-bar[data-tier="low"]  .pe-meter-fill { background: linear-gradient(90deg, var(--error) 0%, var(--coral) 100%); }
+.pe-meter-bar[data-tier="good"] .pe-meter-fill { background: linear-gradient(90deg, var(--accent) 0%, var(--coral) 100%); }
+.pe-meter-bar[data-tier="great"] .pe-meter-fill { background: linear-gradient(90deg, var(--success) 0%, var(--warning) 100%); }
+
+.input-required { color: var(--error); margin-left: 2px; }
+.pe-sticky-bar {
+  display: none;
+}
+@media (max-width: 540px) {
+  .pe-sticky-bar {
+    position: sticky;
+    bottom: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom, 0));
+    z-index: 50;
+    display: flex; gap: var(--space-2); justify-content: flex-end;
+    padding: var(--space-3) var(--page-padding);
+    background: oklch(from var(--bg-primary) l c h / 0.92);
+    border-top: 1px solid var(--border);
+    margin-top: var(--space-6);
+  }
+  .pe-sticky-bar .btn { flex: 1; justify-content: center; }
+}
+
 /* ============================================
    PROFILE EDIT PAGE (#/profile-edit)
    Inherits user-profile.css for cover + avatar wrap.

@@ -1,0 +1,82 @@
+/* ============================================
+   SEARCH (/#/search) — query field, people and post results
+   Split out of pages.css (Phase 2, stage 1). Order preserved.
+   ============================================ */
+
+/* ============================================
+   Search page (/search)
+   ============================================ */
+.search-page {
+  max-width: var(--page-max);
+  margin: 0 auto;
+  padding: var(--space-6) var(--page-padding);
+}
+.search-page-header h1 {
+  display: flex; align-items: center; gap: var(--space-3);
+  font-size: var(--text-2xl);
+  margin-bottom: var(--space-4);
+}
+.search-page-input-wrap {
+  position: relative; margin-bottom: var(--space-6);
+}
+.search-page-input-wrap i {
+  position: absolute; left: var(--space-3); top: 50%; transform: translateY(-50%);
+  color: var(--text-muted);
+}
+#search-page-input {
+  width: 100%;
+  padding: var(--space-3) var(--space-3) var(--space-3) calc(var(--space-3) * 2.5);
+  font-size: var(--text-base);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  background: var(--surface);
+  color: var(--text-primary);
+  font: inherit;
+}
+#search-page-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px oklch(from var(--accent) l c h / 0.15); }
+.search-section-title { font-size: var(--text-lg); font-weight: 700; margin: 0 0 var(--space-3); }
+/* NOTE: `.search-place-grid/-card/-info` are defined in messages-search.css
+   (the vertical-card design the current SearchPage markup uses, with a
+   `.search-place-img` wrapper). The old flex-row rules that lived here targeted
+   a legacy markup where <img> was a direct child of the card; against the
+   current markup they collided — a 132px image squeezed the name column to
+   ~50px, truncating "La Marsa Promenade" to "L…". Removed so one design wins. */
+/* Search: people results */
+.search-people-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; }
+.search-person-card {
+    display: flex; gap: 12px; align-items: center;
+    padding: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border, #e5e7eb);
+    border-radius: 14px;
+    text-decoration: none; color: inherit;
+    transition: transform 120ms ease, border-color 120ms ease;
+}
+.search-person-card:hover { transform: translateY(-2px); border-color: var(--accent); }
+.search-person-card img { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+.search-person-meta { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.search-person-meta strong { color: var(--text-primary); font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.search-person-guide {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 16px; height: 16px; border-radius: 50%;
+    background: color-mix(in srgb, var(--mediterranean) 40%, transparent); color: #14202b;
+    font-size: 10px; font-weight: 700; margin-left: 4px;
+}
+.search-person-bio { color: var(--text-muted, #9aa0a6); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.search-person-followers { display: flex; align-items: center; gap: 3px; flex-shrink: 0; }
+/* Search post results */
+.search-post-list { display: flex; flex-direction: column; gap: 0.75rem; }
+.search-post-card {
+  display: block;
+  padding: 1rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-light);
+  background: var(--surface);
+  text-decoration: none;
+  color: inherit;
+  transition: border-color var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out);
+}
+.search-post-card:hover { border-color: var(--accent); box-shadow: var(--shadow-sm); }
+.search-post-card strong { display: block; font-size: var(--text-base); margin-bottom: 0.25rem; }
+.search-post-card p { margin: 0; font-size: var(--text-sm); color: var(--text-muted); line-height: 1.4; }
+.search-post-meta { display: block; margin-top: 0.5rem; font-size: var(--text-xs); color: var(--text-muted); }

@@ -2,8 +2,9 @@
    Full-screen story playback: pausable progress, quick
    reactions, reply-to-DM, and the author's "seen by" sheet.
    Rendered by StoriesStrip.tsx. The ring styles themselves
-   live in pages.css (.stories-v2-*) — only the seen state is
-   overridden here.
+   live in feed.css (.stories-v2-*) - only the seen state is
+   overridden here. That override wins on specificity, not order,
+   so it holds even though feed.css now loads after this file.
    ──────────────────────────────────────────────────────────── */
 
 /* Fully-watched authors lose the animated ring. */

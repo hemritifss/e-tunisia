@@ -1,3 +1,128 @@
+/* ── Moved from pages.css (Phase 2 split) ─────────────────────
+   Prepended so this file's own rules keep winning, exactly as
+   they did when pages.css loaded ahead of it.
+   ──────────────────────────────────────────────────────────── */
+
+/* ---- LEADERBOARD ITEMS ---- */
+.leaderboard-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--surface);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--space-2);
+  transition: transform .1s;
+}
+
+.leaderboard-item:hover {
+  transform: translateX(4px);
+}
+
+.leaderboard-item.top-1 {
+  background: color-mix(in srgb, var(--warning) 18%, var(--surface));
+  border-color: color-mix(in srgb, var(--warning) 35%, transparent);
+}
+
+.leaderboard-item.top-2 {
+  background: linear-gradient(135deg, oklch(95% 0.02 240), oklch(92% 0.02 240));
+  border-color: oklch(88% 0.03 240);
+}
+
+.leaderboard-item.top-3 {
+  background: linear-gradient(135deg, oklch(93% 0.06 60), oklch(91% 0.04 60));
+  border-color: oklch(86% 0.06 60);
+}
+
+[data-theme="dark"] .leaderboard-item.top-2 {
+  background: linear-gradient(135deg, oklch(25% 0.02 240), oklch(23% 0.01 240));
+  border-color: oklch(35% 0.03 240);
+}
+
+[data-theme="dark"] .leaderboard-item.top-3 {
+  background: linear-gradient(135deg, oklch(27% 0.04 60), oklch(25% 0.03 60));
+  border-color: oklch(36% 0.05 60);
+}
+
+.leaderboard-rank {
+  width: 40px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.leaderboard-medal {
+  font-size: 1.5rem;
+}
+
+.leaderboard-rank-num {
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.leaderboard-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.leaderboard-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.leaderboard-info strong {
+  display: block;
+  font-size: var(--text-sm);
+}
+
+.leaderboard-points {
+  text-align: right;
+}
+
+.leaderboard-points strong {
+  display: block;
+  font-size: var(--text-base);
+  color: var(--accent);
+}
+/* Leaderboard tabs + city picker */
+.leaderboard-tabs { display: flex; gap: 6px; margin-top: 16px; flex-wrap: wrap; }
+.leaderboard-tab {
+    padding: 8px 14px; border-radius: 999px;
+    background: transparent;
+    border: 1px solid var(--border, #e5e7eb);
+    color: var(--text-primary);
+    cursor: pointer;
+    font-size: 13px;
+    transition: color 120ms, background-color 120ms, border-color 120ms, box-shadow 120ms, transform 120ms, opacity 120ms, filter 120ms;
+}
+.leaderboard-tab:hover { border-color: var(--accent); }
+.leaderboard-tab.active { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+.leaderboard-city-row {
+    display: flex; gap: 8px; align-items: center;
+    margin-top: 12px; font-size: 14px;
+}
+.leaderboard-city-row[hidden] { display: none; }
+.leaderboard-city-row label { color: var(--text-muted, #9aa0a6); }
+.leaderboard-city-row select {
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border, #e5e7eb);
+    background: var(--surface);
+    color: var(--text-primary);
+    font-size: 13px;
+}
+.leaderboard-guide-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    margin-left: 6px;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--mediterranean) 40%, transparent);
+    color: #14202b;
+    font-size: 10px; font-weight: 700;
+}
+
 /* ============================================
    LEADERBOARD PAGE (#/leaderboard)
    Loaded after pages.css so refinements win.

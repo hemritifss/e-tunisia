@@ -1,3 +1,353 @@
+/* ── Moved from pages.css (Phase 2 split) ─────────────────────
+   Prepended so this file's own rules keep winning, exactly as
+   they did when pages.css loaded ahead of it.
+   ──────────────────────────────────────────────────────────── */
+
+/* ============================================
+   DIRECT MESSAGES — Instagram-style inbox + thread
+   ============================================ */
+.dm-page {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: 0;
+  max-width: var(--page-max);
+  margin: 0 auto;
+  padding: 0;
+  height: calc(100vh - var(--nav-height) - env(safe-area-inset-bottom, 0));
+  background: var(--bg-primary);
+}
+@media (max-width: 768px) {
+  .dm-page {
+    grid-template-columns: 1fr;
+    height: calc(100vh - var(--nav-height) - var(--mobile-nav-height) - env(safe-area-inset-bottom, 0));
+  }
+}
+
+/* ---------- Inbox column ---------- */
+.dm-inbox {
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  min-height: 0;
+  background: var(--surface);
+}
+.dm-inbox-head {
+  display: flex; align-items: center; gap: var(--space-3);
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 0;
+  background: var(--surface);
+  z-index: 1;
+}
+.dm-inbox-head h2 {
+  flex: 1;
+  font-size: var(--text-lg);
+  margin: 0;
+}
+.dm-icon-btn {
+  width: 36px; height: 36px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  color: var(--text-secondary);
+  cursor: pointer;
+  text-decoration: none;
+  border: none;
+  background: transparent;
+  transition: background var(--duration-fast) var(--ease-out);
+}
+.dm-icon-btn:hover { background: var(--surface-hover); color: var(--text-primary); }
+.dm-icon-btn i { width: 18px; height: 18px; }
+
+.dm-inbox-list {
+  flex: 1; overflow-y: auto;
+  padding: var(--space-2) 0;
+}
+.dm-inbox-row {
+  display: flex; align-items: center; gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  text-decoration: none;
+  color: inherit;
+  border-radius: 0;
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-out);
+}
+.dm-inbox-row:hover { background: var(--surface-hover); }
+.dm-inbox-row.active {
+  background: oklch(from var(--accent) l c h / 0.06);
+}
+.dm-inbox-avatar {
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: var(--surface-hover);
+}
+.dm-inbox-info { flex: 1; min-width: 0; }
+.dm-inbox-name-row {
+  display: flex; align-items: center; gap: var(--space-2);
+}
+.dm-inbox-name-row strong {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.dm-inbox-time {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  margin-left: auto;
+  flex-shrink: 0;
+}
+.dm-inbox-preview {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  margin-top: 2px;
+}
+.dm-inbox-empty {
+  text-align: center;
+  padding: var(--space-8) var(--space-4);
+  color: var(--text-muted);
+  display: flex; flex-direction: column; align-items: center; gap: var(--space-2);
+}
+.dm-inbox-empty i { width: 36px; height: 36px; opacity: 0.5; }
+.dm-loading {
+  display: flex; flex-direction: column; align-items: center; gap: var(--space-2);
+  padding: var(--space-6);
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}
+
+/* ---------- Thread column ---------- */
+.dm-thread {
+  display: flex; flex-direction: column;
+  min-height: 0;
+  background: var(--bg-primary);
+}
+.dm-thread-head {
+  display: flex; align-items: center; gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  flex-shrink: 0;
+}
+.dm-thread-user {
+  display: flex; align-items: center; gap: var(--space-3);
+  flex: 1; min-width: 0;
+  text-decoration: none; color: inherit;
+}
+.dm-thread-user img {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.dm-thread-user strong {
+  display: block;
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+.dm-thread-user .text-xs { display: block; }
+
+.dm-thread-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-4);
+  display: flex; flex-direction: column; gap: var(--space-2);
+}
+
+.dm-day-divider {
+  display: flex; align-items: center; justify-content: center;
+  margin: var(--space-3) 0;
+}
+.dm-day-divider span {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  background: var(--bg-primary);
+  padding: 2px var(--space-3);
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-light);
+}
+
+.dm-bubble-row {
+  display: flex; gap: var(--space-2);
+  align-items: flex-end;
+  max-width: 80%;
+}
+.dm-bubble-row.theirs { align-self: flex-start; }
+.dm-bubble-row.mine   { align-self: flex-end; flex-direction: row-reverse; }
+.dm-bubble-avatar {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+.dm-bubble {
+  padding: var(--space-3) var(--space-4);
+  border-radius: 20px;
+  font-size: var(--text-sm);
+  line-height: var(--leading-snug);
+  white-space: pre-wrap;
+  word-break: break-word;
+  transition: opacity var(--duration-fast) var(--ease-out);
+}
+.dm-bubble p { margin: 0; }
+.dm-bubble-time {
+  display: block;
+  font-size: 0.65rem;
+  margin-top: 4px;
+  opacity: 0.6;
+}
+.dm-bubble.pending { opacity: 0.6; }
+
+/* Presence dot — green ring over the bottom-right of an avatar */
+.dm-avatar-wrap { position: relative; display: inline-block; }
+.dm-presence-dot {
+  position: absolute;
+  right: -2px; bottom: -2px;
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  border: 2px solid var(--surface);
+  box-shadow: 0 0 0 1px var(--border-light);
+  transition: background var(--duration-fast) var(--ease-out);
+}
+.dm-presence-dot.is-online {
+  background: oklch(70% 0.18 145); /* fresh green */
+  box-shadow: 0 0 0 1px var(--surface), 0 0 0 4px oklch(70% 0.18 145 / 0.18);
+}
+
+/* Typing indicator (three bouncing dots) */
+.dm-typing-row {
+  display: flex; gap: var(--space-2);
+  align-items: flex-end;
+  align-self: flex-start;
+  max-width: 80%;
+  margin-top: var(--space-1);
+}
+.dm-typing-row img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+.dm-typing-bubble {
+  padding: var(--space-3) var(--space-4);
+  background: var(--surface);
+  border: 1px solid var(--border-light);
+  border-radius: 20px;
+  border-bottom-left-radius: 6px;
+  display: inline-flex; align-items: center; gap: 4px;
+}
+.dm-typing-bubble span {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  animation: dmTypingDot 1.2s infinite ease-in-out;
+}
+.dm-typing-bubble span:nth-child(1) { animation-delay: 0s; }
+.dm-typing-bubble span:nth-child(2) { animation-delay: 0.15s; }
+.dm-typing-bubble span:nth-child(3) { animation-delay: 0.30s; }
+@keyframes dmTypingDot {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30% { transform: translateY(-3px); opacity: 1; }
+}
+/* "Seen" subscript after my last bubble */
+.dm-seen-marker {
+  align-self: flex-end;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  padding-right: var(--space-1);
+  margin-top: -2px;
+  animation: dmSeenIn .25s var(--ease-out);
+}
+@keyframes dmSeenIn {
+  from { opacity: 0; transform: translateY(-2px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.dm-bubble-row.theirs .dm-bubble {
+  background: var(--surface);
+  border: 1px solid var(--border-light);
+  color: var(--text-primary);
+  border-bottom-left-radius: 6px;
+}
+.dm-bubble-row.mine .dm-bubble {
+  background: linear-gradient(135deg, var(--accent) 0%, var(--coral) 100%);
+  color: white;
+  border-bottom-right-radius: 6px;
+}
+.dm-bubble-row.mine .dm-bubble-time { color: rgba(255,255,255,0.85); }
+
+.dm-thread-empty,
+.dm-thread-empty-inline,
+.dm-thread-loading {
+  flex: 1;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center;
+  color: var(--text-muted);
+  padding: var(--space-8);
+  gap: var(--space-3);
+}
+.dm-thread-empty i,
+.dm-thread-empty-inline i { width: 56px; height: 56px; opacity: 0.4; }
+.dm-thread-empty h3 { color: var(--text-primary); margin: 0; }
+.dm-thread-empty p,
+.dm-thread-empty-inline p { margin: 0; font-size: var(--text-sm); max-width: 320px; }
+
+/* ---------- Composer ---------- */
+.dm-composer {
+  display: flex; gap: var(--space-2);
+  align-items: flex-end;
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+  flex-shrink: 0;
+}
+.dm-composer-input {
+  flex: 1;
+  resize: none;
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  padding: var(--space-3) var(--space-4);
+  font: inherit;
+  font-size: var(--text-sm);
+  line-height: var(--leading-snug);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  max-height: 120px;
+  overflow-y: auto;
+  transition: border-color var(--duration-fast) var(--ease-out);
+}
+.dm-composer-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: var(--surface);
+}
+.dm-send-btn {
+  flex-shrink: 0;
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: var(--accent);
+  color: var(--accent-text);
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: transform var(--duration-fast) var(--ease-out), background var(--duration-fast) var(--ease-out);
+}
+.dm-send-btn:hover { background: var(--accent-hover); transform: scale(1.05); }
+.dm-send-btn:disabled { opacity: 0.5; cursor: default; transform: none; }
+.dm-send-btn i { width: 18px; height: 18px; }
+
+/* Mobile: thread overlays inbox; hide one when the other is active */
+.dm-mobile-only { display: none; }
+@media (max-width: 768px) {
+  .dm-mobile-only { display: inline-flex; }
+  /* On mobile, the URL drives which pane is visible */
+}
+/* When viewing a thread, hide the inbox on mobile */
+@media (max-width: 768px) {
+  body:has(.dm-page) .dm-inbox { display: none; }
+  body:has(.dm-page #dm-thread-body) .dm-inbox { /* fallback */ display: none; }
+}
+/* When on the inbox-only route, hide the empty thread pane on mobile */
+@media (max-width: 768px) {
+  body:has(.dm-thread-empty) .dm-thread { display: none; }
+  body:has(.dm-thread-empty) .dm-inbox  { display: flex; }
+}
+
 /* ============================================
    MESSAGES INBOX (#/messages) + SEARCH PAGE (#/search)
    Two pages, one stylesheet — they share filter/list/empty primitives.

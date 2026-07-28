@@ -27,7 +27,7 @@
 .jelly-card {
     display: flex; flex-direction: column;
     padding: var(--space-3);
-    border-radius: var(--radius-lg);
+    border-radius: 0;   /* card-system fold: cards are square in Bled */
     background: var(--surface-elevated);
     border: 1px solid var(--border);
     border-left: 4px solid var(--border);

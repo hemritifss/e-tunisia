@@ -1,3 +1,149 @@
+/* ── Moved from pages.css (Phase 2 split) ─────────────────────
+   Prepended so this file's own rules keep winning, exactly as
+   they did when pages.css loaded ahead of it.
+   ──────────────────────────────────────────────────────────── */
+
+/* ============================================
+   EXPLORE HERO v2 — centered, no empty void
+   The hero markup (eyebrow, gradient title, orbs, search form) shipped
+   without matching CSS, leaving content jammed left against an empty
+   gradient. This block centers everything and styles the missing parts.
+   Specificity matches the [data-design="sleek"] overrides and sits later
+   in the cascade, so it wins for both default + sleek.
+   ============================================ */
+.explore-hero,
+[data-design="sleek"] .explore-hero {
+  height: auto;
+  min-height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: clamp(2rem, 5vw, 3.5rem) clamp(1rem, 4vw, 2rem);
+  border-radius: var(--radius-2xl);
+}
+
+/* Flat navy panel — the hero carries white text, so it must not depend on a
+   gradient stack that any deleted token can invalidate. */
+.explore-hero-bg,
+[data-design="sleek"] .explore-hero-bg,
+[data-theme="dark"] [data-design="sleek"] .explore-hero-bg {
+  background: var(--paper-deep);
+}
+
+.explore-hero-content,
+[data-design="sleek"] .explore-hero-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  max-width: 620px;
+  margin: 0 auto;
+  padding: 0;
+  color: #fff;
+}
+
+/* Sits on the navy hero — fill and ink are owned by explore.css, which loads
+   after this file; setting them here painted a white pill under white text. */
+.explore-hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border);
+  font-family: var(--font-display);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: var(--tracking-widest);
+  text-transform: uppercase;
+}
+
+.explore-hero h1,
+[data-design="sleek"] .explore-hero h1 {
+  margin: 0;
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 5vw, 3.25rem);
+  font-weight: 800;
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tightest);
+  text-wrap: balance;
+}
+
+/* Gradient text retired (carnet) — serif display italic gold ink. Kept in sync with explore.css. */
+.explore-hero-grad {
+  font-style: italic;
+  font-weight: 600;
+  color: var(--warning);
+}
+
+.explore-hero p,
+[data-design="sleek"] .explore-hero p {
+  margin: 0;
+  max-width: 460px;
+  color: rgba(255, 255, 255, 0.82);
+  opacity: 1;
+  font-size: var(--text-lg);
+  line-height: var(--leading-snug);
+}
+
+/* Search form — constrained pill, glass surface, centered. */
+.explore-search-form {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 520px;
+  margin-top: var(--space-3);
+}
+.explore-search-icon {
+  position: absolute;
+  left: 18px;
+  color: rgba(255, 255, 255, 0.7);
+  pointer-events: none;
+}
+.explore-search-input {
+  width: 100%;
+  padding: 14px 18px 14px 46px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--ink);
+  background: var(--paper-print);
+  color: var(--ink);
+  font-size: var(--text-base);
+  font-family: var(--font-sans);
+  transition: color var(--duration-fast) var(--ease-out), background-color var(--duration-fast) var(--ease-out), border-color var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out), transform var(--duration-fast) var(--ease-out), opacity var(--duration-fast) var(--ease-out), filter var(--duration-fast) var(--ease-out);
+}
+.explore-search-input::placeholder { color: var(--ink-faint); }
+.explore-search-input:focus {
+  outline: none;
+  background: var(--paper-print);
+  border-color: var(--ink);
+  box-shadow: 3px 3px 0 var(--warning);
+}
+.explore-search-clear {
+  position: absolute;
+  right: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 50%;
+  background: oklch(100% 0 0 / 0.18);
+  color: #fff;
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-out);
+}
+.explore-search-clear:hover { background: oklch(100% 0 0 / 0.3); }
+
+/* Floating ambient orbs retired (carnet) — neutralised in both stylesheets */
+.explore-hero-orbs,
+.explore-hero-orb { display: none; }
+
 /* ============================================
    EXPLORE PAGE — discovery surface
    Loaded after pages.css. Token-driven.

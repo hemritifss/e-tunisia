@@ -1,3 +1,92 @@
+/* ── Moved from pages.css (Phase 2 split) ─────────────────────
+   Prepended so this file's own rules keep winning, exactly as
+   they did when pages.css loaded ahead of it.
+   ──────────────────────────────────────────────────────────── */
+
+/* ============================================
+   ACTIVITY FEED (following)
+   ============================================ */
+.activity-page { max-width: 720px; margin: 0 auto; padding: 24px 16px 80px; }
+.activity-page-head { margin-bottom: 18px; }
+.activity-page-head h1 { font-size: 24px; margin: 0 0 4px; color: var(--text-primary); }
+.activity-page-head p { margin: 0; color: var(--text-muted, #9aa0a6); font-size: 14px; }
+.activity-tabs { display: flex; gap: 6px; margin-top: 14px; flex-wrap: wrap; }
+.activity-tabs button {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 14px; border-radius: 999px;
+    background: transparent;
+    border: 1px solid var(--border, #e5e7eb);
+    color: var(--text-primary);
+    cursor: pointer;
+    font-size: 13px;
+    transition: color 120ms, background-color 120ms, border-color 120ms, box-shadow 120ms, transform 120ms, opacity 120ms, filter 120ms;
+}
+.activity-tabs button:hover { border-color: var(--accent); }
+.activity-tabs button.active { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+
+.activity-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
+.activity-entry {
+    display: flex; gap: 12px; align-items: flex-start;
+    padding: 14px;
+    background: var(--surface);
+    border: 1px solid var(--border, #e5e7eb);
+    border-radius: 14px;
+    font-size: 14px;
+}
+.activity-entry-icon {
+    display: flex; align-items: center; justify-content: center;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    color: var(--accent);
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+.activity-entry-review .activity-entry-icon { background: rgba(255,209,102,0.18); color: #b8841a; }
+.activity-entry-trip   .activity-entry-icon { background: rgba(163,113,247,0.18); color: #6e3ee8; }
+.activity-entry-endorse .activity-entry-icon { background: color-mix(in srgb, var(--mediterranean) 18%, transparent); color: var(--mediterranean); }
+.activity-entry-follow .activity-entry-icon { background: rgba(86,211,100,0.18); color: #1f7a35; }
+
+.activity-avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+.activity-avatar-fallback {
+    background: color-mix(in srgb, var(--accent) 15%, transparent); color: var(--accent);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 13px;
+}
+.activity-entry-body { flex: 1; min-width: 0; color: var(--text-primary); line-height: 1.45; }
+.activity-actor-link { color: var(--text-primary); font-weight: 600; text-decoration: none; }
+.activity-actor-link:hover { color: var(--accent); }
+.activity-meta { color: var(--text-muted, #9aa0a6); font-size: 12px; margin-left: 6px; display: inline-flex; align-items: center; gap: 3px; }
+.activity-rating { color: var(--warning); margin-left: 6px; letter-spacing: -1px; }
+.activity-snippet {
+    margin: 4px 0 0;
+    color: var(--text-muted, #9aa0a6);
+    font-size: 13px; font-style: italic;
+    border-left: 2px solid var(--border, #e5e7eb);
+    padding-left: 8px;
+}
+.activity-topic-chip {
+    display: inline-flex; align-items: center; gap: 4px;
+    margin-left: 6px;
+    padding: 2px 8px; border-radius: 999px;
+    background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--accent);
+    font-size: 12px;
+}
+.activity-time { display: block; margin-top: 4px; color: var(--text-muted, #9aa0a6); font-size: 11px; }
+
+.activity-skel { display: flex; flex-direction: column; gap: 10px; }
+.activity-skel-row {
+    height: 72px; border-radius: 14px;
+    background: linear-gradient(90deg, var(--bg-secondary) 25%, var(--surface-elevated) 50%, var(--bg-secondary) 75%);
+    background-size: 200% 100%;
+    animation: passport-shimmer 1.4s infinite;
+}
+
+.activity-empty { text-align: center; padding: 56px 24px; color: var(--text-muted, #9aa0a6); }
+.activity-empty-emoji { font-size: 48px; margin-bottom: 12px; }
+.activity-empty h3 { color: var(--text-primary); margin: 0 0 6px; font-size: 18px; }
+.activity-empty p { margin: 0 0 18px; }
+
 /* ============================================
    ACTIVITY FEED (#/activity)
    Loaded after pages.css. Token-driven.

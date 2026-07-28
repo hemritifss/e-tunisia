@@ -193,7 +193,7 @@
     flex-direction: column;
     background: var(--paper-print);
     border: 1px solid var(--rule-strong);
-    border-radius: var(--radius-sm);
+    border-radius: 0;   /* card-system fold: cards are square in Bled */
     box-shadow: var(--paper-shadow);
     overflow: hidden;
     cursor: pointer;
