@@ -2,8 +2,9 @@
    LANDING — "CARNET DE VOYAGE" EDITORIAL EDITION
    A hand-assembled travel journal: warm paper, ink typography,
    pasted photo prints, rubber stamps, ticket stubs, postcards.
-   Namespace: .ej-*  (editorial journal) — self-contained; the
-   legacy .tn-landing system remains for Partner/About pages.
+   Namespace: .ej-*  (editorial journal). Now the only landing
+   system: Home, About and Partner all render from this file,
+   with landing-ultra.css layering the Home scroll choreography.
    All colors/typography come from tokens.css.
    ============================================================ */
 
@@ -1454,4 +1455,174 @@ select.ej-input option { color: var(--text-primary); background: var(--surface);
     .ej-footer-bottom { flex-direction: column; align-items: flex-start; }
     .ej-ticket { grid-template-columns: 72px 1fr 20px; }
     .ej-cta .ej-stamp { display: none; }
+}
+
+/* ============================================================
+   PAGE EDITION — About / Partner
+   The same carnet system rendered inside the app shell rather
+   than standalone. Patterns below exist because those two pages
+   need shapes the landing narrative never did: a prose spread,
+   a crew roster, and 4-up variants of the 3-up grids.
+   Placed last on purpose: the `--4` modifiers must outrank the
+   responsive blocks above, which match on the base class at
+   equal specificity.
+   ============================================================ */
+
+/* The grain is position:fixed over the whole viewport. On the landing page
+   nothing sits above it; inside the app shell it would veil the masthead. */
+.ej-landing--page::after { content: none; }
+
+/* .ej-hero's top padding clears the landing page's *fixed* masthead.
+   .pub-masthead is sticky, so it already occupies flow space here. */
+.ej-landing--page .ej-hero {
+    padding-top: var(--space-16);
+    min-height: 0;
+}
+
+/* ── Spread — a pasted photo facing a column of prose ─────── */
+.ej-spread {
+    display: grid;
+    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+    gap: clamp(var(--space-8), 5vw, var(--space-16));
+    align-items: center;
+}
+.ej-spread-text p {
+    color: var(--ink-soft);
+    font-size: var(--text-base);
+    line-height: var(--leading-relaxed);
+    max-width: 62ch;
+    margin: 0 0 var(--space-4);
+}
+.ej-spread-text .ej-h2 { margin-top: var(--space-8); }
+.ej-spread-text > :first-child { margin-top: 0; }
+
+/* A print in normal flow instead of tossed onto the hero desk. */
+.ej-print--static {
+    position: static;
+    width: 100%;
+    rotate: var(--tilt, -1.2deg);
+}
+.ej-print--static img { aspect-ratio: 4 / 3; }
+
+/* ── 4-up variants of the 3-up grids ─────────────────────── */
+.ej-manifesto-cols--4 { grid-template-columns: repeat(4, 1fr); }
+.ej-index-grid--4 { grid-template-columns: repeat(4, 1fr); }
+/* The base grid staggers on a 3 rhythm; re-time it to 4. */
+.ej-index-grid--4 .ej-place:nth-child(n) { margin-top: 0; }
+.ej-index-grid--4 .ej-place:nth-child(4n+2) { margin-top: var(--space-6); }
+.ej-index-grid--4 .ej-place:nth-child(4n+4) { margin-top: var(--space-3); }
+/* Scoped: the index proper carries mono meta, not sentences. */
+.ej-index-grid--4 .ej-place-body p {
+    font-size: var(--text-sm);
+    line-height: var(--leading-normal);
+    color: var(--ink-soft);
+    margin: 4px 0 0;
+}
+
+/* ── Crew — the people behind the edition ────────────────── */
+.ej-crew {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-8) var(--space-6);
+}
+.ej-crew-card {
+    background: var(--paper-print);
+    border: 1px solid var(--rule);
+    padding: var(--space-6);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    rotate: var(--tilt, 0deg);
+    transition: rotate var(--duration-normal) var(--ease-spring);
+}
+.ej-crew-card:nth-child(3n+1) { --tilt: -0.9deg; }
+.ej-crew-card:nth-child(3n+2) { --tilt: 0.7deg; margin-top: var(--space-5); }
+.ej-crew-card:nth-child(3n)   { --tilt: -0.4deg; }
+.ej-crew-card:hover { rotate: 0deg; }
+
+/* The arch is the only motif and it crops photography. */
+.ej-crew-portrait {
+    width: 104px;
+    height: 130px;
+    object-fit: cover;
+    border-radius: var(--arch-up);
+    border: 1px solid var(--rule);
+    background: var(--paper-warm);
+    filter: saturate(0.88) contrast(1.02);
+}
+/* Headshots for two of the three are still pending. The initials tile keeps
+   the same arch silhouette so the row reads as one set, and stays local so
+   nothing depends on an external avatar service. */
+.ej-crew-portrait--initials {
+    display: grid;
+    place-items: center;
+    font-family: var(--font-editorial);
+    font-optical-sizing: auto;
+    font-size: 2.1rem;
+    font-weight: 400;
+    letter-spacing: 0.03em;
+    color: var(--accent);
+    user-select: none;
+}
+.ej-crew-portrait--logo {
+    object-fit: contain;
+    padding: var(--space-4);
+    background: var(--paper-print);
+}
+.ej-crew-card h3 {
+    font-family: var(--font-editorial);
+    font-optical-sizing: auto;
+    font-size: 1.3rem;
+    font-weight: 400;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    margin: 0;
+    color: var(--ink);
+}
+.ej-crew-role {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+}
+.ej-crew-card p {
+    font-size: var(--text-sm);
+    line-height: var(--leading-relaxed);
+    color: var(--ink-soft);
+    margin: 0;
+}
+
+/* ── Colophon strip: optional standfirst under the title ─── */
+.ej-partners-lede {
+    max-width: 62ch;
+    margin: calc(-1 * var(--space-5)) auto var(--space-8);
+    text-align: center;
+    color: var(--ink-soft);
+    font-size: var(--text-sm);
+    line-height: var(--leading-relaxed);
+}
+
+/* The letter form gained a message field; .ej-input only had a select peer. */
+textarea.ej-input {
+    min-height: 96px;
+    resize: vertical;
+    line-height: var(--leading-normal);
+}
+
+@media (max-width: 1024px) {
+    .ej-manifesto-cols--4 { grid-template-columns: repeat(2, 1fr); }
+    .ej-index-grid--4 { grid-template-columns: repeat(2, 1fr); }
+    .ej-index-grid--4 .ej-place:nth-child(n) { margin-top: 0; }
+}
+
+@media (max-width: 860px) {
+    .ej-spread { grid-template-columns: 1fr; }
+    .ej-crew { grid-template-columns: 1fr; max-width: 420px; margin-inline: auto; }
+    .ej-crew-card:nth-child(n) { margin-top: 0; }
+}
+
+@media (max-width: 640px) {
+    .ej-manifesto-cols--4 { grid-template-columns: 1fr; }
+    .ej-index-grid--4 { grid-template-columns: 1fr; }
 }

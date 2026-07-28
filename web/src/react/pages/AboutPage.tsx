@@ -1,21 +1,15 @@
 import React, { useEffect, useRef, useState } from 'react';
-// The .tn-landing / partner-v3 / about-v3 styles live in landing.css. It used to
-// be linked globally in index.html but was de-linked when the editorial landing
-// (.ej-*, landing-editorial.css) shipped — leaving this page unstyled. Import it
-// here so it loads with the page (same pattern as LandingPage → landing-editorial.css).
-import '../../styles/landing.css';
+// Ported onto the editorial carnet system (.ej-*) in Phase 2 stage 2. The old
+// landing system and its always-dark canvas are gone, so this page now follows
+// the app theme like every other route.
+import '../../styles/landing-editorial.css';
+import { Arrow, RoundStamp } from './landing/ephemera';
 import PublicMasthead from '../components/public/PublicMasthead';
 import PublicFooter from '../components/public/PublicFooter';
 import { isLoggedIn } from '../../api';
 import { MARKETING_STATS } from '../data/marketingStats';
 
-// Rebuilt on the .tn-landing cinematic system (shares the partner-v3 photo-hero
-// template): photo hero, a story split with imagery, count-up stats, values, the
-// real founding team, and a closing CTA.
-
-const Arrow = ({ size = 18 }: { size?: number }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14M12 5l7 7-7 7" /></svg>;
-
-// Deterministic first+last initials for the placeholder team avatars.
+// Deterministic first+last initials for the placeholder crew portraits.
 function initials(name: string): string {
   const parts = name.trim().split(/\s+/);
   const first = parts[0]?.charAt(0) ?? '';
@@ -47,24 +41,33 @@ function Stat({ target, suffix = '+', label }: { target: number; suffix?: string
     return () => obs.disconnect();
   }, [target]);
   return (
-    <div className="tn-stat" ref={ref}>
-      <span className="tn-stat-num">{val.toLocaleString()}{suffix}</span>
-      <span className="tn-stat-label">{label}</span>
+    <div className="ej-almanac-cell" ref={ref}>
+      <span className="ej-almanac-num">{val.toLocaleString()}{suffix}</span>
+      <span className="ej-almanac-label">{label}</span>
     </div>
   );
 }
 
+// Three prints for the opening spread, from the repo's journey set.
+const PRINTS = [
+  { cls: 'ej-print-1', src: '/img/journey/sidi-bou-said.webp', alt: 'Blue doors and whitewashed walls in Sidi Bou Said', cap: 'where it started', meta: '36.87°N 10.34°E', eager: true },
+  { cls: 'ej-print-2', src: '/img/journey/dougga.webp', alt: 'Roman ruins of Dougga on the hillside', cap: 'Dougga, off the map', meta: 'II century', eager: false },
+  { cls: 'ej-print-3', src: '/img/journey/medina-tunis.webp', alt: 'Alleyway in the old Medina of Tunis', cap: 'the medina, unposed', meta: 'est. 698 AD', eager: false },
+];
+
+// Icons and the per-item accent colour were dropped in the Bled port: the
+// manifesto pattern is typographic by design, and the six-colour rainbow
+// collapses to the single blue accent.
 const VALUES = [
-  { color: 'var(--coral)', title: 'Community-Driven', desc: 'Real travelers, real locals, real experiences. Our community curates everything, with no corporate editorial team deciding what is worth seeing.', icon: <><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" /></> },
-  { color: 'var(--olive)', title: 'Support Local', desc: 'We prioritize family-run businesses, artisans, and independent hosts. Every booking directly supports Tunisian entrepreneurs.', icon: <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /> },
-  { color: 'var(--mediterranean)', title: 'Authentic Experiences', desc: 'No tourist traps, no paid placements. Every recommendation is tested and verified by our community of explorers.', icon: <><circle cx="12" cy="12" r="10" /><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" fill="currentColor" stroke="none" /></> },
-  { color: 'var(--warning)', title: 'Sustainable Tourism', desc: "Responsible travel that preserves Tunisia's natural beauty and cultural heritage for future generations.", icon: <path d="M12 2.69l5.66 5.66a8 8 0 11-11.31 0z" /> },
+  { kicker: 'Nº 01', title: 'Community-driven', desc: 'Real travelers, real locals, real experiences. Our community curates everything, with no corporate editorial team deciding what is worth seeing.' },
+  { kicker: 'Nº 02', title: 'Support local', desc: 'We prioritize family-run businesses, artisans, and independent hosts. Every booking directly supports Tunisian entrepreneurs.' },
+  { kicker: 'Nº 03', title: 'Authentic', desc: 'No tourist traps, no paid placements. Every recommendation is tested and verified by our community of explorers.' },
+  { kicker: 'Nº 04', title: 'Sustainable', desc: "Responsible travel that preserves Tunisia's natural beauty and cultural heritage for future generations." },
 ];
 
 // ASSET: real square headshots pending for the two people below. Until they
-// land, persons render a self-contained initials tile (no external avatar
-// service, so nothing can break offline or under a strict CSP). The logo
-// member keeps its local brand asset.
+// land, they render a self-contained initials tile in the same arch crop (no
+// external avatar service, so nothing breaks offline or under a strict CSP).
 const TEAM = [
   {
     kind: 'logo' as const,
@@ -94,111 +97,143 @@ export default function AboutPage() {
     const root = rootRef.current;
     if (!root) return;
     const obs = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => { if (entry.isIntersecting) { entry.target.classList.add('tn-revealed'); obs.unobserve(entry.target); } });
+      entries.forEach((entry) => { if (entry.isIntersecting) { entry.target.classList.add('is-in'); obs.unobserve(entry.target); } });
     }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
-    root.querySelectorAll('.tn-why-card, .about-v3-team-card').forEach((el) => obs.observe(el));
+    root.querySelectorAll('.ej-reveal').forEach((el) => obs.observe(el));
     return () => obs.disconnect();
   }, []);
 
   return (
-    <div className="tn-landing partner-v3 about-v3" ref={rootRef}>
+    <div className="ej-landing ej-landing--page" ref={rootRef}>
       {!isLoggedIn() && <PublicMasthead active="about" />}
-      {/* ── Hero ── */}
-      <section className="partner-v3-hero">
-        <div className="partner-v3-hero-bg"><img src="/img/hero1.png" alt="Tunisia" /></div>
-        <div className="partner-v3-hero-overlay" />
-        <div className="partner-v3-hero-content">
-          <span className="partner-v3-badge"><span className="pv3-dot" />Our Story</span>
-          <h1>Building the future of <span className="tn-grad">Tunisian travel</span></h1>
-          <p className="partner-v3-hero-arabic">نبنيو مستقبل السياحة التونسية</p>
-          <p className="partner-v3-hero-sub">e-Tunisia was born from a simple frustration: the most magical places in Tunisia are nowhere to be found online. We're fixing that, together.</p>
-        </div>
-      </section>
 
-      {/* ── Story (problem / solution + photo) ── */}
-      <section className="tn-section">
-        <div className="tn-container">
-          <div className="about-v3-story">
-            <div className="about-v3-story-media"><img src="/img/hero3.png" alt="The real Tunisia" loading="lazy" /></div>
-            <div className="about-v3-story-text">
-              <h2>The problem</h2>
-              <p>Existing travel platforms list the same 20 tourist spots copied from each other. The real Tunisia (the cave restaurants, the secret beaches, the family-run guesthouses, the hidden Roman ruins) stays invisible.</p>
-              <p>Local businesses lose travelers to all-inclusive resorts. Travelers miss experiences they'd remember forever. Everyone loses.</p>
-              <h2>Our solution</h2>
-              <p>e-Tunisia is a community-driven platform where locals and travelers share the spots that don't make it into guidebooks. We verify, curate, and make them bookable, with no paid placements and no fake reviews.</p>
-            </div>
+      {/* ── Hero — the opening spread ── */}
+      <header className="ej-hero">
+        <span className="ej-hero-watermark" aria-hidden="true">تونس</span>
+        <div className="ej-hero-copy">
+          <p className="ej-hero-kicker">Our story</p>
+          <h1 className="ej-hero-title">Building the future of <em>Tunisian travel.</em></h1>
+          <p className="ej-hero-arabic">نبنيو مستقبل السياحة التونسية</p>
+          <p className="ej-hero-sub">
+            e-Tunisia was born from a simple frustration: the most magical places in Tunisia
+            are nowhere to be found online. We are fixing that, together.
+          </p>
+          <div className="ej-hero-actions">
+            <a href="#/explore" className="ej-btn">Start exploring<Arrow /></a>
+            <a href="#/register" className="ej-link">Join the community</a>
+          </div>
+          <div className="ej-hero-note">
+            <span className="ej-hand">Built in Sfax, for anyone curious enough to look past the brochure.</span>
+          </div>
+        </div>
+        <div className="ej-hero-prints">
+          {PRINTS.map((p) => (
+            <figure className={`ej-print ${p.cls}`} key={p.cls}>
+              <img src={p.src} alt={p.alt} loading={p.eager ? 'eager' : 'lazy'} fetchPriority={p.eager ? 'high' : undefined} />
+              <figcaption>{p.cap} <span className="ej-print-meta">{p.meta}</span></figcaption>
+            </figure>
+          ))}
+          <RoundStamp idSuffix="-about" />
+        </div>
+      </header>
+
+      {/* ── Story spread ── */}
+      <section className="ej-section">
+        <div className="ej-spread ej-reveal">
+          <figure className="ej-print ej-print--static">
+            <img src="/img/journey/matmata.webp" alt="Cave dwellings carved into the hills of Matmata" loading="lazy" />
+            <figcaption>the real thing <span className="ej-print-meta">Matmata</span></figcaption>
+          </figure>
+          <div className="ej-spread-text">
+            <p className="ej-kicker"><span className="ej-no">Nº 00</span> Why we started</p>
+            <h2 className="ej-h2">The same twenty spots, <em>copied around.</em></h2>
+            <p>
+              Existing travel platforms list the same 20 tourist spots copied from each other.
+              The real Tunisia (the cave restaurants, the secret beaches, the family-run
+              guesthouses, the hidden Roman ruins) stays invisible.
+            </p>
+            <p>
+              Local businesses lose travelers to all-inclusive resorts. Travelers miss
+              experiences they would remember forever. Everyone loses.
+            </p>
+            <h2 className="ej-h2">So we built the <em>index</em> instead.</h2>
+            <p>
+              e-Tunisia is a community-driven platform where locals and travelers share the
+              spots that do not make it into guidebooks. We verify, curate, and make them
+              bookable, with no paid placements and no fake reviews.
+            </p>
           </div>
         </div>
       </section>
 
-      {/* ── Stats ── */}
-      <div className="tn-stats">
-        <Stat target={MARKETING_STATS.placesCharted.value} suffix={MARKETING_STATS.placesCharted.suffix} label="Hidden Places" />
-        <div className="tn-stat-divider" />
-        <Stat target={MARKETING_STATS.travelers.value} suffix={MARKETING_STATS.travelers.suffix} label="Travelers" />
-        <div className="tn-stat-divider" />
-        <Stat target={MARKETING_STATS.localHosts.value} suffix={MARKETING_STATS.localHosts.suffix} label="Local Hosts" />
-        <div className="tn-stat-divider" />
-        <Stat target={MARKETING_STATS.communityReviews.value} suffix={MARKETING_STATS.communityReviews.suffix} label="Reviews" />
-      </div>
+      {/* ── Almanac ── */}
+      <section className="ej-almanac" aria-label="Platform numbers">
+        <div className="ej-almanac-grid">
+          <Stat target={MARKETING_STATS.placesCharted.value} suffix={MARKETING_STATS.placesCharted.suffix} label="Hidden places" />
+          <Stat target={MARKETING_STATS.travelers.value} suffix={MARKETING_STATS.travelers.suffix} label="Travelers" />
+          <Stat target={MARKETING_STATS.localHosts.value} suffix={MARKETING_STATS.localHosts.suffix} label="Local hosts" />
+          <Stat target={MARKETING_STATS.communityReviews.value} suffix={MARKETING_STATS.communityReviews.suffix} label="Reviews" />
+        </div>
+        <div className="ej-almanac-footnote">
+          <span className="ej-hand">counted by hand — no inflated numbers here.</span>
+        </div>
+      </section>
 
       {/* ── Values ── */}
-      <section className="tn-section">
-        <div className="tn-container">
-          <div className="tn-section-head">
-            <span className="tn-eyebrow">What We Believe</span>
-            <h2>Values that drive us.</h2>
-          </div>
-          <div className="tn-why-grid">
-            {VALUES.map((v, i) => (
-              <div className="tn-why-card" key={v.title} style={{ transitionDelay: `${i * 70}ms` }}>
-                <div className="tn-why-icon" style={{ color: v.color }}><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">{v.icon}</svg></div>
-                <h3>{v.title}</h3>
-                <p>{v.desc}</p>
-              </div>
-            ))}
-          </div>
+      <section className="ej-section ej-manifesto">
+        <div className="ej-section-head">
+          <p className="ej-kicker"><span className="ej-no">Nº 01</span> What we believe</p>
+          <h2 className="ej-h2">Values that <em>drive us.</em></h2>
+        </div>
+        <div className="ej-manifesto-cols ej-manifesto-cols--4">
+          {VALUES.map((v) => (
+            <div className="ej-manifesto-col ej-reveal" key={v.title}>
+              <h3>{v.kicker} · {v.title}</h3>
+              <p>{v.desc}</p>
+            </div>
+          ))}
         </div>
       </section>
 
-      {/* ── Team ── */}
-      <section className="tn-section">
-        <div className="tn-container">
-          <div className="tn-section-head">
-            <span className="tn-eyebrow">The Team</span>
-            <h2>Built by Tunisians, for the world.</h2>
-            <p>A youth-led project, designed and built in Sfax.</p>
-          </div>
-          <div className="about-v3-team">
-            {TEAM.map((m, i) => (
-              <div className="about-v3-team-card" key={m.name} style={{ transitionDelay: `${i * 90}ms` }}>
-                {m.kind === 'logo' ? (
-                  <img src={m.img} alt={m.name} loading="lazy" className="about-v3-team-logo" />
-                ) : (
-                  <div className="about-v3-team-avatar about-v3-team-avatar--initials" aria-hidden="true">{initials(m.name)}</div>
-                )}
-                <h3>{m.name}</h3>
-                <span className="about-v3-team-role">{m.role}</span>
-                <p>{m.bio}</p>
-              </div>
-            ))}
-          </div>
+      {/* ── Crew ── */}
+      <section className="ej-section">
+        <div className="ej-section-head">
+          <p className="ej-kicker"><span className="ej-no">Nº 02</span> The team</p>
+          <h2 className="ej-h2">Built by Tunisians, <em>for the world.</em></h2>
+          <p className="ej-lede">A youth-led project, designed and built in Sfax.</p>
+        </div>
+        <div className="ej-crew">
+          {TEAM.map((m) => (
+            <article className="ej-crew-card ej-reveal" key={m.name}>
+              {m.kind === 'logo' ? (
+                <img className="ej-crew-portrait ej-crew-portrait--logo" src={m.img} alt={m.name} loading="lazy" />
+              ) : (
+                <div className="ej-crew-portrait ej-crew-portrait--initials" aria-hidden="true">{initials(m.name)}</div>
+              )}
+              <h3>{m.name}</h3>
+              <span className="ej-crew-role">{m.role}</span>
+              <p>{m.bio}</p>
+            </article>
+          ))}
         </div>
       </section>
 
-      {/* ── Closing CTA ── */}
-      <section className="tn-cta">
-        <div className="tn-cta-bg" />
-        <div className="tn-cta-content">
-          <h2>Be part of the <span className="tn-grad">story</span>.</h2>
-          <p>Whether you're a traveler seeking adventure or a local business ready to grow, there's a place for you here.</p>
-          <div className="partner-v3-hero-actions" style={{ justifyContent: 'center' }}>
-            <a href="#/register" className="tn-btn-primary">Join the Community<Arrow /></a>
-            <a href="#/partner" className="tn-btn-secondary">Partner With Us</a>
+      {/* ── Final call ── */}
+      <section className="ej-cta">
+        <div className="ej-cta-inner">
+          <RoundStamp idSuffix="-about-cta" />
+          <h2>Be part of the <em>story.</em></h2>
+          <p className="ej-cta-arabic">أهلا وسهلا</p>
+          <div className="ej-hero-actions" style={{ justifyContent: 'center' }}>
+            <a href="#/register" className="ej-btn">Join the community<Arrow /></a>
+            <a href="#/partner" className="ej-btn ej-btn--paper">Partner with us</a>
           </div>
-          <p className="tn-cta-small">Ahlan wa Sahlan. Welcome.</p>
+          <span className="ej-cta-note">
+            <span className="ej-hand">Ahlan wa sahlan. Welcome.</span>
+          </span>
         </div>
       </section>
+
       {!isLoggedIn() && <PublicFooter />}
     </div>
   );
