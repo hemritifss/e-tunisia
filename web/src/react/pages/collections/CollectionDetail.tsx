@@ -319,17 +319,17 @@ function printCollection(view: CollectionView, rows: Row[]) {
     const html = `<!doctype html><html><head><meta charset="utf-8"><title>${esc(view.title)} — e-Tunisia carnet</title>
         <style>
             @page { margin: 22mm; }
-            body { font-family: Georgia, 'Times New Roman', serif; color: #23201c; }
-            .k { font: 600 11px/1.4 ui-monospace, monospace; letter-spacing: .18em; text-transform: uppercase; color: #9a8f80; }
+            body { font-family: Georgia, 'Times New Roman', serif; color: #1D2E4A; }
+            .k { font: 600 11px/1.4 ui-monospace, monospace; letter-spacing: .18em; text-transform: uppercase; color: #8A7550; }
             h1 { font-size: 30px; margin: 4px 0 6px; }
-            p.d { color: #5a5148; max-width: 60ch; }
-            hr { border: 0; border-top: 1px solid #d9d2c7; margin: 18px 0; }
+            p.d { color: #4A5B75; max-width: 60ch; }
+            hr { border: 0; border-top: 1px solid #E7DECC; margin: 18px 0; }
             ol { list-style: none; padding: 0; }
-            li { display: flex; gap: 12px; padding: 9px 0; border-bottom: 1px dotted #d9d2c7; }
-            .n { font: 600 13px ui-monospace, monospace; color: #b8541f; min-width: 22px; }
+            li { display: flex; gap: 12px; padding: 9px 0; border-bottom: 1px dotted #E7DECC; }
+            .n { font: 600 13px ui-monospace, monospace; color: #1E5FA8; min-width: 22px; }
             .t b { display: block; font-size: 16px; }
-            .t small { color: #7a7167; } .t em { display: block; color: #5a5148; }
-            footer { margin-top: 24px; font: 12px ui-monospace, monospace; color: #9a8f80; }
+            .t small { color: #5B6B82; } .t em { display: block; color: #4A5B75; }
+            footer { margin-top: 24px; font: 12px ui-monospace, monospace; color: #8A7550; }
         </style></head><body>
         <div class="k">Carnet de collections · e-Tunisia</div>
         <h1>${esc(view.title)}</h1>

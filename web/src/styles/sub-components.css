@@ -84,13 +84,6 @@
     padding: var(--space-5);
     overflow: hidden;
 }
-.passport-map::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(ellipse at 30% 40%, oklch(55% 0.16 30 / 0.06), transparent 60%);
-    pointer-events: none;
-}
 .passport-map-svg {
     display: block;
     width: 100%;
@@ -117,7 +110,6 @@
 }
 .passport-city.visited circle {
     fill: var(--terracotta);
-    filter: drop-shadow(0 0 1.5px oklch(55% 0.16 30 / 0.4));
 }
 .passport-city.visited text {
     fill: var(--terracotta);
@@ -818,14 +810,13 @@
     min-height: 48px;
     font-size: var(--text-base);
     font-weight: 700;
-    box-shadow: var(--shadow-glow);
     cursor: pointer;
     transition: transform var(--duration-fast) var(--ease-spring),
-                box-shadow var(--duration-normal) var(--ease-out);
+                background-color var(--duration-normal) var(--ease-out);
 }
 .signup-gate .btn.primary.block:hover {
     transform: translateY(-1px);
-    box-shadow: var(--shadow-glow), 0 8px 24px oklch(55% 0.16 30 / 0.35);
+    background: var(--accent-hover);
 }
 .signup-gate .btn.primary.block:disabled {
     opacity: 0.5;
@@ -957,7 +948,6 @@
     padding: var(--space-3);
     min-height: 48px;
     font-weight: 700;
-    box-shadow: var(--shadow-glow);
     cursor: pointer;
 }
 .passport-onb-celebrate {
@@ -974,9 +964,8 @@
     display: grid;
     place-items: center;
     background: var(--warning);
-    color: oklch(20% 0.05 80);
+    color: var(--accent-text);
     border-radius: 50%;
-    box-shadow: var(--shadow-xl), var(--shadow-glow-gold);
     animation: sub-badge-pop var(--duration-normal) var(--ease-spring);
 }
 @keyframes sub-badge-pop {
@@ -1185,14 +1174,14 @@
     padding-top: var(--space-2);
     border-top: 1px solid var(--border-light);
 }
+/* Interactive controls are always the one accent; gold is ink, not a CTA. */
 .donate-modal-footer .btn.btn-primary {
-    background: var(--warning) !important;
-    color: oklch(20% 0.05 80) !important;
+    background: var(--accent) !important;
+    color: var(--accent-text) !important;
     border: none !important;
     border-radius: var(--radius-full) !important;
     padding: var(--space-2) var(--space-4) !important;
     font-weight: 700 !important;
-    box-shadow: var(--shadow-glow-gold);
     display: inline-flex;
     align-items: center;
     gap: 6px;
@@ -1472,7 +1461,6 @@
     padding: var(--space-2) var(--space-4) !important;
     min-height: 40px;
     font-weight: 700 !important;
-    box-shadow: var(--shadow-glow);
     display: inline-flex;
     align-items: center;
     gap: 6px;

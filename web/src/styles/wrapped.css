@@ -8,14 +8,14 @@
   border-radius: var(--radius-3xl);
   overflow: hidden;
   color: #fff;
-  background: linear-gradient(160deg, #0b1e3f 0%, #1a6a8a 52%, #d4623a 100%);
+  background: var(--paper-deep);
   box-shadow: var(--shadow-2xl);
   display: flex;
   flex-direction: column;
 }
 
-/* The deck lives on a dark gradient — force headings white (global h1/h2 rules
-   otherwise stamp them with a dark text token, rendering them near-invisible). */
+/* The deck lives on the deep navy panel, so headings are forced white (global
+   h1/h2 rules otherwise stamp them with a dark token and they go invisible). */
 .wrapped-page h1,
 .wrapped-page h2,
 .wrapped-page strong { color: #fff; }

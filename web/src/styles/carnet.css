@@ -19,8 +19,8 @@
 /* Highlighter selection — sand marker by day, ink-blue by night.
    Literal values: var() inside ::selection is unreliable cross-browser. */
 [data-design="carnet"] ::selection {
-  background: oklch(88% 0.14 95 / 0.85);
-  color: oklch(23% 0.022 55);
+  background: oklch(93.5% 0.024 85 / 0.85);
+  color: oklch(26% 0.05 260);
 }
 [data-theme="dark"] [data-design="carnet"] ::selection {
   background: oklch(45% 0.1 250 / 0.9);
@@ -62,26 +62,27 @@
   line-height: 1;
   color: var(--accent-text);
   background: var(--accent);
+  /* Variants re-point this rather than restating :hover/:active. */
+  --cn-btn-hover-bg: var(--accent-hover);
   border: 1.5px solid var(--ink);
   border-radius: var(--radius-sm);
-  box-shadow: var(--carnet-btn-shadow);
   cursor: pointer;
   touch-action: manipulation;
   user-select: none;
   transition:
-    translate var(--carnet-motion-fast),
-    box-shadow var(--carnet-motion-fast),
+    transform var(--carnet-motion-fast),
     background-color var(--carnet-motion-fast);
 }
-.cn-btn:hover { translate: -2px -2px; box-shadow: var(--carnet-btn-shadow-lift); }
-.cn-btn:active { translate: 2px 2px; box-shadow: var(--carnet-btn-shadow-sink); }
+/* The letterpress offsets are flattened to none, so the button can no longer
+   slide against a shadow: feedback is carried by fill and a pressed scale. */
+.cn-btn:hover { background: var(--cn-btn-hover-bg); }
+.cn-btn:active { background: var(--cn-btn-hover-bg); transform: scale(0.98); }
 .cn-btn:focus-visible { outline: var(--carnet-focus); outline-offset: 2px; }
 .cn-btn:disabled,
 .cn-btn[aria-busy="true"] {
   opacity: 0.5;
   cursor: not-allowed;
-  translate: 0 0;
-  box-shadow: var(--carnet-btn-shadow);
+  transform: none;
 }
 .cn-btn[aria-busy="true"]::after {
   content: '';
@@ -96,24 +97,22 @@
 .cn-btn--quiet {
   color: var(--ink);
   background: var(--surface);
+  --cn-btn-hover-bg: var(--surface-hover);
   border-width: 1px;
-  box-shadow: 2px 2px 0 var(--rule-strong);
 }
-.cn-btn--quiet:hover { box-shadow: 3px 3px 0 var(--rule-strong); }
-.cn-btn--quiet:active { box-shadow: 1px 1px 0 var(--rule-strong); }
 
 .cn-btn--ink {
   color: var(--ink-on-deep);
   background: var(--paper-deep);
+  --cn-btn-hover-bg: color-mix(in oklab, var(--paper-deep) 86%, var(--ink-on-deep));
 }
 
-/* On ink-dipped sections the offset shadow must read against dark ground */
 .cn-on-deep .cn-btn,
 .cn-btn--paper {
   color: var(--ink);
   background: var(--paper);
+  --cn-btn-hover-bg: var(--surface-hover);
   border-color: var(--paper);
-  box-shadow: 3px 3px 0 oklch(100% 0 0 / 0.28);
 }
 
 @keyframes cn-spin { to { transform: rotate(360deg); } }
@@ -375,6 +374,6 @@
   .cn-skeleton { animation: none; opacity: 0.7; }
   .cn-btn,
   .cn-btn:hover,
-  .cn-btn:active { translate: 0 0; transition: none; }
+  .cn-btn:active { transform: none; transition: none; }
   .cn-btn[aria-busy="true"]::after { animation-duration: 1.5s; }
 }

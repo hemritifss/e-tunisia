@@ -443,9 +443,8 @@
     display: grid;
     place-items: center;
     border-radius: var(--radius-full);
-    color: #7a5b12;
-    background: radial-gradient(circle at 35% 30%, #ffe9a8, var(--warning));
-    box-shadow: 0 2px 8px color-mix(in oklab, var(--warning) 40%, transparent);
+    color: var(--warning);
+    background: var(--stone-pale);
 }
 .pc-achv-body { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .pc-achv-title { margin: 0; font-size: var(--text-base); font-weight: 700; color: var(--text-primary); }
@@ -462,7 +461,7 @@
     align-self: flex-start;
     font-size: var(--text-xs);
     font-weight: 700;
-    color: #7a5b12;
+    color: color-mix(in oklab, var(--warning) 55%, var(--text-primary));
     background: color-mix(in oklab, var(--warning) 22%, transparent);
     padding: 1px 8px;
     border-radius: var(--radius-full);
@@ -796,4 +795,4 @@
 .sponsor-tile:hover { transform: translateY(-2px); border-color: var(--border); box-shadow: var(--shadow-sm); }
 .sponsor-tile img { max-width: 100%; max-height: 40px; object-fit: contain; }
 .sponsor-name { font-size: var(--text-xs); font-weight: 600; color: var(--text-secondary); text-align: center; line-height: 1.2; }
-.sponsor-tier-gold { border-color: oklch(78% 0.17 80 / 0.55); box-shadow: inset 0 0 0 1px oklch(78% 0.17 80 / 0.22); }
+.sponsor-tier-gold { border-color: color-mix(in oklab, var(--warning) 55%, transparent); box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--warning) 22%, transparent); }

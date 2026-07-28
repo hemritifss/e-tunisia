@@ -1,19 +1,13 @@
 /* ============================================
-   CARD SYSTEM — one paper edge for every card
+   CARD SYSTEM — one edge for every card
    --------------------------------------------
-   The carnet tokens already give cards paper surfaces + ink hairlines + paper
-   shadows, so most cards were 90% there. The one thing that still read as a
-   "generic web card" (vs the discovery / carte-postale cards) was the large
-   ROUNDED radius (--radius-lg/xl = 16–22px). Pulling every in-app content card
-   to a small paper radius is what makes the whole platform feel like the
-   discovery cards — "loch ken discovery cards".
-
    Pills (--radius-full) and buttons keep their own radius on purpose; only
    card containers are retargeted here. Marketing/landing (`.tn-*`) and pricing
    surfaces are intentionally excluded — they have their own art direction.
+   Phase 2 folds these rules into the card styles and deletes the file.
    ============================================ */
 :root {
-    --card-radius: 7px;   /* the paper edge, matched to Carte (~4–7px) */
+    --card-radius: 0;   /* cards are square in Bled; rules separate content */
 }
 
 .post-card,

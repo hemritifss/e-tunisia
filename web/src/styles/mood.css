@@ -65,46 +65,22 @@
     margin: var(--space-5) 0 var(--space-10);
     color: var(--text-inverse);
     isolation: isolate;
-    box-shadow: var(--shadow-xl);
 }
 .mood-page .mood-hero-bg {
     position: absolute;
     inset: 0;
     z-index: -2;
-    background:
-        radial-gradient(ellipse at 30% 20%, color-mix(in oklch, var(--mood-tint) 70%, transparent) 0%, transparent 55%),
-        radial-gradient(ellipse at 70% 80%, color-mix(in oklch, var(--mood-tint) 55%, transparent) 0%, transparent 50%),
-        linear-gradient(140deg, color-mix(in oklch, var(--mood-tint) 90%, black 10%) 0%, color-mix(in oklch, var(--mood-tint) 65%, black 35%) 100%);
+    background: color-mix(in oklch, var(--mood-tint) 72%, black);
 }
 /* Fallback for browsers without color-mix (rare in 2026 but cheap to add) */
 @supports not (color: color-mix(in oklch, red, blue)) {
     .mood-page .mood-hero-bg {
-        background: linear-gradient(140deg, var(--mood-tint), var(--bg-tertiary));
+        background: var(--mood-tint);
     }
 }
+/* Bled: no blurred orbs; markup still renders the spans */
 .mood-hero-orbs {
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    pointer-events: none;
-    overflow: hidden;
-}
-.mood-hero-orb {
-    position: absolute;
-    border-radius: 50%;
-    background: var(--mood-tint);
-    filter: blur(60px);
-    opacity: 0.4;
-    animation: mood-orb 14s var(--ease-in-out) infinite;
-}
-.mood-hero-orb:nth-child(1) { width: 320px; height: 320px; top: -100px; left: -60px; }
-.mood-hero-orb:nth-child(2) { width: 260px; height: 260px; bottom: -80px; right: -40px; animation-delay: -5s; }
-@keyframes mood-orb {
-    0%, 100% { transform: translate(0, 0) scale(1); }
-    50%      { transform: translate(28px, -22px) scale(1.08); }
-}
-@media (prefers-reduced-motion: reduce) {
-    .mood-hero-orb { animation: none; }
+    display: none;
 }
 
 .mood-hero-icon {

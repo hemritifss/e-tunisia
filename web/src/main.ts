@@ -645,7 +645,7 @@ function setThemeIcon(theme: string) {
 /** Keep the browser-chrome color in step with the app theme. */
 function syncThemeColorMeta(theme: string) {
   const tc = document.querySelector('meta[name="theme-color"]');
-  if (tc) tc.setAttribute('content', theme === 'dark' ? '#1c1917' : '#f7f4ec');
+  if (tc) tc.setAttribute('content', theme === 'dark' ? '#0E1520' : '#F7F9FC');
 }
 
 function initTheme() {
@@ -739,34 +739,35 @@ function initNotifications() {
     const fromHandle = data.followerHandle || data.endorserHandle || data.fromHandle;
     const fromUserRef = fromHandle ? `#/u/${encodeURIComponent(fromHandle)}` : (data.fromUserId ? `#/user/${data.fromUserId}` : null);
 
+    // Tints are tokens, not literals, so the bubbles follow the active theme.
     if (t === 'follow') {
-      return { icon: 'lucide-user-plus', color: 'oklch(58% 0.14 240)', href: fromUserRef };
+      return { icon: 'lucide-user-plus', color: 'var(--accent)', href: fromUserRef };
     }
     if (t === 'comment') {
       return {
         icon: 'lucide-message-circle',
-        color: 'oklch(58% 0.16 145)',
+        color: 'var(--success)',
         href: data.postId ? `#/post/${data.postId}` : null,
       };
     }
     if (t === 'donation') {
-      return { icon: 'lucide-coins', color: 'oklch(78% 0.17 80)', href: '#/credits' };
+      return { icon: 'lucide-coins', color: 'var(--warning)', href: '#/credits' };
     }
     if (t === 'mention') {
       // Endorsements ride the MENTION type but always include data.topic — distinguish them.
       if (data.topic) {
-        return { icon: 'lucide-award', color: 'oklch(72% 0.18 200)', href: fromUserRef };
+        return { icon: 'lucide-award', color: 'var(--mediterranean)', href: fromUserRef };
       }
-      return { icon: 'lucide-at-sign', color: 'oklch(58% 0.20 290)', href: data.postId ? `#/post/${data.postId}` : fromUserRef };
+      return { icon: 'lucide-at-sign', color: 'var(--accent)', href: data.postId ? `#/post/${data.postId}` : fromUserRef };
     }
     if (t === 'badge') {
-      return { icon: 'lucide-award', color: 'oklch(78% 0.17 80)', href: '#/badges' };
+      return { icon: 'lucide-award', color: 'var(--warning)', href: '#/badges' };
     }
     if (t === 'event') {
-      return { icon: 'lucide-calendar', color: 'oklch(62% 0.19 25)', href: '#/events' };
+      return { icon: 'lucide-calendar', color: 'var(--mediterranean)', href: '#/events' };
     }
     if (t === 'tip') {
-      return { icon: 'lucide-lightbulb', color: 'oklch(74% 0.15 75)', href: '#/tips' };
+      return { icon: 'lucide-lightbulb', color: 'var(--warning)', href: '#/tips' };
     }
     return { icon: 'lucide-bell', color: 'var(--text-muted)', href: null };
   }

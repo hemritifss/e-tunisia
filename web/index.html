@@ -15,7 +15,7 @@
   <meta name="twitter:image" content="/icon.png" />
   <!-- Browser chrome color — kept in sync with the theme by the script below
        and by toggleTheme() at runtime. -->
-  <meta name="theme-color" content="#f7f4ec" />
+  <meta name="theme-color" content="#F7F9FC" />
   <!-- Apply the saved theme BEFORE first paint: prevents the light-mode flash for
        dark-theme users and stale light-theme paints on composited layers (fixed nav). -->
   <script>
@@ -24,7 +24,7 @@
         || (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
       document.documentElement.dataset.theme = t;
       var tc = document.querySelector('meta[name="theme-color"]');
-      if (tc) tc.setAttribute('content', t === 'dark' ? '#1c1917' : '#f7f4ec');
+      if (tc) tc.setAttribute('content', t === 'dark' ? '#0E1520' : '#F7F9FC');
     } catch (e) {}
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />

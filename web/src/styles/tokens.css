@@ -65,18 +65,18 @@
      The old six-accent rainbow collapses into the system above. These keep
      ~60 stylesheets rendering while their usages migrate. No new uses. */
   --terracotta:         var(--accent);
-  --terracotta-light:   var(--mediterranean-light);
+  --terracotta-light:   var(--mediterranean);
   --terracotta-pale:    var(--accent-light);
-  --terracotta-glow:    rgba(30, 95, 168, 0.30);
-  --mediterranean-glow: rgba(75, 143, 212, 0.30);
-  --sand:               var(--stone);
+  /* --sand is read as a foreground in several sheets, so it points at the deep
+     stone, not the pale surface tint. */
+  --sand:               var(--stone-deep);
   --sand-light:         var(--stone-pale);
   --olive:              var(--success);
-  --olive-light:        #A9C4A7;
+  --olive-light:        var(--success);
   --coral:              var(--accent);
   --violet:             var(--accent);
   --cyan:               var(--mediterranean);
-  --rose:               var(--error);
+  --rose:               var(--accent);
 
   /* Landing `.tn-*` palette — mapped per handoff */
   --tn-dark:            #1D2E4A;
@@ -98,14 +98,15 @@
   --rule-strong:        rgba(29, 46, 74, 0.52);
   --rule-faint:         var(--border-light);
   --tape:               rgba(231, 222, 204, 0.55);
-  --stamp-ink:          var(--error);
+  /* Stamp ink is passport-blue, not flag red: featured/saved are neither live nor destructive */
+  --stamp-ink:          var(--accent);
   --paper-shadow:       none;
   --paper-shadow-lift:  0 28px 60px -24px rgba(29, 46, 74, 0.4);
 
   /* ── Typography: three roles, no exceptions ── */
   --font-display:       'Instrument Serif', 'Noto Kufi Arabic', Georgia, serif;
   --font-sans:          'Instrument Sans', 'Noto Kufi Arabic', system-ui, -apple-system, sans-serif;
-  --font-mono:          'JetBrains Mono', 'Fira Code', monospace;
+  --font-mono:          'JetBrains Mono', monospace;
   /* Legacy role aliases (Phase 2: re-point usages, then delete) */
   --font-editorial:     var(--font-display);
   --font-hand:          var(--font-display);

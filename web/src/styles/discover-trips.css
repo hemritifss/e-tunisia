@@ -24,22 +24,6 @@
     box-shadow: var(--shadow-xl);
 }
 .discover-trips-hero-bg   { position: absolute; inset: 0; z-index: -2; background: var(--paper-deep); }
-.discover-trips-hero-mesh { position: absolute; inset: 0; z-index: -1; background: none; pointer-events: none; }
-.discover-trips-hero-orbs { position: absolute; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
-.discover-trips-hero-orb {
-    position: absolute; border-radius: 50%;
-    filter: blur(70px); opacity: 0.4;
-    animation: discover-orb 16s var(--ease-in-out) infinite;
-}
-.discover-trips-hero-orb:nth-child(1) { width: 320px; height: 320px; top: -90px; left: -50px; background: var(--mediterranean); }
-.discover-trips-hero-orb:nth-child(2) { width: 280px; height: 280px; bottom: -100px; right: -40px; background: var(--coral); animation-delay: -8s; }
-@keyframes discover-orb {
-    0%, 100% { transform: translate(0, 0) scale(1); }
-    50%      { transform: translate(28px, -22px) scale(1.08); }
-}
-@media (prefers-reduced-motion: reduce) {
-    .discover-trips-hero-orb { animation: none; }
-}
 .discover-trips-hero-content { position: relative; max-width: 560px; }
 .discover-trips-eyebrow {
     display: inline-flex; align-items: center; gap: 6px;
@@ -61,18 +45,7 @@
     text-shadow: 0 2px 12px oklch(0% 0 0 / 0.25);
 }
 .discover-trips-accent {
-    background: linear-gradient(120deg, var(--mediterranean), var(--coral), var(--mediterranean));
-    background-size: 200% auto;
-    -webkit-background-clip: text; background-clip: text;
-    -webkit-text-fill-color: currentColor; color: transparent;
-    animation: discover-grad 6s var(--ease-in-out) infinite;
-}
-@keyframes discover-grad {
-    0%, 100% { background-position: 0% 50%; }
-    50%      { background-position: 100% 50%; }
-}
-@media (prefers-reduced-motion: reduce) {
-    .discover-trips-accent { animation: none; }
+    color: var(--warning);
 }
 .discover-trips-page .discover-trips-hero p {
     color: oklch(90% 0.01 80);

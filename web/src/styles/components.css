@@ -609,13 +609,10 @@ a.notif-item:hover, .notif-item:hover { background: var(--surface-hover); }
   gap: 4px;
   font-size: var(--text-xs);
   font-weight: 600;
-  color: var(--brand, #c8102e);
+  color: var(--accent);
   opacity: 0.9;
 }
 .post-modal-ai-label i { width: 14px; height: 14px; }
-/* Dark mode: the brand red (~48% L) plus opacity 0.9 fell to 3.18:1 on the
-   dark modal surface. A lighter red at full opacity clears WCAG AA (~5.9:1). */
-[data-theme="dark"] .post-modal-ai-label { color: #ff6b6b; opacity: 1; }
 .post-modal-ai-btn {
   border: 1px solid var(--border, rgba(0,0,0,0.1));
   background: var(--surface-elevated, rgba(0,0,0,0.02));
@@ -628,9 +625,9 @@ a.notif-item:hover, .notif-item:hover { background: var(--surface-hover); }
   transition: background .15s, color .15s, border-color .15s;
 }
 .post-modal-ai-btn:hover {
-  background: color-mix(in srgb, var(--brand, #c8102e) 10%, transparent);
-  color: var(--brand, #c8102e);
-  border-color: color-mix(in srgb, var(--brand, #c8102e) 30%, transparent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 30%, transparent);
 }
 .post-modal-ai.is-busy { opacity: 0.6; pointer-events: none; }
 .post-modal-ai-status {
@@ -1031,7 +1028,6 @@ a.notif-item:hover, .notif-item:hover { background: var(--surface-hover); }
 }
 .post-modal-submit-btn:hover:not(:disabled) {
   background: var(--accent-hover);
-  box-shadow: var(--shadow-glow);
   transform: translateY(-1px);
 }
 .post-modal-submit-btn:active:not(:disabled) {
@@ -1180,24 +1176,23 @@ a.notif-item:hover, .notif-item:hover { background: var(--surface-hover); }
   to   { opacity: 1; transform: translateX(-50%) scale(1); }
 }
 
+/* 48px blue circle that sits inside the rail, not a floating FAB. */
 .mobile-nav-create {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--accent), var(--accent-secondary, #d4a574));
-  color: #fff;
+  background: var(--accent);
+  color: var(--accent-text);
   border: none;
-  box-shadow: 0 4px 12px oklch(50% 0.15 30 / 0.35);
-  transform: translateY(-8px);
-  transition: transform var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out);
+  transition: background-color var(--duration-fast) var(--ease-out), transform var(--duration-fast) var(--ease-out);
   cursor: pointer;
 }
 
 .mobile-nav-create:active {
-  transform: translateY(-6px) scale(0.95);
+  transform: scale(0.95);
 }
 
 .mobile-nav-create i {
@@ -1230,7 +1225,7 @@ a.notif-item:hover, .notif-item:hover { background: var(--surface-hover); }
 
 .btn-primary:hover {
   background: linear-gradient(180deg, color-mix(in oklch, var(--accent-hover) 88%, white), var(--accent-hover));
-  box-shadow: var(--shadow-glow), inset 0 1px 0 oklch(100% 0 0 / 0.2);
+  box-shadow: inset 0 1px 0 oklch(100% 0 0 / 0.2);
   transform: translateY(-1px);
 }
 
@@ -1451,7 +1446,7 @@ a.notif-item:hover, .notif-item:hover { background: var(--surface-hover); }
 
 .search-bar-wrapper:focus-within {
   border-color: var(--accent);
-  box-shadow: var(--shadow-glow);
+  box-shadow: 0 0 0 3px oklch(from var(--accent) l c h / 0.14);
 }
 
 .search-bar-icon {
@@ -1637,12 +1632,14 @@ a.notif-item:hover, .notif-item:hover { background: var(--surface-hover); }
   font-weight: 600;
 }
 
-.post-category.cat-beaches { background: oklch(90% 0.06 200); color: oklch(40% 0.12 200); }
-.post-category.cat-historical { background: oklch(90% 0.05 50); color: oklch(40% 0.1 50); }
-.post-category.cat-food { background: oklch(90% 0.06 30); color: oklch(40% 0.12 30); }
-.post-category.cat-nature { background: oklch(90% 0.06 145); color: oklch(40% 0.12 145); }
-.post-category.cat-culture { background: oklch(90% 0.06 310); color: oklch(40% 0.12 310); }
-.post-category.cat-adventure { background: oklch(90% 0.06 75); color: oklch(40% 0.12 75); }
+/* Four palette hues, not a six-colour rainbow. The label is mixed toward the
+   ink so 12px text clears 4.5:1 on the tint in both themes. */
+.post-category.cat-beaches    { background: color-mix(in oklab, var(--mediterranean) 12%, transparent); color: color-mix(in oklab, var(--mediterranean) 55%, var(--text-primary)); }
+.post-category.cat-historical { background: color-mix(in oklab, var(--accent) 12%, transparent);        color: color-mix(in oklab, var(--accent) 55%, var(--text-primary)); }
+.post-category.cat-food       { background: color-mix(in oklab, var(--warning) 12%, transparent);       color: color-mix(in oklab, var(--warning) 55%, var(--text-primary)); }
+.post-category.cat-nature     { background: color-mix(in oklab, var(--success) 12%, transparent);       color: color-mix(in oklab, var(--success) 55%, var(--text-primary)); }
+.post-category.cat-culture    { background: color-mix(in oklab, var(--accent) 12%, transparent);        color: color-mix(in oklab, var(--accent) 55%, var(--text-primary)); }
+.post-category.cat-adventure  { background: color-mix(in oklab, var(--success) 12%, transparent);       color: color-mix(in oklab, var(--success) 55%, var(--text-primary)); }
 
 .post-title {
   font-size: var(--text-lg);
@@ -1937,7 +1934,7 @@ a.notif-item:hover, .notif-item:hover { background: var(--surface-hover); }
 
 .input:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px oklch(55% 0.16 30 / 0.1);
+  box-shadow: 0 0 0 3px oklch(from var(--accent) l c h / 0.14);
 }
 
 .input::placeholder {
@@ -2161,9 +2158,11 @@ a.notif-item:hover, .notif-item:hover { background: var(--surface-hover); }
   flex-shrink: 0;
 }
 
-.leaderboard-rank.top-1 { color: #d4a017; }
-.leaderboard-rank.top-2 { color: #a8a8a8; }
-.leaderboard-rank.top-3 { color: #cd7f32; }
+/* No gold/silver/bronze metals in the palette, so the top three read as a
+   descending emphasis ladder instead. */
+.leaderboard-rank.top-1 { color: var(--warning); }
+.leaderboard-rank.top-2 { color: var(--text-secondary); }
+.leaderboard-rank.top-3 { color: var(--text-tertiary); }
 
 .leaderboard-avatar {
   width: 40px;
@@ -2220,11 +2219,11 @@ a.notif-item:hover, .notif-item:hover { background: var(--surface-hover); }
   margin-bottom: var(--space-2);
 }
 
-.tip-category.food { background: oklch(92% 0.04 30); color: oklch(45% 0.12 30); }
-.tip-category.transport { background: oklch(92% 0.04 240); color: oklch(45% 0.12 240); }
-.tip-category.cultural { background: oklch(92% 0.04 310); color: oklch(45% 0.12 310); }
-.tip-category.safety { background: oklch(92% 0.04 145); color: oklch(45% 0.12 145); }
-.tip-category.money { background: oklch(92% 0.04 75); color: oklch(45% 0.12 75); }
+.tip-category.food      { background: color-mix(in oklab, var(--warning) 12%, transparent);       color: color-mix(in oklab, var(--warning) 55%, var(--text-primary)); }
+.tip-category.transport { background: color-mix(in oklab, var(--mediterranean) 12%, transparent); color: color-mix(in oklab, var(--mediterranean) 55%, var(--text-primary)); }
+.tip-category.cultural  { background: color-mix(in oklab, var(--accent) 12%, transparent);        color: color-mix(in oklab, var(--accent) 55%, var(--text-primary)); }
+.tip-category.safety    { background: color-mix(in oklab, var(--success) 12%, transparent);       color: color-mix(in oklab, var(--success) 55%, var(--text-primary)); }
+.tip-category.money     { background: color-mix(in oklab, var(--warning) 12%, transparent);       color: color-mix(in oklab, var(--warning) 55%, var(--text-primary)); }
 
 .tip-title {
   font-size: var(--text-base);

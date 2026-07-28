@@ -179,9 +179,8 @@
     position: fixed;
     inset: 0;
     z-index: var(--z-modal);
-    background: oklch(20% 0.02 55 / 0.42);
-    backdrop-filter: blur(2px);
-    -webkit-backdrop-filter: blur(2px);
+    /* Opaque enough to carry the drawer on its own now that the blur is gone. */
+    background: rgba(15, 26, 45, 0.62);
 }
 .pub-drawer {
     position: fixed;

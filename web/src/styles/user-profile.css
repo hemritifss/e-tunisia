@@ -62,49 +62,18 @@
     background: none;
     pointer-events: none;
 }
+/* Blurred animated orbs are out of the system. UserProfilePage.tsx and
+   ProfileEditPage.tsx still render the spans, so the container is hidden
+   rather than left as dead rules. */
 .up-cover-orbs {
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    overflow: hidden;
-    pointer-events: none;
-}
-.up-cover-orb {
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(60px);
-    opacity: 0.4;
-    animation: up-cover-orb 16s var(--ease-in-out) infinite;
-}
-.up-cover-orb:nth-child(1) {
-    width: 280px;
-    height: 280px;
-    top: -80px;
-    left: -40px;
-    background: var(--mediterranean);
-}
-.up-cover-orb:nth-child(2) {
-    width: 240px;
-    height: 240px;
-    bottom: -80px;
-    right: -30px;
-    background: var(--terracotta);
-    animation-delay: -8s;
-}
-@keyframes up-cover-orb {
-    0%, 100% { transform: translate(0, 0) scale(1); }
-    50%      { transform: translate(28px, -22px) scale(1.08); }
-}
-@media (prefers-reduced-motion: reduce) {
-    .up-cover-orb { animation: none; }
+    display: none;
 }
 
-/* Pro cover swaps to gold/terracotta/amber */
+/* Pro flair keeps the cover a deep panel: heritage stone warmed over the navy,
+   not a lighter stone tint, so the white chips on top stay legible in both themes. */
 .user-profile-v2 .up-cover.is-pro .up-cover-gradient {
-    background: linear-gradient(135deg, var(--warning) 0%, var(--terracotta) 50%, var(--warning) 100%);
+    background: color-mix(in oklab, var(--paper-deep) 72%, var(--stone-deep));
 }
-.user-profile-v2 .up-cover.is-pro .up-cover-orb:nth-child(1) { background: var(--warning); }
-.user-profile-v2 .up-cover.is-pro .up-cover-orb:nth-child(2) { background: var(--terracotta); }
 
 /* Cover edit button (only for me) */
 .user-profile-v2 .up-cover-edit-btn {

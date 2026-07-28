@@ -36,49 +36,17 @@
     background: none;
     pointer-events: none;
 }
+/* Blurred animated orbs are out of the system. ProfilePage.tsx still renders the
+   spans, so the container is hidden rather than left as dead rules. */
 .pp-cover-orbs {
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    overflow: hidden;
-    pointer-events: none;
-}
-.pp-cover-orb {
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(60px);
-    opacity: 0.4;
-    animation: pp-cover-orb 14s var(--ease-in-out) infinite;
-}
-.pp-cover-orb:nth-child(1) {
-    width: 260px;
-    height: 260px;
-    top: -80px;
-    left: -40px;
-    background: var(--terracotta);
-}
-.pp-cover-orb:nth-child(2) {
-    width: 220px;
-    height: 220px;
-    bottom: -80px;
-    right: -30px;
-    background: var(--warning);
-    animation-delay: -7s;
-}
-@keyframes pp-cover-orb {
-    0%, 100% { transform: translate(0, 0) scale(1); }
-    50%      { transform: translate(28px, -22px) scale(1.08); }
-}
-@media (prefers-reduced-motion: reduce) {
-    .pp-cover-orb { animation: none; }
+    display: none;
 }
 
-/* Pro flair tints the cover toward gold */
+/* Pro flair keeps the cover a deep panel: heritage stone warmed over the navy,
+   not a lighter stone tint, so the white chips on top stay legible in both themes. */
 .profile-page-v2 .pp-cover.is-pro .pp-cover-gradient {
-    background: linear-gradient(135deg, var(--warning) 0%, var(--terracotta) 50%, var(--warning) 100%);
+    background: color-mix(in oklab, var(--paper-deep) 72%, var(--stone-deep));
 }
-.profile-page-v2 .pp-cover.is-pro .pp-cover-orb:nth-child(1) { background: var(--warning); }
-.profile-page-v2 .pp-cover.is-pro .pp-cover-orb:nth-child(2) { background: var(--terracotta); }
 
 /* Level badge — frosted glass chip */
 .profile-page-v2 .pp-cover-level-badge {
@@ -146,7 +114,6 @@
 }
 .profile-page-v2 .pp-avatar-wrap.is-pro .pp-avatar-ring {
     border-color: var(--warning);
-    box-shadow: 0 0 24px oklch(78% 0.17 80 / 0.35);
 }
 
 .pp-avatar-pro-mark {
@@ -287,7 +254,6 @@
     height: 100%;
     background: var(--accent);
     border-radius: inherit;
-    box-shadow: 0 0 16px oklch(55% 0.16 30 / 0.35);
     transition: width var(--duration-slow) var(--ease-out);
     position: relative;
 }
@@ -389,7 +355,6 @@
     background:
         linear-gradient(var(--surface-elevated), var(--surface-elevated)) padding-box,
         var(--warning) border-box;
-    box-shadow: var(--shadow-md), 0 4px 24px oklch(78% 0.17 80 / 0.12);
 }
 .pp-pro-card.is-business {
     background:
@@ -564,7 +529,6 @@
     background:
         linear-gradient(var(--surface-elevated), var(--surface-elevated)) padding-box,
         var(--warning) border-box;
-    box-shadow: var(--shadow-md), 0 4px 18px oklch(78% 0.17 80 / 0.12);
 }
 
 /* ── Public passport CTA ─────────────────── */

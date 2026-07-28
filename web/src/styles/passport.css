@@ -171,8 +171,8 @@
 }
 .passport-page .passport-hero.is-pro .passport-hero-mesh {
     background-image:
-        repeating-linear-gradient(45deg, transparent 0 1px, transparent 1px 11px),
-        repeating-linear-gradient(-45deg, transparent 0 1px, transparent 1px 11px);
+        repeating-linear-gradient(45deg, color-mix(in srgb, var(--warning) 45%, transparent) 0 1px, transparent 1px 11px),
+        repeating-linear-gradient(-45deg, color-mix(in srgb, var(--warning) 45%, transparent) 0 1px, transparent 1px 11px);
     opacity: 0.35;
 }
 
@@ -299,12 +299,14 @@
     color: var(--text-inverse) !important;
     border-color: transparent !important;
 }
+/* pages.css only sets `background` on the bare `.passport-verified`, so this
+   two-class selector already wins on specificity: no !important needed. */
 .passport-page .passport-verified {
-    color: var(--olive-light) !important;
-    border-color: color-mix(in oklch, var(--olive-light) 60%, transparent) !important;
+    color: var(--success);
+    border-color: color-mix(in oklch, var(--success) 60%, transparent);
 }
 @supports not (color: color-mix(in oklch, red, blue)) {
-    .passport-page .passport-verified { border-color: var(--olive-light) !important; }
+    .passport-page .passport-verified { border-color: var(--success); }
 }
 .passport-page .passport-cityrank {
     background: oklch(100% 0 0 / 0.18) !important;
@@ -320,10 +322,12 @@
     letter-spacing: var(--tracking-wide);
     font-size: 11px !important;
 }
-.passport-page .passport-level-bronze   { background: linear-gradient(135deg, var(--terracotta), oklch(60% 0.18 40)) !important; border-color: transparent !important; }
-.passport-page .passport-level-silver   { background: linear-gradient(135deg, oklch(72% 0.02 260), oklch(60% 0.03 260)) !important; border-color: transparent !important; }
-.passport-page .passport-level-gold     { background: var(--warning) !important; color: oklch(20% 0.05 80) !important; border-color: transparent !important; }
-.passport-page .passport-level-platinum { background: linear-gradient(135deg, var(--mediterranean), var(--violet)) !important; border-color: transparent !important; }
+/* Four flat chips, no metal gradients: pale stone, slate, stone-deep, azure.
+   Each pairs with a foreground that clears the text floor in both themes. */
+.passport-page .passport-level-bronze   { background: var(--stone) !important;         color: var(--text-primary) !important; border-color: transparent !important; }
+.passport-page .passport-level-silver   { background: var(--text-tertiary) !important; color: var(--accent-text) !important;  border-color: transparent !important; }
+.passport-page .passport-level-gold     { background: var(--warning) !important;       color: var(--accent-text) !important;  border-color: transparent !important; }
+.passport-page .passport-level-platinum { background: var(--mediterranean) !important;  color: var(--text-inverse) !important; border-color: transparent !important; }
 
 /* Followmeta row */
 .passport-page .passport-followmeta {
@@ -369,7 +373,6 @@
 .passport-page .passport-hero-right .btn.primary {
     background: var(--accent);
     color: var(--text-inverse);
-    box-shadow: var(--shadow-glow);
     border: none;
 }
 .passport-page .passport-hero-right .btn.ghost {
@@ -470,7 +473,6 @@
     height: 100%;
     background: var(--accent);
     border-radius: inherit;
-    box-shadow: 0 0 16px oklch(55% 0.16 30 / 0.35);
     transition: width var(--duration-slow) var(--ease-out);
 }
 
@@ -533,10 +535,10 @@
 }
 
 /* ── Local guide button + hint ────────────── */
+/* Interactive controls are always the one accent; gold is ink, not a CTA. */
 .passport-page .passport-local-guide-btn {
-    background: var(--warning) !important;
-    color: oklch(20% 0.05 80) !important;
-    box-shadow: var(--shadow-glow-gold);
+    background: var(--accent) !important;
+    color: var(--accent-text) !important;
     border: none !important;
 }
 .passport-page .passport-local-guide-hint {

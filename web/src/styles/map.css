@@ -670,7 +670,7 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  border: 2px solid var(--accent, #C65D3B);
+  border: 2px solid var(--accent);
   box-shadow: 0 2px 8px rgba(0,0,0,0.3);
   overflow: hidden;
   background: var(--surface);

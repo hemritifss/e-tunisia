@@ -83,7 +83,7 @@ export function renderStampSVG(opts: StampOptions): string {
     ${glyph}
     <line x1="52" y1="74" x2="148" y2="74" stroke-width="1.5"/>
     <line x1="52" y1="126" x2="148" y2="126" stroke-width="1.5"/>
-    <text x="100" y="${city ? 98 : 106}" font-family="Fraunces, Georgia, serif" font-size="${ts}"
+    <text x="100" y="${city ? 98 : 106}" font-family="'Instrument Serif', Georgia, serif" font-size="${ts}"
           font-weight="600" text-anchor="middle" stroke="none">${esc(title.toUpperCase())}</text>
     ${city ? `<text x="100" y="116" font-family="'JetBrains Mono', monospace" font-size="9"
           font-weight="500" letter-spacing="2" text-anchor="middle" stroke="none"

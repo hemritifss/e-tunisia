@@ -32,43 +32,16 @@
     display: block;
     filter: brightness(0.55) saturate(110%);
 }
+/* Single-hue navy scrim over the photograph - no purple stop, no warm wash. */
 .auth-page .auth-bg-overlay {
     position: absolute;
     inset: 0;
-    background:
-        linear-gradient(135deg, oklch(14% 0.02 260 / 0.65) 0%, oklch(20% 0.05 290 / 0.4) 50%, oklch(18% 0.04 240 / 0.7) 100%),
-        radial-gradient(ellipse at 30% 20%, oklch(55% 0.16 30 / 0.18), transparent 55%);
+    background: linear-gradient(135deg, oklch(14% 0.02 260 / 0.65) 0%, oklch(20% 0.03 260 / 0.4) 50%, oklch(18% 0.04 240 / 0.7) 100%);
 }
+/* Blurred animated orbs are out of the system. AuthPage.tsx still renders the
+   spans, so the container is hidden rather than left as dead rules. */
 .auth-bg-orbs {
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    pointer-events: none;
-}
-.auth-bg-orb {
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(80px);
-    opacity: 0.4;
-    animation: auth-orb 18s var(--ease-in-out) infinite;
-}
-.auth-bg-orb:nth-child(1) {
-    width: 460px; height: 460px;
-    top: -120px; left: -80px;
-    background: var(--terracotta);
-}
-.auth-bg-orb:nth-child(2) {
-    width: 400px; height: 400px;
-    bottom: -120px; right: -60px;
-    background: var(--mediterranean);
-    animation-delay: -9s;
-}
-@keyframes auth-orb {
-    0%, 100% { transform: translate(0, 0) scale(1); }
-    50%      { transform: translate(40px, -30px) scale(1.1); }
-}
-@media (prefers-reduced-motion: reduce) {
-    .auth-bg-orb { animation: none; }
+    display: none;
 }
 
 /* ── Layout ──────────────────────────────── */
@@ -301,7 +274,7 @@
 .auth-strength[data-tier="fair"]   .auth-strength-label { color: var(--warning); }
 .auth-strength[data-tier="good"]   .auth-strength-fill { width: 75%;  background: var(--mediterranean); }
 .auth-strength[data-tier="good"]   .auth-strength-label { color: var(--mediterranean); }
-.auth-strength[data-tier="strong"] .auth-strength-fill { width: 100%; background: var(--success); box-shadow: 0 0 12px oklch(57% 0.15 155 / 0.4); }
+.auth-strength[data-tier="strong"] .auth-strength-fill { width: 100%; background: var(--success); }
 .auth-strength[data-tier="strong"] .auth-strength-label { color: var(--success); }
 
 /* ── Remember-me + forgot row ────────────── */
@@ -374,14 +347,13 @@
     font-size: var(--text-base);
     font-weight: 700;
     cursor: pointer;
-    box-shadow: var(--shadow-glow);
     transition: transform var(--duration-fast) var(--ease-spring),
-                box-shadow var(--duration-normal) var(--ease-out);
+                background-color var(--duration-normal) var(--ease-out);
     width: 100%;
 }
 .auth-page .auth-submit:hover {
     transform: translateY(-1px);
-    box-shadow: var(--shadow-glow), 0 8px 24px oklch(55% 0.16 30 / 0.35);
+    background: var(--accent-hover);
 }
 .auth-page .auth-submit:active { transform: scale(0.97); }
 .auth-page .auth-submit:focus-visible {
@@ -485,9 +457,7 @@
 .auth-visual-scrim {
     position: absolute;
     inset: 0;
-    background:
-        linear-gradient(180deg, oklch(12% 0.02 260 / 0.32) 0%, oklch(12% 0.03 260 / 0.55) 55%, oklch(10% 0.03 260 / 0.9) 100%),
-        radial-gradient(ellipse at 70% 5%, oklch(55% 0.16 30 / 0.3), transparent 55%);
+    background: linear-gradient(180deg, oklch(12% 0.02 260 / 0.32) 0%, oklch(12% 0.03 260 / 0.55) 55%, oklch(10% 0.03 260 / 0.9) 100%);
 }
 .auth-visual-body {
     position: relative;

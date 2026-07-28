@@ -414,14 +414,14 @@ export default function AITravelPlanner() {
       : '';
     return `<!doctype html><html><head><meta charset="utf-8"/><title>${esc(it.title)}</title>
       <style>
-        body{font-family:-apple-system,Segoe UI,Roboto,sans-serif;color:#1a1a1a;max-width:720px;margin:32px auto;padding:0 20px;line-height:1.5}
+        body{font-family:-apple-system,Segoe UI,Roboto,sans-serif;color:#1D2E4A;max-width:720px;margin:32px auto;padding:0 20px;line-height:1.5}
         h1{font-size:24px;margin-bottom:4px}
-        .sub{color:#666;margin:0 0 16px}
-        .day{border-left:3px solid #c8102e;padding-left:14px;margin:18px 0}
+        .sub{color:#5B6B82;margin:0 0 16px}
+        .day{border-left:3px solid #1E5FA8;padding-left:14px;margin:18px 0}
         h2{font-size:16px;margin:0 0 6px}
         ul{margin:6px 0;padding-left:18px}
-        .meta{color:#555;font-size:13px}
-        .tips{background:#fff8e1;padding:12px 16px;border-radius:10px;margin-top:20px}
+        .meta{color:#5B6B82;font-size:13px}
+        .tips{background:#F2EBDD;padding:12px 16px;border-radius:10px;margin-top:20px}
         @media print{body{margin:0}}
       </style></head>
       <body>

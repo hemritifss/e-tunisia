@@ -125,21 +125,14 @@
     color: oklch(98% 0 0);
     margin: var(--space-4) 0 var(--space-2);
 }
+/* The landing canvas is navy in both themes, so the light-theme gold ink
+   (--warning #8A7550) drops to ~3:1 on it. Pin the night-edition gold, which is
+   the same value tokens.css gives --warning/--stone-text under [data-theme=dark]. */
+.tn-landing {
+    --tn-gold-ink: #C6B48C;
+}
 .tn-landing .tn-hero-title .tn-grad {
-    background: linear-gradient(120deg, var(--warning) 0%, var(--terracotta-light) 50%, var(--warning) 100%);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: currentColor;
-    color: transparent;
-    animation: tn-grad-flow 6s var(--ease-in-out) infinite;
-}
-@keyframes tn-grad-flow {
-    0%, 100% { background-position: 0% 50%; }
-    50%      { background-position: 100% 50%; }
-}
-@media (prefers-reduced-motion: reduce) {
-    .tn-landing .tn-hero-title .tn-grad { animation: none; }
+    color: var(--tn-gold-ink);
 }
 .tn-landing .tn-hero-arabic {
     font-family: 'Noto Kufi Arabic', var(--font-sans);
@@ -167,14 +160,13 @@
     color: var(--text-inverse);
     padding: var(--space-3) var(--space-6);
     border-radius: var(--radius-full);
-    box-shadow: var(--shadow-glow);
     font-weight: 700;
     transition: transform var(--duration-fast) var(--ease-spring),
-                box-shadow var(--duration-normal) var(--ease-out);
+                background var(--duration-normal) var(--ease-out);
 }
 .tn-landing .tn-btn-primary:hover {
     transform: translateY(-2px);
-    box-shadow: var(--shadow-glow), 0 12px 32px oklch(55% 0.16 30 / 0.35);
+    background: var(--accent-hover);
 }
 .tn-landing .tn-btn-secondary {
     background: oklch(100% 0 0 / 0.08);
@@ -211,47 +203,6 @@
 }
 .tn-landing .tn-hero-meta-avatars img + img { margin-left: -10px; }
 .tn-landing .tn-hero-meta strong { color: oklch(95% 0.02 80); font-weight: 700; }
-
-/* Floating mesh orbs behind hero */
-.tn-landing .tn-mesh-orbs {
-    position: absolute;
-    inset: 0;
-    overflow: hidden;
-    pointer-events: none;
-    z-index: 1;
-}
-.tn-landing .tn-mesh-orb {
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(80px);
-    opacity: 0.55;
-    animation: tn-orb-float 18s var(--ease-in-out) infinite;
-}
-.tn-landing .tn-mesh-orb-1 {
-    width: 520px; height: 520px;
-    background: var(--terracotta);
-    top: -120px; left: -80px;
-}
-.tn-landing .tn-mesh-orb-2 {
-    width: 460px; height: 460px;
-    background: var(--mediterranean);
-    bottom: -120px; right: -40px;
-    animation-delay: -6s;
-}
-.tn-landing .tn-mesh-orb-3 {
-    width: 380px; height: 380px;
-    background: var(--violet);
-    top: 30%; right: 25%;
-    animation-delay: -12s;
-    opacity: 0.4;
-}
-@keyframes tn-orb-float {
-    0%, 100% { transform: translate(0, 0) scale(1); }
-    50%      { transform: translate(40px, -30px) scale(1.1); }
-}
-@media (prefers-reduced-motion: reduce) {
-    .tn-landing .tn-mesh-orb { animation: none; }
-}
 
 /* ── Live Pulse strip ──────────────────────────── */
 .tn-pulse-strip {
@@ -370,11 +321,9 @@
 .tn-landing .tn-stat-num {
     font-family: var(--font-display);
     font-weight: 900;
-    background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent) 80%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: currentColor;
-    color: transparent;
+    /* Pairs with the panel's own --bg-secondary, so it stays legible whichever
+       way the landing palette resolves. */
+    color: var(--text-primary);
     font-variant-numeric: tabular-nums;
 }
 
@@ -529,7 +478,7 @@
 }
 .tn-landing .tn-why-card:hover {
     transform: translateY(-6px);
-    box-shadow: var(--shadow-xl), 0 8px 24px oklch(55% 0.16 30 / 0.12);
+    box-shadow: var(--shadow-xl);
     background:
         linear-gradient(var(--surface-elevated), var(--surface-elevated)) padding-box,
         var(--accent) border-box;
@@ -537,7 +486,6 @@
 .tn-landing .tn-why-icon {
     background: var(--accent);
     color: var(--text-inverse);
-    box-shadow: var(--shadow-glow);
 }
 
 /* ── Testimonial wall ─────────────────────────── */
@@ -582,7 +530,7 @@
     background:
         linear-gradient(var(--surface-elevated), var(--surface-elevated)) padding-box,
         var(--warning) border-box;
-    box-shadow: var(--shadow-md), 0 4px 18px oklch(78% 0.17 80 / 0.08);
+    box-shadow: var(--shadow-md);
 }
 .tn-testimonial.is-pro::after {
     content: '\2726 Pro';
@@ -640,7 +588,7 @@
     background:
         linear-gradient(var(--surface-elevated), var(--surface-elevated)) padding-box,
         var(--warning) border-box !important;
-    box-shadow: var(--shadow-xl), 0 8px 32px oklch(78% 0.17 80 / 0.18);
+    box-shadow: var(--shadow-xl);
 }
 .tn-landing .tn-pricing-badge {
     background: var(--warning);
@@ -678,11 +626,7 @@
     color: oklch(98% 0 0);
 }
 .tn-landing .tn-cta h2 .tn-grad {
-    background: linear-gradient(120deg, var(--warning), var(--terracotta-light));
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: currentColor;
-    color: transparent;
+    color: var(--tn-gold-ink);
 }
 .tn-landing .tn-cta p {
     color: oklch(85% 0.01 80);
@@ -711,7 +655,6 @@
     height: 6px;
     border-radius: 50%;
     background: var(--accent);
-    box-shadow: 0 0 0 3px oklch(55% 0.16 30 / 0.15);
 }
 
 /* ── Place card star row (Lucide, not text glyphs) ─── */
@@ -767,7 +710,7 @@
 }
 .tn-landing .tn-place-card:hover {
     transform: translateY(-6px);
-    box-shadow: var(--shadow-2xl), 0 8px 24px oklch(55% 0.16 30 / 0.12);
+    box-shadow: var(--shadow-2xl);
 }
 .tn-landing .tn-place-card::after {
     content: '';
@@ -866,9 +809,10 @@
 }
 .partner-v3-hero-overlay {
     position: absolute; inset: 0; z-index: -1;
+    /* Single-hue navy scrim for photo legibility: no warm tint, no glow. */
     background:
-        radial-gradient(ellipse 60% 50% at 50% 30%, oklch(67% 0.19 25 / 0.25) 0%, transparent 60%),
-        linear-gradient(180deg, oklch(12% 0.03 260 / 0.55) 0%, oklch(10% 0.02 260 / 0.74) 58%, var(--bg-primary) 100%);
+        radial-gradient(ellipse 60% 50% at 50% 30%, rgba(15, 26, 45, 0.28) 0%, transparent 60%),
+        linear-gradient(180deg, rgba(15, 26, 45, 0.55) 0%, rgba(15, 26, 45, 0.74) 58%, var(--bg-primary) 100%);
 }
 .partner-v3-hero-content { max-width: 760px; }
 .partner-v3-badge {
@@ -964,8 +908,8 @@
 .partner-v3-step-num {
     display: inline-grid; place-items: center;
     width: 34px; height: 34px; border-radius: 999px;
-    background: linear-gradient(135deg, var(--coral), var(--mediterranean));
-    color: oklch(99% 0 0); font-weight: 800; font-size: var(--text-sm);
+    background: var(--accent);
+    color: var(--accent-text); font-weight: 800; font-size: var(--text-sm);
     margin-bottom: var(--space-3);
 }
 
@@ -1009,7 +953,7 @@
     transition: opacity .6s var(--ease-out), transform .6s var(--ease-out), box-shadow .3s, border-color .3s;
 }
 .about-v3-team-card.tn-revealed { opacity: 1; transform: translateY(0); }
-.about-v3-team-card:hover { box-shadow: var(--shadow-card-hover); border-color: oklch(67% 0.19 25 / 0.3); }
+.about-v3-team-card:hover { box-shadow: var(--shadow-card-hover); border-color: var(--accent); }
 .about-v3-team-avatar {
     width: 88px; height: 88px; border-radius: 999px; margin: 0 auto var(--space-4);
     object-fit: cover; background: var(--surface);
@@ -1017,9 +961,11 @@
 }
 /* Self-contained placeholder until real headshots ship: initials on the same
    88px avatar disc, so no external avatar service is needed. */
+/* Both of these sit on .about-v3-team-card's own --surface-elevated (a white
+   card), not on the page canvas, so they take the system accent. */
 .about-v3-team-avatar--initials {
     display: flex; align-items: center; justify-content: center;
-    font-size: var(--text-2xl); font-weight: 800; color: var(--coral);
+    font-size: var(--text-2xl); font-weight: 800; color: var(--accent);
     letter-spacing: 0.02em; text-transform: uppercase; user-select: none;
 }
 .about-v3-team-logo {
@@ -1030,7 +976,7 @@
 .about-v3-team-card h3 { font-size: var(--text-xl); font-weight: 700; color: var(--text-primary); }
 .about-v3-team-role {
     display: inline-block; margin: 6px 0 var(--space-3);
-    font-size: var(--text-sm); font-weight: 700; color: var(--coral);
+    font-size: var(--text-sm); font-weight: 700; color: var(--accent);
     text-transform: uppercase; letter-spacing: 0.06em;
 }
 .about-v3-team-card p { font-size: var(--text-sm); color: var(--text-primary); line-height: var(--leading-relaxed); }

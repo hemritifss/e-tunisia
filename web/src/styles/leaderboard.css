@@ -29,50 +29,6 @@
     z-index: -2;
     background: var(--paper-deep);
 }
-.leaderboard-hero-mesh {
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    background: none;
-    pointer-events: none;
-}
-.leaderboard-hero-orbs {
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    overflow: hidden;
-    pointer-events: none;
-}
-.leaderboard-hero-orb {
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(70px);
-    opacity: 0.4;
-    animation: leaderboard-orb 16s var(--ease-in-out) infinite;
-}
-.leaderboard-hero-orb:nth-child(1) {
-    width: 320px;
-    height: 320px;
-    top: -100px;
-    left: -50px;
-    background: var(--warning);
-}
-.leaderboard-hero-orb:nth-child(2) {
-    width: 280px;
-    height: 280px;
-    bottom: -100px;
-    right: -40px;
-    background: var(--mediterranean);
-    animation-delay: -8s;
-}
-@keyframes leaderboard-orb {
-    0%, 100% { transform: translate(0, 0) scale(1); }
-    50%      { transform: translate(28px, -22px) scale(1.08); }
-}
-@media (prefers-reduced-motion: reduce) {
-    .leaderboard-hero-orb { animation: none; }
-}
-
 .leaderboard-hero-content {
     position: relative;
     max-width: 520px;
@@ -103,20 +59,7 @@
     text-shadow: 0 2px 12px oklch(0% 0 0 / 0.25);
 }
 .leaderboard-accent {
-    background: linear-gradient(120deg, var(--warning), var(--terracotta-light), var(--warning));
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: currentColor;
-    color: transparent;
-    animation: leaderboard-grad 6s var(--ease-in-out) infinite;
-}
-@keyframes leaderboard-grad {
-    0%, 100% { background-position: 0% 50%; }
-    50%      { background-position: 100% 50%; }
-}
-@media (prefers-reduced-motion: reduce) {
-    .leaderboard-accent { animation: none; }
+    color: var(--warning);
 }
 .leaderboard-page .leaderboard-hero p {
     color: oklch(90% 0.01 80);
@@ -227,19 +170,21 @@
         linear-gradient(var(--surface-elevated), var(--surface-elevated)) padding-box,
         var(--warning) border-box;
     border: 1px solid transparent;
-    box-shadow: var(--shadow-md), 0 4px 18px oklch(78% 0.17 80 / 0.18);
+    box-shadow: var(--shadow-md);
 }
+/* Podium reads through three flat rule colours (gold ink / muted ink / accent)
+   instead of metallic gradients. */
 .leaderboard-page .leaderboard-item.is-top-2 {
     background:
         linear-gradient(var(--surface-elevated), var(--surface-elevated)) padding-box,
-        linear-gradient(135deg, oklch(82% 0.02 260), oklch(72% 0.03 260)) border-box;
+        var(--text-tertiary) border-box;
     border: 1px solid transparent;
     box-shadow: var(--shadow-sm);
 }
 .leaderboard-page .leaderboard-item.is-top-3 {
     background:
         linear-gradient(var(--surface-elevated), var(--surface-elevated)) padding-box,
-        linear-gradient(135deg, var(--terracotta), oklch(60% 0.18 40)) border-box;
+        var(--accent) border-box;
     border: 1px solid transparent;
     box-shadow: var(--shadow-sm);
 }

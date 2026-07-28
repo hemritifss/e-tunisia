@@ -136,48 +136,10 @@
     margin: 0 auto var(--space-2);
     display: grid; place-items: center;
 }
-.onb-illustration-orbs {
-    position: absolute;
-    inset: -20px;
-    overflow: hidden;
-    pointer-events: none;
-}
-.onb-illustration-orb {
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(28px);
-    opacity: 0.6;
-    animation: onb-orb 12s var(--ease-in-out) infinite;
-}
-.onb-illustration-welcome .onb-illustration-orb:nth-child(1) {
-    width: 110px; height: 110px;
-    top: -10px; left: -10px;
-    background: var(--terracotta);
-}
-.onb-illustration-welcome .onb-illustration-orb:nth-child(2) {
-    width: 90px; height: 90px;
-    bottom: -10px; right: -10px;
-    background: var(--mediterranean);
-    animation-delay: -6s;
-}
-.onb-illustration-done .onb-illustration-orb:nth-child(1) {
-    width: 110px; height: 110px;
-    top: -10px; left: -10px;
-    background: var(--warning);
-}
-.onb-illustration-done .onb-illustration-orb:nth-child(2) {
-    width: 90px; height: 90px;
-    bottom: -10px; right: -10px;
-    background: var(--coral);
-    animation-delay: -6s;
-}
-@keyframes onb-orb {
-    0%, 100% { transform: translate(0, 0) scale(1); }
-    50%      { transform: translate(10px, -8px) scale(1.1); }
-}
-@media (prefers-reduced-motion: reduce) {
-    .onb-illustration-orb { animation: none; }
-}
+/* Blurred decorative orbs retired (no glows). OnboardingPage still renders the
+   aria-hidden spans, so collapse them rather than leaving them unstyled. */
+.onb-illustration-orbs,
+.onb-illustration-orb { display: none; }
 
 .onb-illustration-icon {
     position: relative;
@@ -187,14 +149,12 @@
     background: var(--accent);
     color: var(--text-inverse);
     border-radius: 50%;
-    box-shadow: var(--shadow-xl), var(--shadow-glow);
 }
 .onb-illustration-icon i { font-size: 36px; }
 
 .onb-illustration-icon-done {
     background: var(--warning);
     color: oklch(20% 0.05 80);
-    box-shadow: var(--shadow-xl), var(--shadow-glow-gold);
 }
 
 /* ── Headings ───────────────────────────── */
@@ -210,18 +170,7 @@
     text-align: center;
 }
 .onb-name-highlight {
-    background: linear-gradient(120deg, var(--warning), var(--terracotta-light), var(--warning));
-    background-size: 200% auto;
-    -webkit-background-clip: text; background-clip: text;
-    -webkit-text-fill-color: currentColor; color: transparent;
-    animation: onb-name-grad 6s var(--ease-in-out) infinite;
-}
-@keyframes onb-name-grad {
-    0%, 100% { background-position: 0% 50%; }
-    50%      { background-position: 100% 50%; }
-}
-@media (prefers-reduced-motion: reduce) {
-    .onb-name-highlight { animation: none; }
+    color: var(--warning);
 }
 .onb-sub {
     color: var(--text-secondary);
@@ -616,7 +565,6 @@
 .onb-cta-primary {
     background: var(--accent) !important;
     color: var(--text-inverse) !important;
-    box-shadow: var(--shadow-glow);
     border: none !important;
 }
 .onb-status {

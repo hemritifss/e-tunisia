@@ -24,6 +24,11 @@ html {
      and a short one no longer shifts every centered layout left/right — a subtle
      but constant source of the "sizes jump / white edges" feeling. */
   scrollbar-gutter: stable;
+  /* Instrument Serif ships 400 only and display type is never bold in this
+     system; without this, every bold request on it renders as faux-bold. Sans
+     and Arabic carry real 400..700 so they are untouched, and mono correctly
+     snaps back to its single 500 weight. */
+  font-synthesis: none;
 }
 
 html[data-theme="dark"] { color-scheme: dark; }
@@ -99,10 +104,10 @@ ul, ol {
   list-style: none;
 }
 
-/* ── Display headings use Outfit ── */
+/* ── Display headings use Instrument Serif ── */
 h1, h2, h3 {
   font-family: var(--font-display);
-  font-weight: 800;
+  font-weight: 400;
   line-height: var(--leading-tight);
   letter-spacing: var(--tracking-tight);
   color: var(--text-primary);
@@ -142,11 +147,7 @@ h5 { font-size: var(--text-lg); }
 .fw-800 { font-weight: 800; }
 .fw-900 { font-weight: 900; }
 
-/* ── Gradient text ── */
-
-
-
-/* ── Glassmorphism ── */
+/* ── Surface panels (legacy `.glass-*` names, now flat) ── */
 .glass {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -156,23 +157,6 @@ h5 { font-size: var(--text-lg); }
   background: var(--surface-hover);
   border: 1px solid var(--border);
 }
-
-.glass-heavy {
-  background: var(--surface);
-  border: 1px solid var(--border);
-}
-
-/* ── Neon glow ── */
-.glow-accent  { box-shadow: var(--shadow-glow); }
-.glow-blue    { box-shadow: var(--shadow-glow-blue); }
-.glow-gold    { box-shadow: var(--shadow-glow-gold); }
-.neon-text    { text-shadow: 0 0 10px var(--accent), 0 0 20px var(--accent); }
-.neon-border  { box-shadow: 0 0 0 1px var(--accent), var(--shadow-glow); }
-
-/* ── Gradient backgrounds ── */
-.bg-gradient-brand { background: var(--accent); }
-.bg-gradient-mesh  { background: var(--bg-primary) none; }
-.bg-glass          { background: var(--surface); }
 
 /* ── Layout utilities ── */
 .container {
@@ -266,7 +250,7 @@ h5 { font-size: var(--text-lg); }
 
 /* ── Selection ── */
 ::selection {
-  background: oklch(55% 0.16 30 / 0.25);
+  background: color-mix(in srgb, var(--accent) 25%, transparent);
   color: var(--text-primary);
 }
 
@@ -318,7 +302,7 @@ h5 { font-size: var(--text-lg); }
 /* ── Section title ── */
 .section-title {
   font-family: var(--font-display);
-  font-weight: 900;
+  font-weight: 400;
   letter-spacing: var(--tracking-tightest);
   line-height: var(--leading-tight);
 }
@@ -354,9 +338,9 @@ h5 { font-size: var(--text-lg); }
     left: 8px;
     z-index: 1000;
     padding: 8px 14px;
-    background: var(--accent, #c0392b);
-    color: #fff;
-    border-radius: 8px;
+    background: var(--accent);
+    color: var(--accent-text);
+    border-radius: 4px;
     font-weight: 600;
     text-decoration: none;
     transform: translateY(-200%);

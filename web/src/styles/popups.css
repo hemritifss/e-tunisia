@@ -97,8 +97,7 @@
 .popup-btn:active { transform: translateY(1px); }
 .popup-btn.primary {
   background: var(--accent);
-  color: #fff;
-  box-shadow: var(--shadow-glow);
+  color: var(--accent-text);
 }
 .popup-btn.primary:hover { filter: brightness(1.05); }
 .popup-btn.ghost {
@@ -124,8 +123,7 @@
 /* ---- Celebration ---- */
 .popup-celebrate-coin {
   background: var(--warning);
-  color: #fff;
-  box-shadow: var(--shadow-glow-gold);
+  color: var(--accent-text);
   animation: popup-pop 0.5s ease-out;
 }
 .popup-celebrate-amount {
@@ -133,10 +131,7 @@
   font-weight: 900;
   line-height: 1;
   margin: 4px 0 8px;
-  background: var(--accent);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: currentColor;
+  color: var(--warning);
 }
 .popup-celebrate-amount span { font-size: 1.1rem; font-weight: 700; }
 .popup-celebrate-msg {
@@ -149,9 +144,8 @@
 
 /* ---- Daily ---- */
 .popup-daily-flame {
-  background: linear-gradient(135deg, oklch(70% 0.19 40), oklch(62% 0.2 25));
-  color: #fff;
-  box-shadow: 0 8px 24px oklch(62% 0.2 25 / 0.35);
+  background: var(--accent);
+  color: var(--accent-text);
 }
 .popup-daily-checkin {
   display: inline-flex;
@@ -165,8 +159,8 @@
   border-radius: var(--radius-md);
   font-size: 0.95rem;
   font-weight: 800;
-  color: #fff;
-  background: linear-gradient(135deg, oklch(70% 0.19 40), oklch(62% 0.2 25));
+  color: var(--accent-text);
+  background: var(--accent);
   cursor: pointer;
   transition: filter 0.15s, opacity 0.15s;
 }
@@ -277,7 +271,6 @@
   justify-content: center;
   border-radius: var(--radius-full);
   background: var(--warning);
-  box-shadow: var(--shadow-glow-gold);
   margin-bottom: 4px;
   animation: popup-pop 0.5s ease-out;
 }
@@ -286,7 +279,7 @@
   position: absolute;
   inset: -6px;
   border-radius: var(--radius-full);
-  border: 2px dashed oklch(78% 0.17 80 / 0.6);
+  border: 2px dashed color-mix(in oklab, var(--warning) 60%, transparent);
   animation: popup-spin 9s linear infinite;
 }
 
@@ -299,9 +292,8 @@
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-full);
-  color: #fff;
+  color: var(--accent-text);
   background: var(--accent);
-  box-shadow: var(--shadow-glow);
   margin-bottom: 4px;
   animation: popup-pop 0.5s ease-out;
 }
@@ -325,7 +317,7 @@
 }
 
 /* ---- Streak milestone ---- */
-.popup-streak-kicker { color: oklch(62% 0.2 25); }
+.popup-streak-kicker { color: var(--accent); }
 .popup-streak-flame {
   position: relative;
   width: 76px;
@@ -334,9 +326,8 @@
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-full);
-  color: #fff;
-  background: linear-gradient(135deg, oklch(72% 0.19 60), oklch(60% 0.21 25));
-  box-shadow: 0 8px 26px oklch(62% 0.2 25 / 0.4);
+  color: var(--accent-text);
+  background: var(--accent);
   margin-bottom: 4px;
   animation: popup-pop 0.5s ease-out;
 }
@@ -352,7 +343,7 @@
   justify-content: center;
   border-radius: var(--radius-full);
   background: var(--surface-elevated);
-  color: oklch(62% 0.2 25);
+  color: var(--accent);
   border: 2px solid var(--surface-elevated);
   box-shadow: var(--shadow-md);
   font-size: 0.9rem;
@@ -365,8 +356,8 @@
   margin-top: 14px;
   padding: 8px 14px;
   border-radius: var(--radius-full);
-  background: oklch(78% 0.17 80 / 0.14);
-  color: var(--warning);
+  background: color-mix(in oklab, var(--warning) 14%, transparent);
+  color: color-mix(in oklab, var(--warning) 55%, var(--text-primary));
   font-size: 0.85rem;
   font-weight: 700;
 }

@@ -40,7 +40,7 @@
 }
 
 .ej-landing ::selection {
-    background: var(--terracotta);
+    background: var(--accent);
     color: var(--paper-print);
 }
 
@@ -182,7 +182,9 @@
     left: 0;
     right: 0;
     z-index: var(--z-overlay);
-    background: color-mix(in oklab, var(--paper) 92%, transparent);
+    /* Opaque: the blur that used to justify translucency is gone, so anything
+       scrolling underneath would otherwise ghost through the masthead. */
+    background: var(--paper);
     border-bottom: 1px solid transparent;
     transition: border-color var(--duration-normal) var(--ease-out),
                 box-shadow var(--duration-normal) var(--ease-out);

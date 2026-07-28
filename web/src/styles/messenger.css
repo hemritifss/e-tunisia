@@ -432,7 +432,7 @@ html body.guest-mode #messenger-root .chat-pop-stack {
         0 0 0 1px var(--warning) inset;
 }
 .chat-pop.is-pro .chat-pop-head {
-    background: linear-gradient(180deg, var(--surface) 0%, oklch(78% 0.17 80 / 0.04) 100%);
+    background: color-mix(in oklab, var(--warning) 6%, var(--surface));
 }
 
 /* ── Active Conversations (rail) ─────────────── */
@@ -754,7 +754,6 @@ html body.guest-mode #messenger-root .chat-pop-stack {
     background:
         linear-gradient(var(--surface-elevated), var(--surface-elevated)) padding-box,
         var(--warning) border-box;
-    box-shadow: var(--shadow-lg), 0 4px 24px oklch(78% 0.17 80 / 0.08);
 }
 .post-card-v2.is-pro::before {
     content: '';
@@ -797,11 +796,12 @@ html body.guest-mode #messenger-root .chat-pop-stack {
     font-size: 10px;
     font-weight: 700;
     letter-spacing: var(--tracking-wide);
-    color: oklch(35% 0.06 80);
-    background: var(--warning);
+    /* Stone-deep ink on pale stone: the old dark-on-gold pair fell to ~2:1 once
+       --warning became the stone-deep token. */
+    color: color-mix(in oklab, var(--warning) 55%, var(--text-primary));
+    background: var(--stone-pale);
     padding: 3px 8px;
     border-radius: var(--radius-full);
-    box-shadow: var(--shadow-sm);
     pointer-events: none;
 }
 [dir="rtl"] .post-card-v2.is-pro::after { right: auto; left: var(--space-3); }
@@ -809,14 +809,6 @@ html body.guest-mode #messenger-root .chat-pop-stack {
 /* If the card already shows a category chip on the right, nudge it left so they don't collide */
 .post-card-v2.is-pro .post-card-v2-category { margin-right: 60px; }
 [dir="rtl"] .post-card-v2.is-pro .post-card-v2-category { margin-right: 0; margin-left: 60px; }
-
-/* Dark mode: tone down the Pro halo to keep contrast strong */
-[data-theme="dark"] .post-card-v2.is-pro {
-    box-shadow: var(--shadow-lg), 0 4px 20px oklch(78% 0.17 80 / 0.15);
-}
-[data-theme="dark"] .post-card-v2.is-pro::after {
-    color: oklch(20% 0.05 80);
-}
 
 /* ============================================
    USER ACTION MENU — right-click / long-press on any avatar.

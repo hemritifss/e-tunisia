@@ -134,7 +134,6 @@
     color: oklch(98% 0 0) !important;
     font-family: var(--font-display);
     font-size: 1.75rem !important;
-    box-shadow: var(--shadow-glow);
 }
 .tag-page #tag-meta {
     font-size: var(--text-sm) !important;
@@ -473,11 +472,11 @@
     align-items: center;
     gap: 6px;
 }
+/* Interactive controls are always the one accent; gold is ink, not a CTA. */
 .credits-actions .btn.btn-primary {
-    background: var(--warning) !important;
-    color: oklch(20% 0.05 80) !important;
+    background: var(--accent) !important;
+    color: var(--accent-text) !important;
     border: none !important;
-    box-shadow: var(--shadow-glow-gold);
 }
 
 .credits-history {

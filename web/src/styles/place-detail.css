@@ -31,9 +31,7 @@
 .place-detail-page .place-detail-hero-overlay {
     position: absolute;
     inset: 0;
-    background:
-        linear-gradient(180deg, oklch(0% 0 0 / 0.4) 0%, transparent 25%, transparent 60%, oklch(0% 0 0 / 0.55) 100%),
-        radial-gradient(ellipse at 30% 70%, oklch(55% 0.16 30 / 0.15), transparent 60%);
+    background: linear-gradient(180deg, oklch(0% 0 0 / 0.4) 0%, transparent 25%, transparent 60%, oklch(0% 0 0 / 0.55) 100%);
     pointer-events: none;
 }
 .place-detail-page .place-detail-hero-actions {
@@ -174,13 +172,12 @@
 .place-detail-page .place-detail-cta-row .place-cta-primary {
     background: var(--accent) !important;
     color: var(--text-inverse) !important;
-    box-shadow: var(--shadow-glow);
     border: none !important;
     font-weight: 700;
 }
 .place-detail-page .place-detail-cta-row .place-cta-primary:hover {
     transform: translateY(-1px);
-    box-shadow: var(--shadow-glow), 0 8px 24px oklch(55% 0.16 30 / 0.35);
+    background: var(--accent-hover) !important;
 }
 .place-detail-page .place-detail-cta-row .btn-outline {
     background: var(--surface);

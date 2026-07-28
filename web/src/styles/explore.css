@@ -22,7 +22,6 @@
     padding: clamp(var(--space-8), 6vw, var(--space-12)) clamp(var(--space-5), 4vw, var(--space-10));
     color: oklch(98% 0 0);
     isolation: isolate;
-    box-shadow: var(--shadow-xl);
 }
 /* Ink-dipped masthead section (carnet). Aurora mesh + blurred orbs retired. */
 .explore-hero-bg {
@@ -174,7 +173,7 @@
     padding: 9px var(--space-3);
     background: transparent;
     border: none;
-    border-radius: var(--radius-xs, 8px);
+    border-radius: var(--radius-sm);
     cursor: pointer;
     text-align: left;
     color: var(--text-primary);
@@ -227,7 +226,7 @@
     text-transform: uppercase;
     color: var(--text-secondary);
     cursor: pointer;
-    border-radius: var(--radius-xs, 6px);
+    border-radius: var(--radius-sm);
 }
 .explore-suggest-clear-recents:hover { color: var(--warning); background: var(--surface-hover); }
 
