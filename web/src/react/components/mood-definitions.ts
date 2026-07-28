@@ -64,7 +64,7 @@ export const MOOD_DEFS: Record<string, MoodDef> = {
     foodie: {
         id: 'foodie', label: 'Foodie', Icon: UtensilsCrossed,
         tagline: 'Couscous, brik, makrouk — eat like a Tunisian grandmother.',
-        tint: 'var(--gold)',
+        tint: 'var(--warning)',
         cities: ['Sfax', 'Tunis', 'Sousse', 'Mahdia'],
         endorsementTopic: 'food-culture',
         searchQuery: 'food',
@@ -96,7 +96,7 @@ export const MOOD_DEFS: Record<string, MoodDef> = {
     spiritual: {
         id: 'spiritual', label: 'Spiritual & Slow', Icon: Sunrise,
         tagline: 'Kairouan at dawn, Sufi nights, desert silence — Tunisia at its quietest.',
-        tint: 'var(--amber)',
+        tint: 'var(--warning)',
         cities: ['Kairouan', 'Tozeur', 'Matmata', 'Mahdia'],
         endorsementTopic: 'local-history',
         searchQuery: 'mosque spiritual',

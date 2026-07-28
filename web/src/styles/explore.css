@@ -74,11 +74,11 @@
     margin: 0 0 var(--space-3);
     text-shadow: 0 2px 16px oklch(0% 0 0 / 0.25);
 }
-/* Gradient text retired — carnet emphasis is Fraunces italic in gold ink */
+/* Gradient text retired — carnet emphasis is serif display italic in gold ink */
 .explore-hero-grad {
     font-style: italic;
     font-weight: 600;
-    color: var(--gold);
+    color: var(--warning);
 }
 .explore-hero p {
     color: oklch(90% 0.01 80);
@@ -102,7 +102,7 @@
     transition: box-shadow var(--duration-normal) var(--ease-out);
 }
 .explore-search-form:focus-within {
-    box-shadow: 4px 4px 0 var(--gold);
+    box-shadow: 4px 4px 0 var(--warning);
 }
 .explore-search-icon {
     /* pages.css still absolutely-positions this at left:18px (its old layout
@@ -182,7 +182,7 @@
 }
 .explore-suggest-item.is-active,
 .explore-suggest-item:hover { background: var(--surface-hover); }
-.explore-suggest-pin { color: var(--gold); flex: 0 0 auto; }
+.explore-suggest-pin { color: var(--warning); flex: 0 0 auto; }
 .explore-suggest-text { display: flex; flex-direction: column; min-width: 0; }
 .explore-suggest-name {
     font-size: var(--text-sm);
@@ -194,7 +194,7 @@
 }
 .explore-suggest-mark {
     background: transparent;
-    color: var(--gold-ink, var(--gold));
+    color: var(--warning);
     font-weight: 800;
 }
 .explore-suggest-sub {
@@ -229,7 +229,7 @@
     cursor: pointer;
     border-radius: var(--radius-xs, 6px);
 }
-.explore-suggest-clear-recents:hover { color: var(--gold-ink, var(--gold)); background: var(--surface-hover); }
+.explore-suggest-clear-recents:hover { color: var(--warning); background: var(--surface-hover); }
 
 /* ── Controls row ─────────────────────────── */
 .explore-controls {
@@ -269,7 +269,7 @@
 .explore-controls-dot {
     width: 8px;
     height: 8px;
-    background: var(--gold);
+    background: var(--warning);
     border-radius: 50%;
     box-shadow: 0 0 0 2px var(--surface-elevated);
 }

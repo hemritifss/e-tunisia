@@ -22,7 +22,7 @@ const CATEGORIES: CategoryMeta[] = [
   { id: 'cultural', label: 'Cultural', Icon: Landmark, tint: 'var(--coral)' },
   { id: 'transport', label: 'Transport', Icon: Bus, tint: 'var(--mediterranean)' },
   { id: 'money', label: 'Money', Icon: Banknote, tint: 'var(--olive)' },
-  { id: 'safety', label: 'Safety', Icon: ShieldCheck, tint: 'var(--gold)' },
+  { id: 'safety', label: 'Safety', Icon: ShieldCheck, tint: 'var(--warning)' },
   { id: 'food', label: 'Food', Icon: Utensils, tint: 'var(--accent)' },
   { id: 'general', label: 'General', Icon: Compass, tint: 'var(--violet)' },
 ];

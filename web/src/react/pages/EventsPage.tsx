@@ -34,7 +34,7 @@ const CATEGORIES: CategoryDef[] = [
   { id: 'Music', label: 'Music', Icon: Music2, tint: 'var(--coral)' },
   { id: 'Culture', label: 'Culture', Icon: Theater, tint: 'var(--mediterranean)' },
   { id: 'Food', label: 'Food', Icon: UtensilsCrossed, tint: 'var(--olive)' },
-  { id: 'Sports', label: 'Sports', Icon: Trophy, tint: 'var(--gold)' },
+  { id: 'Sports', label: 'Sports', Icon: Trophy, tint: 'var(--warning)' },
   { id: 'Art', label: 'Art', Icon: Palette, tint: 'var(--accent)' },
 ];
 

@@ -96,13 +96,11 @@
     font-weight: 700;
     color: var(--ink);
     background: color-mix(in oklab, var(--paper-print) 90%, transparent);
-    backdrop-filter: blur(3px);
-    -webkit-backdrop-filter: blur(3px);
     border: 1px solid var(--rule);
     border-radius: 3px;
     box-shadow: var(--shadow-sm);
 }
-.carte-stamp svg { color: var(--gold); fill: var(--gold); }
+.carte-stamp svg { color: var(--warning); fill: var(--warning); }
 
 /* Featured as a rubber stamp, bottom-left of the print. */
 .carte-featured {
@@ -135,8 +133,6 @@
     border-radius: 50%;
     color: var(--ink-soft);
     background: color-mix(in oklab, var(--paper-print) 80%, transparent);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
     border: 1px solid var(--rule);
     box-shadow: var(--shadow-sm);
     cursor: pointer;

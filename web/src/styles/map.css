@@ -368,12 +368,12 @@
     color: var(--border);
     font-size: 14px;
 }
-.map-star.filled { color: var(--gold); }
+.map-star.filled { color: var(--warning); }
 .map-star.half {
-    background: linear-gradient(90deg, var(--gold) 50%, var(--border) 50%);
+    background: linear-gradient(90deg, var(--warning) 50%, var(--border) 50%);
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent;
+    -webkit-text-fill-color: currentColor;
     color: transparent;
 }
 .map-popup-rating-num {

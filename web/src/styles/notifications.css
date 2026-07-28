@@ -46,8 +46,6 @@
     position: fixed;
     inset: 0;
     background: oklch(0% 0 0 / 0.35);
-    backdrop-filter: blur(2px);
-    -webkit-backdrop-filter: blur(2px);
     z-index: calc(var(--z-overlay) - 1);
     opacity: 0;
     pointer-events: none;
@@ -58,7 +56,7 @@
     pointer-events: auto;
 }
 @media (min-width: 768px) {
-    #notif-panel-overlay { background: transparent; backdrop-filter: none; -webkit-backdrop-filter: none; }
+    #notif-panel-overlay { background: transparent; }
 }
 
 /* ── Panel ───────────────────────────────── */

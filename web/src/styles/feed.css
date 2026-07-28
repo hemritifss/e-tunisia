@@ -191,7 +191,7 @@
 }
 .compose-v2-sparkle {
     margin-left: auto;
-    color: var(--gold);
+    color: var(--warning);
     flex: 0 0 auto;
 }
 .compose-v2-actions {
@@ -226,8 +226,8 @@
 .compose-v2-chip-photo svg { color: var(--success); }
 .compose-v2-chip-location:hover { color: var(--mediterranean); }
 .compose-v2-chip-location svg { color: var(--mediterranean); }
-.compose-v2-chip-mood:hover { color: var(--gold); }
-.compose-v2-chip-mood svg { color: var(--gold); }
+.compose-v2-chip-mood:hover { color: var(--warning); }
+.compose-v2-chip-mood svg { color: var(--warning); }
 
 /* ── Post card refinements ──────────────────── */
 .post-card-v2 {
@@ -372,7 +372,6 @@
     color: var(--text-primary);
     font-size: 11px;
     font-weight: 600;
-    backdrop-filter: blur(4px);
 }
 .discovery-card-meta {
     display: flex;
@@ -426,9 +425,9 @@
 
 /* ── Achievement feed card (badge/level earned) ──────────────────── */
 .post-card-v2.is-achievement {
-    border-color: color-mix(in oklab, var(--gold, #d4a72c) 45%, var(--border));
+    border-color: color-mix(in oklab, var(--warning) 45%, var(--border));
     background:
-        linear-gradient(180deg, color-mix(in oklab, var(--gold, #d4a72c) 8%, transparent), transparent 96px),
+        linear-gradient(180deg, color-mix(in oklab, var(--warning) 8%, transparent), transparent 96px),
         var(--surface-elevated);
 }
 .post-card-v2-achievement {
@@ -445,8 +444,8 @@
     place-items: center;
     border-radius: var(--radius-full);
     color: #7a5b12;
-    background: radial-gradient(circle at 35% 30%, #ffe9a8, var(--gold, #d4a72c));
-    box-shadow: 0 2px 8px color-mix(in oklab, var(--gold, #d4a72c) 40%, transparent);
+    background: radial-gradient(circle at 35% 30%, #ffe9a8, var(--warning));
+    box-shadow: 0 2px 8px color-mix(in oklab, var(--warning) 40%, transparent);
 }
 .pc-achv-body { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .pc-achv-title { margin: 0; font-size: var(--text-base); font-weight: 700; color: var(--text-primary); }
@@ -454,8 +453,8 @@
 .pc-achv-badge {
     padding: 2px 10px;
     border-radius: var(--radius-full);
-    background: color-mix(in oklab, var(--gold, #d4a72c) 16%, transparent);
-    color: color-mix(in oklab, var(--gold, #d4a72c) 60%, var(--text-primary));
+    background: color-mix(in oklab, var(--warning) 16%, transparent);
+    color: color-mix(in oklab, var(--warning) 60%, var(--text-primary));
     font-size: var(--text-xs);
     font-weight: 600;
 }
@@ -464,7 +463,7 @@
     font-size: var(--text-xs);
     font-weight: 700;
     color: #7a5b12;
-    background: color-mix(in oklab, var(--gold, #d4a72c) 22%, transparent);
+    background: color-mix(in oklab, var(--warning) 22%, transparent);
     padding: 1px 8px;
     border-radius: var(--radius-full);
 }
@@ -578,16 +577,16 @@
     background: color-mix(in oklab, var(--violet) 10%, transparent);
 }
 .pc-act-save:hover {
-    color: var(--gold);
-    background: color-mix(in oklab, var(--gold) 12%, transparent);
+    color: var(--warning);
+    background: color-mix(in oklab, var(--warning) 12%, transparent);
 }
-.pc-act-save.is-active { color: var(--gold); }
-.pc-act-save.is-active svg { fill: var(--gold); stroke: var(--gold); }
+.pc-act-save.is-active { color: var(--warning); }
+.pc-act-save.is-active svg { fill: var(--warning); stroke: var(--warning); }
 .post-card-v2-tip:hover {
-    color: var(--gold);
-    background: color-mix(in oklab, var(--gold) 12%, transparent);
+    color: var(--warning);
+    background: color-mix(in oklab, var(--warning) 12%, transparent);
 }
-.post-card-v2-tip:hover svg { color: var(--gold); }
+.post-card-v2-tip:hover svg { color: var(--warning); }
 
 /* Reaction picker host (kept compact) */
 .post-card-v2-actions .reaction-picker,
@@ -750,8 +749,6 @@
     font-weight: 600;
     color: oklch(99% 0 0);
     background: oklch(0% 0 0 / 0.55);
-    -webkit-backdrop-filter: blur(4px);
-    backdrop-filter: blur(4px);
     pointer-events: none;
 }
 .post-carousel-dots {

@@ -151,7 +151,7 @@
 .lt-ticket--louage { --mode-stripe: oklch(55% 0.19 25); }   /* red stripe = intercity */
 .lt-ticket--bus    { --mode-stripe: oklch(52% 0.14 250); }
 .lt-ticket--train  { --mode-stripe: var(--olive); }
-.lt-ticket--drive  { --mode-stripe: var(--gold); }
+.lt-ticket--drive  { --mode-stripe: var(--warning); }
 .lt-ticket--walk   { --mode-stripe: var(--rule-strong); }
 
 .lt-stub {

@@ -137,7 +137,7 @@ html body.guest-mode #messenger-root .chat-pop-stack {
 
 /* Pro ring around avatar */
 .chat-pop-avatar-pro {
-    background: var(--gradient-gold);
+    background: var(--warning);
     padding: 2px;
     border-color: transparent;
 }
@@ -235,7 +235,7 @@ html body.guest-mode #messenger-root .chat-pop-stack {
     color: var(--text-tertiary);
     line-height: 1.2;
 }
-.chat-pop-pro-spark { color: var(--gold); flex: 0 0 auto; }
+.chat-pop-pro-spark { color: var(--warning); flex: 0 0 auto; }
 
 .chat-pop-head-actions {
     display: inline-flex;
@@ -429,7 +429,7 @@ html body.guest-mode #messenger-root .chat-pop-stack {
     border-color: transparent;
     box-shadow:
         var(--shadow-xl),
-        0 0 0 1px var(--gold) inset;
+        0 0 0 1px var(--warning) inset;
 }
 .chat-pop.is-pro .chat-pop-head {
     background: linear-gradient(180deg, var(--surface) 0%, oklch(78% 0.17 80 / 0.04) 100%);
@@ -507,7 +507,7 @@ html body.guest-mode #messenger-root .chat-pop-stack {
     border-radius: 50%;
 }
 .active-conv-avatar.is-pro {
-    background: var(--gradient-gold);
+    background: var(--warning);
     padding: 2px;
 }
 .active-conv-avatar.is-pro img,
@@ -542,7 +542,7 @@ html body.guest-mode #messenger-root .chat-pop-stack {
     overflow: hidden;
     text-overflow: ellipsis;
 }
-.active-conv-pro { color: var(--gold); flex: 0 0 auto; }
+.active-conv-pro { color: var(--warning); flex: 0 0 auto; }
 .active-conv-preview {
     font-size: var(--text-xs);
     color: var(--text-secondary);
@@ -666,7 +666,6 @@ html body.guest-mode #messenger-root .chat-pop-stack {
     position: absolute;
     inset: 0;
     background: oklch(0% 0 0 / 0.5);
-    backdrop-filter: blur(2px);
     animation: ac-scrim-in var(--duration-fast) var(--ease-out);
 }
 .active-conv-sheet {
@@ -754,7 +753,7 @@ html body.guest-mode #messenger-root .chat-pop-stack {
     border: 1px solid transparent;
     background:
         linear-gradient(var(--surface-elevated), var(--surface-elevated)) padding-box,
-        var(--gradient-gold) border-box;
+        var(--warning) border-box;
     box-shadow: var(--shadow-lg), 0 4px 24px oklch(78% 0.17 80 / 0.08);
 }
 .post-card-v2.is-pro::before {
@@ -763,7 +762,7 @@ html body.guest-mode #messenger-root .chat-pop-stack {
     inset: -1px;
     border-radius: inherit;
     pointer-events: none;
-    background: var(--gradient-shine);
+    background: none;
     background-size: 200% 100%;
     background-position: -100% 0;
     opacity: 0;
@@ -785,7 +784,7 @@ html body.guest-mode #messenger-root .chat-pop-stack {
 /* Pro avatar ring on bylines */
 .post-card-v2.is-pro .post-card-v2-author .avatar,
 .post-card-v2.is-pro .post-card-v2-author [class*="Avatar"] {
-    box-shadow: 0 0 0 2px var(--gold), 0 0 0 4px var(--surface-elevated);
+    box-shadow: 0 0 0 2px var(--warning), 0 0 0 4px var(--surface-elevated);
 }
 
 /* Tiny "Pro" ribbon corner badge */
@@ -799,7 +798,7 @@ html body.guest-mode #messenger-root .chat-pop-stack {
     font-weight: 700;
     letter-spacing: var(--tracking-wide);
     color: oklch(35% 0.06 80);
-    background: var(--gradient-gold);
+    background: var(--warning);
     padding: 3px 8px;
     border-radius: var(--radius-full);
     box-shadow: var(--shadow-sm);
@@ -871,7 +870,7 @@ html body.guest-mode #messenger-root .chat-pop-stack {
     font-family: var(--font-display);
 }
 .user-menu-avatar.is-pro {
-    background: var(--gradient-gold);
+    background: var(--warning);
     padding: 2px;
 }
 .user-menu-avatar.is-pro img,
@@ -900,7 +899,7 @@ html body.guest-mode #messenger-root .chat-pop-stack {
     font-size: var(--text-xs);
     color: var(--text-tertiary);
 }
-.user-menu-pro { color: var(--gold); flex: 0 0 auto; }
+.user-menu-pro { color: var(--warning); flex: 0 0 auto; }
 
 .user-menu-list {
     display: flex;

@@ -166,13 +166,13 @@
 
 /* Pro hero variant — gold-leaf embossed edge on the same paper ground */
 .passport-page .passport-hero.is-pro {
-    border-bottom-color: var(--gold);
-    box-shadow: var(--paper-shadow-lift), inset 0 3px 0 var(--gold);
+    border-bottom-color: var(--warning);
+    box-shadow: var(--paper-shadow-lift), inset 0 3px 0 var(--warning);
 }
 .passport-page .passport-hero.is-pro .passport-hero-mesh {
     background-image:
-        repeating-linear-gradient(45deg, var(--gold-glow) 0 1px, transparent 1px 11px),
-        repeating-linear-gradient(-45deg, var(--gold-glow) 0 1px, transparent 1px 11px);
+        repeating-linear-gradient(45deg, transparent 0 1px, transparent 1px 11px),
+        repeating-linear-gradient(-45deg, transparent 0 1px, transparent 1px 11px);
     opacity: 0.35;
 }
 
@@ -213,7 +213,7 @@
     flex: 0 0 auto;
 }
 .passport-avatar-wrap.is-pro {
-    background: var(--gradient-gold);
+    background: var(--warning);
 }
 .passport-page .passport-avatar {
     width: 100%;
@@ -239,7 +239,7 @@
     height: 28px;
     display: grid;
     place-items: center;
-    background: var(--gradient-gold);
+    background: var(--warning);
     color: oklch(20% 0.05 80);
     border: 2px solid oklch(100% 0 0 / 0.85);
     border-radius: 50%;
@@ -284,15 +284,13 @@
     padding: 4px 10px;
     background: oklch(100% 0 0 / 0.14);
     border: 1px solid oklch(100% 0 0 / 0.22);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
     border-radius: var(--radius-full);
     color: oklch(98% 0 0);
     font-size: var(--text-xs);
     font-weight: 600;
 }
 .passport-page .passport-pro-chip {
-    background: var(--gradient-gold) !important;
+    background: var(--warning) !important;
     color: oklch(20% 0.05 80) !important;
     border-color: transparent !important;
 }
@@ -310,13 +308,13 @@
 }
 .passport-page .passport-cityrank {
     background: oklch(100% 0 0 / 0.18) !important;
-    color: var(--gold) !important;
-    border-color: color-mix(in oklch, var(--gold) 40%, transparent) !important;
+    color: var(--warning) !important;
+    border-color: color-mix(in oklch, var(--warning) 40%, transparent) !important;
 }
 @supports not (color: color-mix(in oklch, red, blue)) {
-    .passport-page .passport-cityrank { border-color: var(--gold) !important; }
+    .passport-page .passport-cityrank { border-color: var(--warning) !important; }
 }
-.passport-page .passport-cityrank svg { color: var(--gold); }
+.passport-page .passport-cityrank svg { color: var(--warning); }
 .passport-page .passport-level {
     text-transform: uppercase;
     letter-spacing: var(--tracking-wide);
@@ -324,7 +322,7 @@
 }
 .passport-page .passport-level-bronze   { background: linear-gradient(135deg, var(--terracotta), oklch(60% 0.18 40)) !important; border-color: transparent !important; }
 .passport-page .passport-level-silver   { background: linear-gradient(135deg, oklch(72% 0.02 260), oklch(60% 0.03 260)) !important; border-color: transparent !important; }
-.passport-page .passport-level-gold     { background: var(--gradient-gold) !important; color: oklch(20% 0.05 80) !important; border-color: transparent !important; }
+.passport-page .passport-level-gold     { background: var(--warning) !important; color: oklch(20% 0.05 80) !important; border-color: transparent !important; }
 .passport-page .passport-level-platinum { background: linear-gradient(135deg, var(--mediterranean), var(--violet)) !important; border-color: transparent !important; }
 
 /* Followmeta row */
@@ -335,8 +333,6 @@
 .passport-page .passport-followmeta > * {
     background: transparent !important;
     border: none !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
     padding: 0 !important;
 }
 .passport-page .passport-followmeta-btn {
@@ -347,7 +343,7 @@
     transition: color var(--duration-fast) var(--ease-out);
 }
 .passport-page .passport-followmeta-btn:hover {
-    color: var(--gold);
+    color: var(--warning);
 }
 .passport-page .passport-followmeta-btn strong {
     color: oklch(100% 0 0);
@@ -371,7 +367,7 @@
 
 /* Hero action buttons */
 .passport-page .passport-hero-right .btn.primary {
-    background: var(--gradient-cta);
+    background: var(--accent);
     color: var(--text-inverse);
     box-shadow: var(--shadow-glow);
     border: none;
@@ -380,8 +376,6 @@
     background: oklch(100% 0 0 / 0.14);
     color: oklch(98% 0 0);
     border: 1px solid oklch(100% 0 0 / 0.24);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
 }
 .passport-page .passport-hero-right .btn.ghost:hover {
     background: oklch(100% 0 0 / 0.22);
@@ -422,7 +416,7 @@
     content: '';
     position: absolute;
     inset: 0;
-    background: var(--gradient-mesh);
+    background: none;
     opacity: 0.4;
     pointer-events: none;
     z-index: 0;
@@ -474,7 +468,7 @@
 .passport-page .passport-completion-bar span {
     display: block;
     height: 100%;
-    background: var(--gradient-cta);
+    background: var(--accent);
     border-radius: inherit;
     box-shadow: 0 0 16px oklch(55% 0.16 30 / 0.35);
     transition: width var(--duration-slow) var(--ease-out);
@@ -540,7 +534,7 @@
 
 /* ── Local guide button + hint ────────────── */
 .passport-page .passport-local-guide-btn {
-    background: var(--gradient-gold) !important;
+    background: var(--warning) !important;
     color: oklch(20% 0.05 80) !important;
     box-shadow: var(--shadow-glow-gold);
     border: none !important;
@@ -552,8 +546,6 @@
     padding: 6px 10px;
     border-radius: var(--radius-md);
     border: 1px solid oklch(100% 0 0 / 0.22);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
     max-width: 280px;
     text-align: right;
 }

@@ -113,7 +113,7 @@
 .ej-trav-warmth {
     position: absolute;
     inset: 0;
-    background: color-mix(in oklab, var(--paper-warm) 86%, var(--gold) 14%);
+    background: color-mix(in oklab, var(--paper-warm) 86%, var(--warning) 14%);
     pointer-events: none;
     z-index: 0;
 }

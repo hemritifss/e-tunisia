@@ -72,7 +72,7 @@
     top: var(--space-3); left: calc(var(--space-3) * -1);
     display: inline-flex; align-items: center; gap: 5px;
     padding: 5px var(--space-3);
-    background: var(--gold);
+    background: var(--warning);
     color: var(--ink);
     font-family: var(--font-mono);
     font-size: 11px; font-weight: 600;
@@ -251,7 +251,6 @@
     color: oklch(98% 0 0);
     border-radius: var(--radius-full);
     font-family: var(--font-mono); font-size: 11px; font-weight: 600;
-    backdrop-filter: blur(3px);
 }
 .cn-col-card-lock, .cn-col-card-brand, .cn-col-card-privacy, .cn-col-card-collab {
     position: absolute; top: var(--space-2); left: var(--space-2);
@@ -261,7 +260,7 @@
     letter-spacing: var(--tracking-wide); text-transform: uppercase;
     border-radius: 3px;
 }
-.cn-col-card-lock { background: var(--gold); color: var(--ink); }
+.cn-col-card-lock { background: var(--warning); color: var(--ink); }
 .cn-col-card-brand { background: var(--mediterranean); color: oklch(98% 0 0); }
 .cn-col-card-privacy { background: oklch(18% 0.02 60 / 0.72); color: oklch(98% 0 0); padding: 4px; }
 .cn-col-card-collab { top: auto; bottom: var(--space-2); left: auto; right: var(--space-2); background: oklch(18% 0.02 60 / 0.72); color: oklch(98% 0 0); }
@@ -353,7 +352,7 @@
     display: grid; place-items: center; width: 36px; height: 36px;
     background: oklch(100% 0 0 / 0.85); color: var(--ink);
     border: 1px solid var(--rule); border-radius: var(--radius-full);
-    cursor: pointer; backdrop-filter: blur(4px);
+    cursor: pointer;
 }
 .collections-sheet-close:hover { background: #fff; }
 
@@ -378,7 +377,7 @@
     letter-spacing: var(--tracking-wide); text-transform: uppercase;
 }
 .collections-badge--brand { background: var(--mediterranean); color: oklch(98% 0 0); }
-.collections-badge--pro { background: var(--gold); color: var(--ink); }
+.collections-badge--pro { background: var(--warning); color: var(--ink); }
 .collections-sheet-title {
     position: absolute; left: var(--space-5); right: var(--space-5); bottom: var(--space-4); z-index: 2;
     font-family: var(--font-editorial); font-weight: 640;
@@ -412,7 +411,7 @@
 .collections-textbtn--danger:hover { color: var(--error); border-bottom-color: var(--error); }
 .collections-prolock {
     font-family: var(--font-mono); font-size: 9px; font-weight: 700;
-    padding: 1px 5px; background: var(--gold); color: var(--ink);
+    padding: 1px 5px; background: var(--warning); color: var(--ink);
     border-radius: 3px; letter-spacing: var(--tracking-wide); text-transform: uppercase;
 }
 .collections-collab-input { display: inline-flex; align-items: center; gap: 6px; }

@@ -27,13 +27,13 @@
     position: absolute;
     inset: 0;
     z-index: -2;
-    background: var(--gradient-hero);
+    background: var(--paper-deep);
 }
 .badges-hero-mesh {
     position: absolute;
     inset: 0;
     z-index: -1;
-    background: var(--gradient-dark-mesh);
+    background: none;
     pointer-events: none;
 }
 .badges-hero-orbs {
@@ -55,7 +55,7 @@
     height: 320px;
     top: -90px;
     left: -40px;
-    background: var(--gold);
+    background: var(--warning);
 }
 .badges-hero-orb:nth-child(2) {
     width: 280px;
@@ -84,8 +84,6 @@
     padding: 4px var(--space-3);
     background: oklch(100% 0 0 / 0.14);
     border: 1px solid oklch(100% 0 0 / 0.22);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
     border-radius: var(--radius-full);
     color: oklch(95% 0.02 80);
     font-size: 11px;
@@ -105,11 +103,11 @@
     text-shadow: 0 2px 12px oklch(0% 0 0 / 0.25);
 }
 .badges-accent {
-    background: linear-gradient(120deg, var(--gold), var(--violet), var(--gold));
+    background: linear-gradient(120deg, var(--warning), var(--violet), var(--warning));
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent;
+    -webkit-text-fill-color: currentColor;
     color: transparent;
     animation: badges-grad 6s var(--ease-in-out) infinite;
 }
@@ -146,7 +144,7 @@
     content: '';
     position: absolute;
     inset: 0;
-    background: var(--gradient-mesh);
+    background: none;
     opacity: 0.3;
     pointer-events: none;
     z-index: 0;
@@ -179,7 +177,7 @@
     font-family: var(--font-display);
     font-size: var(--text-2xl);
     font-weight: 900;
-    color: var(--gold);
+    color: var(--warning);
     font-variant-numeric: tabular-nums;
 }
 .badges-progress-bar {
@@ -191,7 +189,7 @@
 .badges-progress-bar span {
     display: block;
     height: 100%;
-    background: var(--gradient-gold);
+    background: var(--warning);
     border-radius: inherit;
     box-shadow: 0 0 16px oklch(78% 0.17 80 / 0.4);
     transition: width var(--duration-slow) var(--ease-out);
@@ -233,7 +231,7 @@
 }
 .badges-stat-card.is-earned .badges-stat-icon  { background: color-mix(in oklch, var(--success) 16%, transparent); color: var(--success); }
 .badges-stat-card.is-locked .badges-stat-icon  { background: color-mix(in oklch, var(--text-tertiary) 16%, transparent); color: var(--text-tertiary); }
-.badges-stat-card.is-progress .badges-stat-icon { background: color-mix(in oklch, var(--gold) 18%, transparent); color: var(--gold); }
+.badges-stat-card.is-progress .badges-stat-icon { background: color-mix(in oklch, var(--warning) 18%, transparent); color: var(--warning); }
 @supports not (color: color-mix(in oklch, red, blue)) {
     .badges-stat-card .badges-stat-icon { background: var(--bg-tertiary); }
 }
@@ -285,7 +283,7 @@
     border-color: transparent;
     background:
         linear-gradient(var(--surface-elevated), var(--surface-elevated)) padding-box,
-        var(--gradient-gold) border-box;
+        var(--warning) border-box;
     box-shadow: var(--shadow-sm), 0 4px 18px oklch(78% 0.17 80 / 0.12);
 }
 .badges-page .badge-card.is-earned:hover {
@@ -306,8 +304,8 @@
     height: 80px;
     display: grid;
     place-items: center;
-    background: color-mix(in oklch, var(--gold) 14%, var(--bg-secondary));
-    color: var(--gold);
+    background: color-mix(in oklch, var(--warning) 14%, var(--bg-secondary));
+    color: var(--warning);
     border-radius: 50%;
     position: relative;
 }
@@ -315,7 +313,7 @@
     .badges-page .badge-icon { background: var(--bg-secondary); }
 }
 .badges-page .badge-card.is-earned .badge-icon {
-    background: var(--gradient-gold);
+    background: var(--warning);
     color: oklch(20% 0.05 80);
 }
 .badges-page .badge-icon i { font-size: 36px; }
@@ -359,8 +357,8 @@
     margin-top: 2px;
 }
 .badge-card.is-earned .badge-cat {
-    background: color-mix(in oklch, var(--gold) 14%, transparent);
-    color: var(--gold);
+    background: color-mix(in oklch, var(--warning) 14%, transparent);
+    color: var(--warning);
 }
 @supports not (color: color-mix(in oklch, red, blue)) {
     .badge-card.is-earned .badge-cat { background: var(--bg-tertiary); }
@@ -437,7 +435,7 @@
     border-radius: 50%;
     background: var(--surface-elevated, var(--bg-secondary));
     border: 1px solid var(--border-light, var(--border));
-    color: var(--gold, #b98a2f);
+    color: var(--warning);
 }
 .badges-empty-icon svg { width: 32px; height: 32px; }
 .badges-empty h2 { margin: var(--space-2, 8px) 0 0; color: var(--text-primary); }

@@ -537,7 +537,7 @@
     height: 40px;
     display: grid;
     place-items: center;
-    background: var(--gradient-cta);
+    background: var(--accent);
     color: var(--text-inverse);
     border: none;
     border-radius: 50%;
@@ -852,7 +852,7 @@
     flex: 0 0 auto;
 }
 .search-tier-badge i { font-size: 10px; }
-.search-tier-badge.is-pro      { background: var(--gradient-gold); color: oklch(20% 0.05 80); }
+.search-tier-badge.is-pro      { background: var(--warning); color: oklch(20% 0.05 80); }
 .search-tier-badge.is-business { background: linear-gradient(135deg, var(--mediterranean), var(--violet)); color: var(--text-inverse); }
 .search-tier-badge.is-guide    { background: var(--olive); color: var(--text-inverse); }
 

@@ -127,7 +127,7 @@ h5 { font-size: var(--text-lg); }
 .text-accent    { color: var(--accent); }
 .text-danger    { color: var(--error); }
 .text-success   { color: var(--success); }
-.text-gold      { color: var(--gold); }
+.text-gold      { color: var(--warning); }
 
 .text-sm  { font-size: var(--text-sm); }
 .text-xs  { font-size: var(--text-xs); }
@@ -143,49 +143,23 @@ h5 { font-size: var(--text-lg); }
 .fw-900 { font-weight: 900; }
 
 /* ── Gradient text ── */
-.text-gradient {
-  background: var(--gradient-brand);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-size: 200% auto;
-  animation: gradientShift 4s ease infinite;
-}
 
-.text-gradient-blue {
-  background: linear-gradient(135deg, var(--mediterranean), var(--cyan));
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
 
-.text-gradient-gold {
-  background: var(--gradient-gold);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
 
 /* ── Glassmorphism ── */
 .glass {
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--glass-border);
+  background: var(--surface);
+  border: 1px solid var(--border);
 }
 
 .glass-light {
-  background: var(--glass-bg-light);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--glass-border);
+  background: var(--surface-hover);
+  border: 1px solid var(--border);
 }
 
 .glass-heavy {
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur-heavy);
-  -webkit-backdrop-filter: var(--glass-blur-heavy);
-  border: 1px solid var(--glass-border);
+  background: var(--surface);
+  border: 1px solid var(--border);
 }
 
 /* ── Neon glow ── */
@@ -196,9 +170,9 @@ h5 { font-size: var(--text-lg); }
 .neon-border  { box-shadow: 0 0 0 1px var(--accent), var(--shadow-glow); }
 
 /* ── Gradient backgrounds ── */
-.bg-gradient-brand { background: var(--gradient-brand); }
-.bg-gradient-mesh  { background: var(--bg-primary) var(--gradient-mesh); }
-.bg-glass          { background: var(--glass-bg); }
+.bg-gradient-brand { background: var(--accent); }
+.bg-gradient-mesh  { background: var(--bg-primary) none; }
+.bg-glass          { background: var(--surface); }
 
 /* ── Layout utilities ── */
 .container {

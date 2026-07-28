@@ -130,7 +130,7 @@
     width: 64px !important;
     height: 64px !important;
     border-radius: var(--radius-2xl) !important;
-    background: var(--gradient-cta) !important;
+    background: var(--accent) !important;
     color: oklch(98% 0 0) !important;
     font-family: var(--font-display);
     font-size: 1.75rem !important;
@@ -267,14 +267,14 @@
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    color: var(--gold);
+    color: var(--warning);
     font-size: var(--text-sm);
     font-weight: 600;
     font-variant-numeric: tabular-nums;
 }
 .favorites-page .place-card-rating i {
-    color: var(--gold);
-    fill: var(--gold);
+    color: var(--warning);
+    fill: var(--warning);
 }
 .favorites-page .place-card-save {
     width: 32px; height: 32px;
@@ -379,7 +379,7 @@
     align-items: center;
     gap: var(--space-2);
 }
-.credits-header h1 i { color: var(--gold); }
+.credits-header h1 i { color: var(--warning); }
 .credits-header p {
     color: var(--text-secondary);
     font-size: var(--text-base);
@@ -398,7 +398,7 @@
     content: '';
     position: absolute;
     inset: 0;
-    background: var(--gradient-mesh);
+    background: none;
     opacity: 0.3;
     pointer-events: none;
     z-index: 0;
@@ -429,7 +429,7 @@
     font-family: var(--font-display);
     font-size: clamp(var(--text-3xl), 5vw, var(--text-4xl));
     font-weight: 900;
-    color: var(--gold);
+    color: var(--warning);
     line-height: 1;
     font-variant-numeric: tabular-nums;
     display: inline-flex;
@@ -474,7 +474,7 @@
     gap: 6px;
 }
 .credits-actions .btn.btn-primary {
-    background: var(--gradient-gold) !important;
+    background: var(--warning) !important;
     color: oklch(20% 0.05 80) !important;
     border: none !important;
     box-shadow: var(--shadow-glow-gold);
@@ -668,12 +668,12 @@
 .inquiry-status-pill.new        { background: var(--accent-light); color: var(--accent); }
 .inquiry-status-pill.viewed     { background: var(--bg-tertiary); color: var(--text-secondary); }
 .inquiry-status-pill.replied    { background: color-mix(in oklch, var(--mediterranean) 16%, transparent); color: var(--mediterranean); }
-.inquiry-status-pill.quoted     { background: color-mix(in oklch, var(--gold) 18%, transparent); color: var(--gold); }
+.inquiry-status-pill.quoted     { background: color-mix(in oklch, var(--warning) 18%, transparent); color: var(--warning); }
 .inquiry-status-pill.booked     { background: color-mix(in oklch, var(--success) 16%, transparent); color: var(--success); }
 .inquiry-status-pill.cancelled  { background: color-mix(in oklch, var(--error) 12%, transparent); color: var(--error); }
 @supports not (color: color-mix(in oklch, red, blue)) {
     .inquiry-status-pill.replied   { background: var(--mediterranean-pale); color: var(--mediterranean); }
-    .inquiry-status-pill.quoted    { background: var(--bg-tertiary); color: var(--gold); }
+    .inquiry-status-pill.quoted    { background: var(--bg-tertiary); color: var(--warning); }
     .inquiry-status-pill.booked    { background: var(--success-light); color: var(--success); }
     .inquiry-status-pill.cancelled { background: var(--error-light); color: var(--error); }
 }
@@ -701,7 +701,7 @@
 .about-page .about-value-card:nth-child(1) .about-value-icon { background: color-mix(in oklch, var(--coral) 14%, transparent); color: var(--coral); }
 .about-page .about-value-card:nth-child(2) .about-value-icon { background: color-mix(in oklch, var(--olive) 14%, transparent); color: var(--olive); }
 .about-page .about-value-card:nth-child(3) .about-value-icon { background: color-mix(in oklch, var(--mediterranean) 14%, transparent); color: var(--mediterranean); }
-.about-page .about-value-card:nth-child(4) .about-value-icon { background: color-mix(in oklch, var(--gold) 16%, transparent); color: var(--gold); }
+.about-page .about-value-card:nth-child(4) .about-value-icon { background: color-mix(in oklch, var(--warning) 16%, transparent); color: var(--warning); }
 @supports not (color: color-mix(in oklch, red, blue)) {
     .about-page .about-value-icon { background: var(--bg-tertiary); }
 }
@@ -715,8 +715,8 @@
     margin-bottom: var(--space-3);
 }
 .partner-page .hero2-proof-stars i {
-    color: var(--gold);
-    fill: var(--gold);
+    color: var(--warning);
+    fill: var(--warning);
     font-size: 18px;
 }
 
@@ -742,7 +742,7 @@
     color: var(--text-inverse);
 }
 .owner-tier-chip.is-pro {
-    background: var(--gradient-gold);
+    background: var(--warning);
     color: oklch(20% 0.05 80);
 }
 .owner-place-stat-rating {
@@ -751,8 +751,8 @@
     gap: 3px;
 }
 .owner-place-stat-rating i {
-    color: var(--gold);
-    fill: var(--gold);
+    color: var(--warning);
+    fill: var(--warning);
     font-size: 12px;
 }
 .owner-place-boost-badge {
@@ -760,7 +760,7 @@
     align-items: center;
     gap: 4px;
     padding: 3px 10px;
-    background: var(--gradient-gold);
+    background: var(--warning);
     color: oklch(20% 0.05 80);
     border-radius: var(--radius-full);
     font-size: 11px;

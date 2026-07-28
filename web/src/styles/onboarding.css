@@ -163,7 +163,7 @@
 .onb-illustration-done .onb-illustration-orb:nth-child(1) {
     width: 110px; height: 110px;
     top: -10px; left: -10px;
-    background: var(--gold);
+    background: var(--warning);
 }
 .onb-illustration-done .onb-illustration-orb:nth-child(2) {
     width: 90px; height: 90px;
@@ -184,7 +184,7 @@
     z-index: 1;
     width: 88px; height: 88px;
     display: grid; place-items: center;
-    background: var(--gradient-cta);
+    background: var(--accent);
     color: var(--text-inverse);
     border-radius: 50%;
     box-shadow: var(--shadow-xl), var(--shadow-glow);
@@ -192,7 +192,7 @@
 .onb-illustration-icon i { font-size: 36px; }
 
 .onb-illustration-icon-done {
-    background: var(--gradient-gold);
+    background: var(--warning);
     color: oklch(20% 0.05 80);
     box-shadow: var(--shadow-xl), var(--shadow-glow-gold);
 }
@@ -210,10 +210,10 @@
     text-align: center;
 }
 .onb-name-highlight {
-    background: linear-gradient(120deg, var(--gold), var(--terracotta-light), var(--gold));
+    background: linear-gradient(120deg, var(--warning), var(--terracotta-light), var(--warning));
     background-size: 200% auto;
     -webkit-background-clip: text; background-clip: text;
-    -webkit-text-fill-color: transparent; color: transparent;
+    -webkit-text-fill-color: currentColor; color: transparent;
     animation: onb-name-grad 6s var(--ease-in-out) infinite;
 }
 @keyframes onb-name-grad {
@@ -614,7 +614,7 @@
     gap: 6px;
 }
 .onb-cta-primary {
-    background: var(--gradient-cta) !important;
+    background: var(--accent) !important;
     color: var(--text-inverse) !important;
     box-shadow: var(--shadow-glow);
     border: none !important;

@@ -116,7 +116,7 @@
 }
 
 /* Per-type tint */
-.activity-page .activity-entry-review   { --entry-tint: var(--gold); }
+.activity-page .activity-entry-review   { --entry-tint: var(--warning); }
 .activity-page .activity-entry-trip     { --entry-tint: var(--cyan); }
 .activity-page .activity-entry-endorse  { --entry-tint: var(--violet); }
 .activity-page .activity-entry-follow   { --entry-tint: var(--mediterranean); }
@@ -213,8 +213,8 @@
     color: var(--border);
 }
 .activity-rating svg.is-filled {
-    color: var(--gold);
-    fill: var(--gold);
+    color: var(--warning);
+    fill: var(--warning);
 }
 
 /* Snippet */
@@ -222,7 +222,7 @@
     margin: 6px 0 0;
     padding: var(--space-2) var(--space-3);
     background: var(--bg-secondary);
-    border-left: 3px solid var(--gold);
+    border-left: 3px solid var(--warning);
     border-radius: 0 var(--radius-md) var(--radius-md) 0;
     color: var(--text-primary);
     font-size: var(--text-sm);

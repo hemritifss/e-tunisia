@@ -115,7 +115,7 @@
   padding: 18px;
 }
 .mw-board h2 { display: flex; align-items: center; gap: 8px; font-size: var(--text-lg); margin-bottom: 14px; }
-.mw-board h2 svg { color: var(--gold, #d4a017); }
+.mw-board h2 svg { color: var(--warning); }
 .mw-empty { color: var(--text-muted); font-size: var(--text-sm); }
 
 /* governorate rows */

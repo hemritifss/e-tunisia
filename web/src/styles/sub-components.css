@@ -45,7 +45,7 @@
 /* Per-tile tint via :nth-child — Cities=cyan, Trips=mediterranean, Reviews=gold, Saves=olive */
 .passport-stat:nth-child(1) > svg { background: color-mix(in oklch, var(--cyan) 16%, transparent);          color: var(--cyan); }
 .passport-stat:nth-child(2) > svg { background: color-mix(in oklch, var(--mediterranean) 16%, transparent); color: var(--mediterranean); }
-.passport-stat:nth-child(3) > svg { background: color-mix(in oklch, var(--gold) 18%, transparent);          color: var(--gold); }
+.passport-stat:nth-child(3) > svg { background: color-mix(in oklch, var(--warning) 18%, transparent);          color: var(--warning); }
 .passport-stat:nth-child(4) > svg { background: color-mix(in oklch, var(--olive) 16%, transparent);         color: var(--olive); }
 @supports not (color: color-mix(in oklch, red, blue)) {
     .passport-stat > svg { background: var(--bg-tertiary); }
@@ -391,8 +391,8 @@
     color: var(--border);
 }
 .passport-review-stars svg.is-filled {
-    color: var(--gold);
-    fill: var(--gold);
+    color: var(--warning);
+    fill: var(--warning);
 }
 .passport-review p {
     margin: 0;
@@ -645,8 +645,6 @@
     inset: 0;
     z-index: var(--z-modal);
     background: oklch(0% 0 0 / 0.55);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -812,7 +810,7 @@
 }
 .signup-gate .btn.primary.block {
     width: 100%;
-    background: var(--gradient-cta);
+    background: var(--accent);
     color: var(--text-inverse);
     border: none;
     border-radius: var(--radius-full);
@@ -854,8 +852,6 @@
     justify-content: center;
     padding: var(--space-4);
     background: oklch(0% 0 0 / 0.5);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
 }
 .passport-onb-card {
     width: 100%;
@@ -954,7 +950,7 @@
 }
 .passport-onb-card .btn.primary.block {
     width: 100%;
-    background: var(--gradient-cta);
+    background: var(--accent);
     color: var(--text-inverse);
     border: none;
     border-radius: var(--radius-full);
@@ -977,7 +973,7 @@
     height: 80px;
     display: grid;
     place-items: center;
-    background: var(--gradient-gold);
+    background: var(--warning);
     color: oklch(20% 0.05 80);
     border-radius: 50%;
     box-shadow: var(--shadow-xl), var(--shadow-glow-gold);
@@ -1041,8 +1037,6 @@
     position: absolute;
     inset: 0;
     background: oklch(0% 0 0 / 0.55);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
 }
 .donate-modal-card {
     position: relative;
@@ -1096,10 +1090,10 @@
     object-fit: cover;
     background: var(--bg-tertiary);
     flex: 0 0 auto;
-    border: 2px solid var(--gradient-gold);
+    border: 2px solid var(--warning);
     background:
         linear-gradient(var(--surface-elevated), var(--surface-elevated)) padding-box,
-        var(--gradient-gold) border-box;
+        var(--warning) border-box;
     padding: 2px;
 }
 .donate-modal-header h3 {
@@ -1141,13 +1135,13 @@
                 color var(--duration-fast) var(--ease-out);
 }
 .donate-preset:hover {
-    border-color: var(--gold);
-    color: var(--gold);
+    border-color: var(--warning);
+    color: var(--warning);
 }
 .donate-preset.is-active {
-    background: color-mix(in oklch, var(--gold) 16%, transparent);
-    border-color: var(--gold);
-    color: var(--gold);
+    background: color-mix(in oklch, var(--warning) 16%, transparent);
+    border-color: var(--warning);
+    color: var(--warning);
 }
 @supports not (color: color-mix(in oklch, red, blue)) {
     .donate-preset.is-active { background: var(--bg-tertiary); }
@@ -1166,9 +1160,9 @@
 }
 .donate-modal .input:focus {
     outline: none;
-    border-color: var(--gold);
+    border-color: var(--warning);
     background: var(--surface-elevated);
-    box-shadow: 0 0 0 3px color-mix(in oklch, var(--gold) 18%, transparent);
+    box-shadow: 0 0 0 3px color-mix(in oklch, var(--warning) 18%, transparent);
 }
 .donate-fee-note {
     font-size: var(--text-xs);
@@ -1192,7 +1186,7 @@
     border-top: 1px solid var(--border-light);
 }
 .donate-modal-footer .btn.btn-primary {
-    background: var(--gradient-gold) !important;
+    background: var(--warning) !important;
     color: oklch(20% 0.05 80) !important;
     border: none !important;
     border-radius: var(--radius-full) !important;
@@ -1348,8 +1342,6 @@
     position: fixed;
     inset: 0;
     background: oklch(0% 0 0 / 0.5);
-    backdrop-filter: blur(2px);
-    -webkit-backdrop-filter: blur(2px);
     z-index: var(--z-modal);
     animation: sub-scrim-in var(--duration-fast) var(--ease-out);
 }
@@ -1473,7 +1465,7 @@
     justify-content: space-between;
 }
 .trip-cart-actions .btn.btn-primary {
-    background: var(--gradient-cta) !important;
+    background: var(--accent) !important;
     color: var(--text-inverse) !important;
     border: none !important;
     border-radius: var(--radius-full) !important;

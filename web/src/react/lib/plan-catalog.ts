@@ -82,7 +82,7 @@ export const PLAN_FALLBACK: Catalog = {
       id: 'premium',
       name: 'Pro Traveler',
       tagline: 'For explorers & creators who live in the app',
-      tint: 'var(--gold)',
+      tint: 'var(--warning)',
       monthly: 14.9,
       yearly: 149,
       ctaLabel: 'Upgrade to Pro',

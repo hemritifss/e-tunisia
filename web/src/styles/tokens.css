@@ -1,170 +1,139 @@
 /* ============================================
-   E-TUNISIA DESIGN TOKENS v2.0
-   Next-gen OKLCH + Neon + Glass + Motion system
+   E-TUNISIA DESIGN TOKENS v3.0 — "Bled"
+   Whitewash surfaces · Sidi Bou Said blue · one serif/sans/mono stack.
+   Phase 1 of the visual overhaul: token retargeting only, no DOM changes.
+   Spec: design handoff "Tunisia design system overhaul" (README tables).
    ============================================ */
 
 /* Fonts load once from web/index.html (<link>, non-blocking) — no @import here.
-   Families: Inter · Noto Kufi Arabic · Fraunces · Caveat · JetBrains Mono. */
+   Families: Instrument Serif · Instrument Sans · Noto Kufi Arabic · JetBrains Mono. */
 
 :root {
-  /* ── Brand Colors (OKLCH perceptual) ── */
-  --terracotta:         oklch(55% 0.16 30);
-  --terracotta-light:   oklch(70% 0.12 30);
-  --terracotta-pale:    oklch(95% 0.03 30);
-  --terracotta-glow:    oklch(55% 0.16 30 / 0.35);
+  /* ── Surfaces (light · whitewash, not sand) ── */
+  --bg-primary:         #F7F9FC;
+  --bg-secondary:       #EDF1F7;
+  --bg-tertiary:        #EDF1F7;
+  --surface:            #FFFFFF;
+  --surface-hover:      #F7F9FC;
+  --surface-active:     #EDF1F7;
+  --surface-elevated:   #FFFFFF;
+  --border:             rgba(29, 46, 74, 0.13);
+  --border-light:       rgba(29, 46, 74, 0.07);
 
-  --mediterranean:      oklch(52% 0.14 240);
-  --mediterranean-light:oklch(67% 0.11 240);
-  --mediterranean-pale: oklch(94% 0.03 240);
-  --mediterranean-glow: oklch(52% 0.14 240 / 0.35);
+  /* ── Text (navy ink) ── */
+  --text-primary:       #1D2E4A;
+  --text-secondary:     #4A5B75;
+  --text-tertiary:      #5B6B82;
+  --text-muted:         #5B6B82;   /* 4.5:1 floor on #F7F9FC — nothing lighter */
+  --text-inverse:       #FFFFFF;
 
-  --sand:               oklch(80% 0.1 75);
-  --sand-light:         oklch(92% 0.05 75);
-  --olive:              oklch(57% 0.13 145);
-  --olive-light:        oklch(77% 0.09 145);
-  --coral:              oklch(67% 0.19 25);
+  /* ── The one accent: Sidi Bou Said blue ── */
+  --accent:             #1E5FA8;
+  --accent-hover:       #16447A;
+  --accent-light:       #E4EDF9;
+  --accent-text:        #FFFFFF;
+  --primary:            var(--accent);   /* legacy alias */
 
-  --gold:               oklch(78% 0.17 80);
-  --gold-glow:          oklch(78% 0.17 80 / 0.4);
-  --amber:              oklch(74% 0.18 60);
-  --violet:             oklch(58% 0.2 290);
-  --violet-glow:        oklch(58% 0.2 290 / 0.35);
-  --cyan:               oklch(72% 0.18 200);
-  --cyan-glow:          oklch(72% 0.18 200 / 0.35);
-  --rose:               oklch(62% 0.22 10);
+  /* Azure — secondary blue only (was --mediterranean) */
+  --mediterranean:      #4B8FD4;
+  --mediterranean-light:#7FB0E0;
+  --mediterranean-pale: #E4EDF9;
 
-  /* ── Neon Glow Variables ── */
-  --neon-terracotta:    0 0 20px oklch(65% 0.2 30 / 0.6), 0 0 40px oklch(65% 0.2 30 / 0.3);
-  --neon-blue:          0 0 20px oklch(65% 0.18 240 / 0.6), 0 0 40px oklch(65% 0.18 240 / 0.3);
-  --neon-gold:          0 0 20px oklch(80% 0.18 80 / 0.6), 0 0 40px oklch(80% 0.18 80 / 0.3);
-  --neon-violet:        0 0 20px oklch(65% 0.22 290 / 0.6), 0 0 40px oklch(65% 0.22 290 / 0.3);
-  --neon-cyan:          0 0 20px oklch(75% 0.2 200 / 0.6), 0 0 40px oklch(75% 0.2 200 / 0.3);
-
-  /* ── Glass ── */
-  --glass-bg:           oklch(100% 0 0 / 0.08);
-  --glass-bg-light:     oklch(100% 0 0 / 0.15);
-  --glass-border:       oklch(100% 0 0 / 0.18);
-  --glass-blur:         blur(20px) saturate(180%);
-  --glass-blur-heavy:   blur(40px) saturate(200%);
-
-  /* ── Gradient Tokens ── */
-  --gradient-brand:     linear-gradient(135deg, var(--terracotta) 0%, var(--coral) 50%, var(--amber) 100%);
-  --gradient-hero:      linear-gradient(135deg, oklch(14% 0.02 260) 0%, oklch(20% 0.05 290) 50%, oklch(18% 0.04 240) 100%);
-  --gradient-card:      linear-gradient(145deg, oklch(100% 0 0 / 0.1), oklch(100% 0 0 / 0.03));
-  --gradient-cta:       linear-gradient(135deg, var(--terracotta) 0%, var(--coral) 100%);
-  --gradient-gold:      linear-gradient(135deg, var(--gold) 0%, var(--amber) 100%);
-  --gradient-mesh:      radial-gradient(ellipse at 20% 50%, oklch(55% 0.16 30 / 0.15) 0%, transparent 50%),
-                        radial-gradient(ellipse at 80% 20%, oklch(52% 0.14 240 / 0.12) 0%, transparent 50%),
-                        radial-gradient(ellipse at 50% 80%, oklch(78% 0.17 80 / 0.1) 0%, transparent 40%);
-  --gradient-dark-mesh: radial-gradient(ellipse at 20% 50%, oklch(55% 0.16 30 / 0.08) 0%, transparent 50%),
-                        radial-gradient(ellipse at 80% 20%, oklch(52% 0.14 240 / 0.06) 0%, transparent 50%),
-                        radial-gradient(ellipse at 50% 80%, oklch(78% 0.17 80 / 0.05) 0%, transparent 40%);
-  --gradient-shine:     linear-gradient(105deg, transparent 40%, oklch(100% 0 0 / 0.15) 50%, transparent 60%);
-
-  /* ── Surfaces (light mode) ── */
-  --bg-primary:         oklch(98.5% 0.003 80);
-  --bg-secondary:       oklch(96.5% 0.005 80);
-  --bg-tertiary:        oklch(93.5% 0.008 80);
-  --surface:            oklch(100% 0 0);
-  --surface-hover:      oklch(97.5% 0.005 80);
-  --surface-active:     oklch(95.5% 0.008 80);
-  --surface-elevated:   oklch(100% 0 0);
-  --border:             oklch(89% 0.009 80);
-  --border-light:       oklch(93% 0.005 80);
-
-  /* ── Text ── */
-  --text-primary:       oklch(14% 0.01 60);
-  --text-secondary:     oklch(38% 0.01 60);
-  --text-tertiary:      oklch(52% 0.008 60);
-  --text-muted:         oklch(63% 0.005 60);
-  --text-inverse:       oklch(98% 0 0);
-
-  /* ── Accent ── */
-  --accent:             var(--terracotta);
-  --accent-hover:       oklch(50% 0.18 30);
-  --accent-light:       var(--terracotta-pale);
-  --accent-text:        oklch(98% 0 0);
-  /* Legacy alias — some older CSS still references --primary. */
-  --primary:            var(--accent);
-
-  /* Landing-page (cinematic) palette tokens used by `.tn-*` classes.
-     Originally referenced but never declared — without these the landing
-     footer + hero CTAs collapse to dark-on-dark / transparent. */
-  --tn-dark:            oklch(12% 0.014 260);
-  --tn-surface:         oklch(18% 0.014 260);
-  --tn-border:          oklch(100% 0 0 / 0.08);
-  --tn-terracotta:      var(--terracotta);
-  --tn-ochre:           var(--gold);
-  --tn-gold:            var(--gold);
-
-  /* ── Editorial paper & ink (carnet-de-voyage surfaces) ── */
-  --paper:              oklch(96.8% 0.013 85);   /* warm cream page */
-  --paper-warm:         oklch(94.2% 0.022 82);   /* aged card stock */
-  --paper-print:        oklch(99% 0.004 85);     /* white photo matte */
-  --paper-deep:         oklch(22% 0.028 50);     /* ink-dipped sections */
-  --ink:                oklch(23% 0.022 55);     /* body ink */
-  --ink-soft:           oklch(38% 0.018 55);
-  --ink-faint:          oklch(50% 0.015 58);
-  --ink-on-deep:        oklch(93.5% 0.018 85);
-  --rule:               oklch(23% 0.022 55 / 0.16);  /* hairline rules */
-  --rule-strong:        oklch(23% 0.022 55 / 0.52);
-  --rule-faint:         oklch(23% 0.022 55 / 0.09);  /* sub-hairline (borders-light) */
-  --tape:               oklch(86% 0.055 85 / 0.55);  /* masking tape */
-  --stamp-ink:          oklch(50% 0.15 30);          /* rubber-stamp red */
-  --paper-shadow:       0 1px 2px oklch(28% 0.03 55 / 0.1), 0 10px 26px -10px oklch(28% 0.03 55 / 0.22);
-  --paper-shadow-lift:  0 2px 4px oklch(28% 0.03 55 / 0.1), 0 22px 44px -14px oklch(28% 0.03 55 / 0.3);
+  /* ── Heritage stone (demoted sand — archival surfaces only) ── */
+  --stone:              #E7DECC;
+  --stone-pale:         #F2EBDD;
+  --stone-deep:         #8A7550;
+  --stone-text:         #6B5B3E;
 
   /* ── Semantic ── */
-  --success:            oklch(57% 0.15 155);
-  --success-light:      oklch(93% 0.03 155);
-  --warning:            oklch(74% 0.15 75);
-  --warning-light:      oklch(95% 0.04 75);
-  --error:              oklch(57% 0.19 25);
-  --error-light:        oklch(93% 0.04 25);
+  --success:            #4A7A47;   /* olive */
+  --success-light:      #E8F0E7;
+  --warning:            #8A7550;   /* stone-deep */
+  --warning-light:      #F2EBDD;
+  --error:              #CE0E2D;   /* flag red: live / now / destructive only */
+  --error-light:        #FBE7EA;
   --info:               var(--mediterranean);
   --info-light:         var(--mediterranean-pale);
 
-  /* ── Vote ── */
-  --upvote:             oklch(57% 0.16 145);
-  --upvote-bg:          oklch(93% 0.04 145);
-  --downvote:           oklch(57% 0.13 25);
-  --downvote-bg:        oklch(93% 0.03 25);
+  /* Voting is not a traffic light */
+  --upvote:             #1E5FA8;
+  --upvote-bg:          #E4EDF9;
+  --downvote:           #5B6B82;
+  --downvote-bg:        #EDF1F7;
 
-  /* ── Typography ── */
-  /* Outfit + Plus Jakarta retired (generic AI pairing) — display falls to Inter by
-     default; carnet pages remap --font-display to Fraunces (see [data-design="carnet"]). */
-  --font-display:       'Inter', 'Noto Kufi Arabic', system-ui, sans-serif;
-  --font-sans:          'Inter', 'Noto Kufi Arabic', system-ui, -apple-system, sans-serif;
+  /* ── Legacy accent aliases (Phase 2: re-point usages, then delete) ──
+     The old six-accent rainbow collapses into the system above. These keep
+     ~60 stylesheets rendering while their usages migrate. No new uses. */
+  --terracotta:         var(--accent);
+  --terracotta-light:   var(--mediterranean-light);
+  --terracotta-pale:    var(--accent-light);
+  --terracotta-glow:    rgba(30, 95, 168, 0.30);
+  --mediterranean-glow: rgba(75, 143, 212, 0.30);
+  --sand:               var(--stone);
+  --sand-light:         var(--stone-pale);
+  --olive:              var(--success);
+  --olive-light:        #A9C4A7;
+  --coral:              var(--accent);
+  --violet:             var(--accent);
+  --cyan:               var(--mediterranean);
+  --rose:               var(--error);
+
+  /* Landing `.tn-*` palette — mapped per handoff */
+  --tn-dark:            #1D2E4A;
+  --tn-surface:         #141C29;
+  --tn-border:          rgba(232, 238, 247, 0.10);
+  --tn-terracotta:      var(--accent);
+  --tn-ochre:           var(--warning);
+
+  /* ── Editorial paper & ink → remapped onto whitewash (Phase 2: fold) ── */
+  --paper:              var(--bg-primary);
+  --paper-warm:         var(--bg-secondary);
+  --paper-print:        var(--surface);
+  --paper-deep:         #1D2E4A;
+  --ink:                var(--text-primary);
+  --ink-soft:           var(--text-secondary);
+  --ink-faint:          var(--text-tertiary);
+  --ink-on-deep:        #E8EEF7;
+  --rule:               var(--border);
+  --rule-strong:        rgba(29, 46, 74, 0.52);
+  --rule-faint:         var(--border-light);
+  --tape:               rgba(231, 222, 204, 0.55);
+  --stamp-ink:          var(--error);
+  --paper-shadow:       none;
+  --paper-shadow-lift:  0 28px 60px -24px rgba(29, 46, 74, 0.4);
+
+  /* ── Typography: three roles, no exceptions ── */
+  --font-display:       'Instrument Serif', 'Noto Kufi Arabic', Georgia, serif;
+  --font-sans:          'Instrument Sans', 'Noto Kufi Arabic', system-ui, -apple-system, sans-serif;
   --font-mono:          'JetBrains Mono', 'Fira Code', monospace;
-  /* Editorial layer — marketing/storytelling surfaces (landing, campaigns) */
-  --font-editorial:     'Fraunces', 'Georgia', 'Times New Roman', serif;
-  --font-hand:          'Caveat', 'Bradley Hand', 'Segoe Script', cursive;
+  /* Legacy role aliases (Phase 2: re-point usages, then delete) */
+  --font-editorial:     var(--font-display);
+  --font-hand:          var(--font-display);
 
-  --text-xs:            0.6875rem;
-  --text-sm:            0.8125rem;
-  --text-base:          0.9375rem;
-  --text-lg:            1.0625rem;
-  /* Headings are fluid: max == prior fixed value (desktop unchanged), min smaller for mobile */
-  --text-xl:            clamp(1.125rem, 1.05rem + 0.40vw, 1.25rem);
-  --text-2xl:           clamp(1.35rem, 1.20rem + 0.75vw, 1.5rem);
-  --text-3xl:           clamp(1.55rem, 1.30rem + 1.25vw, 1.875rem);
-  --text-4xl:           clamp(1.95rem, 1.55rem + 2.00vw, 2.5rem);
-  --text-5xl:           clamp(2.30rem, 1.75rem + 2.75vw, 3.25rem);
-  --text-6xl:           clamp(2.60rem, 1.90rem + 3.50vw, 4rem);
-  --text-7xl:           clamp(3.00rem, 2.10rem + 4.50vw, 5rem);
+  --text-xs:            12px;
+  --text-sm:            13px;
+  --text-base:          15px;
+  --text-lg:            17px;
+  --text-xl:            20px;
+  --text-2xl:           26px;
+  --text-3xl:           34px;
+  --text-4xl:           40px;
+  --text-5xl:           60px;   /* hero only */
+  --text-6xl:           60px;   /* Phase 2: retire (scale caps at 5xl) */
+  --text-7xl:           60px;   /* Phase 2: retire */
 
   --leading-tight:      1.15;
   --leading-snug:       1.3;
-  --leading-normal:     1.55;
+  --leading-normal:     1.6;
   --leading-relaxed:    1.7;
 
   --tracking-tightest:  -0.04em;
   --tracking-tight:     -0.02em;
   --tracking-normal:    0;
-  --tracking-wide:      0.02em;
-  --tracking-widest:    0.08em;
+  --tracking-wide:      0.04em;
+  --tracking-widest:    0.14em;
 
-  /* ── Spacing ── */
+  /* ── Spacing (unchanged) ── */
   --space-1:            0.25rem;
   --space-2:            0.5rem;
   --space-3:            0.75rem;
@@ -179,47 +148,47 @@
   --space-24:           6rem;
   --space-32:           8rem;
 
-  /* ── Radius ── */
-  --radius-sm:          6px;
-  --radius-md:          10px;
-  --radius-lg:          16px;
-  --radius-xl:          22px;
-  --radius-2xl:         32px;
-  --radius-3xl:         48px;
+  /* ── Radius: controls 4px, cards 0, pill for chips/avatars/live dots ── */
+  --radius-sm:          2px;
+  --radius-md:          4px;
+  --radius-lg:          4px;
+  --radius-xl:          0;
+  --radius-2xl:         0;   /* Phase 2: delete token */
+  --radius-3xl:         0;   /* Phase 2: delete token */
   --radius-full:        9999px;
 
-  /* ── Shadows ── */
-  --shadow-xs:          0 1px 2px oklch(0% 0 0 / 0.04);
-  --shadow-sm:          0 1px 3px oklch(0% 0 0 / 0.06), 0 1px 2px oklch(0% 0 0 / 0.04);
-  --shadow-md:          0 4px 6px -1px oklch(0% 0 0 / 0.06), 0 2px 4px -2px oklch(0% 0 0 / 0.04);
-  --shadow-lg:          0 10px 15px -3px oklch(0% 0 0 / 0.07), 0 4px 6px -4px oklch(0% 0 0 / 0.05);
-  --shadow-xl:          0 20px 25px -5px oklch(0% 0 0 / 0.09), 0 8px 10px -6px oklch(0% 0 0 / 0.05);
-  --shadow-2xl:         0 40px 60px -12px oklch(0% 0 0 / 0.18);
-  --shadow-glow:        0 0 20px oklch(55% 0.16 30 / 0.2), 0 4px 16px oklch(55% 0.16 30 / 0.1);
-  --shadow-glow-blue:   0 0 20px oklch(52% 0.14 240 / 0.2), 0 4px 16px oklch(52% 0.14 240 / 0.1);
-  --shadow-glow-gold:   0 0 20px oklch(78% 0.17 80 / 0.25), 0 4px 16px oklch(78% 0.17 80 / 0.12);
-  --shadow-glass:       0 8px 32px oklch(0% 0 0 / 0.08), inset 0 1px 0 oklch(100% 0 0 / 0.2);
-  --shadow-card-hover:  0 24px 48px -8px oklch(0% 0 0 / 0.12), 0 8px 16px -4px oklch(0% 0 0 / 0.06);
+  /* ── Elevation: rules separate content; shadows exist only for overlays ── */
+  --shadow-xs:          none;
+  --shadow-sm:          none;
+  --shadow-md:          none;
+  --shadow-lg:          none;
+  --shadow-xl:          0 28px 60px -24px rgba(29, 46, 74, 0.4);
+  --shadow-2xl:         0 28px 60px -24px rgba(29, 46, 74, 0.4);
+  --shadow-card-hover:  0 18px 40px -18px rgba(29, 46, 74, 0.35);
+
+  /* ── The arch — the only motif; crops photography and nothing else ── */
+  --arch-up:            50% 50% 0 0 / 18% 18% 0 0;
+  --arch-down:          0 0 50% 50% / 0 0 9% 9%;
 
   /* ── Transitions ── */
   --ease-out:           cubic-bezier(0.16, 1, 0.3, 1);
   --ease-in-out:        cubic-bezier(0.65, 0, 0.35, 1);
-  --ease-spring:        cubic-bezier(0.34, 1.56, 0.64, 1);
-  --ease-elastic:       cubic-bezier(0.68, -0.55, 0.27, 1.55);
-  --ease-bounce:        cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  --ease-spring:        cubic-bezier(0.34, 1.4, 0.4, 1);
+  --ease-elastic:       cubic-bezier(0.34, 1.4, 0.4, 1);
+  --ease-bounce:        cubic-bezier(0.34, 1.4, 0.4, 1);
   --duration-instant:   80ms;
-  --duration-fast:      150ms;
-  --duration-normal:    280ms;
-  --duration-slow:      450ms;
+  --duration-fast:      180ms;
+  --duration-normal:    260ms;
+  --duration-slow:      420ms;
   --duration-slower:    700ms;
 
   /* ── Layout ── */
-  --nav-height:         68px;
+  --nav-height:         72px;
   --mobile-nav-height:  68px;
-  --sidebar-width:      336px;
-  --content-max:        700px;    /* single reading column (feed, articles) */
-  --page-standard:      940px;    /* default page width (.page) */
-  --page-max:           1280px;   /* wide dashboards / galleries */
+  --sidebar-width:      320px;
+  --content-max:        700px;
+  --page-standard:      940px;
+  --page-max:           1280px;
   --page-padding:       clamp(1rem, 4vw, 2rem);
 
   /* ── Z-index scale ── */
@@ -231,67 +200,64 @@
   --z-modal:            300;
   --z-toast:            400;
   --z-tooltip:          500;
-  --z-grain:            600;   /* film-grain overlay sits above everything */
+  --z-grain:            600;
 }
 
-/* ── Dark Theme ── */
+/* ── Dark theme — "Night edition" (4a) ──
+   `theme` persists in localStorage pre-paint; dark cannot be skipped. */
 [data-theme="dark"] {
-  --bg-primary:         oklch(10% 0.012 260);
-  --bg-secondary:       oklch(14% 0.013 260);
-  --bg-tertiary:        oklch(18% 0.014 260);
-  --surface:            oklch(15% 0.013 260);
-  --surface-hover:      oklch(20% 0.014 260);
-  --surface-active:     oklch(24% 0.015 260);
-  --surface-elevated:   oklch(17% 0.014 260);
-  --border:             oklch(26% 0.012 260);
-  --border-light:       oklch(21% 0.011 260);
+  --bg-primary:         #0E1520;
+  --bg-secondary:       #223045;
+  --bg-tertiary:        #1B2534;
+  --surface:            #141C29;
+  --surface-hover:      #223045;
+  --surface-active:     #223045;
+  --surface-elevated:   #1B2534;
+  --border:             rgba(232, 238, 247, 0.14);
+  --border-light:       rgba(232, 238, 247, 0.08);
 
-  --text-primary:       oklch(93% 0.006 80);
-  --text-secondary:     oklch(72% 0.006 80);
-  --text-tertiary:      oklch(55% 0.005 80);
-  --text-muted:         oklch(42% 0.004 80);
+  --text-primary:       #E8EEF7;
+  --text-secondary:     #A7B4C6;
+  --text-tertiary:      #7C8CA3;
+  --text-muted:         #7C8CA3;
+  --text-inverse:       #0E1520;
 
-  --accent:             oklch(68% 0.18 30);
-  --accent-hover:       oklch(74% 0.2 30);
-  --accent-light:       oklch(22% 0.07 30);
-  --terracotta-pale:    oklch(22% 0.07 30);
-  --mediterranean-pale: oklch(20% 0.06 240);
+  /* Never reuse the light accent on dark */
+  --accent:             #6BA6E8;
+  --accent-hover:       #8FBCEF;
+  --accent-light:       #16304D;
+  --accent-text:        #0E1520;
+  --mediterranean:      #6BA6E8;
+  --mediterranean-pale: #16304D;
 
-  --shadow-xs:          0 1px 2px oklch(0% 0 0 / 0.3);
-  --shadow-sm:          0 1px 3px oklch(0% 0 0 / 0.4), 0 1px 2px oklch(0% 0 0 / 0.3);
-  --shadow-md:          0 4px 6px -1px oklch(0% 0 0 / 0.4);
-  --shadow-lg:          0 10px 15px -3px oklch(0% 0 0 / 0.45);
-  --shadow-xl:          0 20px 25px -5px oklch(0% 0 0 / 0.5);
-  --shadow-2xl:         0 40px 60px -12px oklch(0% 0 0 / 0.6);
-  --shadow-glow:        0 0 24px oklch(68% 0.18 30 / 0.3), 0 4px 20px oklch(68% 0.18 30 / 0.15);
-  --shadow-glow-blue:   0 0 24px oklch(65% 0.16 240 / 0.3), 0 4px 20px oklch(65% 0.16 240 / 0.15);
-  --shadow-glass:       0 8px 32px oklch(0% 0 0 / 0.3), inset 0 1px 0 oklch(100% 0 0 / 0.08);
+  --success:            #7FB37C;
+  --success-light:      #1C2B1B;
+  --warning:            #C6B48C;
+  --warning-light:      #2A2419;
+  --error:              #FF5A6E;
+  --error-light:        #3A1620;
 
-  --glass-bg:           oklch(100% 0 0 / 0.04);
-  --glass-bg-light:     oklch(100% 0 0 / 0.08);
-  --glass-border:       oklch(100% 0 0 / 0.1);
+  --stone:              #2A2419;
+  --stone-pale:         #2A2419;
+  --stone-deep:         #C6B48C;
+  --stone-text:         #C6B48C;
 
-  --neon-terracotta:    0 0 20px oklch(68% 0.2 30 / 0.7), 0 0 50px oklch(68% 0.2 30 / 0.4), 0 0 80px oklch(68% 0.2 30 / 0.2);
-  --neon-blue:          0 0 20px oklch(68% 0.2 240 / 0.7), 0 0 50px oklch(68% 0.2 240 / 0.4);
-  --neon-gold:          0 0 20px oklch(82% 0.2 80 / 0.7), 0 0 50px oklch(82% 0.2 80 / 0.4);
-  --neon-violet:        0 0 20px oklch(68% 0.24 290 / 0.7), 0 0 50px oklch(68% 0.24 290 / 0.4);
+  --upvote:             #6BA6E8;
+  --upvote-bg:          #16304D;
+  --downvote:           #7C8CA3;
+  --downvote-bg:        #223045;
 
-  /* Editorial paper & ink — night edition */
-  --paper:              oklch(14.5% 0.012 60);
-  --paper-warm:         oklch(18% 0.016 65);
-  --paper-print:        oklch(21% 0.014 70);
-  --paper-deep:         oklch(10.5% 0.014 55);
-  --ink:                oklch(90% 0.015 85);
-  --ink-soft:           oklch(72% 0.012 82);
-  --ink-faint:          oklch(57% 0.01 80);
-  --ink-on-deep:        oklch(92% 0.016 85);
-  --rule:               oklch(90% 0.015 85 / 0.14);
-  --rule-strong:        oklch(90% 0.015 85 / 0.45);
-  --rule-faint:         oklch(90% 0.015 85 / 0.08);
-  --tape:               oklch(42% 0.04 80 / 0.55);
-  --stamp-ink:          oklch(66% 0.16 30);
-  --paper-shadow:       0 1px 2px oklch(0% 0 0 / 0.45), 0 12px 28px -10px oklch(0% 0 0 / 0.55);
-  --paper-shadow-lift:  0 2px 4px oklch(0% 0 0 / 0.45), 0 24px 48px -14px oklch(0% 0 0 / 0.65);
+  /* Paper & ink follow the night surfaces */
+  --paper-deep:         #0A101A;
+  --ink-on-deep:        #E8EEF7;
+  --rule-strong:        rgba(232, 238, 247, 0.45);
+  --tape:               rgba(42, 36, 25, 0.55);
+  --paper-shadow:       none;
+  --paper-shadow-lift:  0 28px 60px -24px rgba(0, 0, 0, 0.6);
+
+  --shadow-xl:          0 28px 60px -24px rgba(0, 0, 0, 0.6);
+  --shadow-2xl:         0 28px 60px -24px rgba(0, 0, 0, 0.6);
+  --shadow-card-hover:  0 18px 40px -18px rgba(0, 0, 0, 0.5);
 }
 
 /* ── RTL ── */
@@ -301,58 +267,44 @@
 }
 
 /* ============================================
-   SLEEK LAYER — now folded into the ONE carnet language.
-   Historically a separate minimalist skin, `sleek` shipped on
-   ~31 pages while `carnet` shipped on ~18 and the rest ran the
-   generic default — three visual languages with no IA logic,
-   the root cause of the "incohérence" users reported.
-   We keep the [data-design="sleek"] hook (31 pages reference it,
-   plus ~300 `--sleek-*` rules in pages.css) but re-point every
-   `--sleek-*` token onto the carnet paper & ink system. Result:
-   sleek pages inherit the carnet look with ZERO page rewrites,
-   and — because the carnet selector below also matches `sleek` —
-   their shared components pick up the same paper surfaces.
-   All values resolve through var(), so dark "night edition"
-   follows automatically. Do NOT reintroduce raw color here.
+   COMPAT LAYER — [data-design] hooks (Phase 2: remove attributes + this block)
+   The sleek/carnet remap blocks are gone: with Bled there is ONE system and
+   the remaps would fight it. ~300 `--sleek-*` rules in pages.css still read
+   these, so they alias straight to the base tokens — pure pass-through.
    ============================================ */
 [data-design="sleek"] {
-  /* Surfaces → paper */
-  --sleek-surface:          var(--paper-print);
-  --sleek-surface-muted:    var(--paper);
-  --sleek-surface-sunken:   var(--paper-warm);
-  --sleek-surface-hover:    var(--paper-warm);
-
-  /* Borders → ink hairlines */
-  --sleek-border:           var(--rule);
+  --sleek-surface:          var(--surface);
+  --sleek-surface-muted:    var(--bg-primary);
+  --sleek-surface-sunken:   var(--bg-secondary);
+  --sleek-surface-hover:    var(--surface-hover);
+  --sleek-border:           var(--border);
   --sleek-border-strong:    var(--rule-strong);
-
-  /* Text → ink */
-  --sleek-text:             var(--ink);
-  --sleek-text-secondary:   var(--ink-soft);
-  --sleek-text-muted:       var(--ink-faint);
-
-  /* Accent (brand) — unchanged */
+  --sleek-text:             var(--text-primary);
+  --sleek-text-secondary:   var(--text-secondary);
+  --sleek-text-muted:       var(--text-tertiary);
   --sleek-accent:           var(--accent);
   --sleek-accent-hover:     var(--accent-hover);
   --sleek-accent-text:      var(--accent-text);
   --sleek-accent-soft:      var(--accent-light);
-
-  /* Focus ring — WCAG 2.2 AA visible */
   --sleek-focus-ring:       0 0 0 2px var(--sleek-surface), 0 0 0 4px var(--sleek-accent);
-
-  /* Elevation → paper shadows */
   --sleek-elev-0:           none;
-  --sleek-elev-1:           var(--paper-shadow);
-  --sleek-elev-2:           var(--paper-shadow-lift);
-
-  /* Radii — restrained */
-  --sleek-radius-sm:        6px;
-  --sleek-radius-md:        10px;
-  --sleek-radius-lg:        14px;
-
-  /* Motion — fast, subtle */
+  --sleek-elev-1:           none;
+  --sleek-elev-2:           var(--shadow-xl);
+  --sleek-radius-sm:        var(--radius-sm);
+  --sleek-radius-md:        var(--radius-md);
+  --sleek-radius-lg:        var(--radius-lg);
   --sleek-motion-fast:      120ms var(--ease-out);
   --sleek-motion-base:      200ms var(--ease-out);
+}
+
+[data-design="carnet"] {
+  /* Letterpress offsets flatten: rules separate content, not shadows. */
+  --carnet-btn-shadow:      none;
+  --carnet-btn-shadow-lift: none;
+  --carnet-btn-shadow-sink: none;
+  --carnet-focus:           2px solid var(--accent);
+  --carnet-motion-fast:     150ms var(--ease-out);
+  --carnet-motion-base:     260ms var(--ease-out);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -360,59 +312,6 @@
     --sleek-motion-fast: 0ms linear;
     --sleek-motion-base: 0ms linear;
   }
-}
-
-/* ============================================
-   CARNET LAYER — "One Living Carnet"
-   Applied via [data-design="carnet"] on a page root.
-   Remaps app semantic tokens onto the editorial paper & ink
-   system (spec: design-system/UNIQUENESS.md). Every alias
-   resolves through var(), so the dark "night edition" defined
-   in [data-theme="dark"] follows automatically — do NOT add
-   raw color values here.
-
-   NOTE: `[data-design="sleek"]` is intentionally matched here too
-   so the two former languages render as ONE. See the sleek block above.
-   ============================================ */
-[data-design="carnet"],
-[data-design="sleek"] {
-  /* Surfaces → paper */
-  --bg-primary:         var(--paper);
-  --bg-secondary:       var(--paper-warm);
-  --bg-tertiary:        var(--paper-warm);
-  --surface:            var(--paper-print);
-  --surface-hover:      var(--paper-warm);
-  --surface-active:     var(--paper-warm);
-  --surface-elevated:   var(--paper-print);
-  --border:             var(--rule);
-  --border-light:       var(--rule-faint);
-
-  /* Text → ink */
-  --text-primary:       var(--ink);
-  --text-secondary:     var(--ink-soft);
-  --text-tertiary:      var(--ink-faint);
-  --text-muted:         var(--ink-faint);
-
-  /* Display type goes editorial serif on carnet pages */
-  --font-display:       var(--font-editorial);
-
-  /* Elevation → paper shadows (ambient grays retire on carnet surfaces) */
-  --shadow-sm:          var(--paper-shadow);
-  --shadow-md:          var(--paper-shadow);
-  --shadow-lg:          var(--paper-shadow-lift);
-  --shadow-xl:          var(--paper-shadow-lift);
-  --shadow-card-hover:  var(--paper-shadow-lift);
-
-  /* Component voice (letterpress offsets, focus, motion) */
-  --carnet-btn-shadow:      3px 3px 0 var(--ink);
-  --carnet-btn-shadow-lift: 5px 5px 0 var(--ink);
-  --carnet-btn-shadow-sink: 1px 1px 0 var(--ink);
-  --carnet-focus:           3px solid var(--mediterranean);
-  --carnet-motion-fast:     150ms var(--ease-out);
-  --carnet-motion-base:     280ms var(--ease-out);
-}
-
-@media (prefers-reduced-motion: reduce) {
   [data-design="carnet"] {
     --carnet-motion-fast: 0ms linear;
     --carnet-motion-base: 0ms linear;

@@ -183,7 +183,7 @@ function Hub() {
                     <>
                         <StatCard label="Travelers" value={s?.users ?? '—'} icon={<Users size={18} />} accent="var(--mediterranean)" />
                         <StatCard label="Places" value={s?.places ?? '—'} icon={<MapPin size={18} />} accent="var(--terracotta)" />
-                        <StatCard label="Reviews" value={s?.reviews ?? '—'} icon={<MessageSquare size={18} />} accent="var(--gold)" />
+                        <StatCard label="Reviews" value={s?.reviews ?? '—'} icon={<MessageSquare size={18} />} accent="var(--warning)" />
                         <StatCard label="Subscribers" value={s?.subscriptions ?? a?.activeSubscriptions ?? '—'} icon={<Crown size={18} />} accent="var(--violet)" />
                     </>
                 )}
@@ -195,7 +195,7 @@ function Hub() {
                     <div className="admin-stats">
                         <StatCard label="MRR" value={`${a.mrr.toLocaleString()} TND`} icon={<Wallet size={18} />} accent="var(--olive)" />
                         <StatCard label="ARR (run-rate)" value={`${a.arr.toLocaleString()} TND`} icon={<TrendingUp size={18} />} accent="var(--mediterranean)" />
-                        <StatCard label="Pending payments" value={a.pendingSubscriptions} icon={<Clock size={18} />} accent="var(--gold)" />
+                        <StatCard label="Pending payments" value={a.pendingSubscriptions} icon={<Clock size={18} />} accent="var(--warning)" />
                         <StatCard label="Free → Paid" value={`${a.conversionRate}%`} icon={<Sparkles size={18} />} accent="var(--violet)" />
                     </div>
                 </section>
@@ -206,7 +206,7 @@ function Hub() {
                 <div className="admin-queues">
                     <QueueCard icon={<Users size={18} />} title="Users" desc="Search, change role, suspend" href="#/admin/users" accent="var(--mediterranean)" />
                     <QueueCard icon={<MapPin size={18} />} title="Places" desc="Approve submissions + featured slots" href="#/admin/places" accent="var(--terracotta)" badge={s?.pendingPlaces} />
-                    <QueueCard icon={<MessageSquare size={18} />} title="Reviews" desc="Moderate community reviews" href="#/admin/reviews" accent="var(--gold)" />
+                    <QueueCard icon={<MessageSquare size={18} />} title="Reviews" desc="Moderate community reviews" href="#/admin/reviews" accent="var(--warning)" />
                     <QueueCard icon={<Crown size={18} />} title="Subscriptions" desc="Confirm manual payments + refunds" href="#/admin/subscriptions" accent="var(--violet)" badge={a?.pendingSubscriptions} />
                     <QueueCard icon={<Calendar size={18} />} title="Events" desc="Approve event submissions" href="#/admin/events" accent="var(--rose)" />
                     <QueueCard icon={<Lightbulb size={18} />} title="Tips" desc="Moderate community travel tips" href="#/admin/tips" accent="var(--olive)" />

@@ -27,13 +27,13 @@
     position: absolute;
     inset: 0;
     z-index: -2;
-    background: var(--gradient-hero);
+    background: var(--paper-deep);
 }
 .event2-hero-mesh {
     position: absolute;
     inset: 0;
     z-index: -1;
-    background: var(--gradient-dark-mesh);
+    background: none;
     pointer-events: none;
 }
 .event2-hero-orbs {
@@ -84,8 +84,6 @@
     padding: 4px var(--space-3);
     background: oklch(100% 0 0 / 0.14);
     border: 1px solid oklch(100% 0 0 / 0.22);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
     border-radius: var(--radius-full);
     color: oklch(95% 0.02 80);
     font-size: 11px;
@@ -105,11 +103,11 @@
     text-shadow: 0 2px 16px oklch(0% 0 0 / 0.25);
 }
 .events-page .event2-accent {
-    background: linear-gradient(120deg, var(--gold), var(--coral), var(--gold));
+    background: linear-gradient(120deg, var(--warning), var(--coral), var(--warning));
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent;
+    -webkit-text-fill-color: currentColor;
     color: transparent;
     animation: event2-grad 6s var(--ease-in-out) infinite;
 }
@@ -274,8 +272,6 @@
     font-weight: 700;
     letter-spacing: var(--tracking-wide);
     text-transform: uppercase;
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
     box-shadow: var(--shadow-sm);
 }
 @supports not (color: color-mix(in oklch, red, blue)) {
@@ -291,7 +287,7 @@
     align-items: center;
     gap: 4px;
     padding: 4px 10px;
-    background: var(--gradient-gold);
+    background: var(--warning);
     color: oklch(20% 0.05 80);
     border-radius: var(--radius-full);
     font-size: 11px;

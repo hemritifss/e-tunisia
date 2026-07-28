@@ -58,7 +58,7 @@ const VALUES = [
   { color: 'var(--coral)', title: 'Community-Driven', desc: 'Real travelers, real locals, real experiences. Our community curates everything, with no corporate editorial team deciding what is worth seeing.', icon: <><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" /></> },
   { color: 'var(--olive)', title: 'Support Local', desc: 'We prioritize family-run businesses, artisans, and independent hosts. Every booking directly supports Tunisian entrepreneurs.', icon: <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /> },
   { color: 'var(--mediterranean)', title: 'Authentic Experiences', desc: 'No tourist traps, no paid placements. Every recommendation is tested and verified by our community of explorers.', icon: <><circle cx="12" cy="12" r="10" /><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" fill="currentColor" stroke="none" /></> },
-  { color: 'var(--gold)', title: 'Sustainable Tourism', desc: "Responsible travel that preserves Tunisia's natural beauty and cultural heritage for future generations.", icon: <path d="M12 2.69l5.66 5.66a8 8 0 11-11.31 0z" /> },
+  { color: 'var(--warning)', title: 'Sustainable Tourism', desc: "Responsible travel that preserves Tunisia's natural beauty and cultural heritage for future generations.", icon: <path d="M12 2.69l5.66 5.66a8 8 0 11-11.31 0z" /> },
 ];
 
 // ASSET: real square headshots pending for the two people below. Until they

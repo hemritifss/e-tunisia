@@ -56,8 +56,6 @@
     place-items: center;
     background: oklch(100% 0 0 / 0.2);
     border: 1px solid oklch(100% 0 0 / 0.28);
-    backdrop-filter: blur(12px) saturate(160%);
-    -webkit-backdrop-filter: blur(12px) saturate(160%);
     border-radius: 50%;
     color: oklch(98% 0 0);
     transition: background var(--duration-fast) var(--ease-out),
@@ -131,8 +129,8 @@
     font-size: 16px;
 }
 .place-detail-page .place-detail-stars i.filled {
-    color: var(--gold);
-    fill: var(--gold);
+    color: var(--warning);
+    fill: var(--warning);
 }
 .place-detail-page .place-detail-rating-value {
     font-family: var(--font-display);
@@ -174,7 +172,7 @@
     padding: var(--space-2) var(--space-4);
 }
 .place-detail-page .place-detail-cta-row .place-cta-primary {
-    background: var(--gradient-cta) !important;
+    background: var(--accent) !important;
     color: var(--text-inverse) !important;
     box-shadow: var(--shadow-glow);
     border: none !important;
@@ -244,7 +242,7 @@
 .place-review-rating-input .star-btn:active { transform: scale(0.92); }
 .place-review-rating-input .star-btn.active,
 .place-review-rating-input .star-btn:hover ~ .star-btn:not(.active) { color: var(--border); }
-.place-review-rating-input .star-btn.active { color: var(--gold); }
+.place-review-rating-input .star-btn.active { color: var(--warning); }
 .place-review-rating-input .star-btn.active i { fill: currentColor; }
 
 .place-detail-page .place-detail-review-form .input {
@@ -384,8 +382,8 @@
     font-size: 12px;
 }
 .place-detail-page .place-review-stars i.filled {
-    color: var(--gold);
-    fill: var(--gold);
+    color: var(--warning);
+    fill: var(--warning);
 }
 .place-detail-page .place-review-text {
     color: var(--text-primary);
@@ -467,7 +465,7 @@
     align-items: center;
     gap: 6px;
 }
-.place-detail-page .place-detail-packages h2 i { color: var(--gold); font-size: 18px; }
+.place-detail-page .place-detail-packages h2 i { color: var(--warning); font-size: 18px; }
 .packages-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -485,7 +483,7 @@
 .package-card:hover {
     transform: translateY(-2px);
     box-shadow: var(--shadow-md);
-    border-color: var(--gold);
+    border-color: var(--warning);
 }
 
 /* ── Loading + 404 ────────────────────────── */
@@ -600,7 +598,7 @@
     font-family: var(--font-display); font-weight: 700; font-size: var(--text-xl);
     color: var(--text-primary);
 }
-.pdb-rating-score svg, .pdb-rating-score i { color: var(--gold); fill: var(--gold); width: 18px; height: 18px; }
+.pdb-rating-score svg, .pdb-rating-score i { color: var(--warning); fill: var(--warning); width: 18px; height: 18px; }
 .pdb-rating-count { color: var(--text-secondary); font-size: var(--text-sm); }
 .place-detail-booking .pdb-cta { width: 100%; justify-content: center; }
 .pdb-actions { display: flex; flex-direction: column; gap: var(--space-2); }

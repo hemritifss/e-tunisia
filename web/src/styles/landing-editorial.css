@@ -183,8 +183,6 @@
     right: 0;
     z-index: var(--z-overlay);
     background: color-mix(in oklab, var(--paper) 92%, transparent);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
     border-bottom: 1px solid transparent;
     transition: border-color var(--duration-normal) var(--ease-out),
                 box-shadow var(--duration-normal) var(--ease-out);
@@ -417,7 +415,6 @@
     height: 26px;
     background: var(--tape);
     box-shadow: 0 1px 2px oklch(0% 0 0 / 0.06);
-    backdrop-filter: blur(1px);
 }
 .ej-print-1 { top: 4%;  left: 0;    rotate: -4.2deg; z-index: 3; }
 .ej-print-2 { top: 0;   right: 2%;  rotate: 2.8deg;  z-index: 2; width: min(52%, 290px); }
@@ -483,7 +480,7 @@
     text-transform: uppercase;
     white-space: nowrap;
 }
-.ej-ticker-sep { color: var(--gold); font-size: 0.85rem; }
+.ej-ticker-sep { color: var(--warning); font-size: 0.85rem; }
 
 /* ── Almanac — honest numbers, footnoted by hand ─────────── */
 .ej-almanac {
@@ -626,8 +623,8 @@
     color: var(--ink-soft);
 }
 .ej-place-meta .ej-stars { display: inline-flex; gap: 1px; color: var(--rule-strong); }
-.ej-place-meta .ej-stars .is-filled { color: var(--gold); }
-.ej-place-meta .ej-stars .is-filled svg { fill: var(--gold); }
+.ej-place-meta .ej-stars .is-filled { color: var(--warning); }
+.ej-place-meta .ej-stars .is-filled svg { fill: var(--warning); }
 .ej-section-foot {
     margin-top: var(--space-12);
     display: flex;
@@ -998,8 +995,8 @@
     font-size: 0.56rem;
     font-weight: 700;
     letter-spacing: 0.18em;
-    color: var(--gold);
-    border: 1.5px solid var(--gold);
+    color: var(--warning);
+    border: 1.5px solid var(--warning);
     padding: 2px 7px;
     border-radius: 2px;
     text-transform: uppercase;
@@ -1302,7 +1299,7 @@ select.ej-input option { color: var(--text-primary); background: var(--surface);
     margin: 0 0 var(--space-4);
     text-wrap: balance;
 }
-.ej-cta h2 em { font-style: italic; font-weight: 440; color: var(--gold); }
+.ej-cta h2 em { font-style: italic; font-weight: 440; color: var(--warning); }
 .ej-cta-arabic {
     font-family: 'Noto Kufi Arabic', var(--font-sans);
     font-size: clamp(1.1rem, 2vw, 1.4rem);

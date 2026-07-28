@@ -188,7 +188,7 @@ pre, table {
 .hero2-accent {
     background: none !important;
     -webkit-text-fill-color: currentColor !important;
-    color: var(--gold) !important;
+    color: var(--warning) !important;
     animation: none !important;
 }
 /* Onboarding highlight sits on paper — use the terracotta accent, not gold. */

@@ -236,7 +236,7 @@
 }
 
 /* ── Blank-page empty state ──
-   .cn-empty-note (Caveat) is flavor only — always pair with
+   .cn-empty-note (hand face) is flavor only — always pair with
    .cn-empty-hint plain text + one .cn-btn for the actual guidance. */
 .cn-empty {
   display: flex;

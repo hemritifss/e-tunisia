@@ -167,7 +167,6 @@
   padding: 5px 13px;
   font-size: var(--text-sm);
   font-weight: 600;
-  backdrop-filter: blur(4px);
 }
 .quiz-result-blurb {
   font-size: var(--text-base);

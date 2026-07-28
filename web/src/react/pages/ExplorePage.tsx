@@ -56,7 +56,7 @@ const CATEGORIES: CategoryDef[] = [
   { id: 'all',        name: 'All',        Icon: Globe,            tint: 'var(--text-secondary)' },
   { id: 'beaches',    name: 'Beaches',    Icon: Waves,            tint: 'var(--cyan)' },
   { id: 'historical', name: 'Historical', Icon: Landmark,         tint: 'var(--sand)' },
-  { id: 'food',       name: 'Food',       Icon: UtensilsCrossed,  tint: 'var(--gold)' },
+  { id: 'food',       name: 'Food',       Icon: UtensilsCrossed,  tint: 'var(--warning)' },
   { id: 'nature',     name: 'Nature',     Icon: Trees,            tint: 'var(--olive)' },
   { id: 'culture',    name: 'Culture',    Icon: Library,          tint: 'var(--violet)' },
   { id: 'adventure',  name: 'Adventure',  Icon: Mountain,         tint: 'var(--terracotta)' },

@@ -24,8 +24,6 @@
     place-items: center;
     background: oklch(100% 0 0 / 0.18);
     border: 1px solid oklch(100% 0 0 / 0.28);
-    backdrop-filter: blur(12px) saturate(160%);
-    -webkit-backdrop-filter: blur(12px) saturate(160%);
     border-radius: 50%;
     color: oklch(98% 0 0);
     z-index: 2;
@@ -55,13 +53,13 @@
     position: absolute;
     inset: 0;
     z-index: -2;
-    background: var(--gradient-hero);
+    background: var(--paper-deep);
 }
 .user-profile-v2 .up-cover-pattern {
     position: absolute;
     inset: 0;
     z-index: -1;
-    background: var(--gradient-dark-mesh);
+    background: none;
     pointer-events: none;
 }
 .up-cover-orbs {
@@ -103,9 +101,9 @@
 
 /* Pro cover swaps to gold/terracotta/amber */
 .user-profile-v2 .up-cover.is-pro .up-cover-gradient {
-    background: linear-gradient(135deg, var(--gold) 0%, var(--terracotta) 50%, var(--amber) 100%);
+    background: linear-gradient(135deg, var(--warning) 0%, var(--terracotta) 50%, var(--warning) 100%);
 }
-.user-profile-v2 .up-cover.is-pro .up-cover-orb:nth-child(1) { background: var(--amber); }
+.user-profile-v2 .up-cover.is-pro .up-cover-orb:nth-child(1) { background: var(--warning); }
 .user-profile-v2 .up-cover.is-pro .up-cover-orb:nth-child(2) { background: var(--terracotta); }
 
 /* Cover edit button (only for me) */
@@ -119,8 +117,6 @@
     padding: 6px var(--space-3);
     background: oklch(100% 0 0 / 0.18);
     border: 1px solid oklch(100% 0 0 / 0.28);
-    backdrop-filter: blur(12px) saturate(160%);
-    -webkit-backdrop-filter: blur(12px) saturate(160%);
     border-radius: var(--radius-full);
     color: oklch(98% 0 0);
     font-size: var(--text-xs);
@@ -144,8 +140,6 @@
     padding: 6px var(--space-3);
     background: oklch(100% 0 0 / 0.18);
     border: 1px solid oklch(100% 0 0 / 0.28);
-    backdrop-filter: blur(12px) saturate(160%);
-    -webkit-backdrop-filter: blur(12px) saturate(160%);
     border-radius: var(--radius-full);
     color: oklch(98% 0 0);
     font-size: var(--text-xs);
@@ -158,11 +152,11 @@
     place-items: center;
     width: 18px;
     height: 18px;
-    color: var(--gold);
+    color: var(--warning);
 }
 .up-tier-icon i { font-size: 12px; }
-.up-cover-tier-badge[data-tier="crown"] .up-tier-icon { color: var(--gold); }
-.up-cover-tier-badge[data-tier="star"]  .up-tier-icon { color: var(--gold); }
+.up-cover-tier-badge[data-tier="crown"] .up-tier-icon { color: var(--warning); }
+.up-cover-tier-badge[data-tier="star"]  .up-tier-icon { color: var(--warning); }
 .up-cover-tier-badge[data-tier="compass"] .up-tier-icon { color: var(--cyan); }
 .up-cover-tier-badge[data-tier="sprout"]  .up-tier-icon { color: var(--olive); }
 
@@ -188,7 +182,7 @@
     flex: 0 0 auto;
 }
 .user-profile-v2 .up-avatar-wrap.is-pro {
-    background: var(--gradient-gold);
+    background: var(--warning);
 }
 .user-profile-v2 .up-avatar {
     width: 100%;
@@ -205,7 +199,7 @@
     height: 30px;
     display: grid;
     place-items: center;
-    background: var(--gradient-gold);
+    background: var(--warning);
     color: oklch(20% 0.05 80);
     border: 2px solid var(--surface-elevated);
     border-radius: 50%;
@@ -280,13 +274,13 @@
 }
 .user-profile-v2 .up-verified i { font-size: 20px; }
 .up-pro-sparkle {
-    color: var(--gold);
+    color: var(--warning);
     display: inline-grid;
     place-items: center;
     width: 22px;
     height: 22px;
     border-radius: 50%;
-    background: color-mix(in oklch, var(--gold) 18%, transparent);
+    background: color-mix(in oklch, var(--warning) 18%, transparent);
 }
 @supports not (color: color-mix(in oklch, red, blue)) {
     .up-pro-sparkle { background: var(--bg-tertiary); }
@@ -359,7 +353,7 @@
 .up-stat-icon-posts     { background: color-mix(in oklch, var(--accent) 16%, transparent);        color: var(--accent); }
 .up-stat-icon-followers { background: color-mix(in oklch, var(--mediterranean) 16%, transparent); color: var(--mediterranean); }
 .up-stat-icon-following { background: color-mix(in oklch, var(--violet) 16%, transparent);       color: var(--violet); }
-.up-stat-icon-xp        { background: color-mix(in oklch, var(--gold) 18%, transparent);          color: var(--gold); }
+.up-stat-icon-xp        { background: color-mix(in oklch, var(--warning) 18%, transparent);          color: var(--warning); }
 @supports not (color: color-mix(in oklch, red, blue)) {
     .up-stat-icon-posts,
     .up-stat-icon-followers,
@@ -596,12 +590,12 @@
 .user-profile-v2 .up-badge-card:hover {
     transform: translateY(-2px);
     box-shadow: var(--shadow-md);
-    border-color: var(--gold);
+    border-color: var(--warning);
 }
 .user-profile-v2 .up-badge-card i {
     font-size: 28px;
-    color: var(--gold);
-    background: color-mix(in oklch, var(--gold) 16%, transparent);
+    color: var(--warning);
+    background: color-mix(in oklch, var(--warning) 16%, transparent);
     width: 48px;
     height: 48px;
     border-radius: 50%;

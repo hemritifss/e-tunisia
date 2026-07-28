@@ -27,13 +27,13 @@
     position: absolute;
     inset: 0;
     z-index: -2;
-    background: var(--gradient-hero);
+    background: var(--paper-deep);
 }
 .tips2-hero-mesh {
     position: absolute;
     inset: 0;
     z-index: -1;
-    background: var(--gradient-dark-mesh);
+    background: none;
     pointer-events: none;
 }
 .tips2-hero-orbs {
@@ -55,7 +55,7 @@
     height: 340px;
     top: -100px;
     left: -60px;
-    background: var(--gold);
+    background: var(--warning);
 }
 .tips2-hero-orb:nth-child(2) {
     width: 300px;
@@ -84,8 +84,6 @@
     padding: 4px var(--space-3);
     background: oklch(100% 0 0 / 0.14);
     border: 1px solid oklch(100% 0 0 / 0.22);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
     border-radius: var(--radius-full);
     color: oklch(95% 0.02 80);
     font-size: 11px;
@@ -105,11 +103,11 @@
     text-shadow: 0 2px 16px oklch(0% 0 0 / 0.25);
 }
 .tips-page .tips2-accent {
-    background: linear-gradient(120deg, var(--gold), var(--olive), var(--gold));
+    background: linear-gradient(120deg, var(--warning), var(--olive), var(--warning));
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent;
+    -webkit-text-fill-color: currentColor;
     color: transparent;
     animation: tips2-grad 6s var(--ease-in-out) infinite;
 }
@@ -135,7 +133,7 @@
     align-items: center;
     gap: var(--space-2);
     padding: var(--space-3) var(--space-5);
-    background: var(--gradient-gold);
+    background: var(--warning);
     color: oklch(20% 0.05 80);
     border: none;
     border-radius: var(--radius-full);
@@ -552,8 +550,6 @@
     position: absolute;
     inset: 0;
     background: oklch(0% 0 0 / 0.5);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
 }
 .tips2-modal-content {
     position: relative;
@@ -664,7 +660,7 @@ textarea.tips2-modal-input { resize: vertical; }
     justify-content: center;
     gap: var(--space-2);
     padding: var(--space-3) var(--space-5);
-    background: var(--gradient-cta);
+    background: var(--accent);
     color: var(--text-inverse);
     border: none;
     border-radius: var(--radius-full);

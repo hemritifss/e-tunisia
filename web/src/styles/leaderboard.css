@@ -27,13 +27,13 @@
     position: absolute;
     inset: 0;
     z-index: -2;
-    background: var(--gradient-hero);
+    background: var(--paper-deep);
 }
 .leaderboard-hero-mesh {
     position: absolute;
     inset: 0;
     z-index: -1;
-    background: var(--gradient-dark-mesh);
+    background: none;
     pointer-events: none;
 }
 .leaderboard-hero-orbs {
@@ -55,7 +55,7 @@
     height: 320px;
     top: -100px;
     left: -50px;
-    background: var(--gold);
+    background: var(--warning);
 }
 .leaderboard-hero-orb:nth-child(2) {
     width: 280px;
@@ -84,8 +84,6 @@
     padding: 4px var(--space-3);
     background: oklch(100% 0 0 / 0.14);
     border: 1px solid oklch(100% 0 0 / 0.22);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
     border-radius: var(--radius-full);
     color: oklch(95% 0.02 80);
     font-size: 11px;
@@ -105,11 +103,11 @@
     text-shadow: 0 2px 12px oklch(0% 0 0 / 0.25);
 }
 .leaderboard-accent {
-    background: linear-gradient(120deg, var(--gold), var(--terracotta-light), var(--gold));
+    background: linear-gradient(120deg, var(--warning), var(--terracotta-light), var(--warning));
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent;
+    -webkit-text-fill-color: currentColor;
     color: transparent;
     animation: leaderboard-grad 6s var(--ease-in-out) infinite;
 }
@@ -227,7 +225,7 @@
 .leaderboard-page .leaderboard-item.is-top-1 {
     background:
         linear-gradient(var(--surface-elevated), var(--surface-elevated)) padding-box,
-        var(--gradient-gold) border-box;
+        var(--warning) border-box;
     border: 1px solid transparent;
     box-shadow: var(--shadow-md), 0 4px 18px oklch(78% 0.17 80 / 0.18);
 }
@@ -286,7 +284,7 @@
     z-index: 1;
 }
 .leaderboard-medal-gold {
-    background: var(--gradient-gold);
+    background: var(--warning);
     color: oklch(20% 0.05 80);
 }
 .leaderboard-medal-silver {
@@ -341,7 +339,7 @@
     flex: 0 0 auto;
 }
 .leaderboard-tier i { font-size: 10px; }
-.leaderboard-tier-pro      { background: var(--gradient-gold); color: oklch(20% 0.05 80); }
+.leaderboard-tier-pro      { background: var(--warning); color: oklch(20% 0.05 80); }
 .leaderboard-tier-business { background: linear-gradient(135deg, var(--mediterranean), var(--violet)); color: var(--text-inverse); }
 .leaderboard-tier-guide    { background: var(--olive); color: var(--text-inverse); }
 

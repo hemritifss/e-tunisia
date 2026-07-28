@@ -26,11 +26,11 @@
 }
 .premium-hero-bg {
     position: absolute; inset: 0; z-index: -2;
-    background: linear-gradient(135deg, var(--gold) 0%, var(--terracotta) 50%, var(--amber) 100%);
+    background: linear-gradient(135deg, var(--warning) 0%, var(--terracotta) 50%, var(--warning) 100%);
 }
 .premium-hero-mesh {
     position: absolute; inset: 0; z-index: -1;
-    background: var(--gradient-dark-mesh);
+    background: none;
     pointer-events: none;
     opacity: 0.4;
 }
@@ -43,7 +43,7 @@
     filter: blur(70px); opacity: 0.5;
     animation: premium-orb 16s var(--ease-in-out) infinite;
 }
-.premium-hero-orb:nth-child(1) { width: 380px; height: 380px; top: -100px; left: -50px; background: var(--gold); }
+.premium-hero-orb:nth-child(1) { width: 380px; height: 380px; top: -100px; left: -50px; background: var(--warning); }
 .premium-hero-orb:nth-child(2) { width: 320px; height: 320px; bottom: -120px; right: -40px; background: oklch(95% 0.05 80); animation-delay: -8s; }
 @keyframes premium-orb {
     0%, 100% { transform: translate(0, 0) scale(1); }
@@ -63,8 +63,6 @@
     margin: 0 auto var(--space-3);
     background: oklch(100% 0 0 / 0.22);
     border: 1px solid oklch(100% 0 0 / 0.32);
-    backdrop-filter: blur(12px) saturate(160%);
-    -webkit-backdrop-filter: blur(12px) saturate(160%);
     border-radius: 50%;
     color: oklch(98% 0 0);
 }
@@ -81,7 +79,7 @@
     background: linear-gradient(120deg, oklch(98% 0 0), oklch(96% 0.08 80), oklch(98% 0 0));
     background-size: 200% auto;
     -webkit-background-clip: text; background-clip: text;
-    -webkit-text-fill-color: transparent; color: transparent;
+    -webkit-text-fill-color: currentColor; color: transparent;
     animation: premium-grad 6s var(--ease-in-out) infinite;
 }
 @keyframes premium-grad {
@@ -129,7 +127,7 @@
     border: 1px solid transparent;
     background:
         linear-gradient(var(--surface-elevated), var(--surface-elevated)) padding-box,
-        var(--gradient-gold) border-box;
+        var(--warning) border-box;
     box-shadow: var(--shadow-lg), 0 8px 32px oklch(78% 0.17 80 / 0.18);
 }
 .premium-card.is-featured:hover {
@@ -146,7 +144,7 @@
     transform: translateX(-50%);
     display: inline-flex; align-items: center; gap: 4px;
     padding: 4px 12px;
-    background: var(--gradient-gold);
+    background: var(--warning);
     color: oklch(20% 0.05 80);
     border-radius: var(--radius-full);
     font-size: 11px; font-weight: 700;
@@ -233,7 +231,7 @@
                 background var(--duration-fast) var(--ease-out);
 }
 .premium-card.is-featured .premium-btn {
-    background: var(--gradient-gold);
+    background: var(--warning);
     color: oklch(20% 0.05 80);
     border: none;
     box-shadow: var(--shadow-glow-gold);
@@ -344,7 +342,6 @@
 .premium-page .premium-payment-overlay {
     position: fixed; inset: 0;
     background: oklch(0% 0 0 / 0.55);
-    backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
     z-index: var(--z-modal);
     opacity: 0;
     pointer-events: none;
@@ -487,7 +484,7 @@
     gap: 6px;
     padding: var(--space-3);
     min-height: 48px;
-    background: var(--gradient-cta);
+    background: var(--accent);
     color: var(--text-inverse);
     border: none;
     border-radius: var(--radius-full);

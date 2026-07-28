@@ -23,8 +23,8 @@
     isolation: isolate;
     box-shadow: var(--shadow-xl);
 }
-.discover-trips-hero-bg   { position: absolute; inset: 0; z-index: -2; background: var(--gradient-hero); }
-.discover-trips-hero-mesh { position: absolute; inset: 0; z-index: -1; background: var(--gradient-dark-mesh); pointer-events: none; }
+.discover-trips-hero-bg   { position: absolute; inset: 0; z-index: -2; background: var(--paper-deep); }
+.discover-trips-hero-mesh { position: absolute; inset: 0; z-index: -1; background: none; pointer-events: none; }
 .discover-trips-hero-orbs { position: absolute; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
 .discover-trips-hero-orb {
     position: absolute; border-radius: 50%;
@@ -46,7 +46,6 @@
     padding: 4px var(--space-3);
     background: oklch(100% 0 0 / 0.14);
     border: 1px solid oklch(100% 0 0 / 0.22);
-    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
     border-radius: var(--radius-full);
     color: oklch(95% 0.02 80);
     font-size: 11px; font-weight: 600;
@@ -65,7 +64,7 @@
     background: linear-gradient(120deg, var(--mediterranean), var(--coral), var(--mediterranean));
     background-size: 200% auto;
     -webkit-background-clip: text; background-clip: text;
-    -webkit-text-fill-color: transparent; color: transparent;
+    -webkit-text-fill-color: currentColor; color: transparent;
     animation: discover-grad 6s var(--ease-in-out) infinite;
 }
 @keyframes discover-grad {
@@ -210,7 +209,6 @@
     color: oklch(98% 0 0);
     border-radius: var(--radius-full);
     font-size: 11px; font-weight: 600;
-    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
 }
 .discover-trips-page .discover-trip-body {
     padding: var(--space-3) var(--space-4);
