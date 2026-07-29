@@ -521,6 +521,8 @@
 }
 .explore-cats::-webkit-scrollbar { display: none; }
 .explore-cat {
+    position: relative;
+    isolation: isolate;
     display: inline-flex;
     align-items: center;
     gap: var(--space-2);
@@ -546,14 +548,30 @@
 }
 .explore-cat:active { transform: scale(0.97); }
 .explore-cat:focus-visible { outline: 2px solid var(--cat-tint); outline-offset: 2px; }
+/* The active fill is the travelling pill below, not a per-chip background, so
+   the chip's own chrome gets out of its way. */
 .explore-cat.is-active {
-    background: color-mix(in oklch, var(--cat-tint) 14%, var(--surface-elevated));
-    border-color: var(--cat-tint);
-    color: var(--cat-tint);
+    background: transparent;
+    border-color: transparent;
+    color: var(--accent);
     font-weight: 600;
 }
-@supports not (color: color-mix(in oklch, red, blue)) {
-    .explore-cat.is-active { background: var(--surface-hover); }
+/* Morphing selector: one pill travels between categories. Accent-light fill
+   with a 1px accent inset ring, per canvas 2a. -1px inset so it covers the
+   chip's own border box rather than sitting inside it. */
+.explore-cat-pill {
+    position: absolute;
+    inset: -1px;
+    z-index: 0;
+    border-radius: var(--radius-full);
+    background: var(--accent-light);
+    box-shadow: inset 0 0 0 1px var(--accent);
+}
+/* Keep the icon and label above the pill. The :not() matters: the pill is also
+   a direct span child, and this selector outranks .explore-cat-pill. */
+.explore-cat > span:not(.explore-cat-pill) {
+    position: relative;
+    z-index: 1;
 }
 .explore-cat-icon {
     width: 22px;

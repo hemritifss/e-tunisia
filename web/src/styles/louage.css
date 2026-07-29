@@ -130,12 +130,15 @@
     overflow: hidden;
     rotate: var(--tilt, 0deg);
     transition: rotate var(--duration-normal) var(--ease-spring),
-                translate var(--duration-normal) var(--ease-out),
-                box-shadow var(--duration-normal) var(--ease-out);
+                translate var(--duration-fast) var(--ease-out),
+                box-shadow var(--duration-fast) var(--ease-out);
 }
 .lt-ticket:nth-child(2n) { --tilt: 0.5deg; }
 .lt-ticket:nth-child(2n+1) { --tilt: -0.45deg; }
-.lt-ticket:hover { rotate: 0deg; translate: 0 -4px; box-shadow: var(--paper-shadow-lift); }
+/* Straightening the tilt is the ticket's personality and stays. */
+@media (hover: hover) and (pointer: fine) {
+    .lt-ticket:hover { rotate: 0deg; translate: 0 -6px; box-shadow: var(--shadow-card-hover); }
+}
 
 /* mode accent along the ticket's left edge — the real louage stripes */
 .lt-ticket::before {

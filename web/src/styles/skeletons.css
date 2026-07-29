@@ -51,24 +51,29 @@
   border-radius: 0 0 var(--radius-xl) var(--radius-xl);
 }
 
-/* ── Stagger fade-in for loaded content ── */
-@keyframes contentReveal {
-  from { opacity: 0; transform: translateY(12px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
+/* ── Skeleton -> content crossfade (the CSS half of <Swap>) ──
+   Layout primitives (.bled-swap, .bled-swap-layer.is-out) come from
+   animations.css. The opacity is driven here by mount-time animations rather
+   than the transition declared there: a layer that mounts already carrying its
+   end state has nothing to transition, and the double-rAF class flip that works
+   around that is a dropped frame waiting to happen.
 
-.content-reveal > * {
-  animation: contentReveal 0.4s var(--ease-out) both;
-}
+   This replaced a `.content-reveal` stagger utility that was defined here but
+   referenced by nothing. A second, uncoordinated way to reveal loaded content
+   would only compete with the crossfade. The bled-swap-in/out keyframes live
+   in animations.css per the single-home rule. */
+.bled-swap-layer.is-in  { animation: bled-swap-in  var(--duration-fast) var(--ease-out) both; }
+.bled-swap-layer.is-out { animation: bled-swap-out var(--duration-fast) var(--ease-out) both; }
 
-.content-reveal > *:nth-child(1) { animation-delay: 0ms; }
-.content-reveal > *:nth-child(2) { animation-delay: 50ms; }
-.content-reveal > *:nth-child(3) { animation-delay: 100ms; }
-.content-reveal > *:nth-child(4) { animation-delay: 150ms; }
-.content-reveal > *:nth-child(5) { animation-delay: 200ms; }
-.content-reveal > *:nth-child(6) { animation-delay: 250ms; }
-.content-reveal > *:nth-child(7) { animation-delay: 300ms; }
-.content-reveal > *:nth-child(8) { animation-delay: 350ms; }
+/* Wrap the CONTAINER, never the items inside one: the host is a plain block,
+   so putting it between a grid and its children would collapse the grid into a
+   single cell. `display: contents` is not an escape hatch here either, because
+   it would promote the outgoing ghost to a grid item of its own. */
+
+@media (prefers-reduced-motion: reduce) {
+  .bled-swap-layer.is-in,
+  .bled-swap-layer.is-out { animation: none; }
+}
 
 /* ── Profile Page Skeleton ── */
 .profile-skeleton {
@@ -641,7 +646,6 @@
   .pp-quick-link-card:hover,
   .badge-card:hover,
   .trip-stop:hover,
-  .owner-place-card:hover,
   .inquiry-card:hover {
     transform: translateY(-2px);
     box-shadow: var(--shadow-md);

@@ -50,7 +50,7 @@ export function FeaturedPlaces() {
                   href={`#/place/${p.id}`}
                   className="featured-place-card"
                 >
-                  <div className="featured-place-cover">
+                  <div className="featured-place-cover" data-arch-reveal>
                     {cover ? (
                       <img src={cover} alt="" loading="lazy" />
                     ) : (

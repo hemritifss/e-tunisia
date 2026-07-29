@@ -20,7 +20,9 @@
 }
 
 .toast {
-    /* Paper slip (carnet chrome): opaque print stock, hairline rule, slight tilt */
+    /* Paper slip (carnet chrome): opaque print stock, hairline rule. The 0.5deg
+       tilt is gone - Bled is flat. The lift shadow stays: toasts are overlays,
+       which is the one thing shadows are still for. */
     --toast-accent: var(--accent);
     pointer-events: auto;
     display: grid;
@@ -36,8 +38,7 @@
     font-family: var(--font-sans);
     color: var(--text-primary);
     min-width: 280px;
-    rotate: 0.5deg;
-    animation: toast-in 320ms var(--ease-spring) both;
+    animation: bled-toast-in var(--duration-normal) var(--ease-out) both;
 }
 .toast-success    { --toast-accent: var(--success); }
 .toast-error      { --toast-accent: var(--error); }
@@ -99,16 +100,10 @@
 }
 .toast-close:hover { background: oklch(0% 0 0 / 0.06); color: var(--text-primary); }
 
-.toast-leaving { animation: toast-out 280ms var(--ease-in-out) both; }
-
-@keyframes toast-in {
-    from { transform: translateY(12px) scale(0.96); opacity: 0; }
-    to   { transform: translateY(0) scale(1); opacity: 1; }
-}
-@keyframes toast-out {
-    from { transform: translateX(0); opacity: 1; }
-    to   { transform: translateX(120%); opacity: 0; }
-}
+/* Exit keeps --ease-in-out: --ease-out is an entrance curve, and on the way
+   out it reads as "snap away, then linger". Both keyframes now live in
+   animations.css as the Bled toast pair (in 260ms / hold 4s / out 180ms). */
+.toast-leaving { animation: bled-toast-out var(--duration-fast) var(--ease-in-out) both; }
 
 /* Paper/ink tokens follow [data-theme] — the old prefers-color-scheme override
    (which mismatched the app's data-theme switch) is retired. */

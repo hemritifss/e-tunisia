@@ -10,7 +10,7 @@ import { currentUserId } from '../../shared/current-user';
  * Active conversations & online friends.
  *
  * Two surfaces:
- *  - Desktop: a rail card embedded in FeedRightRail (`<ActiveConversationsRail />`)
+ *  - Desktop: a rail card in the feed right rail (`<ActiveConversationsRail />`)
  *  - Mobile : a floating launcher button (`<ActiveConversationsLauncher />`) that
  *             opens a bottom sheet with the same content.
  *

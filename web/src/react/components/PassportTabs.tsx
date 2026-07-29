@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { api, getImageUrl } from '../../shared/api';
 import { Calendar, Users, MapPin, Star } from 'lucide-react';
+import { Swap } from './Swap';
 
 interface Props { handle: string; }
 
@@ -43,10 +44,11 @@ export function PassportTabs({ handle }: Props) {
                 ))}
             </div>
             <div className="passport-tabs-body">
-                {loading && <div className="passport-tab-skel" />}
-                {!loading && tab === 'trips' && <TripsList items={data.trips || []} />}
-                {!loading && tab === 'reviews' && <ReviewsList items={data.reviews || []} />}
-                {!loading && tab === 'saves' && <SavesList items={data.saves || []} />}
+                <Swap loading={loading} skeleton={<div className="passport-tab-skel" />}>
+                    {tab === 'trips' && <TripsList items={data.trips || []} />}
+                    {tab === 'reviews' && <ReviewsList items={data.reviews || []} />}
+                    {tab === 'saves' && <SavesList items={data.saves || []} />}
+                </Swap>
             </div>
         </div>
     );

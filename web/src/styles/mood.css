@@ -128,10 +128,14 @@
     transition: color 160ms ease, background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease, opacity 160ms ease, filter 160ms ease;
     display: flex; flex-direction: column;
 }
-.mood-place-tile:hover {
-    transform: translateY(-3px);
-    border-color: var(--mood-tint);
-    box-shadow: 0 14px 28px color-mix(in srgb, var(--mood-tint) 18%, transparent);
+/* The tint stays in the border, not the shadow: a coloured glow under the card
+   is not in the elevation table. */
+@media (hover: hover) and (pointer: fine) {
+    .mood-place-tile:hover {
+        transform: translateY(-6px);
+        border-color: var(--mood-tint);
+        box-shadow: var(--shadow-card-hover);
+    }
 }
 .mood-place-cover {
     position: relative;
@@ -197,7 +201,13 @@
     color: inherit;
     transition: color 160ms ease, background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease, opacity 160ms ease, filter 160ms ease;
 }
-.mood-guide-card:hover { border-color: var(--mood-tint); transform: translateY(-2px); }
+@media (hover: hover) and (pointer: fine) {
+    .mood-guide-card:hover {
+        border-color: var(--mood-tint);
+        transform: translateY(-6px);
+        box-shadow: var(--shadow-card-hover);
+    }
+}
 .mood-guide-card img, .mood-guide-fallback {
     width: 44px; height: 44px;
     border-radius: 50%;
@@ -249,7 +259,13 @@
     text-decoration: none;
     transition: color 160ms ease, background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease, opacity 160ms ease, filter 160ms ease;
 }
-.mood-other-pill:hover { border-color: var(--mood-tint); transform: translateY(-2px); box-shadow: 0 8px 18px color-mix(in srgb, var(--mood-tint) 18%, transparent); }
+@media (hover: hover) and (pointer: fine) {
+    .mood-other-pill:hover {
+        border-color: var(--mood-tint);
+        transform: translateY(-6px);
+        box-shadow: var(--shadow-card-hover);
+    }
+}
 .mood-other-emoji {
     font-size: 22px;
     width: 36px; height: 36px;
@@ -439,10 +455,12 @@
                 border-color var(--duration-normal) var(--ease-out);
     display: block;
 }
-.mood-page .mood-place-tile:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-lg);
-    border-color: var(--mood-tint);
+@media (hover: hover) and (pointer: fine) {
+    .mood-page .mood-place-tile:hover {
+        transform: translateY(-6px);
+        box-shadow: var(--shadow-card-hover);
+        border-color: var(--mood-tint);
+    }
 }
 .mood-page .mood-place-cover {
     position: relative;
@@ -594,10 +612,12 @@
                 box-shadow var(--duration-normal) var(--ease-out),
                 border-color var(--duration-normal) var(--ease-out);
 }
-.mood-page .mood-guide-card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
-    border-color: var(--mood-tint);
+@media (hover: hover) and (pointer: fine) {
+    .mood-page .mood-guide-card:hover {
+        transform: translateY(-6px);
+        box-shadow: var(--shadow-card-hover);
+        border-color: var(--mood-tint);
+    }
 }
 .mood-page .mood-guide-card img,
 .mood-page .mood-guide-fallback {
@@ -691,10 +711,12 @@
                 box-shadow var(--duration-normal) var(--ease-out),
                 background var(--duration-fast) var(--ease-out);
 }
-.mood-page .mood-other-pill:hover {
-    transform: translateY(-2px);
-    border-color: var(--mood-tint);
-    box-shadow: var(--shadow-md);
+@media (hover: hover) and (pointer: fine) {
+    .mood-page .mood-other-pill:hover {
+        transform: translateY(-6px);
+        border-color: var(--mood-tint);
+        box-shadow: var(--shadow-card-hover);
+    }
 }
 .mood-page .mood-other-icon {
     width: 36px;
@@ -731,6 +753,12 @@
 @media (prefers-reduced-motion: reduce) {
     .mood-page .mood-skel-tile,
     .mood-page .mood-skel-trip { animation: none; }
+    .mood-place-tile:hover,
+    .mood-guide-card:hover,
+    .mood-other-pill:hover,
+    .mood-page .mood-place-tile:hover,
+    .mood-page .mood-guide-card:hover,
+    .mood-page .mood-other-pill:hover { transform: none; }
 }
 
 /* ── 404 fallback ────────────────────────── */

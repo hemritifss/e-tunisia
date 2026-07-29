@@ -54,9 +54,11 @@
     border: 1px solid var(--border, #e5e7eb);
     border-radius: 16px;
     padding: 16px;
-    transition: transform 120ms ease;
 }
-.passport-stat:hover { transform: translateY(-2px); }
+/* No lift here on purpose. PassportStats only ever renders inside .passport-page,
+   which restyles these into cells of one ruled ledger strip further down and
+   pins them still. The -2px that used to sit here never survived that override,
+   so it is gone rather than restated. */
 .passport-stat strong { font-size: 22px; display: block; line-height: 1.05; color: var(--text-primary); }
 .passport-stat span { font-size: 13px; color: var(--text-muted, #9aa0a6); }
 
@@ -82,10 +84,20 @@
     border-radius: 14px;
     background: var(--surface);
     border: 1px solid var(--border, #e5e7eb);
-    transition: transform 120ms ease, box-shadow 120ms ease;
+    transition: transform var(--duration-fast) var(--ease-out),
+                box-shadow var(--duration-fast) var(--ease-out);
 }
 .passport-badge.earned { box-shadow: 0 0 0 2px var(--badge-accent) inset; }
-.passport-badge.earned:hover { transform: translateY(-3px); }
+/* BadgeGrid emits `is-earned`/`is-locked`; the bare `.earned`/`.locked`
+   selectors here have never matched anything. The lift is written against the
+   class the component actually renders so it fires. */
+@media (hover: hover) and (pointer: fine) {
+    .passport-badge.earned:hover,
+    .passport-badge.is-earned:hover {
+        transform: translateY(-6px);
+        box-shadow: var(--shadow-card-hover);
+    }
+}
 .passport-badge.locked { opacity: 0.35; }
 .passport-badge-icon { font-size: 26px; line-height: 1; }
 .passport-badge-label { font-size: 12px; text-align: center; color: var(--text-primary); }
@@ -96,14 +108,23 @@
     cursor: pointer; color: var(--text-muted, #9aa0a6); font-weight: 500; font-size: 14px;
     transition: color 120ms;
 }
-.passport-tabs-head button.active { color: var(--text-primary); border-bottom-color: var(--accent); }
+/* The active indicator is the swept ::after in sub-components.css; the 2px
+   transparent border above stays only to keep the box metrics stable. */
+.passport-tabs-head button.active { color: var(--text-primary); }
 .passport-tabs-head button:hover { color: var(--text-primary); }
 .passport-tabs-body { padding-top: 18px; min-height: 200px; }
 .passport-empty { padding: 28px; text-align: center; color: var(--text-muted, #9aa0a6); }
 .passport-tab-skel { height: 200px; background: linear-gradient(90deg, var(--bg-secondary) 25%, var(--surface-elevated) 50%, var(--bg-secondary) 75%); background-size: 200% 100%; animation: bled-shimmer 1.4s linear infinite; border-radius: 12px; }
 .passport-trip-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
-.passport-trip-card { background: var(--surface); border: 1px solid var(--border, #e5e7eb); border-radius: 14px; overflow: hidden; text-decoration: none; color: inherit; transition: transform 120ms; }
-.passport-trip-card:hover { transform: translateY(-2px); }
+.passport-trip-card { background: var(--surface); border: 1px solid var(--border, #e5e7eb); border-radius: 14px; overflow: hidden; text-decoration: none; color: inherit; transition: transform var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out); }
+@media (hover: hover) and (pointer: fine) {
+    .passport-trip-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-card-hover); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .passport-badge.earned:hover,
+    .passport-badge.is-earned:hover,
+    .passport-trip-card:hover { transform: none; }
+}
 .passport-trip-cover { display: flex; height: 120px; background: var(--accent); }
 .passport-trip-cover img { flex: 1; object-fit: cover; min-width: 0; }
 .passport-trip-meta { padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; font-size: 13px; }
@@ -1184,7 +1205,15 @@
     gap: 10px;
 }
 .passport-page .passport-stat:first-child { border-left: none; }
-.passport-page .passport-stat:hover { transform: none; }
+/* "honest & static" above is load-bearing: these cells share one ruled strip and
+   raising a single one tears it. sub-components.css lifts .passport-stat on
+   hover and tints its border, and loads after this file, so the almanac row has
+   to out-specify it rather than simply omit a lift. */
+.passport-page .passport-stat:hover {
+    transform: none;
+    box-shadow: none;
+    border-color: var(--border);
+}
 .passport-page .passport-stat svg { color: var(--text-tertiary); align-self: center; }
 .passport-page .passport-stat strong {
     font-family: var(--font-mono);

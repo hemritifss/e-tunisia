@@ -17,27 +17,36 @@
     box-shadow: var(--paper-shadow);
     padding: var(--space-3);
     rotate: var(--carte-tilt, 0deg);
+    /* The lift rides `translate`, not `transform`: Carte is a framer-motion
+       article and framer writes `transform: none` inline once its entrance
+       settles, which would out-specify any stylesheet transform here. */
     transition: rotate var(--duration-normal) var(--ease-spring),
-                transform var(--duration-normal) var(--ease-out),
-                box-shadow var(--duration-normal) var(--ease-out);
+                translate var(--duration-fast) var(--ease-out),
+                box-shadow var(--duration-fast) var(--ease-out);
 }
 /* Scattered-postcard tilt; straightens + lifts on hover. */
 .carte[data-tilt="0"] { --carte-tilt: -0.8deg; }
 .carte[data-tilt="1"] { --carte-tilt: 0.7deg; }
 .carte[data-tilt="2"] { --carte-tilt: -0.35deg; }
-.carte:hover,
+/* Keyboard focus lifts on every input type — it is the focus affordance, not a
+   pointer flourish, so it stays outside the pointer gate below. */
 .carte:focus-within {
     rotate: 0deg;
-    transform: translateY(-4px);
-    box-shadow: var(--paper-shadow-lift);
-}
-.carte:focus-within {
+    translate: 0 -6px;
+    box-shadow: var(--shadow-card-hover);
     outline: 2px solid var(--accent);
     outline-offset: 3px;
 }
+@media (hover: hover) and (pointer: fine) {
+    .carte:hover {
+        rotate: 0deg;
+        translate: 0 -6px;
+        box-shadow: var(--shadow-card-hover);
+    }
+}
 @media (prefers-reduced-motion: reduce) {
     .carte { transition: box-shadow var(--duration-fast) var(--ease-out); }
-    .carte:hover, .carte:focus-within { transform: none; }
+    .carte:hover, .carte:focus-within { translate: none; }
 }
 
 .carte-link {

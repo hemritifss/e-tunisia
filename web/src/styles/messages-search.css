@@ -1137,8 +1137,6 @@
                 border-color var(--duration-normal) var(--ease-out);
 }
 .search-person-card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
     border-color: var(--accent-light);
 }
 .search-person-avatar {

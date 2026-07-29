@@ -32,11 +32,11 @@ export const Skeleton = ({
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={i}
-          className={cn(
-            'animate-shimmer bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 dark:from-gray-800 dark:via-gray-700 dark:to-gray-800 bg-[length:200%_100%]',
-            variants[variant],
-            className,
-          )}
+          // `.skeleton` (animations.css) carries the token-driven gradient, the
+          // canonical bled-shimmer at the spec 1.4s, and its own reduced-motion
+          // guard. This used to hardcode Tailwind greys at 2s with no guard,
+          // which is why it never matched any other loading surface.
+          className={cn('skeleton', variants[variant], className)}
           style={style}
           {...props}
         />
@@ -45,19 +45,10 @@ export const Skeleton = ({
   );
 };
 
-export const PlaceCardSkeleton = () => (
-  <div className="rounded-2xl overflow-hidden bg-surface shadow-sm">
-    <Skeleton variant="rect" height={192} className="w-full rounded-none" />
-    <div className="p-4 space-y-3">
-      <Skeleton variant="text" width="70%" />
-      <Skeleton variant="text" width="40%" />
-      <div className="flex gap-2">
-        <Skeleton variant="circle" width={32} height={32} />
-        <Skeleton variant="text" width="50%" className="self-center" />
-      </div>
-    </div>
-  </div>
-);
+/* PlaceCardSkeleton lived here with a single reference: a dead import in
+   ExplorePage that never rendered it. Explore's grid loads `.explore-skel`
+   instead, and the real place card is <Carte>. Removed rather than left as a
+   third, unrendered place-card shape. */
 
 /**
  * Mirrors the rules layout of a real post, block for block, so the crossfade

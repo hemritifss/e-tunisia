@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import {
     Sparkles, Check, Crown, Briefcase, Loader2, CreditCard, Landmark, Banknote,
     PartyPopper, Settings, Wallet, Coins, ChevronDown, ShieldCheck,
@@ -17,6 +18,16 @@ import { Tier, Cycle, fmtPrice, usePlanCatalog, planFeatureCount, CatalogPlan } 
 type PayMethod = 'card' | 'flouci' | 'credits' | 'bank' | 'cash';
 
 const showToast = (opts: any) => (window as any).showToast?.(opts);
+
+// Morphing selector (Bled 2a): ONE pill travels between options rather than
+// every option toggling its own fill. 420ms on the overshoot curve, which is
+// var(--ease-spring). framer needs the numbers inline; they mirror
+// --duration-slow and --ease-spring in tokens.css.
+const PILL_TRANSITION = { duration: 0.42, ease: [0.34, 1.4, 0.4, 1] } as const;
+
+function CyclePill({ id }: { id: string }) {
+    return <motion.span className="pro-page-cycle-pill" layoutId={id} transition={PILL_TRANSITION} aria-hidden="true" />;
+}
 
 const ICONS: Record<string, React.ReactNode> = {
     free: <Compass size={20} />,
@@ -344,7 +355,10 @@ export default function ProUpgradePage() {
                             className={cycle === c ? 'active' : ''}
                             onClick={() => setCycle(c)}
                         >
-                            {c === 'monthly' ? 'Monthly' : 'Yearly · save ~17%'}
+                            {cycle === c && <CyclePill id="pro-cycle-pill" />}
+                            <span className="pro-page-cycle-label">
+                                {c === 'monthly' ? 'Monthly' : 'Yearly · save ~17%'}
+                            </span>
                         </button>
                     ))}
                 </div>
@@ -357,7 +371,8 @@ export default function ProUpgradePage() {
                             className={method === m.id ? 'active' : ''}
                             onClick={() => setMethod(m.id)}
                         >
-                            {m.icon} {m.label}
+                            {method === m.id && <CyclePill id="pro-method-pill" />}
+                            <span className="pro-page-cycle-label">{m.icon} {m.label}</span>
                         </button>
                     ))}
                 </div>

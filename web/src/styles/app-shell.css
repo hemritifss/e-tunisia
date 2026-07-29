@@ -5,6 +5,7 @@
 
 /* Hide standard navigation bars and mobile components when unauthenticated */
 body.guest-mode #main-nav,
+body.guest-mode #live-ticker,
 body.guest-mode #mobile-menu-overlay,
 body.guest-mode #mobile-menu-panel,
 body.guest-mode #notif-panel-overlay,
@@ -179,6 +180,127 @@ body.guest-mode .main-content {
 @media (max-width: 640px) {
     .page-head__title { font-size: var(--text-3xl); }
     .page-head { align-items: flex-start; }
+}
+
+/* ============================================
+   LIVE STRIP - the topmost band of the app chrome
+   --------------------------------------------
+   The canvas puts the strip ABOVE the nav, and #main-nav is position:fixed
+   (components.css), so an in-flow strip here would render at document y=0
+   underneath the bar. The strip is fixed at top:0 and the bar moves down by
+   its height (see nav.css).
+
+   That shift has to reach every surface pinned to the top chrome, not just
+   .main-content: ~20 rules across feed / map / messages / notifications /
+   onboarding read --nav-height as "how much fixed chrome is above me"
+   (sticky sub-headers at calc(var(--nav-height) + x), panes at
+   calc(100vh - var(--nav-height))). Redefining --nav-height while the strip
+   is mounted makes all of them correct with no edits; the single rule that
+   means the bar's OWN height is pinned back to --nav-bar-height in nav.css.
+
+   Scoped away from guest-mode because that class hides the whole nav for
+   logged-out visitors on every route, not just the landing page.
+   ============================================ */
+
+/* Snapshot of the bar's own height, read before the override below shadows it. */
+:root { --nav-bar-height: var(--nav-height); }
+
+body.has-live-ticker:not(.guest-mode) {
+    --live-ticker-h: 34px;
+    --nav-height: calc(var(--nav-bar-height) + var(--live-ticker-h));
+}
+
+.live-ticker {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    /* Under the bar's own layer: the two bands never overlap, so the strip has
+       no business winning against anything the nav paints. */
+    z-index: calc(var(--z-sticky) - 1);
+    height: var(--live-ticker-h, 34px);
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    padding-inline: var(--page-padding);
+    background: var(--paper-deep);
+    border-bottom: 1px solid var(--rule-strong);
+    overflow: hidden;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    line-height: 1;
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--ink-on-deep) 72%, transparent);
+}
+/* Author styles beat the UA rule for [hidden], so restate it against .live-ticker. */
+.live-ticker[hidden] { display: none; }
+
+/* The mobile spec (canvas 3a) has no ticker: 34px of extra fixed chrome on a
+   short viewport is too expensive. Zero the offsets too so the nav returns to
+   the top and no page reserves phantom space. */
+@media (max-width: 639px) {
+    .live-ticker { display: none; }
+    body.has-live-ticker:not(.guest-mode) {
+        --live-ticker-h: 0px;
+        --nav-height: var(--nav-bar-height);
+    }
+}
+
+.live-ticker-label {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    flex: 0 0 auto;
+    font-weight: 500;
+    color: var(--ink-on-deep);
+}
+
+.live-ticker-dot {
+    width: 6px;
+    height: 6px;
+    flex: 0 0 auto;
+    border-radius: var(--radius-full);
+    background: var(--error);
+    animation: bled-live-pulse 2s var(--ease-out) infinite;
+}
+
+.live-ticker-viewport {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.live-ticker-track {
+    display: flex;
+    align-items: center;
+    width: max-content;
+    animation: bled-ticker 40s linear infinite;
+}
+
+/* The 36px inter-item gap rides a trailing margin rather than `gap` on purpose:
+   the -50% loop is only seamless when the track is exactly two (or 2n) whole
+   copies wide, and a container gap leaves the final copy short by one gap. */
+.live-ticker-item {
+    margin-inline-end: 36px;
+    white-space: nowrap;
+}
+
+.live-ticker:hover .live-ticker-track,
+.live-ticker.is-paused .live-ticker-track {
+    animation-play-state: paused;
+}
+
+/* A flex row reverses in RTL, so the leftward translate would run against the
+   reading direction. Same loop, played backwards. */
+[dir="rtl"] .live-ticker-track { animation-direction: reverse; }
+
+@media (prefers-reduced-motion: reduce) {
+    /* The blanket fast-forward in animations.css would snap the track to -50%
+       and park it there, so kill the animation outright: the strip becomes a
+       static, legible row of the first few lines. */
+    .live-ticker-track,
+    .live-ticker-dot { animation: none; }
 }
 
 /* ── Global overflow safety nets ────────────────────────────

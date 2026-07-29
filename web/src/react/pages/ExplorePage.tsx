@@ -34,7 +34,7 @@ import PublicMasthead from '../components/public/PublicMasthead';
 import PublicFooter from '../components/public/PublicFooter';
 import { StarRating } from '../components/StarRating';
 import { Button } from '../components/Button';
-import { Skeleton, PlaceCardSkeleton } from '../components/Skeleton';
+import { Swap } from '../components/Swap';
 import { formatNumber } from '../lib/utils';
 import { useAuthStore } from '../stores/auth-store';
 import { useUIStore } from '../stores/ui-store';
@@ -51,6 +51,10 @@ interface CategoryDef {
   /** CSS variable expression used as `--cat-tint`. Closes the loop with mood palette. */
   tint: string;
 }
+
+// Morphing selector (Bled 2a): 420ms on the overshoot curve. framer needs the
+// numbers inline; they mirror --duration-slow and --ease-spring in tokens.css.
+const CAT_PILL_TRANSITION = { duration: 0.42, ease: [0.34, 1.4, 0.4, 1] } as const;
 
 const CATEGORIES: CategoryDef[] = [
   { id: 'all',        name: 'All',        Icon: Globe,            tint: 'var(--text-secondary)' },
@@ -597,6 +601,17 @@ export default function ExplorePage() {
               style={{ '--cat-tint': cat.tint } as React.CSSProperties}
               aria-pressed={isActive}
             >
+              {/* Morphing selector: one pill travels across the strip rather
+                  than each chip toggling its own fill. layoutId handles the
+                  variable chip widths for free. */}
+              {isActive && (
+                <motion.span
+                  className="explore-cat-pill"
+                  layoutId="explore-cat-pill"
+                  transition={CAT_PILL_TRANSITION}
+                  aria-hidden="true"
+                />
+              )}
               <span className="explore-cat-icon"><I size={16} strokeWidth={1.75} /></span>
               <span>{cat.name}</span>
             </button>
@@ -609,6 +624,10 @@ export default function ExplorePage() {
           aria-pressed={verifiedOnly}
           title="Show only listings from Verified Businesses"
         >
+          {/* Independent toggle, not part of the category set: it wears the same
+              pill for consistency but must not compete for the travelling one,
+              or turning Verified on would steal the pill off the category. */}
+          {verifiedOnly && <span className="explore-cat-pill" aria-hidden="true" />}
           <span className="explore-cat-icon" aria-hidden="true">✓</span>
           <span>Verified</span>
         </button>
@@ -625,36 +644,43 @@ export default function ExplorePage() {
         await queryClient.invalidateQueries({ queryKey: ['explore'] });
         await queryClient.refetchQueries({ queryKey: ['explore'] });
       }}>
-      {isLoading ? (
-        <div className={viewMode === 'grid' ? 'explore-grid' : 'explore-list'}>
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="explore-skel" />
-          ))}
-        </div>
-      ) : isError ? (
-        <div className="explore-empty">
-          <div className="explore-empty-icon"><X size={28} /></div>
-          <h3>Couldn't load places</h3>
-          <p>Check your connection and try again — your filters are preserved.</p>
-        </div>
-      ) : allPlaces.length === 0 ? (
-        <div className="explore-empty">
-          <div className="explore-empty-icon"><Compass size={28} /></div>
-          <h3>No places match your filters</h3>
-          <p>Try broadening the category, dropping the rating filter, or searching a city name.</p>
-          {hasFilter && (
-            <Button variant="primary" onClick={clearAll}>Clear all filters</Button>
-          )}
-        </div>
-      ) : (
-        <div className={viewMode === 'grid' ? 'explore-grid' : 'explore-list'}>
-          <AnimatePresence mode="popLayout">
-            {allPlaces.map((place, i) => (
-              <PlaceCard key={place.id} place={place} viewMode={viewMode} index={i} />
+      {/* Skeleton -> content crossfade. The error and empty branches ride the
+          same path, so a failed load fades in rather than snapping. */}
+      <Swap
+        loading={isLoading}
+        skeleton={
+          <div className={viewMode === 'grid' ? 'explore-grid' : 'explore-list'}>
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="explore-skel" />
             ))}
-          </AnimatePresence>
-        </div>
-      )}
+          </div>
+        }
+      >
+        {isError ? (
+          <div className="explore-empty">
+            <div className="explore-empty-icon"><X size={28} /></div>
+            <h3>Couldn't load places</h3>
+            <p>Check your connection and try again — your filters are preserved.</p>
+          </div>
+        ) : allPlaces.length === 0 ? (
+          <div className="explore-empty">
+            <div className="explore-empty-icon"><Compass size={28} /></div>
+            <h3>No places match your filters</h3>
+            <p>Try broadening the category, dropping the rating filter, or searching a city name.</p>
+            {hasFilter && (
+              <Button variant="primary" onClick={clearAll}>Clear all filters</Button>
+            )}
+          </div>
+        ) : (
+          <div className={viewMode === 'grid' ? 'explore-grid' : 'explore-list'}>
+            <AnimatePresence mode="popLayout">
+              {allPlaces.map((place, i) => (
+                <PlaceCard key={place.id} place={place} viewMode={viewMode} index={i} />
+              ))}
+            </AnimatePresence>
+          </div>
+        )}
+      </Swap>
       </PullToRefresh>
 
       {/* Load more sentinel */}

@@ -443,6 +443,13 @@
     background: var(--bg-secondary);
     border-radius: var(--arch);
 }
+/* The arch-reveal pre-state hides the tile until reveal.ts adds .is-in. That is
+   safe here without a CSS fallback: react/lib/islands.tsx statically imports
+   reveal.ts, so if that module ever throws, no island mounts and this attribute
+   never reaches the DOM in the first place. Broken JS yields no content rather
+   than invisible content. Do not add an html:not([...]) escape hatch on top of
+   it; reveal.ts sets no readiness flag, so such a rule would never turn off and
+   would silently disable the reveal on this rail. */
 .mood-tile-frame img {
     width: 100%;
     height: 100%;
@@ -747,27 +754,43 @@
 }
 .feed-tabs::-webkit-scrollbar { display: none; }
 .feed-tab {
+    position: relative;
     flex-shrink: 0;
-    padding: 14px 0;
-    margin-bottom: -1px;
+    /* 14px + 16px keeps the box metrics of the old 14px padding + 2px border. */
+    padding: 14px 0 16px;
     background: none;
     border: none;
-    border-bottom: 2px solid transparent;
     color: var(--text-secondary);
     font-family: var(--font-sans);
     font-size: var(--text-sm);
     font-weight: 500;
     white-space: nowrap;
     cursor: pointer;
-    transition: color var(--duration-fast) var(--ease-out),
-                border-color var(--duration-fast) var(--ease-out);
+    transition: color var(--duration-fast) var(--ease-out);
+}
+/* Tab sweep: the indicator wipes in from the left rather than every tab
+   carrying a transparent border that swaps colour. A transition on transform
+   (not the bled-tab-sweep keyframe) because this is togglable state: it has to
+   animate out as well as in, and stay interruptible when tabs are clicked
+   faster than 220ms. */
+.feed-tab::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 2px;
+    background: var(--text-primary);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--duration-tab) var(--ease-out);
 }
 .feed-tab:hover { color: var(--text-primary); }
 .feed-tab.is-active {
     color: var(--text-primary);
     font-weight: 600;
-    border-bottom-color: var(--text-primary);
 }
+.feed-tab.is-active::after { transform: scaleX(1); }
 .feed-tab:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
 .feed-tabs-count {
     margin-inline-start: auto;
@@ -1743,6 +1766,7 @@
     .feed-new-banner { animation: none; }
     .mood-tile-frame img,
     .rail-trending-frame img,
+    .feed-tab::after,
     .feed-tabs-refresh { transition: none; }
     .mood-tile:hover .mood-tile-frame img,
     .rail-trending:hover .rail-trending-frame img { transform: none; }

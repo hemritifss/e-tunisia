@@ -144,6 +144,18 @@
       </div>
     </nav>
 
+    <!-- Live strip - the topmost band of the app chrome. Ships empty: src/live-ticker.ts
+         unhides it only once at least one real line resolves, so a backend that is down
+         costs zero pixels and zero layout shift. -->
+    <div class="live-ticker" id="live-ticker" hidden>
+      <span class="live-ticker-label">
+        <span class="live-ticker-dot" aria-hidden="true"></span>Now
+      </span>
+      <div class="live-ticker-viewport">
+        <div class="live-ticker-track" id="live-ticker-track"></div>
+      </div>
+    </div>
+
     <!-- Mobile menu panel (side drawer) -->
     <div class="mobile-menu-overlay" id="mobile-menu-overlay"></div>
     <div class="mobile-menu-panel" id="mobile-menu-panel">

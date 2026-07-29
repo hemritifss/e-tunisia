@@ -56,7 +56,8 @@ export function Carte({ place, index = 0, href, isSaved, onToggleSave }: CartePr
       transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
     >
       <a className="carte-link" href={link} aria-label={`View ${place.name}`}>
-        <figure className="carte-photo">
+        {/* The 4:3 box is reserved in carte.css, so the arch reveal is paint-only. */}
+        <figure className="carte-photo" data-arch-reveal>
           <img
             src={src}
             alt={place.name}

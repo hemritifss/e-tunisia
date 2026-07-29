@@ -143,13 +143,24 @@
    cannot carry a pre-state. Use one or the other, never both on one element. */
 [data-arch-reveal] {
   clip-path: inset(100% 0 0 0);
+  transition: clip-path var(--duration-slower) var(--ease-out);
+}
+
+/* The settle-zoom rides the media child, not the container: a container
+   transform contributes transformed overflow to scroll ancestors (clip-path is
+   paint-only and does not suppress it), which caused a measurable reflow on
+   grid append. The container's clip-path inset(0) keeps cropping the child, so
+   the scale can never bleed even without overflow: hidden. */
+[data-arch-reveal] :is(img, video) {
   transform: scale(1.06);
-  transition: clip-path var(--duration-slower) var(--ease-out),
-              transform var(--duration-slower) var(--ease-out);
+  transition: transform var(--duration-slower) var(--ease-out);
 }
 
 [data-arch-reveal].is-in {
   clip-path: inset(0);
+}
+
+[data-arch-reveal].is-in :is(img, video) {
   transform: scale(1);
 }
 
@@ -221,6 +232,11 @@
   pointer-events: none;
 }
 
+/* Driven by skeletons.css (the <Swap> component's stylesheet); defined here
+   because animations.css is the single home for shared keyframes. */
+@keyframes bled-swap-in  { from { opacity: 0; } to { opacity: 1; } }
+@keyframes bled-swap-out { from { opacity: 1; } to { opacity: 0; } }
+
 /* ── Reduced motion override ── */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
@@ -242,7 +258,8 @@
   /* Bled signature motion: land on the visible end state, do not fast-forward
      through it. */
   [data-arch-reveal],
-  [data-arch-reveal].is-in {
+  [data-arch-reveal].is-in,
+  [data-arch-reveal] :is(img, video) {
     clip-path: none;
     transform: none;
     transition: none;

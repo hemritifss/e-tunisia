@@ -15,10 +15,21 @@
   background: var(--accent);
   color: #fff; border: 0; cursor: pointer;
   font-weight: 700; font-size: 0.88rem;
-  box-shadow: 0 10px 30px rgba(231, 64, 84, 0.35);
-  transition: transform 0.18s, box-shadow 0.18s, opacity 0.18s;
+  /* A floating overlay control, not a content card: it sits at overlay elevation
+     at rest and keeps that shadow through hover. The red glow it used to bloom
+     into was a tinted shadow, which the elevation table does not allow. Its lift
+     is the -2px of a button, not the -6px of a card. */
+  box-shadow: var(--paper-shadow-lift);
+  transition: transform var(--duration-fast) var(--ease-out),
+              box-shadow var(--duration-fast) var(--ease-out),
+              opacity var(--duration-fast) var(--ease-out);
 }
-.trip-cart-fab:hover { transform: translateY(-2px); box-shadow: 0 14px 36px rgba(231, 64, 84, 0.45); }
+@media (hover: hover) and (pointer: fine) {
+  .trip-cart-fab:hover { transform: translateY(-2px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .trip-cart-fab:hover { transform: none; }
+}
 .trip-cart-fab.is-empty { opacity: 0.85; }
 .trip-cart-fab i { font-size: 18px; }
 .trip-cart-count {

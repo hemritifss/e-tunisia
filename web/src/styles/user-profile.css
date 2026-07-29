@@ -208,14 +208,10 @@
 .up-tab i { width: 16px; height: 16px; }
 .up-tab:hover { color: var(--text-primary); }
 .up-tab.active { color: var(--accent); }
-.up-tab.active::after {
-  content: '';
-  position: absolute;
-  inset: auto 0 -1px 0;
-  height: 2px;
-  background: var(--accent);
-  border-radius: 2px 2px 0 0;
-}
+/* The indicator used to be declared twice: a static full-width bar here and an
+   animated centre-grow one in the .user-profile-v2 block below. Every consumer
+   of .up-tab renders inside .user-profile-v2, so this copy never won and only
+   made the rule hard to find. The single sweeping indicator lives below. */
 
 .up-tab-panel { padding: 0 var(--page-padding); }
 
@@ -863,23 +859,27 @@
     cursor: pointer;
     transition: color var(--duration-fast) var(--ease-out);
 }
+/* Tab sweep: left-origin scaleX wipe on the same 220ms curve as the feed and
+   passport tabs. left/right insets of --space-3 reproduce the old
+   `calc(100% - var(--space-6))` extent. */
 .user-profile-v2 .up-tab::after {
     content: '';
     position: absolute;
-    left: 50%;
+    left: var(--space-3);
+    right: var(--space-3);
     bottom: -1px;
-    width: 0;
     height: 2px;
     background: var(--accent);
     border-radius: var(--radius-full);
-    transform: translateX(-50%);
-    transition: width var(--duration-normal) var(--ease-spring);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--duration-tab) var(--ease-out);
 }
 .user-profile-v2 .up-tab:hover { color: var(--text-primary); }
 .user-profile-v2 .up-tab.active {
     color: var(--accent);
 }
-.user-profile-v2 .up-tab.active::after { width: calc(100% - var(--space-6)); }
+.user-profile-v2 .up-tab.active::after { transform: scaleX(1); }
 .user-profile-v2 .up-tab:focus-visible {
     outline: 2px solid var(--accent);
     outline-offset: -2px;

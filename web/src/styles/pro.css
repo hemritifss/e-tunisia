@@ -96,6 +96,8 @@
     padding: 4px;
 }
 .pro-page-cycle button {
+    position: relative;
+    isolation: isolate;
     padding: 8px 16px;
     background: transparent;
     border: none;
@@ -105,13 +107,29 @@
     font-weight: 600;
     font-size: var(--text-sm);
     cursor: pointer;
-    transition: color var(--duration-fast) var(--ease-out), background-color var(--duration-fast) var(--ease-out), border-color var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out), transform var(--duration-fast) var(--ease-out), opacity var(--duration-fast) var(--ease-out), filter var(--duration-fast) var(--ease-out);
+    /* The fill is no longer a per-button background, so only the label colour
+       transitions here. The pill itself is a single shared element animated by
+       framer's layoutId. */
+    transition: color var(--duration-fast) var(--ease-out);
 }
 .pro-page-cycle button:hover { color: #fff; }
-.pro-page-cycle button.active {
-    background: #fff;
-    color: oklch(14% 0.02 260);
-    box-shadow: var(--shadow-md);
+.pro-page-cycle button.active { color: var(--text-primary); }
+.pro-page-cycle-label {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+/* Morphing selector: one pill travels between options. Accent-light fill with
+   a 1px accent inset ring, per canvas 2a. */
+.pro-page-cycle-pill {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    border-radius: var(--radius-full);
+    background: var(--accent-light);
+    box-shadow: inset 0 0 0 1px var(--accent);
 }
 @media (max-width: 559px) {
     .pro-page-cycle {
