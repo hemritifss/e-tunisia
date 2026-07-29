@@ -219,3 +219,11 @@
   .quiz-result-city { font-size: var(--text-4xl); }
   .quiz-actions .btn { flex: 1 1 auto; justify-content: center; }
 }
+
+/* ── Reduced motion ───────────────────────────────────────
+   Question and result cards enter with a rise and a pop. Land on the end
+   state rather than fast-forwarding through it. */
+@media (prefers-reduced-motion: reduce) {
+  .quiz-card,
+  .quiz-result-card { animation: none; }
+}

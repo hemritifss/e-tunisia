@@ -844,12 +844,8 @@
     height: 200px;
     background: linear-gradient(90deg, var(--surface-hover) 25%, var(--surface-active) 50%, var(--surface-hover) 75%);
     background-size: 200% 100%;
-    animation: sub-shimmer 1.6s linear infinite;
+    animation: bled-shimmer 1.4s linear infinite;
     border-radius: var(--radius-xl);
-}
-@keyframes sub-shimmer {
-    0%   { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
 }
 @media (prefers-reduced-motion: reduce) {
     .passport-tab-skel { animation: none; }
@@ -1084,9 +1080,8 @@
     flex: 0 0 auto;
 }
 .endorse-topic-state .spin {
-    animation: sub-spin 0.9s linear infinite;
+    animation: spin 0.9s linear infinite;
 }
-@keyframes sub-spin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) {
     .endorse-topic-state .spin { animation-duration: 2s; }
 }
@@ -1355,7 +1350,7 @@
 .signup-gate-handle-status[data-status="ok"]  { color: var(--success); }
 .signup-gate-handle-status[data-status="bad"] { color: var(--error); }
 .signup-gate-handle-status .spin {
-    animation: sub-spin 0.9s linear infinite;
+    animation: spin 0.9s linear infinite;
 }
 .signup-gate-hint {
     font-size: var(--text-xs);
@@ -1563,13 +1558,9 @@
     width: 8px;
     height: 14px;
     border-radius: 1px;
-    animation-name: sub-confetti-fall;
+    animation-name: confetti-fall;
     animation-timing-function: linear;
     animation-fill-mode: forwards;
-}
-@keyframes sub-confetti-fall {
-    0%   { transform: translateY(0)     rotate(0deg);   opacity: 1; }
-    100% { transform: translateY(120vh) rotate(540deg); opacity: 0; }
 }
 @media (prefers-reduced-motion: reduce) {
     .confetti span { animation: none; opacity: 0; }

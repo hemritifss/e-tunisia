@@ -152,6 +152,12 @@
   --duration-normal:    260ms;
   --duration-slow:      420ms;
   --duration-slower:    700ms;
+  /* Two Bled motion specimens do not land on the scale above. Kept as named
+     tokens so the values stay in one place: --duration-tab drives the tab
+     sweep, --duration-digit is the per-digit step of the rolling count (read
+     by RollingNumber, which is framer-motion driven rather than CSS). */
+  --duration-tab:       220ms;
+  --duration-digit:     240ms;
 
   /* ── Layout ── */
   --nav-height:         72px;
@@ -241,5 +247,7 @@
   :root {
     --carnet-motion-fast: 0ms linear;
     --carnet-motion-base: 0ms linear;
+    --duration-tab:       0ms;
+    --duration-digit:     0ms;
   }
 }

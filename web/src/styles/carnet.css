@@ -89,7 +89,7 @@
   border: 2px solid currentColor;
   border-right-color: transparent;
   border-radius: var(--radius-full);
-  animation: cn-spin 0.7s linear infinite;
+  animation: spin 0.7s linear infinite;
 }
 
 .cn-btn--quiet {
@@ -112,8 +112,6 @@
   --cn-btn-hover-bg: var(--surface-hover);
   border-color: var(--bg-primary);
 }
-
-@keyframes cn-spin { to { transform: rotate(360deg); } }
 
 /* ── Underline inputs ("the letter" style) ── */
 .cn-field {

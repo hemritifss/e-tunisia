@@ -816,9 +816,8 @@
     border: 3px solid var(--border);
     border-top-color: var(--accent);
     border-radius: 50%;
-    animation: place-spin 0.9s linear infinite;
+    animation: spin 0.9s linear infinite;
 }
-@keyframes place-spin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) {
     .place-detail-loading .spinner { animation-duration: 2s; }
     .place-detail-page .place-detail-hero-img { animation: none; }

@@ -61,12 +61,6 @@
   margin: 0 auto var(--space-3);
 }
 
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 .events-loading,
 .tips-loading,
 .explore-loading,
@@ -127,5 +121,3 @@
 .btn.block { width: 100%; padding: 12px; font-size: 15px; }
 .btn.sm { padding: 6px 10px; font-size: 13px; }
 .btn.ghost { background: transparent; border: 1px solid var(--border, #e5e7eb); color: inherit; }
-.spin { animation: spin 1s linear infinite; }
-@keyframes spin { to { transform: rotate(360deg); } }

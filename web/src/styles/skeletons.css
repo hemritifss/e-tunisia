@@ -16,11 +16,7 @@
     transparent 0 6px,
     var(--border-light) 6px 7px
   );
-  animation: sk-breathe 1.6s var(--ease-in-out) infinite;
-}
-@keyframes sk-breathe {
-  0%, 100% { opacity: 0.55; }
-  50%      { opacity: 1; }
+  animation: bled-breathe 1.6s var(--ease-in-out) infinite;
 }
 @media (prefers-reduced-motion: reduce) {
   .skeleton-block { animation: none; opacity: 0.7; }

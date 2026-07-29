@@ -1,35 +1,25 @@
 /* ============================================
-   ANIMATIONS v2.0
-   Cinematic • Fluid • Premium
+   ANIMATIONS - the Bled motion library
+   --------------------------------------------
+   Canonical home for every keyframe shared by more than one stylesheet.
+   Linked from index.html between pages.css and messenger.css.
+
+   Two rules govern this file:
+
+   1. Keyframe *definitions* are order-insensitive across stylesheets, so a
+      keyframe may live here and be consumed anywhere. Utility *classes* are
+      not. Do not move a class here from a stylesheet that loads later, it
+      would silently lose the cascade.
+
+   2. Never define a keyframe named `shimmer`. tailwind.config.js declares one
+      and tailwind.css is the last <link> in index.html, so Tailwind's
+      definition wins document-wide and would clobber ours. The canonical
+      shimmer here is `bled-shimmer`.
    ============================================ */
 
-/* Story viewer progress bar */
-@keyframes storyProgress {
-  from { width: 0%; }
-  to   { width: 100%; }
-}
-
-/* ── Scroll-driven reveals ── */
+/* ── Scroll-driven reveal (view() timeline) ── */
 .reveal-on-scroll {
   animation: revealUp linear both;
-  animation-timeline: view();
-  animation-range: entry 0% entry 45%;
-}
-
-.reveal-fade {
-  animation: revealFade linear both;
-  animation-timeline: view();
-  animation-range: entry 0% entry 40%;
-}
-
-.reveal-left {
-  animation: revealLeft linear both;
-  animation-timeline: view();
-  animation-range: entry 0% entry 45%;
-}
-
-.reveal-right {
-  animation: revealRight linear both;
   animation-timeline: view();
   animation-range: entry 0% entry 45%;
 }
@@ -39,43 +29,9 @@
   to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-@keyframes revealFade {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-
-@keyframes revealLeft {
-  from { opacity: 0; transform: translateX(-40px); }
-  to   { opacity: 1; transform: translateX(0); }
-}
-
-@keyframes revealRight {
-  from { opacity: 0; transform: translateX(40px); }
-  to   { opacity: 1; transform: translateX(0); }
-}
-
-/* ── Stagger children ── */
-.stagger-children > * {
-  animation: fadeInUp var(--duration-slow) var(--ease-out) both;
-}
-
-.stagger-children > *:nth-child(1)  { animation-delay: 0ms; }
-.stagger-children > *:nth-child(2)  { animation-delay: 70ms; }
-.stagger-children > *:nth-child(3)  { animation-delay: 140ms; }
-.stagger-children > *:nth-child(4)  { animation-delay: 210ms; }
-.stagger-children > *:nth-child(5)  { animation-delay: 280ms; }
-.stagger-children > *:nth-child(6)  { animation-delay: 350ms; }
-.stagger-children > *:nth-child(7)  { animation-delay: 420ms; }
-.stagger-children > *:nth-child(8)  { animation-delay: 490ms; }
-.stagger-children > *:nth-child(9)  { animation-delay: 560ms; }
-.stagger-children > *:nth-child(10) { animation-delay: 630ms; }
-
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(24px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
 /* ── Page transitions ── */
+/* main.ts strips .page-enter on animationend: the fill-mode transform creates
+   a containing block that breaks position:fixed children if left in place. */
 .page-enter {
   animation: pageEnter var(--duration-normal) var(--ease-out) both;
 }
@@ -85,7 +41,7 @@
   to   { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
 }
 
-/* ── View Transitions API ── */
+/* ── View Transitions API (main.ts uses startViewTransition) ── */
 ::view-transition-old(root) {
   animation: vtOld 200ms var(--ease-in-out) both;
 }
@@ -104,226 +60,56 @@
   to   { opacity: 1; transform: scale(1); filter: blur(0); }
 }
 
-/* ── Vote animation ── */
-@keyframes voteScale {
-  0%   { transform: scale(1); }
-  40%  { transform: scale(1.4) rotate(-5deg); }
-  70%  { transform: scale(0.9); }
-  100% { transform: scale(1); }
+/* ── Canonical: spin ──
+   The single rotate loop for every busy indicator in the app. Nineteen
+   per-file aliases (badges-spin, cn-spin, dm-spin, …) were folded into this. */
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
-.vote-animate {
-  animation: voteScale 350ms var(--ease-spring);
-}
+.spin { animation: spin 1s linear infinite; }
 
-/* ── Float (ambient blobs, badges) ── */
-@keyframes float {
-  0%, 100% { transform: translateY(0) rotate(0deg); }
-  33%       { transform: translateY(-8px) rotate(1deg); }
-  66%       { transform: translateY(-4px) rotate(-1deg); }
-}
-
-.float-animation {
-  animation: float 4s ease-in-out infinite;
-}
-
-/* ── Pulse dot ── */
-@keyframes pulseDot {
-  0%, 100% { transform: scale(1); opacity: 1; }
-  50%       { transform: scale(1.3); opacity: 0.7; }
-}
-
-.pulse-dot {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--success);
-  animation: pulseDot 2s ease-in-out infinite;
-  box-shadow: 0 0 8px var(--success);
-}
-
-/* ── Shimmer (skeleton loading) ── */
-@keyframes shimmer {
-  0%   { background-position: -600px 0; }
-  100% { background-position: 600px 0; }
+/* ── Canonical: shimmer ──
+   Read the naming warning at the top of this file before renaming.
+   1.4s linear is the Bled spec; twelve byte-identical per-file aliases
+   (feed-shimmer, passport-shimmer, explore-shimmer, …) fold into this. */
+@keyframes bled-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
 
 .skeleton {
   background: linear-gradient(
     90deg,
-    var(--bg-tertiary) 25%,
-    var(--bg-secondary) 50%,
-    var(--bg-tertiary) 75%
+    var(--bg-secondary) 25%,
+    var(--surface-active) 50%,
+    var(--bg-secondary) 75%
   );
-  background-size: 1200px 100%;
-  animation: shimmer 1.8s ease-in-out infinite;
-  border-radius: var(--radius-md);
+  background-size: 200% 100%;
+  animation: bled-shimmer 1.4s linear infinite;
+  border-radius: var(--radius-sm);
 }
 
-[data-theme="dark"] .skeleton {
-  background: linear-gradient(
-    90deg,
-    oklch(20% 0.01 260) 25%,
-    oklch(25% 0.012 260) 50%,
-    oklch(20% 0.01 260) 75%
-  );
-  background-size: 1200px 100%;
+/* ── Canonical: breathe ──
+   The "working, not stuck" loop for loading placeholders that are a shape
+   rather than a gradient bar (the dashed skeleton blocks, the passport
+   share-card box). Consumers keep their own duration; only the name is
+   shared. */
+@keyframes bled-breathe {
+  0%, 100% { opacity: 0.55; }
+  50%      { opacity: 1; }
 }
 
-/* ── Spinning logo ── */
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
+/* ── Canonical: confetti ──
+   120vh covers both former variants. The unit is viewport-relative, not
+   container-relative, so the taller travel is correct on both surfaces: it
+   only means particles clear the fold before being culled. */
+@keyframes confetti-fall {
+  0%   { transform: translateY(0)     rotate(0deg);   opacity: 1; }
+  100% { transform: translateY(120vh) rotate(540deg); opacity: 0; }
 }
 
-.spin { animation: spin 1s linear infinite; }
-
-.spin-hover:hover {
-  animation: spin 0.6s var(--ease-spring);
-}
-
-/* ── Magnetic button (JS needed for full effect) ── */
-.btn-magnetic {
-  transition: transform var(--duration-fast) var(--ease-spring);
-}
-
-/* ── Card 3D tilt ── */
-.card-3d {
-  transform-style: preserve-3d;
-  transition: transform var(--duration-normal) var(--ease-out);
-  will-change: transform;
-}
-
-/* ── Shine sweep on hover ── */
-.shine-hover {
-  position: relative;
-  overflow: hidden;
-}
-
-.shine-hover::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: none;
-  transform: translateX(-100%);
-  transition: transform 0.6s var(--ease-out);
-  pointer-events: none;
-}
-
-.shine-hover:hover::after {
-  transform: translateX(100%);
-}
-
-/* ── Typewriter ── */
-@keyframes typewriter {
-  from { width: 0; }
-  to   { width: 100%; }
-}
-
-@keyframes cursor-blink {
-  0%, 100% { border-color: var(--accent); }
-  50%       { border-color: transparent; }
-}
-
-.typewriter {
-  overflow: hidden;
-  white-space: nowrap;
-  border-right: 3px solid var(--accent);
-  animation: typewriter 2s steps(40) both, cursor-blink 0.8s step-end infinite;
-}
-
-/* ── Blob morphing ── */
-@keyframes blobMorph {
-  0%   { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
-  33%  { border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%; }
-  66%  { border-radius: 70% 30% 40% 60% / 30% 70% 50% 40%; }
-  100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
-}
-
-.blob {
-  animation: blobMorph 10s ease-in-out infinite;
-}
-
-/* ── Counter number up ── */
-@keyframes countUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-.count-animate {
-  animation: countUp 0.6s var(--ease-out) both;
-}
-
-/* ── Notification badge bounce ── */
-@keyframes badgeBounce {
-  0%, 100% { transform: scale(1); }
-  40%       { transform: scale(1.2); }
-  60%       { transform: scale(0.95); }
-}
-
-.badge-animate {
-  animation: badgeBounce 0.5s var(--ease-spring);
-}
-
-/* ── Slide in from bottom (modals, sheets) ── */
-@keyframes slideInBottom {
-  from { transform: translateY(100%); opacity: 0; }
-  to   { transform: translateY(0); opacity: 1; }
-}
-
-/* ── Parallax (scroll-driven) ── */
-.parallax-bg {
-  animation: parallaxShift linear;
-  animation-timeline: scroll();
-  animation-range: 0% 100%;
-}
-
-@keyframes parallaxShift {
-  from { transform: translateY(0); }
-  to   { transform: translateY(60px); }
-}
-
-/* ── Hero image track scroll ── */
-@keyframes trackDown {
-  from { transform: translateY(0); }
-  to   { transform: translateY(-50%); }
-}
-
-@keyframes trackUp {
-  from { transform: translateY(-50%); }
-  to   { transform: translateY(0); }
-}
-
-.hero-track-down { animation: trackDown 30s linear infinite; }
-.hero-track-up   { animation: trackUp  30s linear infinite; }
-
-/* ── Reels progress bar ── */
-@keyframes reelProgress {
-  from { transform: scaleX(0); }
-  to   { transform: scaleX(1); }
-}
-
-/* ── Confetti particle ── */
-@keyframes confettiFall {
-  0%   { transform: translateY(-20px) rotate(0deg); opacity: 1; }
-  100% { transform: translateY(120vh) rotate(720deg); opacity: 0; }
-}
-
-/* ── Heart pop ── */
-@keyframes heartPop {
-  0%   { transform: scale(1); }
-  25%  { transform: scale(1.45) rotate(-10deg); }
-  50%  { transform: scale(0.9) rotate(5deg); }
-  75%  { transform: scale(1.15); }
-  100% { transform: scale(1.1); }
-}
-
-.liked-animate {
-  animation: heartPop 0.4s var(--ease-spring) both;
-}
-
-/* ── Tooltip pop ── */
+/* ── Tooltip / small menu pop (nav.css) ── */
 @keyframes tooltipPop {
   from { opacity: 0; transform: translateY(4px) scale(0.95); }
   to   { opacity: 1; transform: translateY(0) scale(1); }
@@ -331,11 +117,108 @@
 
 /* ── Micro-interactions: tactile press feedback ── */
 /* Scoped to :active so we don't clobber existing per-button transitions. The
-   feed's own controls are typographic and stay still; only real buttons press.
-   The emoji hover-grow that used to live here was the loudest motion left in a
-   whitewash system, so the reaction chrome no longer scales at all. */
+   feed's own controls are typographic and stay still; only real buttons press. */
 .btn:active {
   transform: scale(0.98);
+}
+
+/* ============================================
+   BLED SIGNATURE MOTION (Phase 3)
+   --------------------------------------------
+   The nine specimens from canvas 2a. Defined here, consumed by the Phase 3
+   builders. Every value below is a token, not a literal. The durations and
+   easings landed in tokens.css during Phase 1 and match the canvas exactly
+   (--ease-out is cubic-bezier(.16,1,.3,1), --ease-spring is
+   cubic-bezier(.34,1.4,.4,1), --duration-slower is 700ms, --duration-slow
+   is 420ms, --duration-tab is 220ms).
+   ============================================ */
+
+/* ── Arch reveal · 700ms · on image enters viewport ──
+   clip-path and transform are paint/composite only, so this costs zero layout
+   and zero CLS. The image box must still reserve its own space (aspect-ratio
+   or a fixed height) or the *image* shifts on load, independent of the reveal.
+
+   The transition pair is the app-wide mechanism: a single IntersectionObserver
+   adds .is-in. The keyframe below is for one-shot cases where the element
+   cannot carry a pre-state. Use one or the other, never both on one element. */
+[data-arch-reveal] {
+  clip-path: inset(100% 0 0 0);
+  transform: scale(1.06);
+  transition: clip-path var(--duration-slower) var(--ease-out),
+              transform var(--duration-slower) var(--ease-out);
+}
+
+[data-arch-reveal].is-in {
+  clip-path: inset(0);
+  transform: scale(1);
+}
+
+@keyframes bled-arch-reveal {
+  from { clip-path: inset(100% 0 0 0); transform: scale(1.06); }
+  to   { clip-path: inset(0);          transform: scale(1); }
+}
+
+/* ── Stamp · 420ms overshoot · on stamp collected ──
+   Scale runs 1.7 → 0.94 → 1: it overshoots past the target and settles back.
+   Derived from the canvas loop's active arc (its 10%–36% window). */
+@keyframes bled-stamp {
+  0%   { opacity: 0; transform: rotate(-26deg) scale(1.7); }
+  62%  { opacity: 1; transform: rotate(-6deg)  scale(0.94); }
+  100% { opacity: 1; transform: rotate(-8deg)  scale(1); }
+}
+
+/* ── Tab sweep · 220ms · on tab change ──
+   Consumer sets transform-origin: left on the indicator pseudo-element. */
+@keyframes bled-tab-sweep {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+/* ── Live ticker · 40s linear · always ──
+   -50% only reads as a seamless loop if the track renders its item list
+   exactly twice and the track is width: max-content. */
+@keyframes bled-ticker {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(-50%, 0, 0); }
+}
+
+/* ── Live pulse dot · 2s ease-out · always ──
+   Red is the live/now signal, so this rides --error and follows the theme
+   rather than pinning the light-theme hex. */
+@keyframes bled-live-pulse {
+  0%, 100% { box-shadow: 0 0 0 0   color-mix(in srgb, var(--error) 50%, transparent); }
+  60%      { box-shadow: 0 0 0 7px color-mix(in srgb, var(--error) 0%,  transparent); }
+}
+
+/* ── Toast · in 260ms / hold 4s / out 180ms ── */
+@keyframes bled-toast-in {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes bled-toast-out {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(14px); }
+}
+
+/* ── Skeleton → content · 180ms crossfade, no layout shift ──
+   The CSS half of the <Swap> component. Both layers occupy the same box; the
+   outgoing one is taken out of flow so the host never resizes mid-swap.
+   There is deliberately no rolling-count keyframe here: RollingNumber is
+   framer-motion driven, and --duration-digit in tokens.css is its value. */
+.bled-swap {
+  position: relative;
+}
+
+.bled-swap-layer {
+  transition: opacity var(--duration-fast) var(--ease-out);
+}
+
+.bled-swap-layer.is-out {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
 }
 
 /* ── Reduced motion override ── */
@@ -348,12 +231,24 @@
     scroll-behavior: auto !important;
   }
 
-  .reveal-on-scroll,
-  .reveal-fade,
-  .reveal-left,
-  .reveal-right {
+  /* Scroll-timeline animations ignore animation-duration, so they need an
+     explicit reset rather than the blanket fast-forward above. */
+  .reveal-on-scroll {
     animation: none;
     opacity: 1;
     transform: none;
   }
+
+  /* Bled signature motion: land on the visible end state, do not fast-forward
+     through it. */
+  [data-arch-reveal],
+  [data-arch-reveal].is-in {
+    clip-path: none;
+    transform: none;
+    transition: none;
+  }
+
+  .skeleton { animation: none; }
+
+  .bled-swap-layer { transition: none; }
 }

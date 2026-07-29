@@ -1,7 +1,9 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { QueryClientProvider } from '@tanstack/react-query';
+import { MotionConfig } from 'framer-motion';
 import { queryClient } from './query-client';
+import { ErrorBoundary } from './ErrorBoundary';
 import ChatPopupManager from '../components/ChatPopupManager';
 import ActiveConversationsLauncher from '../components/ActiveConversations';
 import UserActionMenu from '../components/UserActionMenu';
@@ -25,11 +27,17 @@ export function mountMessengerGlobals() {
     const root = createRoot(host);
     root.render(
         <QueryClientProvider client={queryClient}>
-            <ChatPopupManager />
-            <ActiveConversationsLauncher />
-            <UserActionMenu />
-            <ProfileHoverCard />
-            <PopupHost />
+            {/* Same wrappers as routed islands (islands.tsx): this root renders
+                framer-motion surfaces, so it needs the reduced-motion contract too */}
+            <MotionConfig reducedMotion="user">
+                <ErrorBoundary>
+                    <ChatPopupManager />
+                    <ActiveConversationsLauncher />
+                    <UserActionMenu />
+                    <ProfileHoverCard />
+                    <PopupHost />
+                </ErrorBoundary>
+            </MotionConfig>
         </QueryClientProvider>,
     );
 }

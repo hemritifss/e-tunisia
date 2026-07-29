@@ -225,10 +225,19 @@
   border: 3px solid rgba(255, 255, 255, 0.3);
   border-top-color: #fff;
   border-radius: 50%;
-  animation: ws-spin .8s linear infinite;
+  animation: spin .8s linear infinite;
 }
-@keyframes ws-spin { to { transform: rotate(360deg); } }
-
 @media (max-width: 520px) {
   .wrapped-page { margin: 0; border-radius: 0; min-height: 100vh; min-height: 100dvh; }
+}
+
+/* ── Reduced motion ───────────────────────────────────────
+   Wrapped is a celebration surface: every element enters with a scale or a
+   rise. The global 0.01ms fast-forward in animations.css technically satisfies
+   the media query, but fast-forwarding a celebration is still a flash. Land on
+   the end state instead. The spinner keeps turning: it communicates work in
+   progress, not decoration. */
+@media (prefers-reduced-motion: reduce) {
+  .wrapped-stage,
+  .ws-big { animation: none; }
 }

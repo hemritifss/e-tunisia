@@ -229,7 +229,7 @@
     border-radius: 16px;
     background: linear-gradient(90deg, var(--bg-secondary) 25%, var(--surface-elevated) 50%, var(--bg-secondary) 75%);
     background-size: 200% 100%;
-    animation: passport-shimmer 1.4s infinite;
+    animation: bled-shimmer 1.4s linear infinite;
 }
 .mood-skel-trip { height: 170px; }
 
@@ -723,15 +723,11 @@
 .mood-page .mood-skel-trip {
     background: linear-gradient(90deg, var(--surface-hover) 25%, var(--surface-active) 50%, var(--surface-hover) 75%);
     background-size: 200% 100%;
-    animation: mood-shimmer 1.6s linear infinite;
+    animation: bled-shimmer 1.4s linear infinite;
     border-radius: var(--radius-xl);
     height: 220px;
 }
 .mood-page .mood-skel-trip { height: 180px; }
-@keyframes mood-shimmer {
-    0%   { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
-}
 @media (prefers-reduced-motion: reduce) {
     .mood-page .mood-skel-tile,
     .mood-page .mood-skel-trip { animation: none; }

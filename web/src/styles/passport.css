@@ -100,9 +100,7 @@
 .passport-tabs-head button:hover { color: var(--text-primary); }
 .passport-tabs-body { padding-top: 18px; min-height: 200px; }
 .passport-empty { padding: 28px; text-align: center; color: var(--text-muted, #9aa0a6); }
-.passport-tab-skel { height: 200px; background: linear-gradient(90deg, var(--bg-secondary) 25%, var(--surface-elevated) 50%, var(--bg-secondary) 75%); background-size: 200% 100%; animation: passport-shimmer 1.4s infinite; border-radius: 12px; }
-@keyframes passport-shimmer { from { background-position: 100% 0; } to { background-position: -100% 0; } }
-
+.passport-tab-skel { height: 200px; background: linear-gradient(90deg, var(--bg-secondary) 25%, var(--surface-elevated) 50%, var(--bg-secondary) 75%); background-size: 200% 100%; animation: bled-shimmer 1.4s linear infinite; border-radius: 12px; }
 .passport-trip-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
 .passport-trip-card { background: var(--surface); border: 1px solid var(--border, #e5e7eb); border-radius: 14px; overflow: hidden; text-decoration: none; color: inherit; transition: transform 120ms; }
 .passport-trip-card:hover { transform: translateY(-2px); }
@@ -137,10 +135,16 @@
     box-shadow: 0 12px 36px rgba(0,0,0,0.35);
     border: 1px solid rgba(255,255,255,0.08);
 }
+/* This referenced a `pulse-fade` keyframe that no longer exists anywhere, so
+   the box sat dead still while the share card rendered: a loading placeholder
+   that reads as stuck. Repointed to the canonical breathe loop. */
 .passport-share-card-loading {
     display: grid; place-items: center; aspect-ratio: 4 / 5;
     border-radius: 14px; background: rgba(0,0,0,0.08);
-    color: var(--text-muted); animation: pulse-fade 1.4s ease-in-out infinite;
+    color: var(--text-muted); animation: bled-breathe 1.4s var(--ease-in-out) infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+    .passport-share-card-loading { animation: none; opacity: 0.7; }
 }
 .passport-share-download {
     position: absolute; right: 10px; bottom: 10px;
@@ -449,11 +453,6 @@
 
 .confetti { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 91; }
 .confetti span { position: absolute; top: -10px; width: 8px; height: 14px; border-radius: 2px; animation-name: confetti-fall; animation-timing-function: linear; animation-fill-mode: forwards; }
-@keyframes confetti-fall {
-    0% { transform: translateY(0) rotate(0); opacity: 1; }
-    100% { transform: translateY(110vh) rotate(540deg); opacity: 0; }
-}
-
 @media (max-width: 720px) {
     .passport-hero { padding: 24px 18px; }
     .passport-hero-text h1 { font-size: 24px; }

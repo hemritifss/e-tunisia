@@ -54,7 +54,7 @@
     height: 70px;
     background: linear-gradient(90deg, var(--bg-secondary) 25%, var(--surface-elevated) 50%, var(--bg-secondary) 75%);
     background-size: 200% 100%;
-    animation: passport-shimmer 1.4s infinite;
+    animation: bled-shimmer 1.4s linear infinite;
 }
 .admin-stat-icon {
     width: 44px; height: 44px;
@@ -213,5 +213,5 @@
 .admin-pager button:disabled { opacity: .45; cursor: default; }
 .admin-empty { padding: 48px 20px; text-align: center; color: var(--text-tertiary); border: 1px dashed var(--border); border-radius: var(--radius-xl); }
 .admin-table-skel { display: flex; flex-direction: column; gap: 8px; }
-.admin-row-skel { height: 46px; border-radius: var(--radius-md); background: linear-gradient(90deg, var(--bg-secondary) 25%, var(--surface-elevated) 50%, var(--bg-secondary) 75%); background-size: 200% 100%; animation: passport-shimmer 1.4s infinite; }
+.admin-row-skel { height: 46px; border-radius: var(--radius-md); background: linear-gradient(90deg, var(--bg-secondary) 25%, var(--surface-elevated) 50%, var(--bg-secondary) 75%); background-size: 200% 100%; animation: bled-shimmer 1.4s linear infinite; }
 .admin-queue-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 5px; margin-left: 8px; border-radius: var(--radius-full); background: var(--accent); color: #fff; font-size: 11px; font-weight: 700; }

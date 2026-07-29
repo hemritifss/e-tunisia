@@ -396,7 +396,7 @@
   inset: -6px;
   border-radius: var(--radius-full);
   border: 2px dashed color-mix(in oklab, var(--warning) 60%, transparent);
-  animation: popup-spin 9s linear infinite;
+  animation: spin 9s linear infinite;
 }
 
 /* ---- Level up ---- */
@@ -491,9 +491,6 @@
   0% { transform: scale(0.5); opacity: 0; }
   60% { transform: scale(1.12); }
   100% { transform: scale(1); opacity: 1; }
-}
-@keyframes popup-spin {
-  to { transform: rotate(360deg); }
 }
 @keyframes popup-wave {
   0%, 100% { transform: rotate(0deg); }

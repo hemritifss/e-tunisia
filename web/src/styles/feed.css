@@ -679,7 +679,7 @@
     display: block;
     background: linear-gradient(90deg, var(--bg-secondary) 25%, var(--surface-hover) 50%, var(--bg-secondary) 75%);
     background-size: 200% 100%;
-    animation: feed-shimmer 1.4s linear infinite;
+    animation: bled-shimmer 1.4s linear infinite;
 }
 .stories-v2-skel-ring { width: 62px; height: 62px; border-radius: var(--arch); }
 .stories-v2-skel-label { width: 44px; height: 9px; }
@@ -1324,18 +1324,13 @@
     display: block;
     background: linear-gradient(90deg, var(--bg-secondary) 25%, var(--surface-hover) 50%, var(--bg-secondary) 75%);
     background-size: 200% 100%;
-    animation: feed-shimmer 1.4s linear infinite;
+    animation: bled-shimmer 1.4s linear infinite;
 }
 .post-skeleton-avatar { width: 32px; height: 32px; border-radius: 50%; flex: 0 0 auto; }
 .post-skeleton-bar { height: 12px; }
 /* Matches the 34px serif line box so content lands without a shift. */
 .post-skeleton-title { height: 37px; width: 84%; }
 .post-skeleton-media { aspect-ratio: 16 / 9; width: 100%; }
-
-@keyframes feed-shimmer {
-    0%   { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
-}
 
 /* ============================================
    EMPTY / END / LOAD-MORE
@@ -1519,7 +1514,7 @@
     margin: 10px 0;
     background: linear-gradient(90deg, var(--bg-secondary) 25%, var(--surface-hover) 50%, var(--bg-secondary) 75%);
     background-size: 200% 100%;
-    animation: feed-shimmer 1.4s linear infinite;
+    animation: bled-shimmer 1.4s linear infinite;
 }
 
 .rail-passport {

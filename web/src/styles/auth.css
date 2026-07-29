@@ -427,11 +427,7 @@
     transform: translateX(3px);
 }
 .auth-page .auth-submit.is-busy .auth-submit-icon {
-    animation: auth-submit-spin 0.9s linear infinite;
-}
-@keyframes auth-submit-spin {
-    from { transform: rotate(0); }
-    to   { transform: rotate(360deg); }
+    animation: spin 0.9s linear infinite;
 }
 @media (prefers-reduced-motion: reduce) {
     .auth-page .auth-submit.is-busy .auth-submit-icon { animation: none; }
