@@ -25,7 +25,7 @@ export function FogMap({ visited, emptyCta }: Props) {
     const pct = Math.round((count / 24) * 100);
 
     return (
-        <div className="fog-map" data-design="carnet">
+        <div className="fog-map">
             <div className="fog-map-head">
                 <span className="fog-map-kicker">The National Map</span>
                 <span className="fog-map-count">

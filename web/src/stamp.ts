@@ -1,6 +1,6 @@
 // Reusable rubber-stamp / postmark SVG (carnet identity).
 // Returns an inline SVG string coloured via `currentColor`, so the caller sets
-// `color: var(--stamp-ink)` on the container. Used by the check-in stamp slam
+// `color: var(--accent)` on the container. Used by the check-in stamp slam
 // now, and by the passport stamp album later (Phase 2 governorate set).
 
 export interface StampOptions {
@@ -83,7 +83,7 @@ export function renderStampSVG(opts: StampOptions): string {
     ${glyph}
     <line x1="52" y1="74" x2="148" y2="74" stroke-width="1.5"/>
     <line x1="52" y1="126" x2="148" y2="126" stroke-width="1.5"/>
-    <text x="100" y="${city ? 98 : 106}" font-family="Fraunces, Georgia, serif" font-size="${ts}"
+    <text x="100" y="${city ? 98 : 106}" font-family="'Instrument Serif', Georgia, serif" font-size="${ts}"
           font-weight="600" text-anchor="middle" stroke="none">${esc(title.toUpperCase())}</text>
     ${city ? `<text x="100" y="116" font-family="'JetBrains Mono', monospace" font-size="9"
           font-weight="500" letter-spacing="2" text-anchor="middle" stroke="none"

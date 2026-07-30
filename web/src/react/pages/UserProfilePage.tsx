@@ -131,7 +131,7 @@ export default function UserProfilePage() {
 
   if (isLoading) {
     return (
-      <div className="user-profile-v2 page-enter" data-design="sleek" id="user-profile-root">
+      <div className="user-profile-v2 page-enter" id="user-profile-root">
         <a href="javascript:history.back()" className="back-floating-btn" aria-label="Back"><ArrowLeft /></a>
         <div className="user-profile-skeleton">
           <div className="sk-cover skeleton-block" />
@@ -145,7 +145,7 @@ export default function UserProfilePage() {
   const user = data?.user;
   if (!user) {
     return (
-      <div className="user-profile-v2 page-enter" data-design="sleek" id="user-profile-root">
+      <div className="user-profile-v2 page-enter" id="user-profile-root">
         <a href="javascript:history.back()" className="back-floating-btn"><ArrowLeft /></a>
         <div className="up-not-found"><UserX /><h3>Profile not found</h3><p>This account may have been removed or the link is invalid.</p></div>
       </div>
@@ -186,7 +186,7 @@ export default function UserProfilePage() {
   };
 
   return (
-    <div className="user-profile-v2 page-enter" data-design="sleek" id="user-profile-root">
+    <div className="user-profile-v2 page-enter" id="user-profile-root">
       <header className={`up-cover${isPro ? ' is-pro' : ''}`}>
         <div className="up-cover-gradient" aria-hidden="true" />
         <div className="up-cover-pattern" aria-hidden="true" />

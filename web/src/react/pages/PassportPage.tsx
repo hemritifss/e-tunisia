@@ -123,7 +123,7 @@ function GovernorateAlbum({ visited, isOwner }: { visited: string[]; isOwner: bo
     const total = GOVERNORATES.length;
     const pct = Math.round((count / total) * 100);
     return (
-        <section className="passport-section" data-design="carnet">
+        <section className="passport-section">
             <div className="gov-album-head">
                 <div>
                     <span className="cn-kicker">Nº 01 — The National Collection</span>
@@ -301,8 +301,8 @@ export default function PassportPage() {
     const isPro = p.plan === 'premium' || p.plan === 'business' || p.plan === 'admin';
 
     return (
-        <main className="passport-page" data-design="carnet">
-            <section data-design="carnet" className={`passport-hero${isPro ? ' is-pro' : ''}${p.passportTheme ? ` passport-theme-${p.passportTheme}` : ''}`}>
+        <main className="passport-page">
+            <section className={`passport-hero${isPro ? ' is-pro' : ''}${p.passportTheme ? ` passport-theme-${p.passportTheme}` : ''}`}>
                 <div className="passport-hero-bg" aria-hidden="true" />
                 <div className="passport-hero-mesh" aria-hidden="true" />
                 <div className="passport-hero-orbs" aria-hidden="true">

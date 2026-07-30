@@ -105,7 +105,7 @@ export default function TagPage() {
       : 'No posts yet — be the first.';
 
   return (
-    <div className="tag-page page-enter" data-design="sleek" id="tag-root">
+    <div className="tag-page page-enter" id="tag-root">
       <a href="#/" className="btn btn-ghost" style={{ marginBottom: 'var(--space-4)' }}>
         <ArrowLeft /> Back
       </a>

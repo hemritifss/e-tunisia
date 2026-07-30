@@ -263,7 +263,7 @@ export default function PostDetailPage() {
 
   if (postQ.isLoading) {
     return (
-      <div className="post-detail-page page-enter" data-design="sleek" id="post-detail-root">
+      <div className="post-detail-page page-enter" id="post-detail-root">
         {BackLink}
         <div className="post-detail-loading"><DetailSkeleton label="Loading post" hero={220} /></div>
       </div>
@@ -272,7 +272,7 @@ export default function PostDetailPage() {
 
   if (!post) {
     return (
-      <div className="post-detail-page page-enter" data-design="sleek" id="post-detail-root">
+      <div className="post-detail-page page-enter" id="post-detail-root">
         {BackLink}
         <div className="empty-state">
           <FileQuestion style={{ width: '3rem', height: '3rem', color: 'var(--text-muted)' }} />
@@ -308,7 +308,7 @@ export default function PostDetailPage() {
   const displayBody = translated && !showOriginal ? translated : post.body;
 
   return (
-    <div className="post-detail-page page-enter" data-design="sleek" id="post-detail-root">
+    <div className="post-detail-page page-enter" id="post-detail-root">
       {BackLink}
 
       <article className="post-detail-card">

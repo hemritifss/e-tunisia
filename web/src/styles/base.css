@@ -24,6 +24,11 @@ html {
      and a short one no longer shifts every centered layout left/right — a subtle
      but constant source of the "sizes jump / white edges" feeling. */
   scrollbar-gutter: stable;
+  /* Instrument Serif ships 400 only and display type is never bold in this
+     system; without this, every bold request on it renders as faux-bold. Sans
+     and Arabic carry real 400..700 so they are untouched, and mono correctly
+     snaps back to its single 500 weight. */
+  font-synthesis: none;
 }
 
 html[data-theme="dark"] { color-scheme: dark; }
@@ -99,10 +104,10 @@ ul, ol {
   list-style: none;
 }
 
-/* ── Display headings use Outfit ── */
+/* ── Display headings use Instrument Serif ── */
 h1, h2, h3 {
   font-family: var(--font-display);
-  font-weight: 800;
+  font-weight: 400;
   line-height: var(--leading-tight);
   letter-spacing: var(--tracking-tight);
   color: var(--text-primary);
@@ -127,7 +132,7 @@ h5 { font-size: var(--text-lg); }
 .text-accent    { color: var(--accent); }
 .text-danger    { color: var(--error); }
 .text-success   { color: var(--success); }
-.text-gold      { color: var(--gold); }
+.text-gold      { color: var(--warning); }
 
 .text-sm  { font-size: var(--text-sm); }
 .text-xs  { font-size: var(--text-xs); }
@@ -142,63 +147,16 @@ h5 { font-size: var(--text-lg); }
 .fw-800 { font-weight: 800; }
 .fw-900 { font-weight: 900; }
 
-/* ── Gradient text ── */
-.text-gradient {
-  background: var(--gradient-brand);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-size: 200% auto;
-  animation: gradientShift 4s ease infinite;
-}
-
-.text-gradient-blue {
-  background: linear-gradient(135deg, var(--mediterranean), var(--cyan));
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.text-gradient-gold {
-  background: var(--gradient-gold);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-/* ── Glassmorphism ── */
+/* ── Surface panels (legacy `.glass-*` names, now flat) ── */
 .glass {
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--glass-border);
+  background: var(--surface);
+  border: 1px solid var(--border);
 }
 
 .glass-light {
-  background: var(--glass-bg-light);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--glass-border);
+  background: var(--surface-hover);
+  border: 1px solid var(--border);
 }
-
-.glass-heavy {
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur-heavy);
-  -webkit-backdrop-filter: var(--glass-blur-heavy);
-  border: 1px solid var(--glass-border);
-}
-
-/* ── Neon glow ── */
-.glow-accent  { box-shadow: var(--shadow-glow); }
-.glow-blue    { box-shadow: var(--shadow-glow-blue); }
-.glow-gold    { box-shadow: var(--shadow-glow-gold); }
-.neon-text    { text-shadow: 0 0 10px var(--accent), 0 0 20px var(--accent); }
-.neon-border  { box-shadow: 0 0 0 1px var(--accent), var(--shadow-glow); }
-
-/* ── Gradient backgrounds ── */
-.bg-gradient-brand { background: var(--gradient-brand); }
-.bg-gradient-mesh  { background: var(--bg-primary) var(--gradient-mesh); }
-.bg-glass          { background: var(--glass-bg); }
 
 /* ── Layout utilities ── */
 .container {
@@ -292,7 +250,7 @@ h5 { font-size: var(--text-lg); }
 
 /* ── Selection ── */
 ::selection {
-  background: oklch(55% 0.16 30 / 0.25);
+  background: color-mix(in srgb, var(--accent) 25%, transparent);
   color: var(--text-primary);
 }
 
@@ -344,7 +302,7 @@ h5 { font-size: var(--text-lg); }
 /* ── Section title ── */
 .section-title {
   font-family: var(--font-display);
-  font-weight: 900;
+  font-weight: 400;
   letter-spacing: var(--tracking-tightest);
   line-height: var(--leading-tight);
 }
@@ -380,9 +338,9 @@ h5 { font-size: var(--text-lg); }
     left: 8px;
     z-index: 1000;
     padding: 8px 14px;
-    background: var(--accent, #c0392b);
-    color: #fff;
-    border-radius: 8px;
+    background: var(--accent);
+    color: var(--accent-text);
+    border-radius: 4px;
     font-weight: 600;
     text-decoration: none;
     transform: translateY(-200%);

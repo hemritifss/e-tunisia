@@ -1,3 +1,39 @@
+/* ── Moved from pages.css (Phase 2 split) ─────────────────────
+   Prepended so this file's own rules keep winning, exactly as
+   they did when pages.css loaded ahead of it.
+   ──────────────────────────────────────────────────────────── */
+
+/* Hide standard navigation bars and mobile components when unauthenticated */
+body.guest-mode #main-nav,
+body.guest-mode #mobile-menu-overlay,
+body.guest-mode #mobile-menu-panel,
+body.guest-mode #notif-panel-overlay,
+body.guest-mode #notif-panel,
+body.guest-mode #post-modal-overlay,
+body.guest-mode #post-modal {
+  display: none !important;
+}
+
+/* Zero padding for main content so Hero page can bleed edge-to-edge */
+body.guest-mode .main-content {
+  padding-top: 0 !important;
+}
+/* ============================================
+   React island shell — gives FeedPage/ExplorePage
+   the same outer padding & max-width as vanilla pages
+   ============================================ */
+.react-island-shell {
+  width: 100%;
+  max-width: var(--page-max);
+  margin: 0 auto;
+  padding: var(--space-6) var(--page-padding);
+}
+@media (max-width: 768px) {
+  .react-island-shell {
+    padding: var(--space-4) var(--space-3);
+  }
+}
+
 /* ============================================
    APP SHELL — the one shared page skeleton
    --------------------------------------------
@@ -50,7 +86,7 @@
     flex-wrap: wrap;
     margin-bottom: var(--space-6);
     padding-bottom: var(--space-4);
-    border-bottom: 1px solid var(--rule);
+    border-bottom: 1px solid var(--border);
 }
 .page-head__main { min-width: 0; }
 .page-head__eyebrow {
@@ -62,7 +98,7 @@
     font-weight: 600;
     letter-spacing: var(--tracking-widest);
     text-transform: uppercase;
-    color: var(--ink-faint);
+    color: var(--text-tertiary);
     margin-bottom: var(--space-2);
 }
 .page-head__title {
@@ -103,7 +139,7 @@
     margin-bottom: var(--space-3);
     padding: var(--space-1) var(--space-2) var(--space-1) var(--space-1);
     border-radius: var(--radius-full);
-    color: var(--ink-soft);
+    color: var(--text-secondary);
     font-size: var(--text-sm);
     font-weight: 500;
     background: transparent;
@@ -111,7 +147,7 @@
     transition: background var(--duration-fast) var(--ease-out),
                 color var(--duration-fast) var(--ease-out);
 }
-.page-back-inline:hover { background: var(--surface-hover); color: var(--ink); }
+.page-back-inline:hover { background: var(--surface-hover); color: var(--text-primary); }
 .page-back-inline:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .page-back-inline i { font-size: 1.1em; }
 
@@ -161,40 +197,3 @@ pre, table {
 /* Flex/grid children default to min-width:auto, which lets long words / wide
    media blow out the track. Belt-and-suspenders for the app content column. */
 .main-content, .react-island-shell { min-width: 0; }
-
-/* ── Retire the leftover AI-look from page heroes ───────────
-   ~10 page heroes (tips, leaderboard, events, badges, explore, mood,
-   discover-trips, passport…) still ship decorative floating "orbs" + a
-   radial "mesh" glow — the generic AI-generated aesthetic the product
-   deliberately moved away from for the carnet identity. They are all
-   aria-hidden decoration layered behind the content, so hiding them only
-   calms the banner (no text/contrast impact) and pulls every hero toward
-   the same quiet, editorial voice. */
-[class*="-hero-orb"],
-[class*="-hero-orbs"],
-[class*="-hero-mesh"] {
-    display: none !important;
-}
-
-/* Gradient-text titles are another AI tell the product moved away from. On the
-   dark hero banners a gradient also fades into low-contrast hues at its ends;
-   a single solid warm accent reads better AND looks editorial. Scoped to the
-   per-hero accent words only (not body copy). */
-.badges-accent,
-.tips2-accent, .tips-page .tips2-accent,
-.leaderboard-accent,
-.event2-accent, .events-page .event2-accent,
-.discover-trips-accent,
-.hero2-accent {
-    background: none !important;
-    -webkit-text-fill-color: currentColor !important;
-    color: var(--gold) !important;
-    animation: none !important;
-}
-/* Onboarding highlight sits on paper — use the terracotta accent, not gold. */
-.onb-name-highlight {
-    background: none !important;
-    -webkit-text-fill-color: currentColor !important;
-    color: var(--accent) !important;
-    animation: none !important;
-}

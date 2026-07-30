@@ -446,7 +446,7 @@ export default function MessagesPage() {
   const roomId = sub.kind === 'thread' ? sub.id! : (sub.kind === 'open-user' ? resolvedRoom : null);
 
   return (
-    <div className="dm-page page-enter" data-design="sleek" id="dm-root">
+    <div className="dm-page page-enter" id="dm-root">
       <aside className="dm-inbox">
         <header className="dm-inbox-head">
           <a href="#/" className="dm-icon-btn" aria-label={t('dm.back')}><ArrowLeft /></a>

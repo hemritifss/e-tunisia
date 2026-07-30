@@ -319,7 +319,7 @@ function CartView() {
   const total = cart.calcTotal(state);
 
   return (
-    <div className="trip-page page-enter" data-design="sleek" id="trip-root">
+    <div className="trip-page page-enter" id="trip-root">
       <header className="trip-page-head">
         <div>
           <h1><Luggage /> {state.title || 'My Tunisia trip'}</h1>
@@ -455,11 +455,11 @@ function SavedTripView({ slug }: { slug: string }) {
   };
 
   if (isLoading) {
-    return <div className="trip-page page-enter" data-design="sleek" id="trip-root"><div className="trip-skeleton"><div className="sk-title skeleton-block" /><div className="sk-subtitle skeleton-block" /></div></div>;
+    return <div className="trip-page page-enter" id="trip-root"><div className="trip-skeleton"><div className="sk-title skeleton-block" /><div className="sk-subtitle skeleton-block" /></div></div>;
   }
   if (isError || !trip) {
     return (
-      <div className="trip-page page-enter" data-design="sleek" id="trip-root">
+      <div className="trip-page page-enter" id="trip-root">
         <div className="empty-state">
           <SearchX />
           <h3>Trip not found</h3>
@@ -517,7 +517,7 @@ function SavedTripView({ slug }: { slug: string }) {
   }
 
   return (
-    <div className="trip-page page-enter" data-design="sleek" id="trip-root">
+    <div className="trip-page page-enter" id="trip-root">
       <header className="trip-page-head">
         <div>
           <h1><Luggage /> {trip.title}</h1>

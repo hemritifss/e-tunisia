@@ -19,12 +19,12 @@ interface CategoryMeta {
 
 const CATEGORIES: CategoryMeta[] = [
   { id: 'all', label: 'All Tips', Icon: Sparkles, tint: 'var(--text-secondary)' },
-  { id: 'cultural', label: 'Cultural', Icon: Landmark, tint: 'var(--coral)' },
+  { id: 'cultural', label: 'Cultural', Icon: Landmark, tint: 'var(--accent)' },
   { id: 'transport', label: 'Transport', Icon: Bus, tint: 'var(--mediterranean)' },
-  { id: 'money', label: 'Money', Icon: Banknote, tint: 'var(--olive)' },
-  { id: 'safety', label: 'Safety', Icon: ShieldCheck, tint: 'var(--gold)' },
+  { id: 'money', label: 'Money', Icon: Banknote, tint: 'var(--success)' },
+  { id: 'safety', label: 'Safety', Icon: ShieldCheck, tint: 'var(--warning)' },
   { id: 'food', label: 'Food', Icon: Utensils, tint: 'var(--accent)' },
-  { id: 'general', label: 'General', Icon: Compass, tint: 'var(--violet)' },
+  { id: 'general', label: 'General', Icon: Compass, tint: 'var(--accent)' },
 ];
 
 const CAT_BY_ID: Record<string, CategoryMeta> = Object.fromEntries(CATEGORIES.map((c) => [c.id, c]));

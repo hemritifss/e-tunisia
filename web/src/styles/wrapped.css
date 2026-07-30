@@ -5,17 +5,17 @@
   max-width: 480px;
   margin: 12px auto;
   min-height: min(760px, 86vh);
-  border-radius: var(--radius-3xl);
+  border-radius: var(--radius-xl);
   overflow: hidden;
   color: #fff;
-  background: linear-gradient(160deg, #0b1e3f 0%, #1a6a8a 52%, #d4623a 100%);
+  background: var(--paper-deep);
   box-shadow: var(--shadow-2xl);
   display: flex;
   flex-direction: column;
 }
 
-/* The deck lives on a dark gradient — force headings white (global h1/h2 rules
-   otherwise stamp them with a dark text token, rendering them near-invisible). */
+/* The deck lives on the deep navy panel, so headings are forced white (global
+   h1/h2 rules otherwise stamp them with a dark token and they go invisible). */
 .wrapped-page h1,
 .wrapped-page h2,
 .wrapped-page strong { color: #fff; }
@@ -124,7 +124,7 @@
   align-items: center;
   background: rgba(255, 255, 255, 0.14);
   border: 1px solid rgba(255, 255, 255, 0.28);
-  border-radius: var(--radius-2xl);
+  border-radius: var(--radius-xl);
   padding: 16px 22px;
   min-width: 92px;
 }
@@ -142,13 +142,12 @@
   width: 100%;
   background: rgba(0, 0, 0, 0.22);
   border: 1px solid rgba(255, 255, 255, 0.25);
-  border-radius: var(--radius-2xl);
+  border-radius: var(--radius-xl);
   padding: 26px 24px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 6px;
-  backdrop-filter: blur(6px);
 }
 .ws-card-kicker { font-size: var(--text-sm); letter-spacing: 2px; text-transform: uppercase; font-weight: 700; opacity: .85; }
 .ws-card-name { font-size: var(--text-2xl); font-weight: 800; }

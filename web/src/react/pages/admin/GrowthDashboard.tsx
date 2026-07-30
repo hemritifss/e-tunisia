@@ -137,9 +137,9 @@ export function GrowthDashboard() {
         ) : (
           <>
             <Tile label="Daily active" value={gd?.activeUsers.dau ?? '—'} icon={<Activity size={18} />} accent="var(--mediterranean)" />
-            <Tile label="Weekly active" value={gd?.activeUsers.wau ?? '—'} icon={<Users size={18} />} accent="var(--terracotta)" />
-            <Tile label="Monthly active" value={gd?.activeUsers.mau ?? '—'} icon={<TrendingUp size={18} />} accent="var(--violet)" />
-            <Tile label="New today" value={gd?.signups.today ?? '—'} icon={<UserPlus size={18} />} accent="var(--gold)" />
+            <Tile label="Weekly active" value={gd?.activeUsers.wau ?? '—'} icon={<Users size={18} />} accent="var(--accent)" />
+            <Tile label="Monthly active" value={gd?.activeUsers.mau ?? '—'} icon={<TrendingUp size={18} />} accent="var(--accent)" />
+            <Tile label="New today" value={gd?.signups.today ?? '—'} icon={<UserPlus size={18} />} accent="var(--warning)" />
           </>
         )}
       </section>
@@ -178,8 +178,8 @@ export function GrowthDashboard() {
             <header><h2><BarChart3 size={16} /> Content</h2></header>
             <div className="admin-stats admin-stats-compact">
               <Tile label="Posts" value={gd.content.posts} icon={<FileText size={16} />} accent="var(--mediterranean)" />
-              <Tile label="Reviews" value={gd.content.reviews} icon={<Users size={16} />} accent="var(--gold)" />
-              <Tile label="Places" value={gd.content.places} icon={<TrendingUp size={16} />} accent="var(--terracotta)" />
+              <Tile label="Reviews" value={gd.content.reviews} icon={<Users size={16} />} accent="var(--warning)" />
+              <Tile label="Places" value={gd.content.places} icon={<TrendingUp size={16} />} accent="var(--accent)" />
             </div>
           </section>
         </div>

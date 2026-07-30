@@ -30,7 +30,7 @@ export default function SceneManifesto() {
 
   return (
     <div className="ej-manifesto-insert">
-      <TornEdge fill="var(--paper-warm)" />
+      <TornEdge fill="var(--bg-secondary)" />
       <section className="ej-section ej-manifesto">
         <div className="ej-section-head ej-head-folio">
           <span className="ej-folio-bg" aria-hidden="true">04</span>
@@ -60,7 +60,7 @@ export default function SceneManifesto() {
           ))}
         </div>
       </section>
-      <TornEdge fill="var(--paper-warm)" flip />
+      <TornEdge fill="var(--bg-secondary)" flip />
     </div>
   );
 }

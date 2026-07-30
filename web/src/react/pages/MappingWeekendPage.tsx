@@ -84,7 +84,7 @@ export default function MappingWeekendPage() {
   const { event, totals, governorates, topContributors, me } = data;
 
   return (
-    <div className="mw-page" data-design="sleek">
+    <div className="mw-page">
       <header className="mw-hero">
         <span className={`mw-status mw-status-${status}`}>
           {status === 'live' && <><Flame size={13} /> Live now</>}

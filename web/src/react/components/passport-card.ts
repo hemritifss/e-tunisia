@@ -1,9 +1,12 @@
 // Canvas-rendered shareable passport card — the "Wrapped" artifact.
 //
-// Draws a 1080×1350 (4:5, Instagram/WhatsApp-friendly) portrait card with the
-// aurora-mesh identity from the design system: deep navy base, mediterranean /
-// violet / terracotta glows, gold accents. No dependencies, no external assets
-// (avatars are skipped in favor of a monogram disc so the canvas never taints).
+// Draws a 1080×1350 (4:5, Instagram/WhatsApp-friendly) portrait card in the
+// "Bled" night palette: deep navy base, Sidi Bou Said blue / azure glows and a
+// stone-deep warm note. No dependencies, no external assets (avatars are
+// skipped in favor of a monogram disc so the canvas never taints).
+//
+// Canvas cannot resolve CSS variables, so the tokens are inlined as hex here.
+// They mirror the dark-theme values in styles/tokens.css.
 
 export interface PassportCardData {
   fullName: string;
@@ -22,10 +25,14 @@ export interface PassportCardData {
 const W = 1080;
 const H = 1350;
 
+/** Night-palette ink and trim (dark-theme --text-primary / --warning). */
+const INK = '#E8EEF7';
+const GOLD_INK = '#C6B48C';
+
 const LEVEL_COLORS: Record<string, string> = {
   bronze: '#c98a5a',
   silver: '#b8c0cc',
-  gold: '#e8b04b',
+  gold: GOLD_INK,
   platinum: '#9fd8d0',
 };
 
@@ -63,7 +70,7 @@ function spacedText(ctx: CanvasRenderingContext2D, text: string, cx: number, y: 
 /** Dashed "visa stamp" ring with text on the arc — the editorial signature. */
 function stamp(ctx: CanvasRenderingContext2D, cx: number, cy: number, radius: number) {
   ctx.save();
-  ctx.strokeStyle = 'rgba(232, 176, 75, 0.75)';
+  ctx.strokeStyle = 'rgba(198, 180, 140, 0.75)';
   ctx.lineWidth = 3;
   ctx.setLineDash([10, 7]);
   ctx.beginPath();
@@ -74,13 +81,13 @@ function stamp(ctx: CanvasRenderingContext2D, cx: number, cy: number, radius: nu
   ctx.arc(cx, cy, radius - 22, 0, Math.PI * 2);
   ctx.stroke();
 
-  ctx.fillStyle = 'rgba(232, 176, 75, 0.9)';
-  ctx.font = '700 30px "Noto Kufi Arabic", Inter, sans-serif';
+  ctx.fillStyle = 'rgba(198, 180, 140, 0.9)';
+  ctx.font = '700 30px "Noto Kufi Arabic", "Instrument Sans", sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillText('تونس', cx, cy + 2);
 
-  ctx.font = '700 15px Inter, sans-serif';
+  ctx.font = '700 15px "Instrument Sans", sans-serif';
   const ringText = 'CARNET DE VOYAGE • E-TUNISIA • ';
   const chars = [...ringText];
   const step = (Math.PI * 2) / chars.length;
@@ -103,20 +110,20 @@ export async function renderPassportCard(data: PassportCardData): Promise<HTMLCa
   canvas.height = H;
   const ctx = canvas.getContext('2d')!;
 
-  // ── Aurora backdrop ──
-  ctx.fillStyle = '#0b0f1d';
+  // ── Night backdrop ──
+  ctx.fillStyle = '#0E1520';
   ctx.fillRect(0, 0, W, H);
-  glow(ctx, W * 0.15, H * 0.12, 620, '#274b86', 0.55); // mediterranean
-  glow(ctx, W * 0.95, H * 0.35, 560, '#5b3d8f', 0.45); // violet
-  glow(ctx, W * 0.35, H * 0.95, 640, '#8a4a2c', 0.5);  // terracotta ember
-  // Frame — founders get the permanent gold-trimmed edition.
+  glow(ctx, W * 0.15, H * 0.12, 620, '#1E5FA8', 0.55); // Sidi Bou Said blue
+  glow(ctx, W * 0.95, H * 0.35, 560, '#4B8FD4', 0.45); // azure
+  glow(ctx, W * 0.35, H * 0.95, 640, '#8A7550', 0.5);  // stone-deep
+  // Frame — founders get the permanent stone-trimmed edition.
   const isFounder = !!data.founderNumber;
-  ctx.strokeStyle = isFounder ? 'rgba(232,176,75,0.85)' : 'rgba(255,255,255,0.14)';
+  ctx.strokeStyle = isFounder ? 'rgba(198,180,140,0.85)' : 'rgba(255,255,255,0.14)';
   ctx.lineWidth = isFounder ? 5 : 2;
   roundRect(ctx, 36, 36, W - 72, H - 72, 40);
   ctx.stroke();
   if (isFounder) {
-    ctx.strokeStyle = 'rgba(232,176,75,0.35)';
+    ctx.strokeStyle = 'rgba(198,180,140,0.35)';
     ctx.lineWidth = 1.5;
     roundRect(ctx, 52, 52, W - 104, H - 104, 32);
     ctx.stroke();
@@ -126,22 +133,23 @@ export async function renderPassportCard(data: PassportCardData): Promise<HTMLCa
   ctx.textBaseline = 'alphabetic';
 
   // ── Kicker ──
-  ctx.fillStyle = '#e8b04b';
-  ctx.font = '700 26px Inter, sans-serif';
+  ctx.fillStyle = GOLD_INK;
+  ctx.font = '700 26px "Instrument Sans", sans-serif';
   spacedText(ctx, 'E-TUNISIA — TRAVEL PASSPORT', W / 2, 132, 8);
 
   // ── Founder ribbon ──
   if (isFounder) {
     const fText = `FOUNDER #${String(data.founderNumber).padStart(4, '0')}`;
-    ctx.font = '800 24px Inter, sans-serif';
+    // Instrument Sans tops out at 700; heavier weights would only be faux-bolded.
+    ctx.font = '700 24px "Instrument Sans", sans-serif';
     const fW = ctx.measureText(fText).width + 70;
     roundRect(ctx, W / 2 - fW / 2, 158, fW, 52, 26);
-    ctx.fillStyle = 'rgba(232,176,75,0.14)';
+    ctx.fillStyle = 'rgba(198,180,140,0.14)';
     ctx.fill();
-    ctx.strokeStyle = 'rgba(232,176,75,0.9)';
+    ctx.strokeStyle = 'rgba(198,180,140,0.9)';
     ctx.lineWidth = 2;
     ctx.stroke();
-    ctx.fillStyle = '#f3dc8e';
+    ctx.fillStyle = '#E3D5B5';
     spacedText(ctx, fText, W / 2, 192, 3);
   }
 
@@ -149,8 +157,8 @@ export async function renderPassportCard(data: PassportCardData): Promise<HTMLCa
   const mx = W / 2;
   const my = 330;
   const ringGrad = ctx.createLinearGradient(mx - 90, my - 90, mx + 90, my + 90);
-  ringGrad.addColorStop(0, '#e8734a');
-  ringGrad.addColorStop(1, '#e8b04b');
+  ringGrad.addColorStop(0, '#1E5FA8');
+  ringGrad.addColorStop(1, '#6BA6E8');
   ctx.beginPath();
   ctx.arc(mx, my, 96, 0, Math.PI * 2);
   ctx.strokeStyle = ringGrad;
@@ -160,25 +168,26 @@ export async function renderPassportCard(data: PassportCardData): Promise<HTMLCa
   ctx.arc(mx, my, 84, 0, Math.PI * 2);
   ctx.fillStyle = 'rgba(255,255,255,0.08)';
   ctx.fill();
-  ctx.fillStyle = '#f5ede2';
-  ctx.font = '800 84px Inter, sans-serif';
+  ctx.fillStyle = INK;
+  // Instrument Serif ships a single 400 weight — asking for bold gets a fake one.
+  ctx.font = '400 84px "Instrument Serif", Georgia, serif';
   ctx.textBaseline = 'middle';
   ctx.fillText((data.fullName || '?').trim().charAt(0).toUpperCase(), mx, my + 6);
   ctx.textBaseline = 'alphabetic';
 
   // ── Identity ──
-  ctx.fillStyle = '#f5ede2';
-  ctx.font = '800 68px Inter, sans-serif';
+  ctx.fillStyle = INK;
+  ctx.font = '400 68px "Instrument Serif", Georgia, serif';
   ctx.fillText(data.fullName, W / 2, 540, W - 160);
-  ctx.fillStyle = 'rgba(245,237,226,0.55)';
-  ctx.font = '500 32px Inter, sans-serif';
+  ctx.fillStyle = 'rgba(232,238,247,0.55)';
+  ctx.font = '500 32px "Instrument Sans", sans-serif';
   ctx.fillText(`@${data.handle}${data.country ? `  ·  ${data.country}` : ''}`, W / 2, 596, W - 200);
 
   // ── Level chip ──
   const levelRaw = (data.level || 'Explorer').trim();
-  const levelColor = LEVEL_COLORS[levelRaw.toLowerCase()] || '#e8b04b';
+  const levelColor = LEVEL_COLORS[levelRaw.toLowerCase()] || GOLD_INK;
   const chipText = `${levelRaw.toUpperCase()} EXPLORER`;
-  ctx.font = '700 28px Inter, sans-serif';
+  ctx.font = '700 28px "Instrument Sans", sans-serif';
   const chipW = ctx.measureText(chipText).width + 96;
   roundRect(ctx, W / 2 - chipW / 2, 646, chipW, 66, 33);
   ctx.fillStyle = 'rgba(255,255,255,0.07)';
@@ -200,11 +209,11 @@ export async function renderPassportCard(data: PassportCardData): Promise<HTMLCa
   const colW = (W - 160) / stats.length;
   stats.forEach(([num, label], i) => {
     const cx = 80 + colW * i + colW / 2;
-    ctx.fillStyle = '#f5ede2';
-    ctx.font = '800 76px Inter, sans-serif';
+    ctx.fillStyle = INK;
+    ctx.font = '700 76px "Instrument Sans", sans-serif';
     ctx.fillText(String(num), cx, rowY);
-    ctx.fillStyle = 'rgba(245,237,226,0.45)';
-    ctx.font = '700 22px Inter, sans-serif';
+    ctx.fillStyle = 'rgba(232,238,247,0.45)';
+    ctx.font = '700 22px "Instrument Sans", sans-serif';
     spacedText(ctx, label, cx, rowY + 46, 4);
     if (i > 0) {
       ctx.strokeStyle = 'rgba(255,255,255,0.12)';
@@ -221,8 +230,8 @@ export async function renderPassportCard(data: PassportCardData): Promise<HTMLCa
 
   // ── Footer URL ──
   ctx.textAlign = 'center';
-  ctx.fillStyle = 'rgba(245,237,226,0.5)';
-  ctx.font = '500 28px "JetBrains Mono", Inter, monospace';
+  ctx.fillStyle = 'rgba(232,238,247,0.5)';
+  ctx.font = '500 28px "JetBrains Mono", monospace';
   ctx.fillText(data.url.replace(/^https?:\/\//, ''), W / 2, H - 96, W - 160);
 
   return canvas;

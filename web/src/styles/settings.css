@@ -1,3 +1,96 @@
+/* ── Moved from pages.css (Phase 2 split) ─────────────────────
+   Prepended so this file's own rules keep winning, exactly as
+   they did when pages.css loaded ahead of it.
+   ──────────────────────────────────────────────────────────── */
+
+/* ---- SETTINGS PAGE ---- */
+.settings-page {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: var(--space-6) var(--page-padding);
+}
+
+.settings-group {
+  background: var(--surface);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--space-4);
+  overflow: hidden;
+}
+
+.settings-group-title {
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.settings-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+}
+
+.settings-item+.settings-item {
+  border-top: 1px solid var(--border-light);
+}
+
+.settings-item-label {
+  font-size: var(--text-sm);
+  font-weight: 500;
+}
+
+.settings-item-desc {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+/* -- Toggle switch -- */
+.toggle {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  cursor: pointer;
+}
+
+.toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-track {
+  position: absolute;
+  inset: 0;
+  background: var(--border);
+  border-radius: var(--radius-full);
+  transition: background var(--duration-fast) var(--ease-out);
+}
+
+.toggle input:checked+.toggle-track {
+  background: var(--accent);
+}
+
+.toggle-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  background: white;
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--duration-fast) var(--ease-spring);
+}
+
+.toggle input:checked~.toggle-thumb {
+  transform: translateX(20px);
+}
+
 /* ============================================
    SETTINGS PAGE (#/settings) — utility page
    Loaded after pages.css. Token-driven.
@@ -93,9 +186,9 @@
     border-radius: 50%;
     flex: 0 0 auto;
 }
-.settings-group-icon[data-tint="violet"]        { background: color-mix(in oklch, var(--violet) 16%, transparent);        color: var(--violet); }
-.settings-group-icon[data-tint="cyan"]          { background: color-mix(in oklch, var(--cyan) 16%, transparent);          color: var(--cyan); }
-.settings-group-icon[data-tint="gold"]          { background: color-mix(in oklch, var(--gold) 18%, transparent);          color: var(--gold); }
+.settings-group-icon[data-tint="violet"]        { background: color-mix(in oklch, var(--accent) 16%, transparent);        color: var(--accent); }
+.settings-group-icon[data-tint="cyan"]          { background: color-mix(in oklch, var(--mediterranean) 16%, transparent);          color: var(--mediterranean); }
+.settings-group-icon[data-tint="gold"]          { background: color-mix(in oklch, var(--warning) 18%, transparent);          color: var(--warning); }
 .settings-group-icon[data-tint="mediterranean"] { background: color-mix(in oklch, var(--mediterranean) 16%, transparent); color: var(--mediterranean); }
 .settings-group-icon[data-tint="accent"]        { background: var(--accent-light);                                        color: var(--accent); }
 @supports not (color: color-mix(in oklch, red, blue)) {
@@ -270,9 +363,9 @@
 .settings-stamp {
     flex: 0 0 auto;
     padding: 3px 10px;
-    border: 1.5px solid var(--gold, #b98a2f);
+    border: 1.5px solid var(--warning);
     border-radius: 4px;
-    color: var(--gold, #b98a2f);
+    color: var(--warning);
     font-size: 10px;
     font-weight: 800;
     letter-spacing: 0.12em;

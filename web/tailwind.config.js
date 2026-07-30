@@ -5,30 +5,34 @@ export default {
   theme: {
     extend: {
       colors: {
+        /* Same ramp as tokens.css: #16447A → #1E5FA8 → #4B8FD4 → #E4EDF9.
+           Key names are frozen so the ~70 existing utility classes still
+           compile; Phase 2 re-points them at the CSS custom properties. */
         brand: {
-          DEFAULT: '#C65D3B',
-          light: '#D97B5D',
-          dark: '#A3472A',
+          DEFAULT: '#1E5FA8',
+          light: '#4B8FD4',
+          dark: '#16447A',
         },
         mediterranean: {
-          DEFAULT: '#006994',
-          light: '#0088B5',
-          dark: '#004D6B',
+          DEFAULT: '#4B8FD4',
+          light: '#7FB0E0',
+          dark: '#1E5FA8',
         },
         olive: {
-          DEFAULT: '#808000',
-          light: '#9A9A1A',
-          dark: '#666600',
+          DEFAULT: '#4A7A47',
+          light: '#7FB37C',
+          dark: '#365A34',
         },
         sand: {
-          DEFAULT: '#F5F5DC',
-          light: '#FAFAE8',
-          dark: '#E8E8C8',
+          DEFAULT: '#E7DECC',
+          light: '#F2EBDD',
+          dark: '#8A7550',
         },
+        /* Coral collapsed into the one accent. */
         coral: {
-          DEFAULT: '#FF7F50',
-          light: '#FF9A75',
-          dark: '#E06540',
+          DEFAULT: '#1E5FA8',
+          light: '#4B8FD4',
+          dark: '#16447A',
         },
         surface: {
           DEFAULT: 'var(--surface)',
@@ -48,7 +52,7 @@ export default {
         DEFAULT: 'var(--border)',
       },
       fontFamily: {
-        sans: ['Inter', 'Noto Kufi Arabic', 'system-ui', 'sans-serif'],
+        sans: ['Instrument Sans', 'Noto Kufi Arabic', 'system-ui', 'sans-serif'],
         arabic: ['Noto Kufi Arabic', 'sans-serif'],
       },
       borderRadius: {

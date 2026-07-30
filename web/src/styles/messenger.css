@@ -137,7 +137,7 @@ html body.guest-mode #messenger-root .chat-pop-stack {
 
 /* Pro ring around avatar */
 .chat-pop-avatar-pro {
-    background: var(--gradient-gold);
+    background: var(--warning);
     padding: 2px;
     border-color: transparent;
 }
@@ -235,7 +235,7 @@ html body.guest-mode #messenger-root .chat-pop-stack {
     color: var(--text-tertiary);
     line-height: 1.2;
 }
-.chat-pop-pro-spark { color: var(--gold); flex: 0 0 auto; }
+.chat-pop-pro-spark { color: var(--warning); flex: 0 0 auto; }
 
 .chat-pop-head-actions {
     display: inline-flex;
@@ -429,10 +429,10 @@ html body.guest-mode #messenger-root .chat-pop-stack {
     border-color: transparent;
     box-shadow:
         var(--shadow-xl),
-        0 0 0 1px var(--gold) inset;
+        0 0 0 1px var(--warning) inset;
 }
 .chat-pop.is-pro .chat-pop-head {
-    background: linear-gradient(180deg, var(--surface) 0%, oklch(78% 0.17 80 / 0.04) 100%);
+    background: color-mix(in oklab, var(--warning) 6%, var(--surface));
 }
 
 /* ── Active Conversations (rail) ─────────────── */
@@ -507,7 +507,7 @@ html body.guest-mode #messenger-root .chat-pop-stack {
     border-radius: 50%;
 }
 .active-conv-avatar.is-pro {
-    background: var(--gradient-gold);
+    background: var(--warning);
     padding: 2px;
 }
 .active-conv-avatar.is-pro img,
@@ -542,7 +542,7 @@ html body.guest-mode #messenger-root .chat-pop-stack {
     overflow: hidden;
     text-overflow: ellipsis;
 }
-.active-conv-pro { color: var(--gold); flex: 0 0 auto; }
+.active-conv-pro { color: var(--warning); flex: 0 0 auto; }
 .active-conv-preview {
     font-size: var(--text-xs);
     color: var(--text-secondary);
@@ -666,7 +666,6 @@ html body.guest-mode #messenger-root .chat-pop-stack {
     position: absolute;
     inset: 0;
     background: oklch(0% 0 0 / 0.5);
-    backdrop-filter: blur(2px);
     animation: ac-scrim-in var(--duration-fast) var(--ease-out);
 }
 .active-conv-sheet {
@@ -674,8 +673,8 @@ html body.guest-mode #messenger-root .chat-pop-stack {
     width: 100%;
     max-height: 82dvh;
     background: var(--surface-elevated);
-    border-top-left-radius: var(--radius-2xl);
-    border-top-right-radius: var(--radius-2xl);
+    border-top-left-radius: var(--radius-xl);
+    border-top-right-radius: var(--radius-xl);
     padding: var(--space-3) var(--space-2) calc(var(--space-4) + env(safe-area-inset-bottom, 0));
     box-shadow: var(--shadow-2xl);
     display: flex;
@@ -747,77 +746,15 @@ html body.guest-mode #messenger-root .chat-pop-stack {
 
 /* ============================================
    PRO / PREMIUM POST FLAIR
-   Subtle, brand-aligned, doesn't override design.
+   --------------------------------------------
+   The gradient border, hover shine, avatar glow ring and "✦ Pro" corner
+   ribbon all anchored to a card box that no longer exists — the feed post is
+   rules now. They were also a second Pro signal: <TierBadge> already renders
+   the plan next to the author name on every post, which is the one the rest of
+   the app uses. Keeping both meant a decorative ribbon colliding with the
+   category chip (hence the old 60px nudge and its RTL mirror). One signal,
+   in the byline, is the whole treatment.
    ============================================ */
-.post-card-v2.is-pro {
-    position: relative;
-    border: 1px solid transparent;
-    background:
-        linear-gradient(var(--surface-elevated), var(--surface-elevated)) padding-box,
-        var(--gradient-gold) border-box;
-    box-shadow: var(--shadow-lg), 0 4px 24px oklch(78% 0.17 80 / 0.08);
-}
-.post-card-v2.is-pro::before {
-    content: '';
-    position: absolute;
-    inset: -1px;
-    border-radius: inherit;
-    pointer-events: none;
-    background: var(--gradient-shine);
-    background-size: 200% 100%;
-    background-position: -100% 0;
-    opacity: 0;
-    transition: opacity var(--duration-slow) var(--ease-out);
-    mix-blend-mode: overlay;
-}
-.post-card-v2.is-pro:hover::before {
-    opacity: 0.6;
-    animation: pro-shine 1.6s var(--ease-out);
-}
-@keyframes pro-shine {
-    from { background-position: -100% 0; }
-    to   { background-position: 200% 0; }
-}
-@media (prefers-reduced-motion: reduce) {
-    .post-card-v2.is-pro::before { display: none; }
-}
-
-/* Pro avatar ring on bylines */
-.post-card-v2.is-pro .post-card-v2-author .avatar,
-.post-card-v2.is-pro .post-card-v2-author [class*="Avatar"] {
-    box-shadow: 0 0 0 2px var(--gold), 0 0 0 4px var(--surface-elevated);
-}
-
-/* Tiny "Pro" ribbon corner badge */
-.post-card-v2.is-pro::after {
-    content: '✦ Pro';
-    position: absolute;
-    top: var(--space-3);
-    right: var(--space-3);
-    font-family: var(--font-display);
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: var(--tracking-wide);
-    color: oklch(35% 0.06 80);
-    background: var(--gradient-gold);
-    padding: 3px 8px;
-    border-radius: var(--radius-full);
-    box-shadow: var(--shadow-sm);
-    pointer-events: none;
-}
-[dir="rtl"] .post-card-v2.is-pro::after { right: auto; left: var(--space-3); }
-
-/* If the card already shows a category chip on the right, nudge it left so they don't collide */
-.post-card-v2.is-pro .post-card-v2-category { margin-right: 60px; }
-[dir="rtl"] .post-card-v2.is-pro .post-card-v2-category { margin-right: 0; margin-left: 60px; }
-
-/* Dark mode: tone down the Pro halo to keep contrast strong */
-[data-theme="dark"] .post-card-v2.is-pro {
-    box-shadow: var(--shadow-lg), 0 4px 20px oklch(78% 0.17 80 / 0.15);
-}
-[data-theme="dark"] .post-card-v2.is-pro::after {
-    color: oklch(20% 0.05 80);
-}
 
 /* ============================================
    USER ACTION MENU — right-click / long-press on any avatar.
@@ -871,7 +808,7 @@ html body.guest-mode #messenger-root .chat-pop-stack {
     font-family: var(--font-display);
 }
 .user-menu-avatar.is-pro {
-    background: var(--gradient-gold);
+    background: var(--warning);
     padding: 2px;
 }
 .user-menu-avatar.is-pro img,
@@ -900,7 +837,7 @@ html body.guest-mode #messenger-root .chat-pop-stack {
     font-size: var(--text-xs);
     color: var(--text-tertiary);
 }
-.user-menu-pro { color: var(--gold); flex: 0 0 auto; }
+.user-menu-pro { color: var(--warning); flex: 0 0 auto; }
 
 .user-menu-list {
     display: flex;

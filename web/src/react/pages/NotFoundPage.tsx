@@ -17,7 +17,7 @@ export default function NotFoundPage() {
   }, [path]);
 
   return (
-    <div className="nf-page cn-grain" data-design="carnet">
+    <div className="nf-page cn-grain">
       <div className="nf-envelope" role="img" aria-label={`Page ${path} not found — returned to sender`}>
         {/* postage corner */}
         <span className="nf-stamp" aria-hidden="true"><img src="/logo-chechia.svg" alt="" /></span>

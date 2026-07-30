@@ -1,5 +1,5 @@
 import React from 'react';
-import { Image as ImageIcon, MapPin, Smile, Sparkles } from 'lucide-react';
+import { Image as ImageIcon, MapPin, Smile } from 'lucide-react';
 import { Avatar } from './Avatar';
 import { useT } from '../../i18n/useT';
 
@@ -8,63 +8,48 @@ interface Props {
 }
 
 /**
- * Top-of-feed composer. The single most-tapped action surface for logged-in
- * users on the home page — so it gets the premium treatment: gradient mesh
- * background, font-display placeholder, avatar with shadow-glow, three
- * tinted action chips. Each click dispatches the existing
- * 'etunisia:open-post-modal' event so the modal handles the actual form.
+ * Top-of-feed composer, collapsed to a single rule. It is a launcher, not a
+ * form: every control dispatches the existing 'etunisia:open-post-modal' event
+ * and the modal handles the actual composition.
  */
 export function ComposeBox({ user }: Props) {
   const t = useT();
   const open = (detail?: any) =>
     document.dispatchEvent(new CustomEvent('etunisia:open-post-modal', { detail }));
-  // Only personalize when we actually know the name — "What's on your mind, there?"
-  // with a bold fallback reads broken while the profile is still hydrating.
-  const firstName = user?.fullName?.trim() ? user.fullName.trim().split(' ')[0] : null;
 
   return (
-    <section className="compose-v2" aria-label="Create a post">
-      <div className="compose-v2-row">
-        <a
-          className="compose-v2-avatar-link"
-          href={user?.handle ? `#/u/${user.handle}` : '#/profile'}
-          title="Your travel profile"
-        >
-          <Avatar src={user?.avatar || undefined} fallback={user?.fullName} size="md" />
-        </a>
-        <button className="compose-v2-trigger" onClick={() => open()}>
-          {/* One <span>: separate spans get flex-gap spacing injected between
-              them, which rendered as "Bob ?" with a stray space. */}
-          {firstName ? (
-            <span>{t('compose.prompt')}, <strong>{firstName}</strong>?</span>
-          ) : (
-            <span>{t('compose.prompt')}?</span>
-          )}
-          <Sparkles size={14} className="compose-v2-sparkle" />
-        </button>
-      </div>
-
-      <div className="compose-v2-actions">
+    <section className="compose-line" aria-label="Create a post">
+      <button type="button" className="compose-line-trigger" onClick={() => open()}>
+        <Avatar src={user?.avatar || undefined} fallback={user?.fullName} size="sm" />
+        <span>{t('compose.prompt')}?</span>
+      </button>
+      <div className="compose-line-icons">
         <button
-          className="compose-v2-chip compose-v2-chip-photo"
+          type="button"
+          className="compose-line-icon"
           onClick={() => open({ focusPhotos: true })}
+          title={t('compose.photo')}
+          aria-label={t('compose.photo')}
         >
-          <ImageIcon size={16} />
-          <span>{t('compose.photo')}</span>
+          <ImageIcon size={18} />
         </button>
         <button
-          className="compose-v2-chip compose-v2-chip-location"
+          type="button"
+          className="compose-line-icon"
           onClick={() => open({ focusLocation: true })}
+          title={t('compose.checkin')}
+          aria-label={t('compose.checkin')}
         >
-          <MapPin size={16} />
-          <span>{t('compose.checkin')}</span>
+          <MapPin size={18} />
         </button>
         <button
-          className="compose-v2-chip compose-v2-chip-mood"
+          type="button"
+          className="compose-line-icon"
           onClick={() => open({ focusFeeling: true })}
+          title={t('compose.feeling')}
+          aria-label={t('compose.feeling')}
         >
-          <Smile size={16} />
-          <span>{t('compose.feeling')}</span>
+          <Smile size={18} />
         </button>
       </div>
     </section>

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ThumbsUp } from 'lucide-react';
+import { Heart } from 'lucide-react';
 import { api } from '../../shared/api';
 import { useAuthStore } from '../stores/auth-store';
 import { goTo } from '../../router';
@@ -9,14 +9,19 @@ import { track } from '../../analytics';
 export type ReactionType =
   | 'like' | 'love' | 'celebrate' | 'insightful' | 'laugh' | 'wow' | 'support';
 
-export const REACTIONS: Array<{ id: ReactionType; emoji: string; label: string; color: string }> = [
-  { id: 'like',       emoji: '👍', label: 'Like',       color: 'oklch(58% 0.14 240)' },
-  { id: 'love',       emoji: '❤️', label: 'Love',       color: 'oklch(62% 0.22 25)' },
-  { id: 'celebrate',  emoji: '🎉', label: 'Celebrate',  color: 'oklch(72% 0.17 60)' },
-  { id: 'insightful', emoji: '💡', label: 'Insightful', color: 'oklch(78% 0.17 80)' },
-  { id: 'laugh',      emoji: '😂', label: 'Laugh',      color: 'oklch(80% 0.16 95)' },
-  { id: 'wow',        emoji: '😮', label: 'Wow',        color: 'oklch(70% 0.18 200)' },
-  { id: 'support',    emoji: '🤝', label: 'Support',    color: 'oklch(60% 0.13 145)' },
+/**
+ * The seven reactions are content, not chrome: they stay emoji. What used to
+ * sit here as a per-reaction accent colour was the six-accent rainbow the
+ * system retired, so the chrome around them is now the one blue accent.
+ */
+export const REACTIONS: Array<{ id: ReactionType; emoji: string; label: string }> = [
+  { id: 'like',       emoji: '👍', label: 'Like' },
+  { id: 'love',       emoji: '❤️', label: 'Love' },
+  { id: 'celebrate',  emoji: '🎉', label: 'Celebrate' },
+  { id: 'insightful', emoji: '💡', label: 'Insightful' },
+  { id: 'laugh',      emoji: '😂', label: 'Laugh' },
+  { id: 'wow',        emoji: '😮', label: 'Wow' },
+  { id: 'support',    emoji: '🤝', label: 'Support' },
 ];
 
 const REACTION_BY_ID = Object.fromEntries(REACTIONS.map(r => [r.id, r] as const));
@@ -114,19 +119,17 @@ export function ReactionPicker({
       <button
         type="button"
         className={`reaction-trigger ${current ? 'is-active' : ''}`}
-        style={current ? ({ color: current.color } as React.CSSProperties) : undefined}
         onClick={handleQuickClick}
         aria-label={triggerLabel}
       >
         <span className="reaction-trigger-icon" aria-hidden="true">
-          {/* SVG outline until the user picks — emoji is reserved for a chosen reaction */}
-          {current ? current.emoji : <ThumbsUp size={15} strokeWidth={2} />}
+          {/* Outline heart until the user picks — emoji is reserved for a chosen reaction */}
+          {current ? current.emoji : <Heart size={17} strokeWidth={2} />}
         </span>
-        <span className="reaction-trigger-label">{triggerLabel}</span>
         {total > 0 && <RollingNumber value={total} className="reaction-trigger-count" />}
       </button>
 
-      {/* Top-3 mini bar (always visible when there are reactions) */}
+      {/* Top-3 preview (always visible when there are reactions) */}
       {topThree.length > 0 && (
         <a
           href={`#/post/${postId}`}

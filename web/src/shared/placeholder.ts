@@ -1,5 +1,5 @@
 // Deterministic, branded cover placeholder for items without an image.
-// Returns an inline SVG data-URI gradient keyed by a seed, so each item gets a
+// Returns an inline SVG data-URI keyed by a seed, so each item gets a
 // distinct (but stable) cover instead of every image-less item sharing one
 // generic stock photo.
 
@@ -20,20 +20,23 @@ function svgDataUri(svg: string): string {
   return `data:image/svg+xml,${encodeURIComponent(svg).replace(/'/g, '%27')}`;
 }
 
+// Flat system tints — stone-pale, accent-pale, wall. Variety without leaving the
+// palette: the seed picks the tile, never the hue.
+const TILE_TINTS = ['#F2EBDD', '#E4EDF9', '#EDF1F7'];
+
 export function coverPlaceholder(seed = '', label = ''): string {
   const key = seed || label || 'e-tunisia';
-  const hue = hashInt(key) % 360;
-  const hue2 = (hue + 32) % 360;
+  const tint = TILE_TINTS[hashInt(key) % TILE_TINTS.length];
   const initial = (label || seed || '•').trim().charAt(0).toUpperCase() || '•';
   const svg =
     `<svg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'>` +
-    `<defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'>` +
-    `<stop offset='0' stop-color='hsl(${hue} 52% 46%)'/>` +
-    `<stop offset='1' stop-color='hsl(${hue2} 58% 30%)'/>` +
-    `</linearGradient></defs>` +
-    `<rect width='400' height='300' fill='url(#g)'/>` +
-    `<text x='200' y='162' font-family='system-ui,-apple-system,sans-serif' font-size='150' font-weight='700' ` +
-    `fill='rgba(255,255,255,0.16)' text-anchor='middle'>${initial}</text>` +
+    `<rect width='400' height='300' fill='${tint}'/>` +
+    `<rect x='8.5' y='8.5' width='383' height='283' fill='none' stroke='rgba(29,46,74,0.10)' stroke-width='1'/>` +
+    // Data-URI SVGs cannot pull the webfonts, so the system serif stack stands in.
+    `<text x='200' y='170' font-family='Georgia, serif' font-size='140' ` +
+    `fill='rgba(29,46,74,0.15)' text-anchor='middle'>${initial}</text>` +
+    `<text x='200' y='262' font-family='Georgia, serif' font-size='15' ` +
+    `fill='rgba(29,46,74,0.38)' letter-spacing='2.5' text-anchor='middle'>E-TUNISIA</text>` +
     `</svg>`;
   return svgDataUri(svg);
 }
@@ -41,7 +44,7 @@ export function coverPlaceholder(seed = '', label = ''): string {
 // ── Context placeholders ─────────────────────────────────────────────────────
 // Branded fallback used by getImageUrl() when an item has no image and we know
 // only its *kind* (place/post/event/itinerary/avatar), not its identity. Unlike
-// coverPlaceholder() above (per-item gradient), these carry a matching line-art
+// coverPlaceholder() above (per-item tile), these carry a matching line-art
 // glyph + the e-Tunisia wordmark, so a missing cover reads as "coming soon"
 // rather than random stock scenery. Self-contained: no network, works offline.
 
@@ -64,22 +67,22 @@ function landscapePlaceholder(glyph: string, label: string): string {
   const svg =
     `<svg xmlns='http://www.w3.org/2000/svg' width='600' height='450' viewBox='0 0 600 450' role='img' aria-label='${label}'>` +
     `<defs><linearGradient id='g' x1='0' y1='0' x2='0' y2='1'>` +
-    `<stop offset='0' stop-color='#f4ead6'/><stop offset='1' stop-color='#e7d6b6'/>` +
+    `<stop offset='0' stop-color='#F2EBDD'/><stop offset='1' stop-color='#E7DECC'/>` +
     `</linearGradient></defs>` +
     `<rect width='600' height='450' fill='url(#g)'/>` +
-    `<g transform='translate(240 135) scale(5)' fill='none' stroke='#b45c3f' ` +
+    `<g transform='translate(240 135) scale(5)' fill='none' stroke='#1E5FA8' ` +
     `stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round' opacity='0.5'>${glyph}</g>` +
     `<text x='300' y='400' text-anchor='middle' font-family='Georgia, serif' ` +
-    `font-size='22' fill='#8a6a4a' letter-spacing='1.5'>e-Tunisia</text>` +
+    `font-size='22' fill='#6B5B3E' letter-spacing='1.5'>e-Tunisia</text>` +
     `</svg>`;
   return svgDataUri(svg);
 }
 
 const AVATAR_PLACEHOLDER = svgDataUri(
   `<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200' role='img' aria-label='Traveler'>` +
-  `<rect width='200' height='200' fill='#e7d6b6'/>` +
-  `<circle cx='100' cy='80' r='34' fill='#b45c3f' opacity='0.55'/>` +
-  `<path d='M40 176c0-33 27-52 60-52s60 19 60 52z' fill='#b45c3f' opacity='0.55'/>` +
+  `<rect width='200' height='200' fill='#E7DECC'/>` +
+  `<circle cx='100' cy='80' r='34' fill='#1E5FA8' opacity='0.55'/>` +
+  `<path d='M40 176c0-33 27-52 60-52s60 19 60 52z' fill='#1E5FA8' opacity='0.55'/>` +
   `</svg>`,
 );
 

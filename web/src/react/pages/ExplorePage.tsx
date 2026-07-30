@@ -54,12 +54,12 @@ interface CategoryDef {
 
 const CATEGORIES: CategoryDef[] = [
   { id: 'all',        name: 'All',        Icon: Globe,            tint: 'var(--text-secondary)' },
-  { id: 'beaches',    name: 'Beaches',    Icon: Waves,            tint: 'var(--cyan)' },
-  { id: 'historical', name: 'Historical', Icon: Landmark,         tint: 'var(--sand)' },
-  { id: 'food',       name: 'Food',       Icon: UtensilsCrossed,  tint: 'var(--gold)' },
-  { id: 'nature',     name: 'Nature',     Icon: Trees,            tint: 'var(--olive)' },
-  { id: 'culture',    name: 'Culture',    Icon: Library,          tint: 'var(--violet)' },
-  { id: 'adventure',  name: 'Adventure',  Icon: Mountain,         tint: 'var(--terracotta)' },
+  { id: 'beaches',    name: 'Beaches',    Icon: Waves,            tint: 'var(--mediterranean)' },
+  { id: 'historical', name: 'Historical', Icon: Landmark,         tint: 'var(--stone-deep)' },
+  { id: 'food',       name: 'Food',       Icon: UtensilsCrossed,  tint: 'var(--warning)' },
+  { id: 'nature',     name: 'Nature',     Icon: Trees,            tint: 'var(--success)' },
+  { id: 'culture',    name: 'Culture',    Icon: Library,          tint: 'var(--accent)' },
+  { id: 'adventure',  name: 'Adventure',  Icon: Mountain,         tint: 'var(--accent)' },
 ];
 
 /**
@@ -459,7 +459,7 @@ export default function ExplorePage() {
   const hasFilter = activeCategory !== 'all' || searchQuery.trim() !== '' || minRating > 0 || verifiedOnly;
 
   return (
-    <div className="explore-page animate-fade-in" data-design="carnet" style={{ '--cat-tint': activeCat.tint } as React.CSSProperties}>
+    <div className="explore-page animate-fade-in" style={{ '--cat-tint': activeCat.tint } as React.CSSProperties}>
       {!isLoggedIn() && <PublicMasthead active="explore" />}
       {/* Hero — atmospheric mesh, search baked in */}
       <header className="explore-hero">

@@ -144,7 +144,7 @@ export default function JellyfishPage() {
   const openReport = (b: Beach) => { if (requireAuth('report beach conditions')) setReporting(b); };
 
   return (
-    <div className="jelly-page page-enter" data-design="sleek">
+    <div className="jelly-page page-enter">
       <header className="jelly-header">
         <span className="jelly-kicker"><Waves size={13} /> Beach report</span>
         <h1>Famma 9nadel? 🪼</h1>

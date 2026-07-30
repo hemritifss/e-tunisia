@@ -106,7 +106,7 @@ export default function CircuitsDirectory() {
     };
 
     return (
-        <div className="circuits-page cn-grain page-enter" data-design="carnet">
+        <div className="circuits-page cn-grain page-enter">
             <header className="circuits-masthead">
                 <span className="circuits-kicker"><Route size={13} /> Routes · carnet de circuits</span>
                 <h1>Circuits you can <em>actually take</em></h1>

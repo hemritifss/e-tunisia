@@ -2,8 +2,9 @@
    LANDING — "CARNET DE VOYAGE" EDITORIAL EDITION
    A hand-assembled travel journal: warm paper, ink typography,
    pasted photo prints, rubber stamps, ticket stubs, postcards.
-   Namespace: .ej-*  (editorial journal) — self-contained; the
-   legacy .tn-landing system remains for Partner/About pages.
+   Namespace: .ej-*  (editorial journal). Now the only landing
+   system: Home, About and Partner all render from this file,
+   with landing-ultra.css layering the Home scroll choreography.
    All colors/typography come from tokens.css.
    ============================================================ */
 
@@ -14,8 +15,8 @@
 }
 
 .ej-landing {
-    background: var(--paper);
-    color: var(--ink);
+    background: var(--bg-primary);
+    color: var(--text-primary);
     font-family: var(--font-sans);
     overflow-x: clip;
     position: relative;
@@ -40,8 +41,8 @@
 }
 
 .ej-landing ::selection {
-    background: var(--terracotta);
-    color: var(--paper-print);
+    background: var(--accent);
+    color: var(--surface);
 }
 
 /* ── Shared type helpers ──────────────────────────────────── */
@@ -51,27 +52,27 @@
     font-weight: 500;
     letter-spacing: 0.16em;
     text-transform: uppercase;
-    color: var(--ink-soft);
+    color: var(--text-secondary);
     display: flex;
     align-items: baseline;
     gap: var(--space-3);
 }
-.ej-kicker .ej-no { color: var(--terracotta); font-weight: 700; }
+.ej-kicker .ej-no { color: var(--accent); font-weight: 700; }
 .ej-kicker::after {
     content: '';
     flex: 1;
     align-self: center;
-    border-top: 1px solid var(--rule);
+    border-top: 1px solid var(--border);
 }
 
 .ej-h2 {
-    font-family: var(--font-editorial);
+    font-family: var(--font-display);
     font-optical-sizing: auto;
     font-size: clamp(1.9rem, 3.8vw, 3.05rem);
     font-weight: 550;
     line-height: 1.08;
     letter-spacing: -0.015em;
-    color: var(--ink);
+    color: var(--text-primary);
     margin: var(--space-4) 0 var(--space-3);
     max-width: 22ch;
     text-wrap: balance;
@@ -79,10 +80,10 @@
 .ej-h2 em {
     font-style: italic;
     font-weight: 480;
-    color: var(--terracotta);
+    color: var(--accent);
 }
 .ej-lede {
-    color: var(--ink-soft);
+    color: var(--text-secondary);
     font-size: var(--text-lg);
     line-height: var(--leading-relaxed);
     max-width: 58ch;
@@ -90,10 +91,10 @@
 }
 
 .ej-hand {
-    font-family: var(--font-hand);
+    font-family: var(--font-display);
     font-size: 1.35rem;
     line-height: 1.25;
-    color: var(--ink-soft);
+    color: var(--text-secondary);
     font-weight: 500;
 }
 
@@ -108,7 +109,7 @@
     bottom: -0.12em;
     width: 104%;
     height: 0.22em;
-    color: var(--terracotta);
+    color: var(--accent);
     pointer-events: none;
 }
 
@@ -126,9 +127,9 @@
     font-weight: 600;
     letter-spacing: 0.01em;
     text-decoration: none;
-    border: 1.5px solid var(--ink);
+    border: 1.5px solid var(--text-primary);
     border-radius: var(--radius-sm);
-    box-shadow: 3px 3px 0 var(--ink);
+    box-shadow: 3px 3px 0 var(--text-primary);
     cursor: pointer;
     transition: transform var(--duration-fast) var(--ease-out),
                 box-shadow var(--duration-fast) var(--ease-out),
@@ -137,24 +138,24 @@
 .ej-btn:hover {
     background: var(--accent-hover);
     transform: translate(-2px, -2px);
-    box-shadow: 5px 5px 0 var(--ink);
+    box-shadow: 5px 5px 0 var(--text-primary);
 }
 .ej-btn:active {
     transform: translate(1px, 1px);
-    box-shadow: 2px 2px 0 var(--ink);
+    box-shadow: 2px 2px 0 var(--text-primary);
 }
 .ej-btn--paper {
-    background: var(--paper-print);
-    color: var(--ink);
+    background: var(--surface);
+    color: var(--text-primary);
 }
-.ej-btn--paper:hover { background: var(--paper-warm); }
+.ej-btn--paper:hover { background: var(--bg-secondary); }
 .ej-btn--sm { min-height: 40px; padding: 8px 18px; font-size: var(--text-sm); }
 
 .ej-link {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    color: var(--ink);
+    color: var(--text-primary);
     font-weight: 600;
     font-size: var(--text-base);
     text-decoration: underline;
@@ -164,7 +165,7 @@
     transition: text-decoration-color var(--duration-fast) var(--ease-out),
                 color var(--duration-fast) var(--ease-out);
 }
-.ej-link:hover { color: var(--terracotta); text-decoration-color: var(--terracotta); }
+.ej-link:hover { color: var(--accent); text-decoration-color: var(--accent); }
 
 .ej-landing a:focus-visible,
 .ej-landing button:focus-visible,
@@ -182,16 +183,16 @@
     left: 0;
     right: 0;
     z-index: var(--z-overlay);
-    background: color-mix(in oklab, var(--paper) 92%, transparent);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    /* Opaque: the blur that used to justify translucency is gone, so anything
+       scrolling underneath would otherwise ghost through the masthead. */
+    background: var(--bg-primary);
     border-bottom: 1px solid transparent;
     transition: border-color var(--duration-normal) var(--ease-out),
                 box-shadow var(--duration-normal) var(--ease-out);
 }
 .ej-masthead.is-scrolled {
-    border-bottom-color: var(--rule);
-    box-shadow: 0 1px 0 var(--rule);
+    border-bottom-color: var(--border);
+    box-shadow: 0 1px 0 var(--border);
 }
 .ej-masthead-strip {
     display: flex;
@@ -200,12 +201,12 @@
     max-width: 1240px;
     margin: 0 auto;
     padding: 6px var(--space-6);
-    border-bottom: 1px solid var(--rule);
+    border-bottom: 1px solid var(--border);
     font-family: var(--font-mono);
     font-size: 0.66rem;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: var(--ink-faint);
+    color: var(--text-tertiary);
 }
 .ej-masthead-inner {
     max-width: 1240px;
@@ -220,10 +221,10 @@
     align-items: baseline;
     gap: var(--space-2);
     text-decoration: none;
-    color: var(--ink);
+    color: var(--text-primary);
 }
 .ej-wordmark strong {
-    font-family: var(--font-editorial);
+    font-family: var(--font-display);
     font-optical-sizing: auto;
     font-size: 1.45rem;
     font-weight: 640;
@@ -233,7 +234,7 @@
 .ej-wordmark span {
     font-family: 'Noto Kufi Arabic', var(--font-sans);
     font-size: 0.85rem;
-    color: var(--terracotta);
+    color: var(--accent);
     font-weight: 600;
 }
 .ej-masthead-links {
@@ -248,7 +249,7 @@
     font-weight: 500;
     letter-spacing: 0.13em;
     text-transform: uppercase;
-    color: var(--ink-soft);
+    color: var(--text-secondary);
     text-decoration: none;
     padding: 6px 2px;
     border-bottom: 1.5px solid transparent;
@@ -256,8 +257,8 @@
                 border-color var(--duration-fast) var(--ease-out);
 }
 .ej-masthead-links a:hover {
-    color: var(--ink);
-    border-bottom-color: var(--terracotta);
+    color: var(--text-primary);
+    border-bottom-color: var(--accent);
 }
 .ej-masthead-actions {
     display: flex;
@@ -267,12 +268,12 @@
 .ej-masthead-login {
     font-size: var(--text-sm);
     font-weight: 600;
-    color: var(--ink);
+    color: var(--text-primary);
     text-decoration: underline;
     text-decoration-color: var(--rule-strong);
     text-underline-offset: 4px;
 }
-.ej-masthead-login:hover { text-decoration-color: var(--terracotta); }
+.ej-masthead-login:hover { text-decoration-color: var(--accent); }
 
 /* ── Hero — the journal's opening spread ─────────────────── */
 .ej-hero {
@@ -295,7 +296,7 @@
     font-size: clamp(9rem, 22vw, 19rem);
     font-weight: 700;
     line-height: 1;
-    color: var(--ink);
+    color: var(--text-primary);
     opacity: 0.045;
     pointer-events: none;
     user-select: none;
@@ -310,39 +311,39 @@
     font-size: 0.72rem;
     letter-spacing: 0.16em;
     text-transform: uppercase;
-    color: var(--ink-soft);
+    color: var(--text-secondary);
     margin-bottom: var(--space-5);
 }
 .ej-hero-kicker::before {
     content: '';
     width: 34px;
-    border-top: 1.5px solid var(--terracotta);
+    border-top: 1.5px solid var(--accent);
 }
 .ej-hero-title {
-    font-family: var(--font-editorial);
+    font-family: var(--font-display);
     font-optical-sizing: auto;
     font-size: clamp(2.85rem, 6.6vw, 5.3rem);
     font-weight: 560;
     line-height: 1.01;
     letter-spacing: -0.022em;
-    color: var(--ink);
+    color: var(--text-primary);
     margin: 0 0 var(--space-4);
     text-wrap: balance;
 }
 .ej-hero-title em {
     font-style: italic;
     font-weight: 460;
-    color: var(--terracotta);
+    color: var(--accent);
 }
 .ej-hero-arabic {
     font-family: 'Noto Kufi Arabic', var(--font-sans);
     font-size: clamp(1.2rem, 2.3vw, 1.6rem);
     font-weight: 500;
-    color: var(--ink-soft);
+    color: var(--text-secondary);
     margin: 0 0 var(--space-5);
 }
 .ej-hero-sub {
-    color: var(--ink-soft);
+    color: var(--text-secondary);
     font-size: clamp(1rem, 1.35vw, 1.125rem);
     line-height: var(--leading-relaxed);
     max-width: 54ch;
@@ -358,7 +359,7 @@
     margin-top: var(--space-6);
     rotate: -1.4deg;
     display: inline-block;
-    color: var(--ink-soft);
+    color: var(--text-secondary);
 }
 .ej-hero-note .ej-hand { font-size: 1.45rem; }
 
@@ -370,8 +371,8 @@
 }
 .ej-print {
     position: absolute;
-    background: var(--paper-print);
-    border: 1px solid var(--rule);
+    background: var(--surface);
+    border: 1px solid var(--border);
     padding: 10px 10px 12px;
     box-shadow: var(--paper-shadow);
     width: min(62%, 340px);
@@ -389,10 +390,10 @@
 }
 .ej-print figcaption {
     padding-top: 9px;
-    font-family: var(--font-hand);
+    font-family: var(--font-display);
     font-size: 1.2rem;
     line-height: 1.1;
-    color: var(--ink-soft);
+    color: var(--text-secondary);
     display: flex;
     justify-content: space-between;
     align-items: baseline;
@@ -403,7 +404,7 @@
     font-size: 0.62rem;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: var(--ink-faint);
+    color: var(--text-tertiary);
 }
 .ej-print::before {
     /* masking tape */
@@ -417,7 +418,6 @@
     height: 26px;
     background: var(--tape);
     box-shadow: 0 1px 2px oklch(0% 0 0 / 0.06);
-    backdrop-filter: blur(1px);
 }
 .ej-print-1 { top: 4%;  left: 0;    rotate: -4.2deg; z-index: 3; }
 .ej-print-2 { top: 0;   right: 2%;  rotate: 2.8deg;  z-index: 2; width: min(52%, 290px); }
@@ -430,7 +430,7 @@
     z-index: 5;
     width: clamp(96px, 10vw, 132px);
     height: auto;
-    color: var(--stamp-ink);
+    color: var(--accent);
     opacity: 0.85;
     rotate: -14deg;
     mix-blend-mode: multiply;
@@ -445,7 +445,7 @@
     inset: -6% -4%;
     width: 108%;
     height: 112%;
-    color: var(--ink-faint);
+    color: var(--text-tertiary);
     opacity: 0.5;
     z-index: 0;
     pointer-events: none;
@@ -483,7 +483,7 @@
     text-transform: uppercase;
     white-space: nowrap;
 }
-.ej-ticker-sep { color: var(--gold); font-size: 0.85rem; }
+.ej-ticker-sep { color: var(--warning); font-size: 0.85rem; }
 
 /* ── Almanac — honest numbers, footnoted by hand ─────────── */
 .ej-almanac {
@@ -495,11 +495,11 @@
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     border-top: 1.5px solid var(--rule-strong);
-    border-bottom: 1px solid var(--rule);
+    border-bottom: 1px solid var(--border);
 }
 .ej-almanac-cell {
     padding: var(--space-6) var(--space-5);
-    border-left: 1px solid var(--rule);
+    border-left: 1px solid var(--border);
 }
 .ej-almanac-cell:first-child { border-left: none; padding-left: 0; }
 .ej-almanac-num {
@@ -508,12 +508,12 @@
     font-size: clamp(1.7rem, 3vw, 2.4rem);
     font-weight: 500;
     font-variant-numeric: tabular-nums;
-    color: var(--ink);
+    color: var(--text-primary);
     line-height: 1.1;
 }
 .ej-almanac-num sup {
     font-size: 0.5em;
-    color: var(--terracotta);
+    color: var(--accent);
     margin-left: 2px;
 }
 .ej-almanac-label {
@@ -523,14 +523,14 @@
     font-size: 0.68rem;
     letter-spacing: 0.15em;
     text-transform: uppercase;
-    color: var(--ink-faint);
+    color: var(--text-tertiary);
 }
 .ej-almanac-footnote {
     margin-top: var(--space-3);
     text-align: right;
     rotate: -0.6deg;
 }
-.ej-almanac-footnote .ej-hand { font-size: 1.2rem; color: var(--ink-faint); }
+.ej-almanac-footnote .ej-hand { font-size: 1.2rem; color: var(--text-tertiary); }
 
 /* ── Section scaffolding ─────────────────────────────────── */
 .ej-section {
@@ -551,8 +551,8 @@
     display: block;
     text-decoration: none;
     color: inherit;
-    background: var(--paper-print);
-    border: 1px solid var(--rule);
+    background: var(--surface);
+    border: 1px solid var(--border);
     padding: 10px 10px 14px;
     box-shadow: var(--paper-shadow);
     rotate: var(--tilt, 0deg);
@@ -591,9 +591,9 @@
     font-weight: 600;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: var(--ink);
-    background: color-mix(in oklab, var(--paper-print) 88%, transparent);
-    border: 1px solid var(--ink);
+    color: var(--text-primary);
+    background: color-mix(in oklab, var(--surface) 88%, transparent);
+    border: 1px solid var(--text-primary);
     padding: 3px 8px;
 }
 .ej-place-body { padding: 12px 4px 0; }
@@ -601,18 +601,18 @@
     font-family: var(--font-mono);
     font-size: 0.66rem;
     letter-spacing: 0.16em;
-    color: var(--terracotta);
+    color: var(--accent);
     font-weight: 700;
 }
 .ej-place-body h4 {
-    font-family: var(--font-editorial);
+    font-family: var(--font-display);
     font-optical-sizing: auto;
     font-size: 1.3rem;
     font-weight: 580;
     letter-spacing: -0.01em;
     line-height: 1.15;
     margin: 4px 0 6px;
-    color: var(--ink);
+    color: var(--text-primary);
 }
 .ej-place-meta {
     display: flex;
@@ -623,11 +623,11 @@
     font-size: 0.68rem;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: var(--ink-soft);
+    color: var(--text-secondary);
 }
 .ej-place-meta .ej-stars { display: inline-flex; gap: 1px; color: var(--rule-strong); }
-.ej-place-meta .ej-stars .is-filled { color: var(--gold); }
-.ej-place-meta .ej-stars .is-filled svg { fill: var(--gold); }
+.ej-place-meta .ej-stars .is-filled { color: var(--warning); }
+.ej-place-meta .ej-stars .is-filled svg { fill: var(--warning); }
 .ej-section-foot {
     margin-top: var(--space-12);
     display: flex;
@@ -646,7 +646,7 @@
     grid-template-columns: 86px 1fr 26px;
     text-decoration: none;
     color: inherit;
-    background: var(--paper-print);
+    background: var(--surface);
     border: 1px solid var(--rule-strong);
     border-radius: var(--radius-sm);
     box-shadow: var(--paper-shadow);
@@ -668,7 +668,7 @@
     gap: 2px;
     padding: var(--space-5) var(--space-2);
     border-right: 1.5px dashed var(--rule-strong);
-    background: var(--paper-warm);
+    background: var(--bg-secondary);
 }
 /* punched holes on the perforation line */
 .ej-ticket-stub::before,
@@ -679,8 +679,8 @@
     width: 14px;
     height: 14px;
     border-radius: 50%;
-    background: var(--paper);
-    border: 1px solid var(--rule);
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
     z-index: 1;
 }
 .ej-ticket-stub::before { top: -8px; }
@@ -690,7 +690,7 @@
     font-size: 1.9rem;
     font-weight: 700;
     line-height: 1;
-    color: var(--terracotta);
+    color: var(--accent);
     font-variant-numeric: tabular-nums;
 }
 .ej-ticket-days-label {
@@ -698,14 +698,14 @@
     font-size: 0.6rem;
     letter-spacing: 0.2em;
     text-transform: uppercase;
-    color: var(--ink-soft);
+    color: var(--text-secondary);
 }
 .ej-ticket-route {
     margin-top: var(--space-3);
     font-family: var(--font-mono);
     font-size: 0.56rem;
     letter-spacing: 0.14em;
-    color: var(--ink-soft);
+    color: var(--text-secondary);
     writing-mode: vertical-rl;
     text-transform: uppercase;
 }
@@ -715,24 +715,24 @@
     font-size: 0.6rem;
     letter-spacing: 0.16em;
     text-transform: uppercase;
-    color: var(--ink-faint);
-    border-bottom: 1px solid var(--rule);
+    color: var(--text-tertiary);
+    border-bottom: 1px solid var(--border);
     padding-bottom: 6px;
 }
 .ej-ticket-body h3 {
-    font-family: var(--font-editorial);
+    font-family: var(--font-display);
     font-optical-sizing: auto;
     font-size: 1.28rem;
     font-weight: 580;
     line-height: 1.16;
     letter-spacing: -0.01em;
     margin: 2px 0;
-    color: var(--ink);
+    color: var(--text-primary);
 }
 .ej-ticket-body p {
     font-size: var(--text-sm);
     line-height: var(--leading-normal);
-    color: var(--ink-soft);
+    color: var(--text-secondary);
     margin: 0;
     display: -webkit-box;
     -webkit-line-clamp: 3;
@@ -747,7 +747,7 @@
     gap: var(--space-4);
     font-family: var(--font-mono);
     font-size: 0.68rem;
-    color: var(--ink-faint);
+    color: var(--text-tertiary);
     font-variant-numeric: tabular-nums;
 }
 .ej-ticket-foot svg { vertical-align: -2px; margin-right: 3px; }
@@ -758,7 +758,7 @@
     font-size: 0.6rem;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: var(--diff-color, var(--stamp-ink));
+    color: var(--diff-color, var(--accent));
     border: 1.5px solid currentColor;
     padding: 2px 7px;
     border-radius: 2px;
@@ -767,9 +767,9 @@
 .ej-ticket-barcode {
     background: repeating-linear-gradient(
         180deg,
-        var(--ink) 0 2px,
+        var(--text-primary) 0 2px,
         transparent 2px 5px,
-        var(--ink) 5px 6px,
+        var(--text-primary) 5px 6px,
         transparent 6px 10px
     );
     opacity: 0.65;
@@ -789,8 +789,8 @@
     display: block;
     text-decoration: none;
     color: inherit;
-    background: var(--paper-print);
-    border: 1px solid var(--rule);
+    background: var(--surface);
+    border: 1px solid var(--border);
     padding: 9px 9px 12px;
     box-shadow: var(--paper-shadow);
     rotate: var(--tilt, 0deg);
@@ -826,33 +826,33 @@
 }
 .ej-mood-body { padding: 10px 4px 0; }
 .ej-mood-body h4 {
-    font-family: var(--font-editorial);
+    font-family: var(--font-display);
     font-optical-sizing: auto;
     font-style: italic;
     font-size: 1.35rem;
     font-weight: 520;
     margin: 0 0 2px;
-    color: var(--ink);
+    color: var(--text-primary);
 }
 .ej-mood-body p {
-    font-family: var(--font-hand);
+    font-family: var(--font-display);
     font-size: 1.18rem;
     line-height: 1.2;
-    color: var(--ink-soft);
+    color: var(--text-secondary);
     margin: 0;
 }
 
 /* ── Manifesto — typographic, no cards, no icons ─────────── */
 .ej-manifesto { border-top: 1.5px solid var(--rule-strong); }
 .ej-pullquote {
-    font-family: var(--font-editorial);
+    font-family: var(--font-display);
     font-optical-sizing: auto;
     font-style: italic;
     font-size: clamp(1.5rem, 3vw, 2.3rem);
     font-weight: 480;
     line-height: 1.25;
     letter-spacing: -0.01em;
-    color: var(--ink);
+    color: var(--text-primary);
     max-width: 30ch;
     margin: 0 0 var(--space-12);
     position: relative;
@@ -865,7 +865,7 @@
     top: -0.28em;
     font-size: 2.6em;
     font-style: normal;
-    color: var(--terracotta);
+    color: var(--accent);
     line-height: 1;
 }
 .ej-manifesto-cols {
@@ -875,7 +875,7 @@
 }
 .ej-manifesto-col {
     padding: 0 var(--space-8);
-    border-left: 1px solid var(--rule);
+    border-left: 1px solid var(--border);
 }
 .ej-manifesto-col:first-child { padding-left: 0; border-left: none; }
 .ej-manifesto-col h3 {
@@ -884,23 +884,23 @@
     font-weight: 600;
     letter-spacing: 0.18em;
     text-transform: uppercase;
-    color: var(--terracotta);
+    color: var(--accent);
     margin: 0 0 var(--space-4);
 }
 .ej-manifesto-col p {
     font-size: var(--text-base);
     line-height: var(--leading-relaxed);
-    color: var(--ink-soft);
+    color: var(--text-secondary);
     margin: 0;
 }
 .ej-manifesto-col p::first-letter {
-    font-family: var(--font-editorial);
+    font-family: var(--font-display);
     font-size: 3.1em;
     font-weight: 560;
     float: left;
     line-height: 0.82;
     padding: 4px 8px 0 0;
-    color: var(--ink);
+    color: var(--text-primary);
 }
 
 /* ── Postcards — testimonials without stock avatars ──────── */
@@ -911,8 +911,8 @@
 }
 .ej-postcard {
     position: relative;
-    background: var(--paper-print);
-    border: 1px solid var(--rule);
+    background: var(--surface);
+    border: 1px solid var(--border);
     padding: var(--space-6);
     box-shadow: var(--paper-shadow);
     rotate: var(--tilt, 0deg);
@@ -941,8 +941,8 @@
     font-family: var(--font-mono);
     font-size: 0.5rem;
     letter-spacing: 0.08em;
-    color: var(--ink-faint);
-    background: var(--paper-warm);
+    color: var(--text-tertiary);
+    background: var(--bg-secondary);
     rotate: 3deg;
 }
 .ej-postcard-stamp img { width: 22px; height: 22px; object-fit: contain; }
@@ -953,24 +953,24 @@
     right: 40px;
     width: 52px;
     height: 52px;
-    color: var(--ink-faint);
+    color: var(--text-tertiary);
     opacity: 0.8;
     rotate: -8deg;
     pointer-events: none;
 }
 .ej-postcard-quote {
-    font-family: var(--font-editorial);
+    font-family: var(--font-display);
     font-optical-sizing: auto;
     font-size: 1.02rem;
     font-weight: 420;
     line-height: 1.55;
-    color: var(--ink);
+    color: var(--text-primary);
     margin: var(--space-4) 0 0;
     padding-right: 52px;
 }
 .ej-postcard-sig {
     margin-top: auto;
-    border-top: 1px solid var(--rule);
+    border-top: 1px solid var(--border);
     padding-top: var(--space-3);
     display: flex;
     flex-direction: column;
@@ -978,7 +978,7 @@
 }
 .ej-postcard-sig .ej-hand {
     font-size: 1.45rem;
-    color: var(--ink);
+    color: var(--text-primary);
     rotate: -1deg;
     display: inline-block;
 }
@@ -987,7 +987,7 @@
     font-size: 0.62rem;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: var(--ink-faint);
+    color: var(--text-tertiary);
 }
 .ej-postcard.is-pro .ej-postcard-pro {
     position: absolute;
@@ -998,8 +998,8 @@
     font-size: 0.56rem;
     font-weight: 700;
     letter-spacing: 0.18em;
-    color: var(--gold);
-    border: 1.5px solid var(--gold);
+    color: var(--warning);
+    border: 1.5px solid var(--warning);
     padding: 2px 7px;
     border-radius: 2px;
     text-transform: uppercase;
@@ -1025,24 +1025,24 @@
     align-items: baseline;
     gap: var(--space-3);
     font-size: var(--text-base);
-    color: var(--ink-soft);
+    color: var(--text-secondary);
 }
 .ej-letter-benefits .ej-tick {
-    font-family: var(--font-hand);
+    font-family: var(--font-display);
     font-size: 1.4rem;
     font-weight: 700;
-    color: var(--olive);
+    color: var(--success);
     line-height: 1;
 }
 .ej-letter-arabic {
     font-family: 'Noto Kufi Arabic', var(--font-sans);
-    color: var(--ink-soft);
+    color: var(--text-secondary);
     font-size: 1.15rem;
     margin: var(--space-2) 0 var(--space-4);
 }
 .ej-letter-form {
     position: relative;
-    background: var(--paper-warm);
+    background: var(--bg-secondary);
     border: 1px solid var(--rule-strong);
     padding: var(--space-8);
     box-shadow: var(--paper-shadow);
@@ -1064,7 +1064,7 @@
     font-size: 0.66rem;
     letter-spacing: 0.16em;
     text-transform: uppercase;
-    color: var(--ink-faint);
+    color: var(--text-tertiary);
     border-bottom: 1px solid var(--rule-strong);
     padding-bottom: var(--space-3);
     margin-bottom: var(--space-6);
@@ -1080,7 +1080,7 @@
     font-weight: 600;
     letter-spacing: 0.15em;
     text-transform: uppercase;
-    color: var(--ink-soft);
+    color: var(--text-secondary);
     margin-bottom: 6px;
 }
 .ej-input {
@@ -1092,14 +1092,14 @@
     border-radius: 0;
     font-family: var(--font-sans);
     font-size: var(--text-base);
-    color: var(--ink);
+    color: var(--text-primary);
     padding: 8px 2px;
     transition: border-color var(--duration-fast) var(--ease-out);
 }
-.ej-input::placeholder { color: var(--ink-faint); }
+.ej-input::placeholder { color: var(--text-tertiary); }
 .ej-input:focus {
     outline: none;
-    border-bottom-color: var(--terracotta);
+    border-bottom-color: var(--accent);
 }
 select.ej-input { cursor: pointer; }
 select.ej-input option { color: var(--text-primary); background: var(--surface); }
@@ -1108,13 +1108,13 @@ select.ej-input option { color: var(--text-primary); background: var(--surface);
     opacity: 0.6;
     cursor: default;
     transform: none;
-    box-shadow: 3px 3px 0 var(--ink);
+    box-shadow: 3px 3px 0 var(--text-primary);
 }
 
 /* ── Partners — quiet colophon strip ─────────────────────── */
 .ej-partners {
-    border-top: 1px solid var(--rule);
-    border-bottom: 1px solid var(--rule);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
     padding: var(--space-10) var(--space-6);
 }
 .ej-partners-inner { max-width: 1240px; margin: 0 auto; }
@@ -1124,7 +1124,7 @@ select.ej-input option { color: var(--text-primary); background: var(--surface);
     font-size: 0.68rem;
     letter-spacing: 0.2em;
     text-transform: uppercase;
-    color: var(--ink-faint);
+    color: var(--text-tertiary);
     margin: 0 0 var(--space-8);
 }
 .ej-partners-row {
@@ -1157,7 +1157,7 @@ select.ej-input option { color: var(--text-primary); background: var(--surface);
 }
 .ej-fare {
     position: relative;
-    background: var(--paper-print);
+    background: var(--surface);
     border: 1.5px solid var(--rule-strong);
     border-radius: var(--radius-sm);
     padding: var(--space-8) var(--space-6) var(--space-6);
@@ -1173,10 +1173,10 @@ select.ej-input option { color: var(--text-primary); background: var(--surface);
     top: 14px;
     left: 10px;
     right: 10px;
-    border-top: 1.5px dashed var(--rule);
+    border-top: 1.5px dashed var(--border);
 }
 .ej-fare--featured {
-    border-color: var(--terracotta);
+    border-color: var(--accent);
     border-width: 2px;
     box-shadow: var(--paper-shadow-lift);
     rotate: -0.5deg;
@@ -1191,11 +1191,11 @@ select.ej-input option { color: var(--text-primary); background: var(--surface);
     font-weight: 700;
     letter-spacing: 0.16em;
     text-transform: uppercase;
-    color: var(--stamp-ink);
-    border: 2px solid var(--stamp-ink);
+    color: var(--accent);
+    border: 2px solid var(--accent);
     border-radius: 3px;
     padding: 4px 9px;
-    background: var(--paper-print);
+    background: var(--surface);
     opacity: 0.95;
 }
 .ej-fare-name {
@@ -1204,31 +1204,31 @@ select.ej-input option { color: var(--text-primary); background: var(--surface);
     font-weight: 600;
     letter-spacing: 0.18em;
     text-transform: uppercase;
-    color: var(--ink-soft);
+    color: var(--text-secondary);
     margin-top: var(--space-2);
 }
 .ej-fare-price {
-    font-family: var(--font-editorial);
+    font-family: var(--font-display);
     font-optical-sizing: auto;
     font-size: 2.7rem;
     font-weight: 560;
     line-height: 1;
-    color: var(--ink);
+    color: var(--text-primary);
     letter-spacing: -0.02em;
 }
 .ej-fare-price span {
     font-family: var(--font-mono);
     font-size: 0.72rem;
     letter-spacing: 0.1em;
-    color: var(--ink-faint);
+    color: var(--text-tertiary);
     margin-left: 6px;
 }
-.ej-fare-tagline { color: var(--ink-soft); font-size: var(--text-sm); margin: 0; line-height: var(--leading-normal); }
+.ej-fare-tagline { color: var(--text-secondary); font-size: var(--text-sm); margin: 0; line-height: var(--leading-normal); }
 .ej-fare-features {
     list-style: none;
     margin: 0;
     padding: var(--space-4) 0 0;
-    border-top: 1px solid var(--rule);
+    border-top: 1px solid var(--border);
     display: flex;
     flex-direction: column;
     gap: var(--space-2);
@@ -1238,12 +1238,12 @@ select.ej-input option { color: var(--text-primary); background: var(--surface);
     gap: var(--space-2);
     align-items: baseline;
     font-size: var(--text-sm);
-    color: var(--ink-soft);
+    color: var(--text-secondary);
     line-height: var(--leading-normal);
 }
 .ej-fare-features li::before {
     content: '—';
-    color: var(--terracotta);
+    color: var(--accent);
     flex: 0 0 auto;
 }
 .ej-fare .ej-btn,
@@ -1255,7 +1255,7 @@ select.ej-input option { color: var(--text-primary); background: var(--surface);
     min-height: 48px;
     padding: 12px 24px;
     background: transparent;
-    color: var(--ink);
+    color: var(--text-primary);
     font-weight: 600;
     font-size: var(--text-base);
     text-decoration: none;
@@ -1264,7 +1264,7 @@ select.ej-input option { color: var(--text-primary); background: var(--surface);
     transition: border-color var(--duration-fast) var(--ease-out),
                 background var(--duration-fast) var(--ease-out);
 }
-.ej-btn-ghost:hover { border-color: var(--ink); background: var(--paper-warm); }
+.ej-btn-ghost:hover { border-color: var(--text-primary); background: var(--bg-secondary); }
 
 /* ── Final call — the ink page ───────────────────────────── */
 .ej-cta {
@@ -1291,7 +1291,7 @@ select.ej-input option { color: var(--text-primary); background: var(--surface);
     rotate: 10deg;
 }
 .ej-cta h2 {
-    font-family: var(--font-editorial);
+    font-family: var(--font-display);
     font-optical-sizing: auto;
     font-size: clamp(2.3rem, 5.4vw, 4.2rem);
     font-weight: 540;
@@ -1302,7 +1302,7 @@ select.ej-input option { color: var(--text-primary); background: var(--surface);
     margin: 0 0 var(--space-4);
     text-wrap: balance;
 }
-.ej-cta h2 em { font-style: italic; font-weight: 440; color: var(--gold); }
+.ej-cta h2 em { font-style: italic; font-weight: 440; color: var(--warning); }
 .ej-cta-arabic {
     font-family: 'Noto Kufi Arabic', var(--font-sans);
     font-size: clamp(1.1rem, 2vw, 1.4rem);
@@ -1334,7 +1334,7 @@ select.ej-input option { color: var(--text-primary); background: var(--surface);
 }
 .ej-footer-brand .ej-wordmark strong { font-size: 1.6rem; }
 .ej-footer-brand p {
-    color: var(--ink-soft);
+    color: var(--text-secondary);
     font-size: var(--text-sm);
     line-height: var(--leading-relaxed);
     max-width: 30ch;
@@ -1346,22 +1346,22 @@ select.ej-input option { color: var(--text-primary); background: var(--surface);
     font-weight: 600;
     letter-spacing: 0.18em;
     text-transform: uppercase;
-    color: var(--ink-faint);
+    color: var(--text-tertiary);
     margin: 0 0 var(--space-4);
 }
 .ej-footer-col a {
     display: block;
-    color: var(--ink-soft);
+    color: var(--text-secondary);
     font-size: var(--text-sm);
     text-decoration: none;
     padding: 4px 0;
     transition: color var(--duration-fast) var(--ease-out);
 }
-.ej-footer-col a:hover { color: var(--terracotta); }
+.ej-footer-col a:hover { color: var(--accent); }
 .ej-footer-bottom {
     max-width: 1240px;
     margin: 0 auto;
-    border-top: 1px solid var(--rule);
+    border-top: 1px solid var(--border);
     padding-top: var(--space-5);
     display: flex;
     justify-content: space-between;
@@ -1371,11 +1371,11 @@ select.ej-input option { color: var(--text-primary); background: var(--surface);
     font-size: 0.68rem;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: var(--ink-faint);
+    color: var(--text-tertiary);
     flex-wrap: wrap;
 }
-.ej-footer-heart { color: var(--terracotta); display: inline-grid; place-items: center; vertical-align: -3px; }
-.ej-footer-heart svg { fill: var(--terracotta); width: 13px; height: 13px; }
+.ej-footer-heart { color: var(--accent); display: inline-grid; place-items: center; vertical-align: -3px; }
+.ej-footer-heart svg { fill: var(--accent); width: 13px; height: 13px; }
 .ej-sr-only {
     position: absolute;
     width: 1px; height: 1px;
@@ -1393,7 +1393,7 @@ select.ej-input option { color: var(--text-primary); background: var(--surface);
 .ej-reveal.is-in { opacity: 1; translate: 0 0; }
 
 /* Skeletons on paper */
-.ej-landing .skeleton { background: var(--paper-warm); }
+.ej-landing .skeleton { background: var(--bg-secondary); }
 
 /* ── Reduced motion ──────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
@@ -1414,7 +1414,7 @@ select.ej-input option { color: var(--text-primary); background: var(--surface);
     .ej-moods { grid-template-columns: repeat(2, 1fr); }
     .ej-mood:nth-child(n) { grid-column: auto; margin-top: 0; }
     .ej-manifesto-cols { grid-template-columns: 1fr; gap: var(--space-8); }
-    .ej-manifesto-col { border-left: none; padding: 0; border-top: 1px solid var(--rule); padding-top: var(--space-6); }
+    .ej-manifesto-col { border-left: none; padding: 0; border-top: 1px solid var(--border); padding-top: var(--space-6); }
     .ej-manifesto-col:first-child { border-top: none; padding-top: 0; }
 }
 
@@ -1430,7 +1430,7 @@ select.ej-input option { color: var(--text-primary); background: var(--surface);
     .ej-letter-form { rotate: 0deg; }
     .ej-almanac-grid { grid-template-columns: repeat(2, 1fr); }
     .ej-almanac-cell:nth-child(3) { border-left: none; padding-left: 0; }
-    .ej-almanac-cell:nth-child(n+3) { border-top: 1px solid var(--rule); }
+    .ej-almanac-cell:nth-child(n+3) { border-top: 1px solid var(--border); }
     .ej-footer-grid { grid-template-columns: 1fr 1fr; }
 }
 
@@ -1455,4 +1455,174 @@ select.ej-input option { color: var(--text-primary); background: var(--surface);
     .ej-footer-bottom { flex-direction: column; align-items: flex-start; }
     .ej-ticket { grid-template-columns: 72px 1fr 20px; }
     .ej-cta .ej-stamp { display: none; }
+}
+
+/* ============================================================
+   PAGE EDITION — About / Partner
+   The same carnet system rendered inside the app shell rather
+   than standalone. Patterns below exist because those two pages
+   need shapes the landing narrative never did: a prose spread,
+   a crew roster, and 4-up variants of the 3-up grids.
+   Placed last on purpose: the `--4` modifiers must outrank the
+   responsive blocks above, which match on the base class at
+   equal specificity.
+   ============================================================ */
+
+/* The grain is position:fixed over the whole viewport. On the landing page
+   nothing sits above it; inside the app shell it would veil the masthead. */
+.ej-landing--page::after { content: none; }
+
+/* .ej-hero's top padding clears the landing page's *fixed* masthead.
+   .pub-masthead is sticky, so it already occupies flow space here. */
+.ej-landing--page .ej-hero {
+    padding-top: var(--space-16);
+    min-height: 0;
+}
+
+/* ── Spread — a pasted photo facing a column of prose ─────── */
+.ej-spread {
+    display: grid;
+    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+    gap: clamp(var(--space-8), 5vw, var(--space-16));
+    align-items: center;
+}
+.ej-spread-text p {
+    color: var(--text-secondary);
+    font-size: var(--text-base);
+    line-height: var(--leading-relaxed);
+    max-width: 62ch;
+    margin: 0 0 var(--space-4);
+}
+.ej-spread-text .ej-h2 { margin-top: var(--space-8); }
+.ej-spread-text > :first-child { margin-top: 0; }
+
+/* A print in normal flow instead of tossed onto the hero desk. */
+.ej-print--static {
+    position: static;
+    width: 100%;
+    rotate: var(--tilt, -1.2deg);
+}
+.ej-print--static img { aspect-ratio: 4 / 3; }
+
+/* ── 4-up variants of the 3-up grids ─────────────────────── */
+.ej-manifesto-cols--4 { grid-template-columns: repeat(4, 1fr); }
+.ej-index-grid--4 { grid-template-columns: repeat(4, 1fr); }
+/* The base grid staggers on a 3 rhythm; re-time it to 4. */
+.ej-index-grid--4 .ej-place:nth-child(n) { margin-top: 0; }
+.ej-index-grid--4 .ej-place:nth-child(4n+2) { margin-top: var(--space-6); }
+.ej-index-grid--4 .ej-place:nth-child(4n+4) { margin-top: var(--space-3); }
+/* Scoped: the index proper carries mono meta, not sentences. */
+.ej-index-grid--4 .ej-place-body p {
+    font-size: var(--text-sm);
+    line-height: var(--leading-normal);
+    color: var(--text-secondary);
+    margin: 4px 0 0;
+}
+
+/* ── Crew — the people behind the edition ────────────────── */
+.ej-crew {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-8) var(--space-6);
+}
+.ej-crew-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: var(--space-6);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    rotate: var(--tilt, 0deg);
+    transition: rotate var(--duration-normal) var(--ease-spring);
+}
+.ej-crew-card:nth-child(3n+1) { --tilt: -0.9deg; }
+.ej-crew-card:nth-child(3n+2) { --tilt: 0.7deg; margin-top: var(--space-5); }
+.ej-crew-card:nth-child(3n)   { --tilt: -0.4deg; }
+.ej-crew-card:hover { rotate: 0deg; }
+
+/* The arch is the only motif and it crops photography. */
+.ej-crew-portrait {
+    width: 104px;
+    height: 130px;
+    object-fit: cover;
+    border-radius: var(--arch-up);
+    border: 1px solid var(--border);
+    background: var(--bg-secondary);
+    filter: saturate(0.88) contrast(1.02);
+}
+/* Headshots for two of the three are still pending. The initials tile keeps
+   the same arch silhouette so the row reads as one set, and stays local so
+   nothing depends on an external avatar service. */
+.ej-crew-portrait--initials {
+    display: grid;
+    place-items: center;
+    font-family: var(--font-display);
+    font-optical-sizing: auto;
+    font-size: 2.1rem;
+    font-weight: 400;
+    letter-spacing: 0.03em;
+    color: var(--accent);
+    user-select: none;
+}
+.ej-crew-portrait--logo {
+    object-fit: contain;
+    padding: var(--space-4);
+    background: var(--surface);
+}
+.ej-crew-card h3 {
+    font-family: var(--font-display);
+    font-optical-sizing: auto;
+    font-size: 1.3rem;
+    font-weight: 400;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    margin: 0;
+    color: var(--text-primary);
+}
+.ej-crew-role {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+}
+.ej-crew-card p {
+    font-size: var(--text-sm);
+    line-height: var(--leading-relaxed);
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+/* ── Colophon strip: optional standfirst under the title ─── */
+.ej-partners-lede {
+    max-width: 62ch;
+    margin: calc(-1 * var(--space-5)) auto var(--space-8);
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: var(--text-sm);
+    line-height: var(--leading-relaxed);
+}
+
+/* The letter form gained a message field; .ej-input only had a select peer. */
+textarea.ej-input {
+    min-height: 96px;
+    resize: vertical;
+    line-height: var(--leading-normal);
+}
+
+@media (max-width: 1024px) {
+    .ej-manifesto-cols--4 { grid-template-columns: repeat(2, 1fr); }
+    .ej-index-grid--4 { grid-template-columns: repeat(2, 1fr); }
+    .ej-index-grid--4 .ej-place:nth-child(n) { margin-top: 0; }
+}
+
+@media (max-width: 860px) {
+    .ej-spread { grid-template-columns: 1fr; }
+    .ej-crew { grid-template-columns: 1fr; max-width: 420px; margin-inline: auto; }
+    .ej-crew-card:nth-child(n) { margin-top: 0; }
+}
+
+@media (max-width: 640px) {
+    .ej-manifesto-cols--4 { grid-template-columns: 1fr; }
+    .ej-index-grid--4 { grid-template-columns: 1fr; }
 }

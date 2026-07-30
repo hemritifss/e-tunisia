@@ -259,7 +259,7 @@ export default function CityQuizPage() {
   // ── Result screen ──────────────────────────────────────────
   if (result) {
     return (
-      <div className="quiz-page page-enter" data-design="sleek">
+      <div className="quiz-page page-enter">
         <div className="quiz-result-card" style={{ background: result.gradient }}>
           <span className="quiz-result-kicker">You are</span>
           <div className="quiz-result-emoji">{result.emoji}</div>
@@ -298,7 +298,7 @@ export default function CityQuizPage() {
   const progress = Math.round((step / QUESTIONS.length) * 100);
 
   return (
-    <div className="quiz-page page-enter" data-design="sleek">
+    <div className="quiz-page page-enter">
       <header className="quiz-header">
         <span className="quiz-kicker"><Sparkles size={13} /> Just for fun · no account needed</span>
         <h1>Which Tunisian city are you?</h1>

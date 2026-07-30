@@ -14,16 +14,16 @@ import { FormSkeleton } from '../components/RouteSkeleton';
 interface Interest { id: string; label: string; Icon: React.ComponentType; tint: string; }
 
 const INTERESTS: Interest[] = [
-  { id: 'beaches', label: 'Beaches', Icon: Waves, tint: 'var(--cyan)' },
-  { id: 'historical', label: 'Historical sites', Icon: Landmark, tint: 'var(--sand)' },
+  { id: 'beaches', label: 'Beaches', Icon: Waves, tint: 'var(--mediterranean)' },
+  { id: 'historical', label: 'Historical sites', Icon: Landmark, tint: 'var(--stone-deep)' },
   { id: 'food', label: 'Food & drink', Icon: UtensilsCrossed, tint: 'var(--accent)' },
-  { id: 'nature', label: 'Nature & parks', Icon: Trees, tint: 'var(--olive)' },
-  { id: 'culture', label: 'Culture & arts', Icon: Library, tint: 'var(--violet)' },
-  { id: 'adventure', label: 'Adventure', Icon: Mountain, tint: 'var(--gold)' },
-  { id: 'desert', label: 'Sahara & deserts', Icon: Sun, tint: 'var(--amber)' },
+  { id: 'nature', label: 'Nature & parks', Icon: Trees, tint: 'var(--success)' },
+  { id: 'culture', label: 'Culture & arts', Icon: Library, tint: 'var(--accent)' },
+  { id: 'adventure', label: 'Adventure', Icon: Mountain, tint: 'var(--warning)' },
+  { id: 'desert', label: 'Sahara & deserts', Icon: Sun, tint: 'var(--warning)' },
   { id: 'photography', label: 'Photography', Icon: Camera, tint: 'var(--mediterranean)' },
   { id: 'budget', label: 'Budget travel', Icon: PiggyBank, tint: 'var(--success)' },
-  { id: 'nightlife', label: 'Nightlife', Icon: Moon, tint: 'var(--rose)' },
+  { id: 'nightlife', label: 'Nightlife', Icon: Moon, tint: 'var(--accent)' },
 ];
 
 const intTintStyle = (tint: string) => ({ ['--int-tint']: tint } as React.CSSProperties);
@@ -182,7 +182,7 @@ export default function OnboardingPage() {
   const candidates = (suggested || []).filter((u) => !me || u.id !== me.id).slice(0, 8);
 
   return (
-    <div className="onb-page page-enter" data-design="sleek" id="onb-root">
+    <div className="onb-page page-enter" id="onb-root">
       <div className="onb-progress-wrap">
         <ol className="onb-progress" aria-label="Onboarding progress">
           {['Welcome', 'Profile', 'Interests', 'Connect'].map((label, i) => (

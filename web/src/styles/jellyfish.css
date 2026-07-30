@@ -27,13 +27,13 @@
 .jelly-card {
     display: flex; flex-direction: column;
     padding: var(--space-3);
-    border-radius: var(--radius-lg);
+    border-radius: 0;   /* card-system fold: cards are square in Bled */
     background: var(--surface-elevated);
     border: 1px solid var(--border);
     border-left: 4px solid var(--border);
 }
 .jelly-card.ok { border-left-color: var(--success); }
-.jelly-card.warn { border-left-color: var(--gold, #d4a72c); }
+.jelly-card.warn { border-left-color: var(--warning); }
 .jelly-card.bad { border-left-color: var(--danger, #e5484d); }
 .jelly-card.stale { border-left-color: var(--border); }
 .jelly-card-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: var(--space-2); }
@@ -91,6 +91,6 @@
 }
 .jelly-seg-btn.is-on { border-color: var(--accent); color: var(--accent); background: color-mix(in oklab, var(--accent) 10%, transparent); }
 .jelly-seg-btn.ok.is-on { border-color: var(--success); color: var(--success); background: color-mix(in oklab, var(--success) 12%, transparent); }
-.jelly-seg-btn.warn.is-on { border-color: var(--gold, #d4a72c); color: color-mix(in oklab, var(--gold, #d4a72c) 60%, var(--text-primary)); background: color-mix(in oklab, var(--gold, #d4a72c) 14%, transparent); }
+.jelly-seg-btn.warn.is-on { border-color: var(--warning); color: color-mix(in oklab, var(--warning) 60%, var(--text-primary)); background: color-mix(in oklab, var(--warning) 14%, transparent); }
 .jelly-seg-btn.bad.is-on { border-color: var(--danger, #e5484d); color: var(--danger, #e5484d); background: color-mix(in oklab, var(--danger, #e5484d) 12%, transparent); }
 .jelly-modal-submit { width: 100%; margin-top: var(--space-2); display: inline-flex; align-items: center; justify-content: center; gap: 8px; }

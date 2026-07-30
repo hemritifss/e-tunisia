@@ -1,18 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { api, getImageUrl } from '../../shared/api';
+import { api } from '../../shared/api';
 import { useAuthStore } from '../stores/auth-store';
-import { Compass, MapPin, Sparkles, ArrowRight, Stamp, Route, PenLine } from 'lucide-react';
-import { useT } from '../../i18n/useT';
-import { plural } from '../../shared/plural';
-
-interface MiniProfile {
-    handle: string | null;
-    fullName: string;
-    avatar: string | null;
-    passportLevel?: string;
-    stats?: { citiesVisited: number; tripsPlanned: number; reviewsCount: number; savesCount: number };
-    badges?: string[];
-}
+import { MapPin, PenLine } from 'lucide-react';
 
 function greeting(): string {
     const h = new Date().getHours();
@@ -23,9 +12,21 @@ function greeting(): string {
 }
 
 /**
- * The AI line renders directly under "<greeting>, <name>" — if the model
+ * Mono eyebrow above the greeting. Mono is reserved for values that are
+ * actually true, so this carries the weekday and date: the app has no
+ * reliable location or temperature signal for the signed-in user.
+ */
+function eyebrow(): string {
+    const now = new Date();
+    const weekday = now.toLocaleDateString(undefined, { weekday: 'long' });
+    const date = now.toLocaleDateString(undefined, { day: 'numeric', month: 'long' });
+    return `${weekday} · ${date}`;
+}
+
+/**
+ * The AI line renders as the italic clause of the greeting — if the model
  * prepends its own salutation ("Good evening, traveler — Tunisia is calling")
- * the strip greets twice in a row. Drop the salutation, keep the substance.
+ * the masthead greets twice in a row. Drop the salutation, keep the substance.
  */
 function stripSalutation(text: string): string {
     const stripped = text.replace(
@@ -37,19 +38,16 @@ function stripSalutation(text: string): string {
 }
 
 /**
- * Top-of-feed welcome strip.
+ * Top-of-feed masthead.
  *
- * Registered: a warm personal status strip. NO passport jargon, no "claim"
- *   CTAs — the user's already in. Just: greeting, name, level chip, three
- *   stat tiles, two quick actions.
+ * Registered: a mono eyebrow, an editorial greeting whose second clause is the
+ *   personalised AI line, and two actions. Passport numbers moved to the right
+ *   rail, so this surface stays a headline and nothing else.
  *
- * Anonymous: an editorial hero — full-width image, headline, sub, and a
- *   single primary CTA. Tunisia visual identity, not generic.
+ * Anonymous: the editorial hero — headline, sub, and a single primary CTA.
  */
 export function WelcomeStrip() {
-    const t = useT();
     const user = useAuthStore((s) => s.user) as any;
-    const [profile, setProfile] = useState<MiniProfile | null>(null);
     const [aiGreeting, setAiGreeting] = useState<string>('');
     const isAnon = !user;
 
@@ -61,22 +59,10 @@ export function WelcomeStrip() {
             try {
                 const r: any = await api.aiGreeting();
                 if (!cancelled && r?.text) setAiGreeting(stripSalutation(r.text));
-            } catch { /* keep the static sub */ }
+            } catch { /* keep the static clause */ }
         })();
         return () => { cancelled = true; };
     }, [user?.id]);
-
-    useEffect(() => {
-        if (!user?.handle) { setProfile(null); return; }
-        let cancelled = false;
-        (async () => {
-            try {
-                const r: any = await api.getPassport(user.handle);
-                if (!cancelled && r && !r.error) setProfile(r);
-            } catch {}
-        })();
-        return () => { cancelled = true; };
-    }, [user?.handle]);
 
     if (isAnon) {
         return (
@@ -103,73 +89,24 @@ export function WelcomeStrip() {
     }
 
     const firstName = (user.fullName || '').split(' ')[0] || 'traveler';
-    const stats = profile?.stats;
-    const level = profile?.passportLevel;
-    const ownHref = user.handle ? `#/u/${user.handle}` : '#';
+    const openComposer = () =>
+        document.dispatchEvent(new CustomEvent('etunisia:open-post-modal'));
 
     return (
-        <section className="welcome-strip">
-            <div className="welcome-strip-row">
-                <a className="welcome-strip-avatar" href={ownHref} title="Your profile">
-                    {profile?.avatar
-                        ? <img src={getImageUrl(profile.avatar)} alt="" />
-                        : <span className="welcome-strip-avatar-fallback">{firstName.slice(0, 1).toUpperCase()}</span>}
-                </a>
-                <div className="welcome-strip-text">
-                    <div className="welcome-strip-greeting">
-                        {greeting()}, <strong>{firstName}</strong>
-                        {level && <span className={`welcome-level welcome-level-${level.toLowerCase()}`}>{level}</span>}
-                    </div>
-                    <p className="welcome-strip-sub">
-                        {aiGreeting || 'Tunisia is waiting. Where are you headed next?'}
-                    </p>
-                </div>
-                <div className="welcome-strip-actions">
-                    <a className="welcome-action-pill primary" href="#/explore">
-                        <Compass size={14} /> Explore
-                    </a>
-                    <a className="welcome-action-pill" href="#/discover-trips">
-                        <Sparkles size={14} /> Trip ideas
-                    </a>
-                </div>
+        <section className="feed-masthead">
+            <div className="feed-masthead-text">
+                <span className="feed-masthead-eyebrow">{eyebrow()}</span>
+                <h2 className="feed-masthead-greeting">
+                    {greeting()}, {firstName}.
+                    <em>{aiGreeting || 'Tunisia is waiting.'}</em>
+                </h2>
             </div>
-
-            {stats && (
-                (stats.citiesVisited || stats.tripsPlanned || stats.reviewsCount || profile?.badges?.length)
-                    ? (
-                        <div className="welcome-strip-stats">
-                            <a href={ownHref} className="welcome-stat"><strong>{stats.citiesVisited}</strong><span>{plural(stats.citiesVisited, 'City', 'Cities')}</span></a>
-                            <a href={ownHref} className="welcome-stat"><strong>{stats.tripsPlanned}</strong><span>{plural(stats.tripsPlanned, 'Trip')}</span></a>
-                            <a href={ownHref} className="welcome-stat"><strong>{stats.reviewsCount}</strong><span>{plural(stats.reviewsCount, 'Review')}</span></a>
-                            <a href={ownHref} className="welcome-stat welcome-stat-badges"><strong>{profile?.badges?.length || 0}</strong><span>{plural(profile?.badges?.length || 0, 'Badge')}</span></a>
-                            <a href={ownHref} className="welcome-stat-link">
-                                Your travel profile <ArrowRight size={14} />
-                            </a>
-                        </div>
-                    ) : (
-                        /* A row of zeros is a morgue — brand-new explorers get their
-                           first missions instead. Each completes in one tap-flow and
-                           starts the passport loop. */
-                        <div className="welcome-strip-missions">
-                            <span className="welcome-missions-label">{t('missions.label')}</span>
-                            <a className="welcome-mission" href="#/explore">
-                                <Stamp size={15} />
-                                <span>{t('missions.visit')}</span>
-                                <ArrowRight size={13} />
-                            </a>
-                            <a className="welcome-mission" href="#/ai-planner">
-                                <Route size={15} />
-                                <span>{t('missions.plan')}</span>
-                                <ArrowRight size={13} />
-                            </a>
-                            <a className="welcome-mission" href="#/explore">
-                                <PenLine size={15} />
-                                <span>{t('missions.review')}</span>
-                                <ArrowRight size={13} />
-                            </a>
-                        </div>
-                    )
-            )}
+            <div className="feed-masthead-actions">
+                <button type="button" className="feed-masthead-btn is-primary" onClick={openComposer}>
+                    <PenLine size={15} /> Share a moment
+                </button>
+                <a className="feed-masthead-btn" href="#/discover-trips">Plan a trip</a>
+            </div>
         </section>
     );
 }

@@ -8,7 +8,8 @@ interface ConfettiOptions {
   originY?: number;
 }
 
-const PALETTE = ['#C65D3B', '#E8B04B', '#4FAC8B', '#3B82C6', '#E85D75', '#F4A340'];
+// Canvas cannot read CSS variables, so the palette tokens are inlined.
+const PALETTE = ['#1E5FA8', '#4B8FD4', '#6BA6E8', '#8A7550', '#E7DECC', '#4A7A47'];
 
 export function fireConfetti(opts: ConfettiOptions = {}): void {
   if (typeof window === 'undefined') return;

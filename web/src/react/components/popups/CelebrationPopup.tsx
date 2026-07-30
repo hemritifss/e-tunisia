@@ -7,11 +7,11 @@ import type { PopupItem } from '../../stores/popup-store';
 function Confetti() {
   const pieces = Array.from({ length: 70 });
   const colors = [
-    'oklch(55% 0.16 30)', // terracotta
-    'oklch(52% 0.14 240)', // mediterranean
-    'oklch(78% 0.17 80)', // gold
-    'oklch(72% 0.18 200)', // cyan
-    'oklch(58% 0.2 290)', // violet
+    'var(--accent)',
+    'var(--mediterranean)',
+    'var(--warning)',
+    'var(--stone)',
+    'var(--success)',
   ];
   return (
     <div className="confetti" aria-hidden>

@@ -93,7 +93,7 @@ export default function FavoritesPage() {
   };
 
   return (
-    <div className="favorites-page page-enter" data-design="sleek">
+    <div className="favorites-page page-enter">
       <div className="favorites-header">
         <h1><Heart /> Saved Places</h1>
         <p>Your personally curated collection of must-visit places in Tunisia.</p>

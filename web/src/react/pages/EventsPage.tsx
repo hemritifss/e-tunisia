@@ -31,10 +31,10 @@ interface CategoryDef {
 
 const CATEGORIES: CategoryDef[] = [
   { id: 'all', label: 'All Events', Icon: CalendarDays, tint: 'var(--text-secondary)' },
-  { id: 'Music', label: 'Music', Icon: Music2, tint: 'var(--coral)' },
+  { id: 'Music', label: 'Music', Icon: Music2, tint: 'var(--accent)' },
   { id: 'Culture', label: 'Culture', Icon: Theater, tint: 'var(--mediterranean)' },
-  { id: 'Food', label: 'Food', Icon: UtensilsCrossed, tint: 'var(--olive)' },
-  { id: 'Sports', label: 'Sports', Icon: Trophy, tint: 'var(--gold)' },
+  { id: 'Food', label: 'Food', Icon: UtensilsCrossed, tint: 'var(--success)' },
+  { id: 'Sports', label: 'Sports', Icon: Trophy, tint: 'var(--warning)' },
   { id: 'Art', label: 'Art', Icon: Palette, tint: 'var(--accent)' },
 ];
 

@@ -715,7 +715,7 @@
 .empty-state-v2 h3 {
   font-size: 1.1rem;
   font-weight: 600;
-  color: var(--text);
+  color: var(--text-primary);
   margin-bottom: 6px;
 }
 
@@ -730,14 +730,15 @@
    FORM VALIDATION UX
    ═══════════════════════════════════════════════════════════════════════ */
 
+/* --danger was never defined, so the old fallback hex shipped instead. */
 .input.is-invalid {
-  border-color: var(--danger, #dc2626);
-  box-shadow: 0 0 0 3px oklch(55% 0.2 25 / 0.15);
+  border-color: var(--error);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--error) 15%, transparent);
 }
 
 .input.is-valid {
-  border-color: var(--success, #16a34a);
-  box-shadow: 0 0 0 3px oklch(65% 0.15 145 / 0.15);
+  border-color: var(--success);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--success) 15%, transparent);
 }
 
 /* Shake animation for invalid form submission */

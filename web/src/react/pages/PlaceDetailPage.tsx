@@ -406,7 +406,7 @@ export default function PlaceDetailPage() {
 
   if (placeQ.isLoading || !place) {
     return (
-      <div className="place-detail-page page-enter" id="place-detail-page" data-design="carnet" data-place-id={placeId}>
+      <div className="place-detail-page page-enter" id="place-detail-page" data-place-id={placeId}>
         <div className="place-detail-loading"><DetailSkeleton label="Loading place details" /></div>
       </div>
     );
@@ -416,7 +416,7 @@ export default function PlaceDetailPage() {
   // shell wrapped around a phantom rating, check-in button, and reviews list.
   if ((place as any)._notFound) {
     return (
-      <div className="place-detail-page page-enter" id="place-detail-page" data-design="carnet" data-place-id={placeId}>
+      <div className="place-detail-page page-enter" id="place-detail-page" data-place-id={placeId}>
         <div className="place-detail-notfound">
           <MapPin size={48} aria-hidden="true" />
           <h1>Place not found</h1>
@@ -486,9 +486,9 @@ export default function PlaceDetailPage() {
   const reviewTotal = place.reviewCount || reviews.length;
 
   return (
-    <div className="place-detail-page page-enter" id="place-detail-page" data-design="carnet" data-place-id={placeId}>
+    <div className="place-detail-page page-enter" id="place-detail-page" data-place-id={placeId}>
       <div className="place-detail-hero" ref={heroRef}>
-        <motion.img src={cover} alt={place.name} className="place-detail-hero-img" style={{ scale: heroScale }} onError={(e) => { (e.currentTarget as HTMLImageElement).style.background = 'linear-gradient(135deg, var(--terracotta-pale), var(--mediterranean-pale))'; }} />
+        <motion.img src={cover} alt={place.name} className="place-detail-hero-img" style={{ scale: heroScale }} onError={(e) => { (e.currentTarget as HTMLImageElement).style.background = 'linear-gradient(135deg, var(--accent-light), var(--mediterranean-pale))'; }} />
         <div className="place-detail-hero-overlay" />
         <div className="place-detail-hero-actions">
           <a href="#/" className="btn-icon place-detail-back" aria-label="Back"><ArrowLeft /></a>

@@ -1,3 +1,119 @@
+/* ── Moved from pages.css (Phase 2 split) ─────────────────────
+   Prepended so this file's own rules keep winning, exactly as
+   they did when pages.css loaded ahead of it.
+   ──────────────────────────────────────────────────────────── */
+
+/* ============================================
+   TOAST STACK — global feedback for actions
+   ============================================ */
+.toast-stack {
+    position: fixed;
+    bottom: clamp(16px, 3vw, 28px);
+    right: clamp(16px, 3vw, 28px);
+    z-index: 9100;
+    display: flex; flex-direction: column-reverse; gap: 10px;
+    pointer-events: none;
+    max-width: min(420px, calc(100vw - 32px));
+}
+@media (max-width: 640px) {
+    .toast-stack { left: 16px; right: 16px; max-width: none; }
+}
+
+.toast {
+    /* Paper slip (carnet chrome): opaque print stock, hairline rule, slight tilt */
+    --toast-accent: var(--accent);
+    pointer-events: auto;
+    display: grid;
+    grid-template-columns: auto 1fr auto auto;
+    gap: 12px;
+    align-items: center;
+    padding: 12px 12px 12px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--toast-accent);
+    border-radius: 2px;
+    box-shadow: var(--paper-shadow-lift);
+    font-family: var(--font-sans);
+    color: var(--text-primary);
+    min-width: 280px;
+    rotate: 0.5deg;
+    animation: toast-in 320ms var(--ease-spring) both;
+}
+.toast-success    { --toast-accent: var(--success); }
+.toast-error      { --toast-accent: var(--error); }
+.toast-info       { --toast-accent: var(--mediterranean); }
+.toast-achievement{ --toast-accent: var(--warning); }
+
+.toast-icon {
+    width: 32px; height: 32px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    background: color-mix(in oklch, var(--toast-accent) 18%, transparent);
+    color: var(--toast-accent);
+    font-weight: 700; font-size: 16px;
+    flex-shrink: 0;
+}
+.toast-body {
+    display: flex; flex-direction: column;
+    min-width: 0;
+    line-height: 1.4;
+}
+.toast-body strong {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--text-primary);
+}
+.toast-body span {
+    font-size: 13px;
+    color: var(--text-secondary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.toast-action {
+    background: transparent;
+    border: none;
+    color: var(--toast-accent);
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 13px;
+    padding: 6px 10px;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: background var(--duration-fast) var(--ease-out);
+}
+.toast-action:hover { background: color-mix(in oklch, var(--toast-accent) 14%, transparent); }
+
+.toast-close {
+    width: 24px; height: 24px;
+    border: none; background: transparent;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    font-size: 18px; line-height: 1;
+    border-radius: 50%;
+    transition: color var(--duration-fast) var(--ease-out), background-color var(--duration-fast) var(--ease-out), border-color var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out), transform var(--duration-fast) var(--ease-out), opacity var(--duration-fast) var(--ease-out), filter var(--duration-fast) var(--ease-out);
+}
+.toast-close:hover { background: oklch(0% 0 0 / 0.06); color: var(--text-primary); }
+
+.toast-leaving { animation: toast-out 280ms var(--ease-in-out) both; }
+
+@keyframes toast-in {
+    from { transform: translateY(12px) scale(0.96); opacity: 0; }
+    to   { transform: translateY(0) scale(1); opacity: 1; }
+}
+@keyframes toast-out {
+    from { transform: translateX(0); opacity: 1; }
+    to   { transform: translateX(120%); opacity: 0; }
+}
+
+/* Paper/ink tokens follow [data-theme] — the old prefers-color-scheme override
+   (which mismatched the app's data-theme switch) is retired. */
+[data-theme="dark"] .toast-close:hover { background: oklch(100% 0 0 / 0.08); color: oklch(96% 0 0); }
+
 /* ============================================================
    Interactive popups — global queue surface (PopupHost).
    Center dialog on desktop, bottom-sheet on mobile.
@@ -18,8 +134,6 @@
   position: absolute;
   inset: 0;
   background: oklch(0% 0 0 / 0.5);
-  backdrop-filter: blur(2px);
-  -webkit-backdrop-filter: blur(2px);
 }
 
 .popup-card {
@@ -98,9 +212,8 @@
 }
 .popup-btn:active { transform: translateY(1px); }
 .popup-btn.primary {
-  background: var(--gradient-cta);
-  color: #fff;
-  box-shadow: var(--shadow-glow);
+  background: var(--accent);
+  color: var(--accent-text);
 }
 .popup-btn.primary:hover { filter: brightness(1.05); }
 .popup-btn.ghost {
@@ -125,9 +238,8 @@
 
 /* ---- Celebration ---- */
 .popup-celebrate-coin {
-  background: var(--gradient-gold);
-  color: #fff;
-  box-shadow: var(--shadow-glow-gold);
+  background: var(--warning);
+  color: var(--accent-text);
   animation: popup-pop 0.5s ease-out;
 }
 .popup-celebrate-amount {
@@ -135,10 +247,7 @@
   font-weight: 900;
   line-height: 1;
   margin: 4px 0 8px;
-  background: var(--gradient-cta);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--warning);
 }
 .popup-celebrate-amount span { font-size: 1.1rem; font-weight: 700; }
 .popup-celebrate-msg {
@@ -151,9 +260,8 @@
 
 /* ---- Daily ---- */
 .popup-daily-flame {
-  background: linear-gradient(135deg, oklch(70% 0.19 40), oklch(62% 0.2 25));
-  color: #fff;
-  box-shadow: 0 8px 24px oklch(62% 0.2 25 / 0.35);
+  background: var(--accent);
+  color: var(--accent-text);
 }
 .popup-daily-checkin {
   display: inline-flex;
@@ -167,8 +275,8 @@
   border-radius: var(--radius-md);
   font-size: 0.95rem;
   font-weight: 800;
-  color: #fff;
-  background: linear-gradient(135deg, oklch(70% 0.19 40), oklch(62% 0.2 25));
+  color: var(--accent-text);
+  background: var(--accent);
   cursor: pointer;
   transition: filter 0.15s, opacity 0.15s;
 }
@@ -205,7 +313,7 @@
 .popup-task-count {
   font-size: 0.78rem;
   font-weight: 700;
-  color: var(--terracotta);
+  color: var(--accent);
   display: inline-flex;
   align-items: center;
 }
@@ -218,14 +326,14 @@
 .popup-task-fill {
   height: 100%;
   border-radius: var(--radius-full);
-  background: var(--gradient-cta);
+  background: var(--accent);
   transition: width 0.5s ease-out;
 }
 
 /* ---- Tutorial ---- */
 .popup-tutorial-icon {
-  background: var(--terracotta-pale);
-  color: var(--terracotta);
+  background: var(--accent-light);
+  color: var(--accent);
 }
 .popup-tutorial-step {
   font-size: 0.72rem;
@@ -250,7 +358,7 @@
   cursor: pointer;
   transition: width 0.2s, background 0.2s;
 }
-.popup-dot.on { width: 22px; background: var(--terracotta); }
+.popup-dot.on { width: 22px; background: var(--accent); }
 
 /* In the multi-step tour, Skip/Back + Next sit side-by-side. */
 .popup-tutorial .popup-actions { flex-direction: row; }
@@ -266,7 +374,7 @@
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--terracotta);
+  color: var(--accent);
 }
 
 /* ---- Badge unlocked ---- */
@@ -278,8 +386,7 @@
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-full);
-  background: var(--gradient-gold);
-  box-shadow: var(--shadow-glow-gold);
+  background: var(--warning);
   margin-bottom: 4px;
   animation: popup-pop 0.5s ease-out;
 }
@@ -288,7 +395,7 @@
   position: absolute;
   inset: -6px;
   border-radius: var(--radius-full);
-  border: 2px dashed oklch(78% 0.17 80 / 0.6);
+  border: 2px dashed color-mix(in oklab, var(--warning) 60%, transparent);
   animation: popup-spin 9s linear infinite;
 }
 
@@ -301,9 +408,8 @@
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-full);
-  color: #fff;
-  background: var(--gradient-cta);
-  box-shadow: var(--shadow-glow);
+  color: var(--accent-text);
+  background: var(--accent);
   margin-bottom: 4px;
   animation: popup-pop 0.5s ease-out;
 }
@@ -319,7 +425,7 @@
   justify-content: center;
   border-radius: var(--radius-full);
   background: var(--surface-elevated);
-  color: var(--terracotta);
+  color: var(--accent);
   border: 2px solid var(--surface-elevated);
   box-shadow: var(--shadow-md);
   font-size: 0.9rem;
@@ -327,7 +433,7 @@
 }
 
 /* ---- Streak milestone ---- */
-.popup-streak-kicker { color: oklch(62% 0.2 25); }
+.popup-streak-kicker { color: var(--accent); }
 .popup-streak-flame {
   position: relative;
   width: 76px;
@@ -336,9 +442,8 @@
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-full);
-  color: #fff;
-  background: linear-gradient(135deg, oklch(72% 0.19 60), oklch(60% 0.21 25));
-  box-shadow: 0 8px 26px oklch(62% 0.2 25 / 0.4);
+  color: var(--accent-text);
+  background: var(--accent);
   margin-bottom: 4px;
   animation: popup-pop 0.5s ease-out;
 }
@@ -354,7 +459,7 @@
   justify-content: center;
   border-radius: var(--radius-full);
   background: var(--surface-elevated);
-  color: oklch(62% 0.2 25);
+  color: var(--accent);
   border: 2px solid var(--surface-elevated);
   box-shadow: var(--shadow-md);
   font-size: 0.9rem;
@@ -367,8 +472,8 @@
   margin-top: 14px;
   padding: 8px 14px;
   border-radius: var(--radius-full);
-  background: oklch(78% 0.17 80 / 0.14);
-  color: var(--gold);
+  background: color-mix(in oklab, var(--warning) 14%, transparent);
+  color: color-mix(in oklab, var(--warning) 55%, var(--text-primary));
   font-size: 0.85rem;
   font-weight: 700;
 }
@@ -401,7 +506,7 @@
   .popup-root { align-items: flex-end; padding: 0; }
   .popup-card {
     max-width: 100%;
-    border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
     padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
     max-height: 88vh;
   }
@@ -417,8 +522,6 @@
 }
 .popup-root:has(.popup-card-daily) .popup-scrim {
   background: oklch(0% 0 0 / 0.12);
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
 }
 .popup-card-daily {
   max-width: 360px;

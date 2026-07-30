@@ -9,11 +9,10 @@
 /* ── Hero ────────────────────────────────────────────────── */
 .mw-hero {
   text-align: center;
-  background: linear-gradient(135deg, var(--mediterranean, #1a6a8a), var(--accent, #d4623a));
+  background: var(--paper-deep);
   color: #fff;
-  border-radius: var(--radius-3xl);
+  border-radius: var(--radius-xl);
   padding: 34px 24px 28px;
-  box-shadow: var(--shadow-xl);
 }
 /* Hero sits on a gradient — force the heading white (the global h1 rule
    otherwise stamps it with the dark text token). */
@@ -91,7 +90,7 @@
   gap: 14px;
   background: var(--mediterranean-pale, #eaf3f7);
   border: 1px solid var(--mediterranean, #1a6a8a);
-  border-radius: var(--radius-2xl);
+  border-radius: var(--radius-xl);
   padding: 14px 18px;
   margin-bottom: 18px;
 }
@@ -111,11 +110,11 @@
 .mw-board {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius-2xl);
+  border-radius: var(--radius-xl);
   padding: 18px;
 }
 .mw-board h2 { display: flex; align-items: center; gap: 8px; font-size: var(--text-lg); margin-bottom: 14px; }
-.mw-board h2 svg { color: var(--gold, #d4a017); }
+.mw-board h2 svg { color: var(--warning); }
 .mw-empty { color: var(--text-muted); font-size: var(--text-sm); }
 
 /* governorate rows */
@@ -147,7 +146,7 @@
   margin-top: 16px;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius-2xl);
+  border-radius: var(--radius-xl);
   padding: 18px;
 }
 .mw-prizes h2 { font-size: var(--text-lg); margin-bottom: 6px; }

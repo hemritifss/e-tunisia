@@ -39,7 +39,7 @@ export default function LouagePage() {
   const swap = () => { setFrom(to); setTo(from); };
 
   return (
-    <div className="louage-page cn-grain page-enter" data-design="carnet">
+    <div className="louage-page cn-grain page-enter">
       <header className="louage-header">
         <span className="louage-kicker"><Bus size={13} /> Getting around Tunisia</span>
         <h1>Louage, bus &amp; train — <em>{from} to {to}</em></h1>

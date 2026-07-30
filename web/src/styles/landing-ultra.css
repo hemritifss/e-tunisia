@@ -57,7 +57,7 @@
     font-size: 0.58rem;
     letter-spacing: 0.2em;
     text-transform: uppercase;
-    color: var(--ink-faint);
+    color: var(--text-tertiary);
     max-height: 300px;
     overflow: hidden;
     white-space: nowrap;
@@ -65,13 +65,13 @@
 .ej-folio-rail {
     width: 2px;
     height: 170px;
-    background: var(--rule);
+    background: var(--border);
     position: relative;
 }
 .ej-folio-rule {
     position: absolute;
     inset: 0;
-    background: var(--terracotta);
+    background: var(--accent);
     transform-origin: top;
 }
 @media (max-width: 1023px) {
@@ -86,12 +86,12 @@
     top: -0.3em;
     right: 0;
     z-index: 0;
-    font-family: var(--font-editorial);
+    font-family: var(--font-display);
     font-optical-sizing: auto;
     font-size: clamp(6rem, 13vw, 10.5rem);
     font-weight: 620;
     line-height: 1;
-    color: var(--ink);
+    color: var(--text-primary);
     opacity: 0.05;
     pointer-events: none;
     user-select: none;
@@ -113,7 +113,7 @@
 .ej-trav-warmth {
     position: absolute;
     inset: 0;
-    background: color-mix(in oklab, var(--paper-warm) 86%, var(--gold) 14%);
+    background: color-mix(in oklab, var(--bg-secondary) 86%, var(--warning) 14%);
     pointer-events: none;
     z-index: 0;
 }
@@ -131,8 +131,8 @@
     align-items: center;
     gap: 12px;
     padding: 8px 18px 8px 13px;
-    background: var(--paper-print);
-    border: 1px solid var(--rule);
+    background: var(--surface);
+    border: 1px solid var(--border);
     border-radius: 5px;
     box-shadow: var(--paper-shadow);
     pointer-events: none;
@@ -142,7 +142,7 @@
     flex: none;
     width: 22px;
     height: 34px;
-    border: 2px solid var(--ink-soft);
+    border: 2px solid var(--text-secondary);
     border-radius: 12px;
     position: relative;
 }
@@ -154,7 +154,7 @@
     width: 3px;
     height: 7px;
     border-radius: 2px;
-    background: var(--terracotta);
+    background: var(--accent);
     animation: ej-trav-hud-wheel 1.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 @keyframes ej-trav-hud-wheel {
@@ -168,13 +168,13 @@
     font-size: 0.66rem;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: var(--ink-soft);
+    color: var(--text-secondary);
     white-space: nowrap;
     line-height: 1.2;
 }
 /* arrival: the crossing is done — nudge the eye onward, out of the pin */
-.ej-trav-hud.is-end .ej-trav-hud-label { color: var(--terracotta); }
-.ej-trav-hud.is-end .ej-trav-hud-mouse { border-color: var(--terracotta); }
+.ej-trav-hud.is-end .ej-trav-hud-label { color: var(--accent); }
+.ej-trav-hud.is-end .ej-trav-hud-mouse { border-color: var(--accent); }
 @media (prefers-reduced-motion: reduce) {
     .ej-trav-hud-wheel { animation: none; opacity: 0.8; translate: -50% 4px; }
 }
@@ -216,10 +216,10 @@
     width: auto;
     max-width: 100%;
 }
-.ej-map-wash { fill: var(--paper-warm); opacity: 0.55; }
+.ej-map-wash { fill: var(--bg-secondary); opacity: 0.55; }
 .ej-map-outline {
     fill: none;
-    stroke: var(--ink);
+    stroke: var(--text-primary);
     stroke-width: 2;
     stroke-linejoin: round;
     stroke-linecap: round;
@@ -227,7 +227,7 @@
 }
 .ej-map-route-ghost {
     fill: none;
-    stroke: var(--ink-faint);
+    stroke: var(--text-tertiary);
     stroke-width: 1.4;
     stroke-dasharray: 5 8;
     stroke-linecap: round;
@@ -235,14 +235,14 @@
 }
 .ej-map-route {
     fill: none;
-    stroke: var(--terracotta);
+    stroke: var(--accent);
     stroke-width: 2.6;
     stroke-linecap: round;
 }
-.ej-map-stop-dot { fill: var(--ink-faint); transition: fill 0.3s var(--ease-out); }
+.ej-map-stop-dot { fill: var(--text-tertiary); transition: fill 0.3s var(--ease-out); }
 .ej-map-stop-ring {
     fill: none;
-    stroke: var(--stamp-ink);
+    stroke: var(--accent);
     stroke-width: 1.3;
     stroke-dasharray: 3 3;
     opacity: 0;
@@ -253,19 +253,19 @@
     font-family: var(--font-mono);
     font-size: 9.5px;
     letter-spacing: 0.12em;
-    fill: var(--ink-faint);
+    fill: var(--text-tertiary);
     opacity: 0.55;
     transition: opacity 0.3s var(--ease-out), fill 0.3s var(--ease-out);
 }
-.ej-map-stop.is-passed .ej-map-stop-dot { fill: var(--terracotta); }
+.ej-map-stop.is-passed .ej-map-stop-dot { fill: var(--accent); }
 .ej-map-stop.is-passed .ej-map-stop-ring { opacity: 0.85; animation: ej-ring-pop 0.4s var(--ease-out) both; }
-.ej-map-stop.is-passed .ej-map-label { fill: var(--ink); opacity: 0.92; }
-.ej-map-stop.is-active .ej-map-stop-dot { fill: var(--stamp-ink); }
+.ej-map-stop.is-passed .ej-map-label { fill: var(--text-primary); opacity: 0.92; }
+.ej-map-stop.is-active .ej-map-stop-dot { fill: var(--accent); }
 @keyframes ej-ring-pop {
     from { transform: scale(1.7); opacity: 0; }
     to   { transform: scale(1);   opacity: 0.85; }
 }
-.ej-map-compass { color: var(--ink-faint); opacity: 0.6; }
+.ej-map-compass { color: var(--text-tertiary); opacity: 0.6; }
 
 /* philatelic mini-stamps — pop in as the route reaches each stop */
 .ej-map-ministamp {
@@ -282,19 +282,19 @@
     62%  { transform: scale(0.94); opacity: 1; }
     100% { transform: scale(1); opacity: 1; }
 }
-.ej-map-ministamp-paper { fill: var(--paper-print); stroke: var(--rule-strong); stroke-width: 1; }
-.ej-map-ministamp-frame { fill: none; stroke: var(--stamp-ink); stroke-width: 0.9; stroke-dasharray: 2 2; }
+.ej-map-ministamp-paper { fill: var(--surface); stroke: var(--rule-strong); stroke-width: 1; }
+.ej-map-ministamp-frame { fill: none; stroke: var(--accent); stroke-width: 0.9; stroke-dasharray: 2 2; }
 .ej-map-ministamp-no {
     font-family: var(--font-mono);
     font-size: 8.5px;
     font-weight: 700;
-    fill: var(--stamp-ink);
+    fill: var(--accent);
     letter-spacing: 0.06em;
 }
 .ej-map-ministamp-tn {
     font-family: 'Noto Kufi Arabic', var(--font-sans);
     font-size: 5.5px;
-    fill: var(--ink-faint);
+    fill: var(--text-tertiary);
 }
 
 /* odometer — position-mapped to scroll, not a fake counter */
@@ -311,13 +311,13 @@
     font-size: 0.58rem;
     letter-spacing: 0.18em;
     text-transform: uppercase;
-    color: var(--ink-faint);
+    color: var(--text-tertiary);
 }
 .ej-trav-km-num {
     font-size: 1.45rem;
     font-weight: 600;
     font-variant-numeric: tabular-nums;
-    color: var(--ink);
+    color: var(--text-primary);
 }
 
 /* the developing print + copy */
@@ -332,8 +332,8 @@
 .ej-trav-print {
     position: relative;
     margin: 0;
-    background: var(--paper-print);
-    border: 1px solid var(--rule);
+    background: var(--surface);
+    border: 1px solid var(--border);
     padding: 10px 10px 12px;
     box-shadow: var(--paper-shadow);
     rotate: -1.4deg;
@@ -364,7 +364,7 @@
     gap: 5px;
     padding-top: 8px;
 }
-.ej-trav-print figcaption .ej-hand { font-size: 1.28rem; color: var(--ink-soft); }
+.ej-trav-print figcaption .ej-hand { font-size: 1.28rem; color: var(--text-secondary); }
 .ej-trav-print-meta {
     display: flex;
     justify-content: space-between;
@@ -373,7 +373,7 @@
     font-size: 0.56rem;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: var(--ink-faint);
+    color: var(--text-tertiary);
 }
 .ej-trav-day {
     font-family: var(--font-mono);
@@ -381,22 +381,22 @@
     font-weight: 700;
     letter-spacing: 0.16em;
     text-transform: uppercase;
-    color: var(--terracotta);
+    color: var(--accent);
 }
 .ej-trav-copy h3 {
-    font-family: var(--font-editorial);
+    font-family: var(--font-display);
     font-optical-sizing: auto;
     font-size: clamp(1.4rem, 2.2vw, 1.85rem);
     font-weight: 580;
     letter-spacing: -0.015em;
-    color: var(--ink);
+    color: var(--text-primary);
     margin: 4px 0 2px;
 }
 .ej-trav-ar {
     font-family: 'Noto Kufi Arabic', var(--font-sans);
     font-size: 0.62em;
     font-weight: 500;
-    color: var(--ink-soft);
+    color: var(--text-secondary);
     margin-inline-start: 10px;
 }
 .ej-trav-count {
@@ -404,7 +404,7 @@
     font-size: 0.62rem;
     letter-spacing: 0.16em;
     text-transform: uppercase;
-    color: var(--ink-faint);
+    color: var(--text-tertiary);
 }
 /* route progress rail — persistent journey position so the pinned scroll
    never reads as stuck or ended (segments fill as the crossing advances) */
@@ -422,10 +422,10 @@
     flex: 1;
     height: 3px;
     border-radius: 3px;
-    background: color-mix(in oklab, var(--ink) 15%, transparent);
+    background: color-mix(in oklab, var(--text-primary) 15%, transparent);
     transition: background 0.45s var(--ease-out);
 }
-.ej-trav-seg.is-on { background: var(--terracotta); }
+.ej-trav-seg.is-on { background: var(--accent); }
 @media (prefers-reduced-motion: reduce) {
     .ej-trav-seg { transition: none; }
 }
@@ -453,9 +453,9 @@
     font-weight: 600;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: var(--terracotta);
-    background: var(--paper-print);
-    border: 1px solid var(--terracotta);
+    color: var(--accent);
+    background: var(--surface);
+    border: 1px solid var(--accent);
     padding: 3px 8px;
     border-radius: 2px;
     opacity: 0;
@@ -510,7 +510,7 @@
     right: -4px;
     top: 0;
     height: 2px;
-    background: var(--terracotta);
+    background: var(--accent);
     opacity: 0;
 }
 .ej-ticket.is-punched .ej-ticket-scan { animation: ej-scan 0.55s ease-in-out 0.18s; }
@@ -567,7 +567,7 @@
     font-size: 0.56rem;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: var(--ink-faint);
+    color: var(--text-tertiary);
 }
 .ej-mood-credit {
     display: block;
@@ -576,7 +576,7 @@
     font-size: 0.5rem;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: color-mix(in oklab, var(--ink-faint) 72%, transparent);
+    color: color-mix(in oklab, var(--text-tertiary) 72%, transparent);
 }
 .ej-ticker--rail { rotate: 0deg; width: 100%; margin: 0; }
 
@@ -602,17 +602,17 @@
 .ej-torn--flip { transform: scaleY(-1); }
 .ej-manifesto-insert { margin: var(--space-12) 0; }
 .ej-manifesto-insert .ej-manifesto {
-    background: var(--paper-warm);
+    background: var(--bg-secondary);
     border-top: none;
     max-width: none;
     padding-inline: max(var(--space-6), calc((100vw - 1240px) / 2));
     margin: 0;
 }
 .ej-quote-word {
-    color: color-mix(in oklab, var(--ink) 18%, transparent);
+    color: color-mix(in oklab, var(--text-primary) 18%, transparent);
     transition: color 0.35s var(--ease-out);
 }
-.ej-quote-word.is-inked { color: var(--ink); }
+.ej-quote-word.is-inked { color: var(--text-primary); }
 
 /* ============================================================
    Nº 05 — postcard 3D flips
@@ -646,8 +646,8 @@
     font-size: 0.6rem;
     letter-spacing: 0.2em;
     text-transform: uppercase;
-    color: var(--ink-faint);
-    border-bottom: 1px solid var(--rule);
+    color: var(--text-tertiary);
+    border-bottom: 1px solid var(--border);
     padding-bottom: var(--space-3);
 }
 .ej-postcard-title span { font-family: 'Noto Kufi Arabic', var(--font-sans); letter-spacing: 0; }
@@ -661,7 +661,7 @@
 }
 .ej-postcard-address .ej-hand {
     font-size: 1.32rem;
-    color: var(--ink-soft);
+    color: var(--text-secondary);
     rotate: -1deg;
 }
 .ej-postcard-addr-line { border-bottom: 1px solid var(--rule-strong); height: 1px; }
@@ -805,7 +805,7 @@
     .ej-ticket-stub::before,
     .ej-ticket-stub::after { scale: 1; animation: none !important; }
     .ej-ticket-scan { display: none; }
-    .ej-quote-word { color: var(--ink); transition: none; }
+    .ej-quote-word { color: var(--text-primary); transition: none; }
     .ej-flip, .ej-flip:hover { rotate: var(--tilt, 0deg); transition: none; }
     .ej-trav-link { opacity: 1; translate: 0 0; pointer-events: auto; transition: none; }
     .ej-map-stop-ring { animation: none !important; }

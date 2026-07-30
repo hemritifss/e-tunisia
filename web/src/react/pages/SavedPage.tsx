@@ -117,7 +117,7 @@ export default function SavedPage() {
   };
 
   return (
-    <div className="saved-page page-enter" data-design="sleek" id="saved-root">
+    <div className="saved-page page-enter" id="saved-root">
       <PageHeader
         eyebrow={<><Bookmark size={13} /> Library · carnet personnel</>}
         title="Saved Posts"
