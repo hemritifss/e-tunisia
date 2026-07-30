@@ -1,12 +1,14 @@
 import {
     Entity, PrimaryGeneratedColumn, Column,
-    CreateDateColumn, ManyToOne, JoinColumn,
+    CreateDateColumn, ManyToOne, JoinColumn, Index,
 } from 'typeorm';
 import { User } from '../users/user.entity';
 
 export enum SubStatus { ACTIVE = 'active', EXPIRED = 'expired', CANCELLED = 'cancelled', PENDING = 'pending' }
 
 @Entity('subscriptions')
+// getMySubscription(userId) runs on any page that resolves the user's plan.
+@Index(['userId'])
 export class Subscription {
     @PrimaryGeneratedColumn('uuid')
     id: string;

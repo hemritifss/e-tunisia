@@ -474,9 +474,14 @@ function navigate() {
     }
   }
 
-  // Update active nav links
+  // Update active nav links. `aria-current` matters as much as the class: the
+  // active tab was previously signalled by colour alone, so screen-reader and
+  // high-contrast users had no way to tell where they were.
   document.querySelectorAll('.nav-link').forEach(link => {
-    link.classList.toggle('active', (link as HTMLElement).dataset.page === route.page);
+    const isActive = (link as HTMLElement).dataset.page === route.page;
+    link.classList.toggle('active', isActive);
+    if (isActive) link.setAttribute('aria-current', 'page');
+    else link.removeAttribute('aria-current');
   });
   document.querySelectorAll('.mobile-nav-item').forEach(link => {
     const page = (link as HTMLElement).dataset.page;
@@ -495,7 +500,10 @@ function navigate() {
     } else {
       el.onclick = null;
     }
-    link.classList.toggle('active', page === route.page);
+    const isActive = page === route.page;
+    link.classList.toggle('active', isActive);
+    if (isActive) link.setAttribute('aria-current', 'page');
+    else link.removeAttribute('aria-current');
   });
 
   // ── Orientation chrome ──────────────────────────────────────────────

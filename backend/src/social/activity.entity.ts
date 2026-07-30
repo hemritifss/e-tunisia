@@ -3,6 +3,7 @@ import {
   PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
+  Index,
 } from 'typeorm';
 
 export enum ActivityType {
@@ -17,6 +18,10 @@ export enum ActivityType {
 }
 
 @Entity('activities')
+// Following-feed: userId IN (…) ORDER BY createdAt. Global feed: isPublic +
+// createdAt. Both scanned the whole table before this.
+@Index(['userId', 'createdAt'])
+@Index(['isPublic', 'createdAt'])
 export class Activity {
   @PrimaryGeneratedColumn('uuid')
   id: string;

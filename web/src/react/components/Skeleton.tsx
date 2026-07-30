@@ -8,6 +8,20 @@ interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> {
   count?: number;
 }
 
+/**
+ * Loading placeholder.
+ *
+ * Paints with the carnet `.skeleton-block` (dashed pencil outline + faint
+ * hatching, from skeletons.css) rather than a grey shimmer. It used to use
+ * Tailwind `bg-gray-*` gradients, which meant the two most-visited pages — the
+ * feed and Explore — showed grey shimmer boxes while every other route showed
+ * pencil sketches. Loading states were the last place in the app still speaking
+ * a second design language.
+ *
+ * The API is unchanged, so all existing call sites keep working; only the paint
+ * differs. Tailwind loads after skeletons.css, so the `rounded-*` variants below
+ * still win over the base block's radius.
+ */
 export const Skeleton = ({
   variant = 'text',
   width,
@@ -32,11 +46,7 @@ export const Skeleton = ({
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={i}
-          className={cn(
-            'animate-shimmer bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 dark:from-gray-800 dark:via-gray-700 dark:to-gray-800 bg-[length:200%_100%]',
-            variants[variant],
-            className,
-          )}
+          className={cn('skeleton-block', variants[variant], className)}
           style={style}
           {...props}
         />

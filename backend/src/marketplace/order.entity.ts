@@ -4,6 +4,7 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
+  Index,
 } from 'typeorm';
 
 export enum OrderStatus {
@@ -17,6 +18,8 @@ export enum OrderStatus {
 }
 
 @Entity('orders')
+// Buyer order history filters by buyerId.
+@Index(['buyerId'])
 export class Order {
   @PrimaryGeneratedColumn('uuid')
   id: string;
