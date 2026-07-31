@@ -1,9 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "rewrites": [
-    { "source": "/api/:path*", "destination": "https://etunisia-api.onrender.com/api/:path*" },
-    { "source": "/uploads/:path*", "destination": "https://etunisia-api.onrender.com/uploads/:path*" },
-    { "source": "/socket.io/:path*", "destination": "https://etunisia-api.onrender.com/socket.io/:path*" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
