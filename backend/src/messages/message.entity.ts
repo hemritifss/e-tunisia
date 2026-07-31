@@ -3,9 +3,13 @@ import {
   PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
+  Index,
 } from 'typeorm';
 
 @Entity('messages')
+// Every thread fetch filters by roomId and orders by createdAt; without this
+// that was a full-table scan + sort on the busiest read path in the app.
+@Index(['roomId', 'createdAt'])
 export class Message {
   @PrimaryGeneratedColumn('uuid')
   id: string;

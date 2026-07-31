@@ -177,6 +177,9 @@
   font: inherit;
   font-weight: 600;
   font-size: 0.9rem;
+  /* min-height keeps this at the 44px WCAG 2.5.5 tap target; padding alone
+     landed it at 43px. */
+  min-height: 44px;
   padding: 0.6rem 1rem;
   border: 1.5px solid var(--border);
   border-radius: var(--radius-md, 6px);

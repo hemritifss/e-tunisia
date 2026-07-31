@@ -4,6 +4,7 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
+  Index,
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
@@ -17,6 +18,9 @@ export enum UserChallengeStatus {
 }
 
 @Entity('user_challenges')
+// getOrCreateUserChallenges + updateChallengeProgress both filter by userId
+// (and challengeId / status) — this is that lookup's covering index.
+@Index(['userId', 'challengeId'])
 export class UserChallenge {
   @PrimaryGeneratedColumn('uuid')
   id: string;

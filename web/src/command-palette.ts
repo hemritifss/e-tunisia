@@ -26,6 +26,8 @@ interface CommandItem {
  * `no-emoji-icons` rule and rendered inconsistently across OS fonts. Stored
  * here as strings so we can innerHTML them safely (controlled, not user input).
  */
+import { DESTINATIONS } from './destinations';
+
 const SVG: Record<string, string> = {
     home:        '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>',
     passport:    '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="18" x="5" y="3" rx="2"/><circle cx="12" cy="10" r="3"/><path d="M8 17h8"/></svg>',
@@ -49,23 +51,39 @@ const SVG: Record<string, string> = {
     clock:       '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
 };
 
-const PAGE_SHORTCUTS: CommandItem[] = [
-    { id: 'p-home',        section: 'page', icon: 'home',      title: 'Home feed',                href: '#/' },
-    { id: 'p-passport',    section: 'page', icon: 'passport',  title: 'My Travel Profile',        href: '__OWN_HANDLE__' },
-    { id: 'p-activity',    section: 'page', icon: 'activity',  title: 'Following activity',       href: '#/activity' },
-    { id: 'p-explore',     section: 'page', icon: 'compass',   title: 'Explore places',           href: '#/explore' },
-    { id: 'p-trips',       section: 'page', icon: 'map',       title: 'Trip plans by travelers',  href: '#/discover-trips' },
-    { id: 'p-leaderboard', section: 'page', icon: 'trophy',    title: 'Leaderboard',              href: '#/leaderboard' },
-    { id: 'p-badges',      section: 'page', icon: 'award',     title: 'My badges',                href: '#/badges' },
-    { id: 'p-saved',       section: 'page', icon: 'bookmark',  title: 'Saved posts',              href: '#/saved' },
-    { id: 'p-favorites',   section: 'page', icon: 'heart',     title: 'Saved places',             href: '#/favorites' },
-    { id: 'p-messages',    section: 'page', icon: 'message',   title: 'Messages',                 href: '#/messages' },
-    { id: 'p-inquiries',   section: 'page', icon: 'mail',      title: 'My inquiries',             href: '#/inquiries' },
-    { id: 'p-events',      section: 'page', icon: 'calendar',  title: 'Events',                   href: '#/events' },
-    { id: 'p-tips',        section: 'page', icon: 'lightbulb', title: 'Travel tips',              href: '#/tips' },
-    { id: 'p-profile',     section: 'page', icon: 'settings',  title: 'Edit profile',             href: '#/profile-edit' },
-    { id: 'p-search',      section: 'page', icon: 'search',    title: 'Full search',              href: '#/search' },
-];
+/** Registry icon names → the palette's own SVG keys above. */
+const ICON_ALIAS: Record<string, string> = {
+    home: 'home', compass: 'compass', map: 'map', calendar: 'calendar',
+    lightbulb: 'lightbulb', sparkles: 'sparkles', heart: 'heart',
+    bookmark: 'bookmark', award: 'award', trophy: 'trophy',
+    settings: 'settings', 'message-circle': 'message', send: 'mail',
+    'id-card': 'passport', 'user-round': 'passport', user: 'passport',
+    rss: 'activity', flame: 'activity', route: 'map', luggage: 'map',
+    layers: 'bookmark', briefcase: 'mail',
+    // Everything else falls back to a map pin — still reads as "a place to go".
+};
+
+/**
+ * Destination shortcuts, generated from the shared registry.
+ *
+ * This list used to be hand-maintained, which made it a *fourth* set of names
+ * for the same pages ("Home feed", "My Travel Profile", "Travel tips") and left
+ * it permanently incomplete — Circuits, Carnets, Map, Reels, Trip, You and
+ * Daily tasks were all unreachable from a palette that advertises "search
+ * anything". Deriving it means a new destination shows up here for free, under
+ * the one name the rest of the app uses.
+ */
+const PAGE_SHORTCUTS: CommandItem[] = DESTINATIONS.map((d) => ({
+    id: `p-${d.path.replace(/\W+/g, '-')}`,
+    section: 'page' as const,
+    icon: ICON_ALIAS[d.icon] || 'pin',
+    title: d.label,
+    subtitle: d.blurb,
+    // The passport is per-user; keep the existing own-handle resolution.
+    href: d.path === '/u/me' ? '__OWN_HANDLE__' : d.path,
+})).concat([
+    { id: 'p-search', section: 'page', icon: 'search', title: 'Full search', subtitle: 'Search everything at once', href: '/search' },
+]);
 
 /** Imperative commands — the difference between a search box and a command palette. */
 function quickActions(): CommandItem[] {
@@ -203,7 +221,14 @@ function resolveHref(item: CommandItem): string {
 function filterPages(q: string): CommandItem[] {
     if (!q) return PAGE_SHORTCUTS;
     const lower = q.toLowerCase();
-    return PAGE_SHORTCUTS.filter((p) => p.title.toLowerCase().includes(lower));
+    // Match the description too, so someone who knows what they want but not
+    // what it is called ("stamps", "boards", "quote") still lands on the right
+    // page. Requiring the exact label is what made search feel like a dead end.
+    return PAGE_SHORTCUTS.filter(
+        (p) =>
+            p.title.toLowerCase().includes(lower) ||
+            (p.subtitle?.toLowerCase().includes(lower) ?? false),
+    );
 }
 
 async function fetchPeople(q: string): Promise<CommandItem[]> {
