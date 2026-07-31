@@ -26,7 +26,15 @@ export function PostImageCarousel({ images, onOpen, priority = false }: { images
 
   if (images.length === 1) {
     return (
-      <button type="button" className="post-carousel post-carousel-single" onClick={onOpen} aria-label="Open post">
+      <button
+        type="button"
+        className="post-carousel post-carousel-single"
+        onClick={onOpen}
+        aria-label="Open post"
+        /* The LCP candidate must paint the instant it decodes, so it opts out of
+           the reveal entirely rather than wiping in behind a clip-path. */
+        data-arch-reveal={priority ? undefined : ''}
+      >
         {/* The first post's image is usually the page's LCP — don't lazy it. */}
         <img
           src={images[0]}
@@ -39,7 +47,10 @@ export function PostImageCarousel({ images, onOpen, priority = false }: { images
   }
 
   return (
-    <div className="post-carousel">
+    /* Reveal the whole media unit, not the track: the counter and dots belong to
+       the same print and should arrive with it. The 16:9 box is reserved on the
+       track, so the wrapper has height before the images load. */
+    <div className="post-carousel" data-arch-reveal={priority ? undefined : ''}>
       <div
         ref={trackRef}
         className="post-carousel-track scrollbar-hide"

@@ -202,6 +202,19 @@
 }
 .sheet-tab.active { background: var(--accent); border-color: var(--accent); color: var(--accent-text, #fff); }
 .sheet-tab-count { font-weight: 600; }
+
+/* ── Rolling count (RollingNumber) ──
+   Mono is reserved for values that are true, and a count is one. Deliberately
+   sets no font-weight or colour so consumers keep theirs (the level badge in
+   popups.css relies on its own 900 weight). Lives here rather than feed.css
+   because the component is shared: reactions, reels, the reactions sheet and
+   the level-up popup all mount it. */
+.rolling-count {
+    display: inline-flex;
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+}
 .sheet-body { overflow-y: auto; padding: 4px 0 8px; flex: 1; }
 /* ============================================
    Donate modal
@@ -752,9 +765,6 @@
         border: 1px solid var(--badge-tint);
     }
 }
-.passport-badge.is-earned:hover {
-    box-shadow: var(--shadow-lg), 0 0 0 1px var(--badge-tint);
-}
 .passport-badge.is-locked {
     opacity: 0.6;
 }
@@ -810,17 +820,21 @@
     cursor: pointer;
     transition: color var(--duration-fast) var(--ease-out);
 }
+/* Tab sweep: was a centre-out width grow, now a left-origin scaleX wipe on the
+   same 220ms curve as the feed and profile tabs. left/right insets of
+   --space-3 reproduce the old `calc(100% - var(--space-6))` extent. */
 .passport-tabs-head button::after {
     content: '';
     position: absolute;
-    left: 50%;
+    left: var(--space-3);
+    right: var(--space-3);
     bottom: -1px;
-    width: 0;
     height: 2px;
     background: var(--accent);
     border-radius: var(--radius-full);
-    transform: translateX(-50%);
-    transition: width var(--duration-normal) var(--ease-spring);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--duration-tab) var(--ease-out);
 }
 .passport-tabs-head button:hover {
     color: var(--text-primary);
@@ -829,7 +843,7 @@
     color: var(--accent);
 }
 .passport-tabs-head button.active::after {
-    width: calc(100% - var(--space-6));
+    transform: scaleX(1);
 }
 .passport-tabs-head button:focus-visible {
     outline: 2px solid var(--accent);
@@ -844,12 +858,8 @@
     height: 200px;
     background: linear-gradient(90deg, var(--surface-hover) 25%, var(--surface-active) 50%, var(--surface-hover) 75%);
     background-size: 200% 100%;
-    animation: sub-shimmer 1.6s linear infinite;
+    animation: bled-shimmer 1.4s linear infinite;
     border-radius: var(--radius-xl);
-}
-@keyframes sub-shimmer {
-    0%   { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
 }
 @media (prefers-reduced-motion: reduce) {
     .passport-tab-skel { animation: none; }
@@ -872,8 +882,6 @@
                 border-color var(--duration-normal) var(--ease-out);
 }
 .passport-trip-card:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--shadow-md);
     border-color: var(--mediterranean);
 }
 .passport-trip-cover {
@@ -1084,9 +1092,8 @@
     flex: 0 0 auto;
 }
 .endorse-topic-state .spin {
-    animation: sub-spin 0.9s linear infinite;
+    animation: spin 0.9s linear infinite;
 }
-@keyframes sub-spin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) {
     .endorse-topic-state .spin { animation-duration: 2s; }
 }
@@ -1355,7 +1362,7 @@
 .signup-gate-handle-status[data-status="ok"]  { color: var(--success); }
 .signup-gate-handle-status[data-status="bad"] { color: var(--error); }
 .signup-gate-handle-status .spin {
-    animation: sub-spin 0.9s linear infinite;
+    animation: spin 0.9s linear infinite;
 }
 .signup-gate-hint {
     font-size: var(--text-xs);
@@ -1563,13 +1570,9 @@
     width: 8px;
     height: 14px;
     border-radius: 1px;
-    animation-name: sub-confetti-fall;
+    animation-name: confetti-fall;
     animation-timing-function: linear;
     animation-fill-mode: forwards;
-}
-@keyframes sub-confetti-fall {
-    0%   { transform: translateY(0)     rotate(0deg);   opacity: 1; }
-    100% { transform: translateY(120vh) rotate(540deg); opacity: 0; }
 }
 @media (prefers-reduced-motion: reduce) {
     .confetti span { animation: none; opacity: 0; }
@@ -1840,13 +1843,7 @@
     font-size: var(--text-sm);
     font-weight: 600;
     cursor: pointer;
-    box-shadow: var(--shadow-lg);
-    transition: transform var(--duration-fast) var(--ease-spring),
-                box-shadow var(--duration-normal) var(--ease-out);
-}
-.trip-cart-fab:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-xl);
+    transition: transform var(--duration-fast) var(--ease-spring);
 }
 .trip-cart-fab:active { transform: scale(0.97); }
 .trip-cart-fab:focus-visible {

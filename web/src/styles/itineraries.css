@@ -197,14 +197,26 @@
     box-shadow: var(--paper-shadow);
     overflow: hidden;
     cursor: pointer;
-    transition: transform var(--carnet-motion-base), box-shadow var(--carnet-motion-base);
+    transition: transform var(--duration-fast) var(--ease-out),
+                box-shadow var(--duration-fast) var(--ease-out);
 }
-.ci-card:hover,
+/* Keyboard focus lifts regardless of pointer type; hover is gated below. */
 .ci-card:focus-visible {
-    transform: translate(-2px, -2px);
-    box-shadow: var(--paper-shadow-lift);
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-card-hover);
+    outline: var(--carnet-focus);
+    outline-offset: 2px;
 }
-.ci-card:focus-visible { outline: var(--carnet-focus); outline-offset: 2px; }
+@media (hover: hover) and (pointer: fine) {
+    .ci-card:hover {
+        transform: translateY(-6px);
+        box-shadow: var(--shadow-card-hover);
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .ci-card { transition: box-shadow var(--duration-fast) var(--ease-out); }
+    .ci-card:hover, .ci-card:focus-visible { transform: none; }
+}
 .ci-card.is-offseason { opacity: 0.82; }
 .ci-card--skeleton { padding: var(--space-4); gap: var(--space-3); cursor: default; }
 

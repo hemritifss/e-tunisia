@@ -17,7 +17,7 @@ export interface ToastOptions {
     emoji?: string;
     /** Optional action button {label, onClick}. */
     action?: { label: string; onClick: () => void };
-    /** Auto-dismiss in ms. Default 4200. Pass 0 for sticky. */
+    /** Auto-dismiss in ms. Default 4000 (the Bled hold). Pass 0 for sticky. */
     duration?: number;
 }
 
@@ -44,7 +44,7 @@ function ensureContainer(): HTMLDivElement {
 function buildToast(opts: ToastOptions): HTMLDivElement {
     const id = nextId++;
     const type: ToastType = opts.type || 'info';
-    const dur = opts.duration ?? 4200;
+    const dur = opts.duration ?? 4000;
 
     const el = document.createElement('div');
     el.className = `toast toast-${type}`;
@@ -96,6 +96,9 @@ function buildToast(opts: ToastOptions): HTMLDivElement {
             window.clearTimeout((el as any)._toastTimer);
         });
         el.addEventListener('mouseleave', () => {
+            // Not the hold: a hovered toast has already been read, so this is
+            // only the grace period for the pointer to clear the stack. It is
+            // independent of `dur` and stays put.
             (el as any)._toastTimer = window.setTimeout(() => dismiss(el), 1600);
         });
     }
@@ -107,7 +110,9 @@ function dismiss(el: HTMLDivElement) {
     window.clearTimeout((el as any)._toastTimer);
     el.classList.add('toast-leaving');
     el.addEventListener('animationend', () => el.remove(), { once: true });
-    window.setTimeout(() => el.remove(), 400);
+    // Backstop for the case where animationend never fires (element detached
+    // mid-exit, animations suppressed). Sized to the 180ms Bled exit plus slack.
+    window.setTimeout(() => el.remove(), 300);
 }
 
 export function showToast(opts: ToastOptions | string, type?: ToastType): void {

@@ -22,7 +22,10 @@ export function MoodCompass() {
             <div className="mood-rail-grid" role="list">
                 {MOOD_LIST.slice(0, RAIL_COUNT).map((m) => (
                     <a key={m.id} role="listitem" href={`#/mood/${m.id}`} className="mood-tile">
-                        <span className="mood-tile-frame">
+                        {/* Arch reveal on viewport entry. The CSS utility ships
+                            in animations.css; the observer that adds .is-in is
+                            Builder B's reveal.ts, so this is inert until then. */}
+                        <span className="mood-tile-frame" data-arch-reveal>
                             <img src={m.image} alt="" loading="lazy" />
                         </span>
                         <span className="mood-tile-label">{m.label}</span>

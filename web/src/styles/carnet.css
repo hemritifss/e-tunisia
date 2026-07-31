@@ -89,7 +89,7 @@
   border: 2px solid currentColor;
   border-right-color: transparent;
   border-radius: var(--radius-full);
-  animation: cn-spin 0.7s linear infinite;
+  animation: spin 0.7s linear infinite;
 }
 
 .cn-btn--quiet {
@@ -112,8 +112,6 @@
   --cn-btn-hover-bg: var(--surface-hover);
   border-color: var(--bg-primary);
 }
-
-@keyframes cn-spin { to { transform: rotate(360deg); } }
 
 /* ── Underline inputs ("the letter" style) ── */
 .cn-field {
@@ -323,8 +321,9 @@
   width: clamp(180px, 46vw, 260px);
   aspect-ratio: 1;
   color: var(--accent);
-  /* Slam: overshoot down + settle, with a tiny counter-rotate. ≤350ms. */
-  animation: stamp-thunk 340ms var(--ease-out) both;
+  /* Bled specimen: rotate(-26deg) scale(1.7) → overshoot past the target →
+     rotate(-8deg) scale(1). Keyframe lives in animations.css. */
+  animation: bled-stamp var(--duration-slow) var(--ease-out) both;
   filter: drop-shadow(0 6px 14px oklch(0% 0 0 / 0.28));
 }
 .stamp-slam-disc svg { width: 100%; height: 100%; display: block; }
@@ -336,12 +335,15 @@
   border-radius: 50%;
   border: 2px solid var(--accent);
   opacity: 0;
-  /* fires just after impact */
-  animation: stamp-ripple 620ms var(--ease-out) 200ms both;
+  /* Lands on the impact frame: bled-stamp's 62% stop of 420ms is 260ms. */
+  animation: stamp-ripple 620ms var(--ease-out) 260ms both;
 }
 
 @keyframes stamp-slam-scrim { from { opacity: 0; } }
 @keyframes stamp-slam-scrim-out { to { opacity: 0; } }
+/* Survives the Bled consolidation because passport.css's .passport-onb-stamp
+   still consumes it - that stamp lands in-place on the card rather than
+   slamming full-screen, and keeps the softer arc. Not used here any more. */
 @keyframes stamp-thunk {
   0%   { transform: scale(1.5) rotate(-11deg); opacity: 0; }
   55%  { transform: scale(0.92) rotate(-2deg); opacity: 1; }
@@ -353,15 +355,16 @@
   100% { opacity: 0; transform: scale(1.5); }
 }
 
-/* Reduced motion: no thunk/ripple — a calm static stamp that fades in/out. */
+/* Reduced motion: no slam/ripple - a calm static stamp that fades in/out.
+   The angle is bled-stamp's resting -8deg, so both paths settle identically. */
 .stamp-slam.is-reduced .stamp-slam-disc {
   animation: stamp-fade-in 240ms var(--ease-out) both;
-  transform: rotate(-3deg);
+  transform: rotate(-8deg);
 }
 .stamp-slam.is-reduced .stamp-slam-ripple { display: none; }
 @keyframes stamp-fade-in { from { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) {
-  .stamp-slam-disc { animation: stamp-fade-in 240ms var(--ease-out) both; transform: rotate(-3deg); }
+  .stamp-slam-disc { animation: stamp-fade-in 240ms var(--ease-out) both; transform: rotate(-8deg); }
   .stamp-slam-ripple { display: none; }
 }
 

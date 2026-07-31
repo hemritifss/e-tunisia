@@ -50,9 +50,20 @@
     border: 1px solid var(--border, #e5e7eb);
     border-radius: 14px;
     text-decoration: none; color: inherit;
-    transition: transform 120ms ease, border-color 120ms ease;
+    transition: transform var(--duration-fast) var(--ease-out),
+                box-shadow var(--duration-fast) var(--ease-out),
+                border-color var(--duration-fast) var(--ease-out);
 }
-.search-person-card:hover { transform: translateY(-2px); border-color: var(--accent); }
+@media (hover: hover) and (pointer: fine) {
+    .search-person-card:hover {
+        transform: translateY(-6px);
+        box-shadow: var(--shadow-card-hover);
+        border-color: var(--accent);
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .search-person-card:hover { transform: none; }
+}
 .search-person-card img { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
 .search-person-meta { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .search-person-meta strong { color: var(--text-primary); font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

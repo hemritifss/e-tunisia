@@ -6,6 +6,7 @@ import { queryClient } from './query-client';
 import { ErrorBoundary } from './ErrorBoundary';
 import TunisiaLoader from '../components/TunisiaLoader';
 import { finishNavProgress } from '../../nav-progress';
+import { observeReveals } from '../../reveal';
 
 const rootMap = new Map<HTMLElement, Root>();
 
@@ -43,17 +44,34 @@ function ReadySignal() {
   return null;
 }
 
+/**
+ * Kicks the arch-reveal sweep for whatever this island rendered synchronously.
+ * Content that arrives later — fetched grids, infinite scroll — is picked up by
+ * the document watcher inside reveal.ts, not by this call. The effect runs after
+ * the commit and before paint, so the rect reads inside observeReveals see real
+ * layout.
+ */
+function RevealBinding({ container }: { container: HTMLElement }) {
+  React.useEffect(() => {
+    observeReveals(container);
+  }, [container]);
+  return null;
+}
+
 function IslandHost({
   Component,
   islandProps,
+  container,
 }: {
   Component: React.ComponentType | React.LazyExoticComponent<React.ComponentType>;
   islandProps?: Record<string, unknown>;
+  container: HTMLElement;
 }) {
   return (
     <Suspense fallback={<IslandFallback />}>
       <Component {...islandProps} />
       <ReadySignal />
+      <RevealBinding container={container} />
     </Suspense>
   );
 }
@@ -79,7 +97,7 @@ export function mountIsland(
           honor the OS "Reduce Motion" setting automatically. */}
       <MotionConfig reducedMotion="user">
         <ErrorBoundary>
-          <IslandHost Component={Component} islandProps={props} />
+          <IslandHost Component={Component} islandProps={props} container={container} />
         </ErrorBoundary>
       </MotionConfig>
     </QueryClientProvider>,

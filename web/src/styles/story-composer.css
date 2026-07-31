@@ -89,9 +89,15 @@
     text-align: left;
     color: var(--text-primary);
     background: var(--bg-tertiary);
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    transition: transform var(--duration-fast) var(--ease-out),
+                box-shadow var(--duration-fast) var(--ease-out);
 }
-.sc-choose-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+@media (hover: hover) and (pointer: fine) {
+    .sc-choose-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-card-hover); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .sc-choose-card:hover { transform: none; }
+}
 .sc-choose-card strong { font-size: var(--text-base); }
 .sc-choose-card small { color: var(--text-secondary); font-size: var(--text-xs); }
 .sc-choose-card svg { margin-bottom: auto; }

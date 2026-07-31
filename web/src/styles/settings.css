@@ -273,9 +273,8 @@
     border: 2px solid var(--border);
     border-top-color: var(--accent);
     border-radius: 50%;
-    animation: settings-spin 0.9s linear infinite;
+    animation: spin 0.9s linear infinite;
 }
-@keyframes settings-spin { to { transform: rotate(360deg); } }
 .settings-blocked-empty {
     color: var(--text-tertiary);
     font-size: var(--text-sm);

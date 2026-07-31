@@ -21,6 +21,7 @@ import { Card, CardContent } from '../components/Card';
 import { Avatar } from '../components/Avatar';
 import { Button } from '../components/Button';
 import { Skeleton, PostCardSkeleton } from '../components/Skeleton';
+import { Swap } from '../components/Swap';
 import { formatNumber, formatDate } from '../lib/utils';
 import { useAuthStore } from '../stores/auth-store';
 import { useUIStore } from '../stores/ui-store';
@@ -312,7 +313,7 @@ function PostCard({ post, priority = false }: { post: Post; priority?: boolean }
       )}
 
       {(post as any).videoUrl && (
-        <a className="post-card-v2-media post-card-v2-media-1" href={detailHash} aria-label="Open post">
+        <a className="post-card-v2-media post-card-v2-media-1" href={detailHash} aria-label="Open post" data-arch-reveal>
           <video
             src={(post as any).videoUrl}
             muted
@@ -613,9 +614,11 @@ export default function FeedPage() {
           adds none. AnimatePresence/popLayout is deliberately absent: pulling
           an exiting item out of flow makes the rules below it jump. */}
       <div className="feed-list">
-          {isLoading ? (
-            Array.from({ length: 3 }).map((_, i) => <PostCardSkeleton key={i} />)
-          ) : isError ? (
+          <Swap
+            loading={isLoading}
+            skeleton={<>{Array.from({ length: 3 }).map((_, i) => <PostCardSkeleton key={i} />)}</>}
+          >
+          {isError ? (
             <div className="feed-empty">
               <div className="feed-empty-icon"><RefreshCcw size={28} /></div>
               <h3>Couldn't load the feed</h3>
@@ -661,6 +664,7 @@ export default function FeedPage() {
                   : <PostCard key={item.id} post={item} priority={i === 0} />
             )
           )}
+          </Swap>
       </div>
       </PullToRefresh>
 

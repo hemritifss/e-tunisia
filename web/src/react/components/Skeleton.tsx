@@ -46,6 +46,10 @@ export const Skeleton = ({
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={i}
+          // Team call (c09e8b53): paint with the carnet `.skeleton-block`
+          // pencil sketch so every loading surface speaks one language. It
+          // breathes via bled-breathe and inherits its reduced-motion guard
+          // from skeletons.css.
           className={cn('skeleton-block', variants[variant], className)}
           style={style}
           {...props}
@@ -55,19 +59,10 @@ export const Skeleton = ({
   );
 };
 
-export const PlaceCardSkeleton = () => (
-  <div className="rounded-2xl overflow-hidden bg-surface shadow-sm">
-    <Skeleton variant="rect" height={192} className="w-full rounded-none" />
-    <div className="p-4 space-y-3">
-      <Skeleton variant="text" width="70%" />
-      <Skeleton variant="text" width="40%" />
-      <div className="flex gap-2">
-        <Skeleton variant="circle" width={32} height={32} />
-        <Skeleton variant="text" width="50%" className="self-center" />
-      </div>
-    </div>
-  </div>
-);
+/* PlaceCardSkeleton lived here with a single reference: a dead import in
+   ExplorePage that never rendered it. Explore's grid loads `.explore-skel`
+   instead, and the real place card is <Carte>. Removed rather than left as a
+   third, unrendered place-card shape. */
 
 /**
  * Mirrors the rules layout of a real post, block for block, so the crossfade

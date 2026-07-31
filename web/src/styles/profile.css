@@ -1065,9 +1065,8 @@
     border: 3px solid var(--border);
     border-top-color: var(--accent);
     border-radius: 50%;
-    animation: pp-spin 0.9s linear infinite;
+    animation: spin 0.9s linear infinite;
 }
-@keyframes pp-spin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) {
     .profile-page-v2 .spinner { animation-duration: 2s; }
 }

@@ -311,12 +311,29 @@
     border-radius: 0;   /* card-system fold: cards are square in Bled */
     overflow: hidden;
     cursor: pointer;
-    box-shadow: var(--paper-shadow-lift);
-    transition: transform var(--carnet-motion-base), box-shadow var(--carnet-motion-base), rotate var(--carnet-motion-base);
+    /* Rests flat like every other content card; the overlay shadow it used to
+       carry made the hover elevation read as a *drop*. */
+    box-shadow: var(--paper-shadow);
+    transition: transform var(--duration-fast) var(--ease-out),
+                box-shadow var(--duration-fast) var(--ease-out),
+                rotate var(--duration-fast) var(--ease-out);
     animation: cn-col-rise var(--carnet-motion-base) both;
 }
-.cn-col-card:hover { transform: translateY(-3px); rotate: -0.5deg; box-shadow: 6px 8px 0 color-mix(in oklab, var(--text-primary) 10%, transparent); }
-.cn-col-card:focus-visible { outline: var(--carnet-focus); outline-offset: 2px; }
+/* The half-degree kick is the carnet personality — a print nudged on the page.
+   The hard offset shadow it came with is not, and is gone. */
+@media (hover: hover) and (pointer: fine) {
+    .cn-col-card:hover {
+        transform: translateY(-6px);
+        rotate: -0.5deg;
+        box-shadow: var(--shadow-card-hover);
+    }
+}
+.cn-col-card:focus-visible {
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-card-hover);
+    outline: var(--carnet-focus);
+    outline-offset: 2px;
+}
 @keyframes cn-col-rise { from { opacity: 0; translate: 0 8px; } }
 
 .cn-col-card-plate {
@@ -623,6 +640,6 @@
 /* ── Reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
     .cn-col-card, .collections-sheet, .collections-scrim { animation: none; transition: opacity var(--carnet-motion-base); }
-    .cn-col-card:hover { transform: none; rotate: 0deg; }
+    .cn-col-card:hover, .cn-col-card:focus-visible { transform: none; rotate: 0deg; }
     .cn-col-cover-img, .cn-col-card:hover .cn-col-cover-img { transition: none; transform: none; }
 }

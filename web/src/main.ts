@@ -82,6 +82,7 @@ const LegalPage = React.lazy(() => import('./react/pages/LegalPage'));
 // Vanilla pages
 import { initCommandPalette } from './command-palette';
 import { initToasts } from './toasts';
+import { initLiveTicker } from './live-ticker';
 import { mountTripCart, syncTripCartAuth } from './trip-cart-ui';
 import { mountMessengerGlobals } from './react/lib/mount-messenger';
 import { initPopupTriggers, clearPopups } from './react/components/popups';
@@ -1670,6 +1671,7 @@ function init() {
   initCityFilter(); // global city pill in the navbar
   initCurrencyToggle(); // global currency pill (TND/EUR/USD/GBP)
   initToasts();
+  initLiveTicker(); // top chrome strip - unhides itself only if real lines resolve
   initSearch();
   initNotifications();
   initCommandPalette();

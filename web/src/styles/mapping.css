@@ -155,8 +155,7 @@
 
 /* states */
 .mw-loading { display: flex; justify-content: center; padding: 80px 0; }
-.mw-spinner { width: 36px; height: 36px; border: 3px solid var(--border); border-top-color: var(--mediterranean); border-radius: 50%; animation: mw-spin .8s linear infinite; }
-@keyframes mw-spin { to { transform: rotate(360deg); } }
+.mw-spinner { width: 36px; height: 36px; border: 3px solid var(--border); border-top-color: var(--mediterranean); border-radius: 50%; animation: spin .8s linear infinite; }
 .mw-guard { text-align: center; padding: 60px 20px; }
 .mw-guard h1 { font-size: var(--text-2xl); margin-bottom: 8px; }
 .mw-guard p { color: var(--text-muted); max-width: 42ch; margin: 0 auto 16px; }

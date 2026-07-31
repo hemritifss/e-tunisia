@@ -243,6 +243,15 @@
     border-bottom-color: var(--rule-strong);
 }
 
+/* The live strip (app-shell.css) takes the top band and grows --nav-height to
+   mean "all fixed chrome above me", which is what every other consumer of that
+   token means. The bar itself is the one place it meant the bar's own height,
+   so it reads the snapshot instead and slides below the strip. */
+body.has-live-ticker:not(.guest-mode) #main-nav {
+    top: var(--live-ticker-h);
+    height: var(--nav-bar-height);
+}
+
 .nav-logo {
     transition: transform var(--duration-fast) var(--ease-spring);
 }

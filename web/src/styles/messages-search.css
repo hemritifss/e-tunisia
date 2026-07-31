@@ -577,9 +577,8 @@
     border: 3px solid var(--border);
     border-top-color: var(--accent);
     border-radius: 50%;
-    animation: dm-spin 0.9s linear infinite;
+    animation: spin 0.9s linear infinite;
 }
-@keyframes dm-spin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) {
     .dm-loading .spinner { animation-duration: 2s; }
 }
@@ -1138,8 +1137,6 @@
                 border-color var(--duration-normal) var(--ease-out);
 }
 .search-person-card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
     border-color: var(--accent-light);
 }
 .search-person-avatar {
@@ -1318,12 +1315,8 @@
     height: 80px;
     background: linear-gradient(90deg, var(--surface-hover) 25%, var(--surface-active) 50%, var(--surface-hover) 75%);
     background-size: 200% 100%;
-    animation: search-shimmer 1.6s linear infinite;
+    animation: bled-shimmer 1.4s linear infinite;
     border-radius: var(--radius-xl);
-}
-@keyframes search-shimmer {
-    0%   { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
 }
 @media (prefers-reduced-motion: reduce) {
     .search-skel-row { animation: none; }

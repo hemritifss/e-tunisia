@@ -7,6 +7,8 @@ import * as api from '../../api';
 import { requireAuth, showToast, linkifyHashtagsAndMentions, isLoggedIn } from '../../ui-utils';
 import { currentPath, onRouteChange } from '../../router';
 import { DetailSkeleton } from '../components/RouteSkeleton';
+import { RollingNumber } from '../components/RollingNumber';
+import { Swap } from '../components/Swap';
 
 // Migrated from vanilla pages/post-detail.ts — post + threaded comments + reactors sheet.
 
@@ -182,17 +184,21 @@ function ReactorsSheet({ postId, onClose }: { postId: string; onClose: () => voi
           <button className="sheet-close" aria-label="Close" onClick={onClose}><X /></button>
         </header>
         <div className="sheet-tabs">
-          <button className={`sheet-tab ${type === null ? 'active' : ''}`} onClick={() => setType(null)}>All <span className="sheet-tab-count">{total}</span></button>
+          {/* Counts roll: these change live as the reactor list resolves and as
+              filters narrow it. */}
+          <button className={`sheet-tab ${type === null ? 'active' : ''}`} onClick={() => setType(null)}>All <RollingNumber value={total} className="sheet-tab-count" /></button>
           {types.map(([t, c]) => (
             <button key={t} className={`sheet-tab ${type === t ? 'active' : ''}`} onClick={() => setType(t)}>
-              {REACTION_EMOJI[t] || '👍'} <span className="sheet-tab-count">{c}</span>
+              {REACTION_EMOJI[t] || '👍'} <RollingNumber value={c} className="sheet-tab-count" />
             </button>
           ))}
         </div>
         <div className="sheet-body">
-          {isLoading ? (
-            <div className="text-muted text-center" style={{ padding: 'var(--space-4)' }}>Loading…</div>
-          ) : rows.length === 0 ? (
+          <Swap
+            loading={isLoading}
+            skeleton={<div className="text-muted text-center" style={{ padding: 'var(--space-4)' }}>Loading…</div>}
+          >
+          {rows.length === 0 ? (
             <div className="text-muted text-center" style={{ padding: 'var(--space-6)' }}>No one yet.</div>
           ) : (
             rows.map((r: any, i: number) => {
@@ -211,6 +217,7 @@ function ReactorsSheet({ postId, onClose }: { postId: string; onClose: () => voi
               );
             })
           )}
+          </Swap>
         </div>
       </div>
     </div>,
@@ -368,22 +375,25 @@ export default function PostDetailPage() {
           </div>
         </div>
         <div className="comments-list">
-          {commentsQ.isLoading ? (
-            <div className="text-muted text-center" style={{ padding: 'var(--space-4)' }}>Loading comments…</div>
-          ) : threads.length === 0 ? (
-            <div className="text-muted text-center" style={{ padding: 'var(--space-4)' }}>No comments yet — be the first.</div>
-          ) : (
-            threads.map((c: any, i: number) => (
-              <motion.div
-                key={c.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1], delay: Math.min(i * 0.04, 0.32) }}
-              >
-                <CommentThread c={c} me={me} postId={postId} />
-              </motion.div>
-            ))
-          )}
+          <Swap
+            loading={commentsQ.isLoading}
+            skeleton={<div className="text-muted text-center" style={{ padding: 'var(--space-4)' }}>Loading comments…</div>}
+          >
+            {threads.length === 0 ? (
+              <div className="text-muted text-center" style={{ padding: 'var(--space-4)' }}>No comments yet — be the first.</div>
+            ) : (
+              threads.map((c: any, i: number) => (
+                <motion.div
+                  key={c.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1], delay: Math.min(i * 0.04, 0.32) }}
+                >
+                  <CommentThread c={c} me={me} postId={postId} />
+                </motion.div>
+              ))
+            )}
+          </Swap>
         </div>
       </section>
 
